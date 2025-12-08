@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app/config/router/app_router.dart';
+import 'package:quran_app/config/theme/dark_theme.dart';
+import 'package:quran_app/generated/l10n.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(const QuranApp());
@@ -8,12 +11,19 @@ void main() {
 class QuranApp extends StatelessWidget {
   const QuranApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Quran',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      theme: darkTheme,
+      locale: Locale('ar'),
+      supportedLocales: const [Locale('en'), Locale('ar')],
+      localizationsDelegates: [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       routerConfig: appRouter,
     );
   }
