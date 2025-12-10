@@ -1,7 +1,11 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/assets_dir.dart';
@@ -9,6 +13,9 @@ import 'package:quran_app/features/splash/pages/widgets/slogan_animation.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
+  void onLoaded(BuildContext context) {
+    GoRouter.of(context).pushReplacement(AppRouter.homePath);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,30 +29,49 @@ class SplashPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: .end,
                 children: [
-                  SvgPicture.asset(
-                    AssetsDir.imagesDir('mushaf.svg'),
-                    colorFilter: .mode(context.colorScheme.onSurface, .srcIn),
-                    width: 176,
-                  ).animate().scaleX(
-                    duration: 2.seconds,
-                    curve: Curves.elasticOut,
-                  ),
-                  Gap(16),
-                  Text(
-                        "اَلْقُرْآنُ الْكَرِيمُ",
-                        style: TypographyStyles.display32.uthmanic,
+                  SizedBox(
+                        child: Column(
+                          spacing: 16,
+                          children: [
+                            SvgPicture.asset(
+                              AssetsDir.imagesDir('mushaf.svg'),
+                              colorFilter: .mode(
+                                context.colorScheme.onSurface,
+                                .srcIn,
+                              ),
+                              width: 176,
+                            ),
+
+                            Text(
+                              "اَلْقُرْآنُ الْكَرِيمُ",
+                              style: TypographyStyles.display32.uthmanic,
+                            ),
+                          ],
+                        ),
                       )
                       .animate()
                       .fadeIn(duration: 2.seconds, delay: .2.seconds)
-                      .scale(duration: .2.seconds),
+                      .scale(
+                        duration: 1.5.seconds,
+                        begin: Offset(1.4, 1.4),
+                        end: Offset(1, 1),
+                        curve: Curves.decelerate,
+                      ),
+
                   Gap(8),
-                  SloganAnimation(slogan: "اقْرَأْ تَعَلَّمْ احْفَظْ"),
-                  Gap(48),
-                  SvgPicture.asset(
-                    AssetsDir.imagesDir('mosque.svg'),
-                    colorFilter: .mode(context.colorScheme.surface, .srcIn),
-                    alignment: .bottomCenter,
-                    fit: .cover,
+                  SloganAnimation(
+                    slogan: "اقْرَأْ تَعَلَّمْ احْفَظْ",
+                    onLoaded: () => onLoaded(context),
+                  ),
+                  Gap(68),
+                  ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
+                    child: Image.asset(
+                      AssetsDir.imagesDir('mosque.png'),
+                      color: context.colorScheme.surface,
+                      alignment: .bottomCenter,
+                      fit: .cover,
+                    ),
                   ),
                 ],
               ),

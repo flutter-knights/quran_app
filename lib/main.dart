@@ -17,14 +17,14 @@ class QuranApp extends StatelessWidget {
       title: 'Quran',
       theme: darkTheme,
       locale: Locale('ar'),
-      supportedLocales: const [Locale('en'), Locale('ar')],
+      supportedLocales: S.delegate.supportedLocales,
       localizationsDelegates: [
         S.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      routerConfig: appRouter,
+      routerConfig: AppRouter.router,
     );
   }
 }
