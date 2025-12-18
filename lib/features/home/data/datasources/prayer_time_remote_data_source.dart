@@ -16,9 +16,6 @@ class PrayerTimeRemoteDataSource {
       },
     );
 
-    final PrayerTimes prayerTimes = PrayerTimesModel.fromJson(
-      prayerTimesResponse.data,
-    );
-    return prayerTimes;
+    return PrayerTimesModel.fromJson(prayerTimesResponse.data);
   }
 }
