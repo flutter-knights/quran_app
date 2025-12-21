@@ -21,5 +21,12 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ar';
 
   final messages = _notInlinedMessages(_notInlinedMessages);
-  static Map<String, Function> _notInlinedMessages(_) => <String, Function>{};
+  static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "asr": MessageLookupByLibrary.simpleMessage("العصر"),
+    "dhuhr": MessageLookupByLibrary.simpleMessage("الظهر"),
+    "fajr": MessageLookupByLibrary.simpleMessage("الفجر"),
+    "isha": MessageLookupByLibrary.simpleMessage("العشاء"),
+    "maghrib": MessageLookupByLibrary.simpleMessage("المغرب"),
+    "sunrise": MessageLookupByLibrary.simpleMessage("الشروق"),
+  };
 }

@@ -8,3 +8,12 @@ sealed class DailyPrayerContextState extends Equatable {
 }
 
 final class DailyPrayerContextInitial extends DailyPrayerContextState {}
+
+final class DailyPrayerContextLoaded extends DailyPrayerContextState {}
+
+final class DailyPrayerContextLoading extends DailyPrayerContextState {}
+
+final class DailyPrayerContextFailed extends DailyPrayerContextState {
+  final String error;
+  const DailyPrayerContextFailed(this.error);
+}

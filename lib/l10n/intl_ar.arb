@@ -1,3 +1,9 @@
 {
-     "@@locale": "ar"
+"@@locale": "ar",
+"fajr": "الفجر",
+"sunrise": "الشروق",
+"dhuhr": "الظهر",
+"asr": "العصر",
+"maghrib": "المغرب",
+"isha": "العشاء"
 }
