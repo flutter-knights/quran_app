@@ -84,6 +84,31 @@ class S {
   String get isha {
     return Intl.message('Isha', name: 'isha', desc: '', args: []);
   }
+
+  /// `{time} remaining for {prayerName}`
+  String remainingTimeLabel(Object time, Object prayerName) {
+    return Intl.message(
+      '$time remaining for $prayerName',
+      name: 'remainingTimeLabel',
+      desc: '',
+      args: [time, prayerName],
+    );
+  }
+
+  /// `{weekday}, {day} {month} {year} AH`
+  String hijriDateWithDay(
+    Object weekday,
+    Object day,
+    Object month,
+    Object year,
+  ) {
+    return Intl.message(
+      '$weekday, $day $month $year AH',
+      name: 'hijriDateWithDay',
+      desc: '',
+      args: [weekday, day, month, year],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

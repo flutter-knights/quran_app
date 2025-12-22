@@ -20,13 +20,20 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
+  static String m0(weekday, day, month, year) =>
+      "${weekday}, ${day} ${month} ${year} AH";
+
+  static String m1(time, prayerName) => "${time} remaining for ${prayerName}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "asr": MessageLookupByLibrary.simpleMessage("Asr"),
     "dhuhr": MessageLookupByLibrary.simpleMessage("Dhuhr"),
     "fajr": MessageLookupByLibrary.simpleMessage("Fajr"),
+    "hijriDateWithDay": m0,
     "isha": MessageLookupByLibrary.simpleMessage("Isha"),
     "maghrib": MessageLookupByLibrary.simpleMessage("Maghrib"),
+    "remainingTimeLabel": m1,
     "sunrise": MessageLookupByLibrary.simpleMessage("Sunrise"),
   };
 }

@@ -76,10 +76,7 @@ class _SplashPageState extends State<SplashPage> {
                           height: 156,
                           color: context.colorScheme.onSurface,
                         ),
-                        Text(
-                          "اَلْقُرْآنُ الْكَرِيمُ",
-                          style: TypographyStyles.display32.uthmanic,
-                        ),
+                        Text("اَلْقُرْآنُ الْكَرِيمُ", style: TS.extra32.amiri),
                       ],
                     )
                     .animate()

@@ -1,27 +1,17 @@
+import 'package:quran_app/core/constants/prayers_list_constants.dart';
+
 class PrayerTimes {
-  final String fajr;
-  final String sunrise;
-  final String dhuhr;
-  final String asr;
-  final String maghrib;
-  final String isha;
+  final Map<PrayerName, String> timings;
   final Date date;
-  PrayerTimes({
-    required this.fajr,
-    required this.sunrise,
-    required this.dhuhr,
-    required this.asr,
-    required this.maghrib,
-    required this.isha,
-    required this.date,
-  });
+
+  const PrayerTimes({required this.timings, required this.date});
 }
 
 class Date {
   final String month;
   final String weekDay;
   final String year;
-  final int day;
+  final String day;
   Date({
     required this.month,
     required this.weekDay,

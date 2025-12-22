@@ -5,5 +5,7 @@
 "dhuhr": "Dhuhr",
 "asr": "Asr",
 "maghrib": "Maghrib",
-"isha": "Isha"
+"isha": "Isha",
+"remainingTimeLabel": "{time} remaining for {prayerName}",
+"hijriDateWithDay": "{weekday}, {day} {month} {year} AH"
 }

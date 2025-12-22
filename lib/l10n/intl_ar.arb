@@ -5,5 +5,8 @@
 "dhuhr": "الظهر",
 "asr": "العصر",
 "maghrib": "المغرب",
-"isha": "العشاء"
+"isha": "العشاء",
+"remainingTimeLabel": "متبقي {time} على صلاة {prayerName}",
+"hijriDateWithDay": "{weekday}، {day} {month} {year} هـ"
+
 }
