@@ -3,7 +3,7 @@ import 'package:quran_app/core/errors/exceptions.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/utils/dio_error_handler.dart';
 import 'package:quran_app/core/utils/goelocator_error_handler.dart';
-import 'package:quran_app/features/home/data/datasources/location_remote_data_source.dart';
+import 'package:quran_app/features/home/data/datasources/remote/location_remote_data_source.dart';
 import 'package:quran_app/features/home/domain/entities/location.dart';
 import 'package:quran_app/features/home/domain/repositories/location_repository.dart';
 import 'package:dartz/dartz.dart';

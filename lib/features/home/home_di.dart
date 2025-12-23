@@ -1,6 +1,6 @@
 import 'package:quran_app/core/di/dependency_injection.dart';
-import 'package:quran_app/features/home/data/datasources/location_remote_data_source.dart';
-import 'package:quran_app/features/home/data/datasources/prayer_time_remote_data_source.dart';
+import 'package:quran_app/features/home/data/datasources/remote/location_remote_data_source.dart';
+import 'package:quran_app/features/home/data/datasources/remote/prayer_time_remote_data_source.dart';
 import 'package:quran_app/features/home/data/repositories/location_repository_impl.dart';
 import 'package:quran_app/features/home/data/repositories/prayer_times_repository_impl.dart';
 import 'package:quran_app/features/home/domain/repositories/location_repository.dart';

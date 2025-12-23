@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/utils/dio_error_handler.dart';
-import 'package:quran_app/features/home/data/datasources/prayer_time_remote_data_source.dart';
+import 'package:quran_app/features/home/data/datasources/remote/prayer_time_remote_data_source.dart';
 import 'package:quran_app/features/home/domain/entities/location.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/home/domain/repositories/prayer_times_repository.dart';

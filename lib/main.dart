@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/dark_theme.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await init();
+  await Hive.initFlutter();
   runApp(const QuranApp());
 }
 
