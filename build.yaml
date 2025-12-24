@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      hive_generator:
+        generate_for:
+          include:
+            - lib/**/**_model.dart

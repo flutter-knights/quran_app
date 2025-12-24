@@ -41,6 +41,7 @@ class LocationRemoteDataSource {
   Future<Location> getCurrentLocation({String languageCode = 'ar'}) async {
     final Position position = await determinePosition();
     final Response locationResponse = await dio.get(
+      options: Options(headers: {'User-Agent': 'quran-app/1.0'}),
       'https://nominatim.openstreetmap.org/reverse',
       queryParameters: {
         'lat': position.latitude,

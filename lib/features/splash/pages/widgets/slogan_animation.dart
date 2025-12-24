@@ -21,7 +21,7 @@ class SloganAnimation extends StatelessWidget {
           .map(
             (word) => Text(
               word,
-              style: TypographyStyles.body16.copyWith(letterSpacing: 0.4).cairo,
+              style: TS.medium16.copyWith(letterSpacing: 0.4).cairo,
             ),
           )
           .toList()

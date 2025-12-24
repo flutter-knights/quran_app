@@ -1,3 +1,11 @@
 {
-     "@@locale": "en"
+"@@locale": "en",
+"fajr": "Fajr",
+"sunrise": "Sunrise",
+"dhuhr": "Dhuhr",
+"asr": "Asr",
+"maghrib": "Maghrib",
+"isha": "Isha",
+"remainingTimeLabel": "{time} remaining for {prayerName}",
+"hijriDateWithDay": "{weekday}, {day} {month} {year} AH"
 }
