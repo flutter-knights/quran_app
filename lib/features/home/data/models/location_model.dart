@@ -1,6 +1,7 @@
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quran_app/features/home/domain/entities/location.dart';
 
-class LocationModel extends Location {
+class LocationModel extends Location with HiveObjectMixin {
   LocationModel({
     required super.latitude,
     required super.longitude,

@@ -1,6 +1,9 @@
+import 'package:hive/hive.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/remote/location_remote_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/remote/prayer_time_remote_data_source.dart';
+import 'package:quran_app/features/home/data/models/prayer_times_hive_model.dart';
 import 'package:quran_app/features/home/data/repositories/location_repository_impl.dart';
 import 'package:quran_app/features/home/data/repositories/prayer_times_repository_impl.dart';
 import 'package:quran_app/features/home/domain/repositories/location_repository.dart';
@@ -10,7 +13,11 @@ import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 
 void initHome() {
+  final prayerTimesBox = Hive.box<PrayerTimesHiveModel>('prayerTimesCache');
   // Data sources
+  sl.registerLazySingleton(
+    () => PrayerTimesLocalDataSource(prayerTimesBox: prayerTimesBox),
+  );
   sl.registerLazySingleton(() => LocationRemoteDataSource(dio: sl()));
   sl.registerLazySingleton(() => PrayerTimeRemoteDataSource(dio: sl()));
 
@@ -19,7 +26,10 @@ void initHome() {
     () => LocationRepositoryImpl(remoteDataSource: sl()),
   );
   sl.registerLazySingleton<PrayerTimesRepository>(
-    () => PrayerTimesRepositoryImpl(prayerTimeRemoteDataSource: sl()),
+    () => PrayerTimesRepositoryImpl(
+      prayerTimeRemoteDataSource: sl(),
+      prayerTimesLocalDataSource: sl(),
+    ),
   );
 
   // UseCases
