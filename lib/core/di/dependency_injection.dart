@@ -4,7 +4,7 @@ import 'package:quran_app/features/home/home_di.dart';
 
 final sl = GetIt.instance;
 
-Future<void> init() async {
+Future<void> initGetIt() async {
   sl.registerLazySingleton<Dio>(() => Dio());
   initHome();
 }
