@@ -18,6 +18,7 @@ class QuranApp extends StatelessWidget {
       theme: darkTheme,
       locale: Locale('ar'),
       supportedLocales: S.delegate.supportedLocales,
+      debugShowCheckedModeBanner: false,
       localizationsDelegates: [
         S.delegate,
         GlobalMaterialLocalizations.delegate,
