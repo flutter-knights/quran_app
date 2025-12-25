@@ -34,9 +34,9 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
     PrayerName nextPrayer = PrayerName.dhuhr;
 
     for (PrayerName prayerName in prayersList) {
-      DateTime prayerTime = TimeHelpers.parse24hTime(
-        time: _dailyPrayerContext.prayerTimes.timings[prayerName]!,
-      );
+      DateTime prayerTime = _dailyPrayerContext.prayerTimes.timings[prayerName]!
+          .parse24hTime();
+
       if (now.isAfter(prayerTime)) {
         currentPrayer = prayerName;
         continue;

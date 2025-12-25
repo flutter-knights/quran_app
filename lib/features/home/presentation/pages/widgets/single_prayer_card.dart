@@ -48,9 +48,10 @@ class SinglePrayerCard extends StatelessWidget {
                     Text(
                       is24
                           ? time24.toLocalized(context)
-                          : TimeHelpers.parse24hTime(
-                              time: time24,
-                            ).format12h(context).toLocalized(context),
+                          : time24
+                                .parse24hTime()
+                                .format12h(context)
+                                .toLocalized(context),
                       style: TS.medium14
                           .copyWith(color: context.colorScheme.onSurfaceVariant)
                           .cairo,

@@ -14,7 +14,6 @@ class LocationRemoteDataSource {
   Future<Position> determinePosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // 1. Service check throws specific exception
       throw LocationServiceDisabledException();
     }
 
@@ -23,7 +22,6 @@ class LocationRemoteDataSource {
       permission = await Geolocator.requestPermission();
     }
 
-    // 2. Permission check throws specific exceptions
     if (permission == LocationPermission.denied) {
       throw LocationPermissionDeniedException();
     }
@@ -38,18 +36,34 @@ class LocationRemoteDataSource {
     }
   }
 
-  Future<Location> getCurrentLocation({String languageCode = 'ar'}) async {
-    final Position position = await determinePosition();
-    final Response locationResponse = await dio.get(
-      options: Options(headers: {'User-Agent': 'quran-app/1.0'}),
-      'https://nominatim.openstreetmap.org/reverse',
-      queryParameters: {
-        'lat': position.latitude,
-        'lon': position.longitude,
-        'format': 'json',
-        'accept-language': languageCode,
-      },
-    );
-    return LocationModel.fromJson(locationResponse.data);
-  }
+  Future<Location> getCurrentLocation(Position position) async {
+
+  final arResponse = await dio.get(
+    'https://nominatim.openstreetmap.org/reverse',
+    options: Options(headers: {'User-Agent': 'quran-app/1.0'}),
+    queryParameters: {
+      'lat': position.latitude,
+      'lon': position.longitude,
+      'format': 'json',
+      'accept-language': 'ar',
+    },
+  );
+
+  final enResponse = await dio.get(
+    'https://nominatim.openstreetmap.org/reverse',
+    options: Options(headers: {'User-Agent': 'quran-app/1.0'}),
+    queryParameters: {
+      'lat': position.latitude,
+      'lon': position.longitude,
+      'format': 'json',
+      'accept-language': 'en',
+    },
+  );
+
+  return LocationModel.fromJson(
+    arJson: arResponse.data,
+    enJson: enResponse.data,
+  );
+}
+
 }

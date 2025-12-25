@@ -19,21 +19,37 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
 
   @override
   Future<Either<Failure, PrayerTimes>> getPrayerTimes(Location location) async {
-    final cachedPrayerTimes = prayerTimesLocalDataSource.getFromHive();
+    final cachedPrayerTimes = prayerTimesLocalDataSource.getCached();
     if (cachedPrayerTimes != null) {
+      prayerTimesBackgroundPreCache(location);
       return Right(cachedPrayerTimes);
     }
     try {
       final List<PrayerTimes> prayerTimesList = await prayerTimeRemoteDataSource
           .getPrayerTimesList(location);
-      final prayerTimes = prayerTimesLocalDataSource.cacheToHive(
-        prayerTimesList,
-      );
-      return Right(prayerTimes);
+      await prayerTimesLocalDataSource.cache(prayerTimesList);
+      return Right(prayerTimesLocalDataSource.getCached()!);
     } on DioException catch (e) {
       return left(DioErrorHandler.handle(e));
     } catch (e) {
       return left(UnknownFailure(e.toString()));
+    }
+  }
+
+  Future<void> prayerTimesBackgroundPreCache(Location location) async {
+    final now = DateTime.now();
+    final DayAfterAfterAfterAfterTomorrow = now.add(const Duration(days: 5));
+    final cachedPrayerTimes = prayerTimesLocalDataSource.getCached(
+      date: DayAfterAfterAfterAfterTomorrow,
+    );
+    if (cachedPrayerTimes != null) return;
+
+    try {
+      final List<PrayerTimes> prayerTimesList = await prayerTimeRemoteDataSource
+          .getPrayerTimesList(location);
+      await prayerTimesLocalDataSource.cache(prayerTimesList);
+    } catch (e) {
+      return;
     }
   }
 }
