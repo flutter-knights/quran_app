@@ -7,9 +7,9 @@ import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await initGetIt();
-  await initHive();
+  //   WidgetsFlutterBinding.ensureInitialized();
+  //   await initGetIt();
+  //   await initHive();
   runApp(const QuranApp());
 }
 

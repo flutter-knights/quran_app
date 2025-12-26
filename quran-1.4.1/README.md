@@ -1,0 +1,268 @@
+[![pub package](https://img.shields.io/pub/v/quran.svg)](https://pub.dev/packages/quran)
+[![npm package](https://img.shields.io/npm/v/quran-db.svg)](https://www.npmjs.com/package/quran-db)
+
+Quran text (Arabic), audio URLs, and details of pages, juz, surah, ayah, place of revelation etc.
+
+## Getting Started
+
+To use this plugin, add `quran` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
+
+**Constants:**
+
+-   **`basmala`** - The constant 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
+-   **`sajdah`** - The constant 'سَجْدَةٌ'
+-   **`totalJuzCount`** - The constant total juz count
+-   **`totalMadaniSurahs`** - The constant total of madani surahs
+-   **`totalMakkiSurahs`** - The constant total of makki surahs
+-   **`totalPagesCount`** - The most standard and common copy of Arabic only Quran total pages count
+-   **`totalSurahCount`** - The constant total surah count
+-   **`totalVerseCount`** - The constant total verse count
+
+**Functions:**
+
+**_Juz:_**
+
+-   **`getJuzNumber(int surahNumber, int verseNumber)`** - Takes [surahNumber] & [verseNumber] and returns Juz number
+-   **`getSurahAndVersesFromJuz(int juzNumber)`** - Takes [juzNumber] and returns a map containing Surah and Verse numbers
+
+**_Surah:_**
+
+-   **`getSurahName(int surahNumber)`** - Takes [surahNumber] and returns the Surah name
+-   **`getSurahNameArabic(int surahNumber)`** - Takes [surahNumber] returns the Surah name in Arabic
+-   **`getSurahNameEnglish(int surahNumber)`** - Takes [surahNumber] returns the Surah name in English
+-   **`getSurahNameTurkish(int surahNumber)`** - Takes [surahNumber] returns the Surah name in Turkish
+-   **`getSurahNameFrench(int surahNumber)`** - Takes [surahNumber] returns the Surah name in French
+-   **`getPlaceOfRevelation(int surahNumber)`** - Takes [surahNumber] and returns the Place of Revelation (Makkah / Madinah) of that Surah
+-   **`getVerseCount(int surahNumber)`** - Takes [surahNumber] and returns the count of total Verses in that Surah
+
+**_Verse:_**
+
+-   **`getVerse(int surahNumber, int verseNumber, {bool verseEndSymbol})`** - Takes [surahNumber], [verseNumber] & [verseEndSymbol] (optional) and returns the Verse in Arabic
+-   **`getVerseEndSymbol(int verseNumber, {bool arabicNumeral})`** - Takes [verseNumber], [arabicNumeral] (optional) and returns '۝' symbol with verse number
+-   **`isSajdahVerse(int surahNumber, int verseNumber)`** - Takes [surahNumber], [verseNumber] and returns true if verse is sajdah verse
+-   **`getVerseTranslation(int surahNumber, int verseNumber, {bool verseEndSymbol, Translation translation})`** - Takes [surahNumber], [verseNumber], [verseEndSymbol] (optional) & [translation] (optional) and returns verse translation
+
+-   Random Verse - Use `RandomVerse` class to create a random verse. Example:
+    ```dart
+    RandomVerse randomVerse = RandomVerse();
+    print(randomVerse.surahNumber);
+    print(randomVerse.verseNumber);
+    print(randomVerse.verse);
+    print(randomVerse.translation);
+    ```
+
+**_Page:_**
+
+-   **`getPageData(int pageNumber)`** - Takes [pageNumber] and returns a list containing Surahs and the starting and ending Verse numbers in that page
+-   **`getPageNumber(int surahNumber, int verseNumber)`** - Takes [surahNumber], [verseNumber] and returns the page number of the Quran
+-   **`getSurahCountByPage(int pageNumber)`** - Takes [pageNumber] and returns total surahs count in that page
+-   **`getSurahPages(int surahNumber)`** - Takes [surahNumber] and returns the list of page numbers of that surah
+-   **`getVerseCountByPage(int pageNumber)`** - Takes [pageNumber] and returns total verses count in that page
+-   **`getVersesTextByPage(int pageNumber, {bool verseEndSymbol, SurahSeperator surahSeperator, customSurahSeperator})`** - Takes [pageNumber], [verseEndSymbol], [surahSeperator] & [customSurahSeperator] and returns the list of verses in that page
+
+**_URLs:_**
+
+-   **`getAudioURLBySurah(int surahNumber, { Reciter reciter = Reciter.arAlafasy, int bitrate = 128 })`** - Takes [surahNumber] and returns audio URL of that surah
+-   **`getAudioURLByVerse(int surahNumber, int verseNumber, { Reciter reciter = Reciter.arAlafasy, int bitrate = 128 })`** - Takes [surahNumber] & [verseNumber] and returns audio URL of that verse
+-   **`getAudioURLByVerseNumber(int verseNumber, { Reciter reciter = Reciter.arAlafasy, int bitrate = 128 })`** - Takes [verseNumber] and returns audio URL of that verse
+-   **`getJuzURL(int juzNumber)`** - Takes [juzNumber] and returns Juz URL (from Quran.com)
+-   **`getSurahURL(int surahNumber)`** - Takes [surahNumber] and returns Surah URL (from Quran.com)
+-   **`getVerseURL(int surahNumber, int verseNumber)`** - Takes [surahNumber] & [verseNumber] and returns Verse URL (from Quran.com)
+
+> Notes
+> - Defaults preserve existing behavior: Alafasy at 128 kbps.
+> - Common bitrates: 64, 128, 192 (availability may vary per reciter).
+
+### Reciters
+
+You can choose a reciter via the `Reciter` enum. Each has a human-friendly `englishName` for display. Examples:
+
+```dart
+getAudioURLBySurah(1, reciter: Reciter.arHusary); // Husary
+getAudioURLByVerse(2, 255, reciter: Reciter.arAlafasy, bitrate: 64);
+getAudioURLByVerseNumber(1234, reciter: Reciter.arShaatree, bitrate: 192);
+```
+
+Available reciters:
+
+- Reciter.arAlafasy (Alafasy)
+- Reciter.arHusary (Husary)
+- Reciter.arAhmedAjamy (Ahmed al-Ajamy)
+- Reciter.arHudhaify (Hudhaify)
+- Reciter.arMaherMuaiqly (Maher Al Muaiqly)
+- Reciter.arMuhammadAyyoub (Muhammad Ayyoub)
+- Reciter.arMuhammadJibreel (Muhammad Jibreel)
+- Reciter.arMinshawi (Minshawi)
+- Reciter.arShaatree (Abu Bakr Ash-Shaatree)
+
+**_Search:_**
+
+-   **`searchWords(List<String> words)`** - Takes a list of words [words] and returns a map containing no. of occurences and result of the word search in the arabic quran text
+-   **`searchWordsInTranslation(List<String> words, {Translation translation})`** - Takes a list of words [words] and [translation] (optional) and returns a map containing no. of occurences and result of the word search in the traslation
+
+**Translations:**
+
+-   English (Saheeh International) - **`Translation.enSaheeh`**
+-   English (Clear Quran) - **`Translation.enClearQuran`**
+-   French (Muhammad Hamidullah) - **`Translation.frHamidullah`**
+-   Turkish - **`Translation.trSaheeh`**
+-   Malayalam (Cheriyamundam Abdul Hameed and Kunhi Mohammed Parappoor) - **`Translation.mlAbdulHameed`**
+-   Farsi - **`Translation.faHusseinDari`**
+-   Portuguese - **`Translation.portuguese`**
+-   Italian - **`Translation.itPiccardo`**
+-   Dutch - **`Translation.nlSiregar`**
+-   Russian - **`Translation.ruKuliev`**
+-   Bengali - **`Translation.bengali`**
+-   Chinese - **`Translation.chinese`**
+-   Swedish - **`Translation.swedish`**
+-   Spanish - **`Translation.spanish`**
+-   Urdu - **`Translation.urdu`**
+-   Indonesian - **`Translation.indonesian`**
+
+## Font Setup
+
+It is recommended to use [google_fonts](https://pub.dev/packages/google_fonts) package and use the following fonts for better Quranic text display:
+
+-   **Amiri** - **`GoogleFonts.amiri()`**
+-   **Amiri Quran** - **`GoogleFonts.amiriQuran()`**
+
+#### Setup
+
+Add the following dependencies in your `pubspec.yaml`:
+
+```yaml
+dependencies:
+    flutter:
+        sdk: flutter
+    google_fonts: ^2.1.0
+    quran: ^1.2.3
+```
+
+#### Usage Example
+
+Setting font globally:
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    textTheme: GoogleFonts.amiriTextTheme(),
+  ),
+);
+```
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    textTheme: GoogleFonts.amiriQuranTextTheme(),
+  ),
+);
+```
+
+For specific text:
+
+```dart
+Text(
+  quran.basmala,
+  style: GoogleFonts.amiri(),
+),
+```
+
+```dart
+Text(
+  quran.getVerse(18, 1),
+  style: GoogleFonts.amiriQuran(),
+),
+```
+
+## Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:quran/quran.dart' as quran;
+
+void main() {
+  runApp(MaterialApp(
+    home: Scaffold(
+      appBar: AppBar(
+        title: Text("Quran Demo"),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Juz Number: \n" + quran.getJuzNumber(18, 1).toString()),
+              Text("\nJuz URL: \n" + quran.getJuzURL(15)),
+              Text("\nSurah and Verses in Juz 15: \n" + quran.getSurahAndVersesFromJuz(15).toString()),
+              Text("\nSurah Name: \n" + quran.getSurahName(18)),
+              Text("\nSurah Name (English): \n" + quran.getSurahNameEnglish(18)),
+              Text("\nSurah URL: \n" + quran.getSurahURL(18)),
+              Text("\nTotal Verses: \n" + quran.getVerseCount(18).toString()),
+              Text("\nPlace of Revelation: \n" + quran.getPlaceOfRevelation(18)),
+              Text(
+                "\nBasmala: \n${quran.basmala}",
+                style: GoogleFonts.amiriQuran(),
+              ),
+              Text(
+                "\nVerse 1: \n${quran.getVerse(18, 1)}",
+                style: GoogleFonts.amiriQuran(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  ));
+}
+```
+
+![example](https://raw.githubusercontent.com/aqeelshamz/quran/main/images/1.png)
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:quran/quran.dart' as quran;
+
+void main() {
+  runApp(
+    MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text(quran.getSurahName(18)),
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(15.0),
+            child: ListView.builder(
+              itemCount: quran.getVerseCount(18),
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(
+                    quran.getVerse(18, index + 1, verseEndSymbol: true),
+                    textAlign: TextAlign.right,
+                    style: GoogleFonts.amiri(),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+```
+
+![example2](https://raw.githubusercontent.com/aqeelshamz/quran/main/images/2.png)
+
+# Contributors
+
+<a href = "https://github.com/aqeelshamz/quran/contributors">
+  <img src = "https://contrib.rocks/image?repo=aqeelshamz/quran"/>
+</a>
+
+ﺭَﺑَّﻨَﺎ ﺗَﻘَﺒَّﻞْ ﻣِﻨَّﺎ 🤲 (Our Lord, accept this from us)
+
+Include us in your sincere duas. Jazakallah Khairan.
