@@ -25,18 +25,21 @@ class LocationRepositoryImpl extends LocationRepository {
   Future<Either<Failure, Location>> getCurrentLocation() async {
     final Position position = await locationRemoteDataSource
         .determinePosition();
+
+    final cachedLocation = locationLocalDataSource.getCached();
     if (!isLocationChanged(position)) {
-      return Right(locationLocalDataSource.getCached()!);
+      return Right(cachedLocation!);
     }
     try {
       final Location location = await locationRemoteDataSource
           .getCurrentLocation(position);
       locationLocalDataSource.cache(location);
       return Right(location);
+    } on LocationException catch (e) {
+      if (cachedLocation != null) return Right(cachedLocation);
+      return left(GeolocatorErrorHandler.handle(e));
     } on DioException catch (e) {
       return left(DioErrorHandler.handle(e));
-    } on LocationException catch (e) {
-      return left(GeolocatorErrorHandler.handle(e));
     } catch (e) {
       return left(UnknownFailure(e.toString()));
     }
@@ -53,7 +56,7 @@ class LocationRepositoryImpl extends LocationRepository {
       cachedLocation.latitude,
       cachedLocation.longitude,
     );
-    if (distance < 20) return false;
+    if (distance < 20000) return false;
     prayerTimesLocalDataSource.clearCache();
     return true;
   }

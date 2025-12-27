@@ -23,7 +23,9 @@ class SinglePrayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = context.colorScheme.primary.withValues(alpha: 0.3);
+    final activeColor = context.colorScheme.surfaceContainerHigh.withValues(
+      alpha: 0.6,
+    );
     final inactiveColor = Colors.transparent;
     final cardRadius = BorderRadius.circular(8);
     return Expanded(
@@ -46,16 +48,29 @@ class SinglePrayerCard extends StatelessWidget {
                     ),
 
                     Text(
-                      is24
-                          ? time24.toLocalized(context)
-                          : time24
+                          time24.toLocalized(context),
+                          style: TS.medium14
+                              .copyWith(
+                                color: context.colorScheme.onSurfaceVariant,
+                              )
+                              .cairo,
+                        )
+                        .animate(target: is24 ? 0 : 1)
+                        .fadeOut(duration: 200.ms)
+                        .swap(
+                          duration: 200.ms,
+                          builder: (_, __) => Text(
+                            time24
                                 .parse24hTime()
                                 .format12h(context)
                                 .toLocalized(context),
-                      style: TS.medium14
-                          .copyWith(color: context.colorScheme.onSurfaceVariant)
-                          .cairo,
-                    ),
+                            style: TS.medium14
+                                .copyWith(
+                                  color: context.colorScheme.onSurfaceVariant,
+                                )
+                                .cairo,
+                          ).animate().fadeIn(duration: 200.ms),
+                        ),
                   ],
                 )
                 .animate(target: isCurrent ? 1 : 0)
