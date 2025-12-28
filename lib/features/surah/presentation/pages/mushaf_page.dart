@@ -31,10 +31,9 @@ class _MushafPageState extends State<MushafPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView.builder(
-        // reverse: true,
         itemCount: 604,
         itemBuilder: (context, index) {
-          int pageNumber = index + 1;
+          int pageNumber = 604 - index;
           return MushafPageContent(pageNumber: pageNumber);
         },
       ),

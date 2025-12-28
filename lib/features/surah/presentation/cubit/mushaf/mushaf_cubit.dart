@@ -12,8 +12,8 @@ class MushafCubit extends Cubit<MushafState> {
     emit(MushafLoading());
 
     try {
-      final page = await useCase.call(pageNumber);
-      emit(MushafLoaded(page));
+      final pageContent = await useCase.call(pageNumber);
+      emit(MushafLoaded(pageContent));
     } catch (e) {
       emit(MushafError(e.toString()));
     }

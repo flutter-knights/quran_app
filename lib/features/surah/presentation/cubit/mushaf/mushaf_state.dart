@@ -7,9 +7,9 @@ class MushafInitial extends MushafState {}
 class MushafLoading extends MushafState {}
 
 class MushafLoaded extends MushafState {
-  final MushafPageEntity page;
+  final MushafPageEntity pageContent;
 
-  MushafLoaded(this.page);
+  MushafLoaded(this.pageContent);
 }
 
 class MushafError extends MushafState {

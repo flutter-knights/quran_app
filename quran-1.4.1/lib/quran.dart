@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:quran/qcf_surah_juz_names.dart';
+
 import './translations/en_saheeh.dart';
 import './translations/en_clear_quran.dart';
 import './translations/ru_kuliev.dart';
@@ -212,6 +214,20 @@ int getVerseCount(int surahNumber) {
     throw "No verse found with given surahNumber";
   }
   return int.parse(surah[surahNumber - 1]['aya'].toString());
+}
+
+String getQcfSurahName(int surahNumber) {
+  final glyph = qcfSurahNames[surahNumber];
+  final surahWord = qcfSurahNames[0];
+  if (glyph == null || surahWord == null) throw "Invalid surahNumber";
+  return surahWord + glyph;
+}
+
+String getQcfJuzName(int juzNumber) {
+  final glyph = qcfJuzNames[juzNumber];
+  final juzWord = qcfJuzNames[0];
+  if (glyph == null || juzWord == null) throw "Invalid juzNumber";
+  return juzWord + glyph;
 }
 
 ///Takes [surahNumber], [verseNumber] & [verseEndSymbol] (optional) and returns the Verse in Arabic

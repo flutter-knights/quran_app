@@ -92,6 +92,10 @@ flutter:
       fonts:
         - asset: assets/fonts/Uthmanic.otf
 
+    - family: QCF_P000
+      fonts:
+        - asset: assets\fonts\QCF\QCF2BSML.ttf
+
     - family: QCF_P001
       fonts:
         - asset: assets\fonts\QCF\QCF2001.ttf
