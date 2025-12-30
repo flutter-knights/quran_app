@@ -12,6 +12,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await initHydratedCubit();
   await initHive();
   await initGetIt();
@@ -34,6 +35,7 @@ class QuranApp extends StatelessWidget {
         final settings = state.settingsModel;
 
         return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
           title: 'Quran',
           theme: settings.isDarkMode ? darkTheme : lightTheme,
           themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,

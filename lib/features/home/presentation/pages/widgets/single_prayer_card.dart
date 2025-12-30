@@ -23,9 +23,7 @@ class SinglePrayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = context.colorScheme.surfaceContainerHigh.withValues(
-      alpha: 0.6,
-    );
+    final activeColor = context.colorScheme.surfaceContainer;
     final inactiveColor = Colors.transparent;
     final cardRadius = BorderRadius.circular(8);
     return Expanded(
@@ -38,18 +36,22 @@ class SinglePrayerCard extends StatelessWidget {
                   mainAxisSize: .min,
                   crossAxisAlignment: .center,
                   children: [
-                    Text(prayerName, style: TS.medium14.cairo),
+                    Text(prayerName, style: TS.bold14.cairo),
                     SizedBox(
                       height: 24,
                       child: SvgPicture.asset(
                         iconDir,
                         alignment: .bottomCenter,
+                        colorFilter: .mode(
+                          context.colorScheme.onSurface,
+                          .srcIn,
+                        ),
                       ),
                     ),
 
                     Text(
                           time24.toLocalized(context),
-                          style: TS.medium14
+                          style: TS.bold12
                               .copyWith(
                                 color: context.colorScheme.onSurfaceVariant,
                               )
@@ -59,12 +61,12 @@ class SinglePrayerCard extends StatelessWidget {
                         .fadeOut(duration: 200.ms)
                         .swap(
                           duration: 200.ms,
-                          builder: (_, __) => Text(
+                          builder: (_, _) => Text(
                             time24
                                 .parse24hTime()
                                 .format12h(context)
                                 .toLocalized(context),
-                            style: TS.medium14
+                            style: TS.bold12
                                 .copyWith(
                                   color: context.colorScheme.onSurfaceVariant,
                                 )

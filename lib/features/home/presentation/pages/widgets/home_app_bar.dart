@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
@@ -14,11 +15,12 @@ class HomeAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 16, top: 2),
+      padding: const EdgeInsets.only(top: 2),
       child: Row(
         crossAxisAlignment: .start,
         mainAxisAlignment: .spaceBetween,
         children: [
+          Gap(16),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 14),
@@ -53,6 +55,7 @@ class HomeAppBar extends StatelessWidget {
             onPressed: () => showSettings(context),
             icon: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, size: 28),
           ),
+          Gap(2),
         ],
       ),
     );

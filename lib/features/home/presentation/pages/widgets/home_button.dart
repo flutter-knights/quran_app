@@ -31,12 +31,16 @@ class HomeButton extends StatelessWidget {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainerHigh,
+                    color: context.colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: HugeIcon(icon: icon, strokeWidth: 1),
+                    child: HugeIcon(
+                      icon: icon,
+                      strokeWidth: 1,
+                      color: context.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
@@ -46,7 +50,7 @@ class HomeButton extends StatelessWidget {
                 overflow: .ellipsis,
                 maxLines: 1,
                 textAlign: .center,
-                style: TS.regular14,
+                style: TS.semi14,
               ),
             ],
           ),
