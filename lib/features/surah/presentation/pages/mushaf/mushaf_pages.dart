@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:quran_app/features/surah/presentation/pages/widgets/mushaf_page_content.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_content.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class MushafPage extends StatefulWidget {

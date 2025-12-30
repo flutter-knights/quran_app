@@ -37,6 +37,7 @@ class QuranApp extends StatelessWidget {
           title: 'Quran',
           theme: settings.isDarkMode ? darkTheme : lightTheme,
           themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          debugShowCheckedModeBanner: false,
           locale: settings.isArabic ? const Locale('ar') : const Locale('en'),
           supportedLocales: S.delegate.supportedLocales,
           localizationsDelegates: const [

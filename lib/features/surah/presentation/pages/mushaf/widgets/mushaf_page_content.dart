@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
 
-import '../../../data/datasources/mushaf_local_data_source.dart';
-import '../../../data/repositories/mushaf_repo_impl.dart';
-import '../../../domain/usecases/get_mushaf_page.dart';
-import '../../cubit/mushaf/mushaf_cubit.dart';
-import '../../cubit/mushaf/mushaf_state.dart';
+import '../../../../data/datasources/mushaf_local_data_source.dart';
+import '../../../../data/repositories/mushaf_repo_impl.dart';
+import '../../../../domain/usecases/get_mushaf_page.dart';
+import '../../../cubit/mushaf/mushaf_cubit.dart';
+import '../../../cubit/mushaf/mushaf_state.dart';
 
 class MushafPageContent extends StatelessWidget {
   final int pageNumber;
