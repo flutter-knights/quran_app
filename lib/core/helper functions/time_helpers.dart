@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 extension DateTimeFormatting on DateTime {
-  String toReadableTime(BuildContext context) {
-    final locale = Localizations.localeOf(context).languageCode;
-    return DateFormat.jm(locale).format(this);
-  }
-
   String to24hTime() {
     return DateFormat.Hm().format(this);
   }
@@ -17,10 +12,10 @@ extension DateTimeFormatting on DateTime {
   }
 }
 
-abstract class TimeHelpers {
-  static DateTime parse24hTime({required String time}) {
+extension StringTimes on String {
+  DateTime parse24hTime() {
     final now = DateTime.now();
-    final parts = time.split(':');
+    final parts = split(':');
 
     return DateTime(
       now.year,
@@ -29,5 +24,9 @@ abstract class TimeHelpers {
       int.parse(parts[0]),
       int.parse(parts[1]),
     );
+  }
+
+  String removeTimeZone() {
+    return split(' ').first;
   }
 }

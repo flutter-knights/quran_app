@@ -4,6 +4,7 @@ import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/features/home/domain/entities/daily_prayer_context.dart';
+import 'package:quran_app/features/home/presentation/pages/widgets/settings_bottom_sheet.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class HomeAppBar extends StatelessWidget {
@@ -49,7 +50,7 @@ class HomeAppBar extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () => showSettings(context),
             icon: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, size: 28),
           ),
         ],

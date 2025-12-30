@@ -17,7 +17,9 @@ class PrayerTimeRemoteDataSource {
     );
     final prayerTimesResponseData = prayerTimesResponse.data['data'];
     return prayerTimesResponseData
-        .map((dayPrayerTimes) => PrayerTimesModel.fromJson(dayPrayerTimes))
+        .map<PrayerTimesModel>(
+          (dayPrayerTimes) => PrayerTimesModel.fromJson(dayPrayerTimes),
+        )
         .toList();
   }
 }

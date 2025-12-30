@@ -1,31 +1,37 @@
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
+import 'package:quran_app/core/helper%20functions/time_helpers.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 
 class PrayerTimesModel extends PrayerTimes {
-  PrayerTimesModel({required super.timings, required super.date});
+  PrayerTimesModel({
+    required super.timings,
+    required super.date,
+    required super.key,
+  });
 
-  factory PrayerTimesModel.fromJson(
-    Map<String, dynamic> json, {
-    String languageCode = 'ar',
-  }) {
-    final timings = json['data']['timings'];
-    final date = json['data']['date']['hijri'];
+  factory PrayerTimesModel.fromJson(Map<String, dynamic> json) {
+    final timings = json['timings'];
+    final date = json['date']['hijri'];
+    final key = json['date']['gregorian']['date'];
 
     return PrayerTimesModel(
       timings: {
-        PrayerName.fajr: timings['Fajr'],
-        PrayerName.sunrise: timings['Sunrise'],
-        PrayerName.dhuhr: timings['Dhuhr'],
-        PrayerName.asr: timings['Asr'],
-        PrayerName.maghrib: timings['Maghrib'],
-        PrayerName.isha: timings['Isha'],
+        PrayerName.fajr: timings['Fajr'].toString().removeTimeZone(),
+        PrayerName.sunrise: timings['Sunrise'].toString().removeTimeZone(),
+        PrayerName.dhuhr: timings['Dhuhr'].toString().removeTimeZone(),
+        PrayerName.asr: timings['Asr'].toString().removeTimeZone(),
+        PrayerName.maghrib: timings['Maghrib'].toString().removeTimeZone(),
+        PrayerName.isha: timings['Isha'].toString().removeTimeZone(),
       },
       date: Date(
-        month: date['month'][languageCode],
+        month: date['month']['ar'],
+        enMonth: date['month']['en'],
         day: date['day'],
         year: date['year'],
-        weekDay: date['weekday'][languageCode],
+        weekDay: date['weekday']['ar'],
+        enWeekDay: date['weekday']['en'],
       ),
+      key: key,
     );
   }
 }

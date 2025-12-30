@@ -29,14 +29,20 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
 
   void _emitTick() {
     DateTime now = DateTime.now();
-    Duration remainingTime = Duration(hours: 1);
-    PrayerName currentPrayer = PrayerName.maghrib;
-    PrayerName nextPrayer = PrayerName.dhuhr;
+    DateTime fajrTime = _dailyPrayerContext
+        .prayerTimes
+        .timings[PrayerName.fajr]!
+        .parse24hTime()
+        .add(1.days);
+
+    Duration remainingTime = fajrTime.difference(now);
+    PrayerName currentPrayer = PrayerName.isha;
+    PrayerName nextPrayer = PrayerName.fajr;
 
     for (PrayerName prayerName in prayersList) {
-      DateTime prayerTime = TimeHelpers.parse24hTime(
-        time: _dailyPrayerContext.prayerTimes.timings[prayerName]!,
-      );
+      DateTime prayerTime = _dailyPrayerContext.prayerTimes.timings[prayerName]!
+          .parse24hTime();
+
       if (now.isAfter(prayerTime)) {
         currentPrayer = prayerName;
         continue;
