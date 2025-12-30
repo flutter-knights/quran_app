@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:go_transitions/go_transitions.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf_page.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf_pages.dart';
 import 'package:quran_app/features/surah/presentation/pages/surah_list_page.dart';
 
 abstract class AppRouter {

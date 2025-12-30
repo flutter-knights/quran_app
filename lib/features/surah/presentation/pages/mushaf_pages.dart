@@ -33,7 +33,7 @@ class _MushafPageState extends State<MushafPage> {
       body: PageView.builder(
         itemCount: 604,
         itemBuilder: (context, index) {
-          int pageNumber = 604 - index;
+          int pageNumber = index + 1;
           return MushafPageContent(pageNumber: pageNumber);
         },
       ),
