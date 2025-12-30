@@ -14,39 +14,45 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            BlocBuilder<DailyPrayerContextCubit, DailyPrayerContextState>(
-              builder: (context, state) {
-                if (state is DailyPrayerContextLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (state is DailyPrayerContextFailed) {
-                  return Center(child: Text(state.error));
-                }
-                if (state is DailyPrayerContextLoaded) {
-                  context.read<PrayerCountdownCubit>().startTimer(
-                    state.dailyPrayerContext,
-                  );
-
-                  return Column(
-                    children: [
-                      HomeAppBar(dailyPrayerContext: state.dailyPrayerContext),
-                      UpcomingPrayer(),
-                      PrayersList(
-                        prayerTimes: state.dailyPrayerContext.prayerTimes,
-                      ),
-                    ],
-                  );
-                }
-
-                return SizedBox();
-              },
-            ),
-
-              HomeActionButtons(),
-            
-          ],
+        child: BlocListener<DailyPrayerContextCubit, DailyPrayerContextState>(
+          listener: (context, state) {
+            if (state is DailyPrayerContextLoaded) {
+              context.read<PrayerCountdownCubit>().startTimer(
+                state.dailyPrayerContext,
+              );
+            }
+          },
+          child: Column(
+            children: [
+              BlocBuilder<DailyPrayerContextCubit, DailyPrayerContextState>(
+                builder: (context, state) {
+                  if (state is DailyPrayerContextLoading) {
+                    return const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (state is DailyPrayerContextFailed) {
+                    return Expanded(child: Center(child: Text(state.error)));
+                  }
+                  if (state is DailyPrayerContextLoaded) {
+                    return Column(
+                      children: [
+                        HomeAppBar(
+                          dailyPrayerContext: state.dailyPrayerContext,
+                        ),
+                        UpcomingPrayer(),
+                        PrayersList(
+                          prayerTimes: state.dailyPrayerContext.prayerTimes,
+                        ),
+                      ],
+                    );
+                  }
+                  return const SizedBox();
+                },
+              ),
+              const HomeActionButtons(),
+            ],
+          ),
         ),
       ),
     );

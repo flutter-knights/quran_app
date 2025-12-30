@@ -1,16 +1,17 @@
-
 import 'package:flutter/material.dart';
 
-abstract class AppColors {
-  static const carbonBlack = Color(0xFF161B1D);
-  static const jetBlack = Color(0xFF21282C);
-  static const jetBlack2 = Color(0xFF2B363B);
-  static const blueSlate = Color(0xFF3F6274);
-  static const airForceBlue = Color(0xFF538EAC);
-  static const silver = Color(0xFFBFBFBF);
-  static const alabasterGrey = Color(0xFFE6E6E6);
-  static const mintLeaf = Color(0xFF53AC7A);
-  static const dustyMauve = Color(0xFFAC5353);
+class AppColors {
+  // --- Core Palette (Dark/Onyx) ---
+  static const Color onyx = Color(0xFF081815); // Background Layer 0
+  static const Color evergreen = Color(0xFF0C231F); // Surface Layer 1 (Card)
+  static const Color pineTeal = Color(0xFF134E3E); // Primary / Layer 2
+  static const Color deepTeal = Color(0xFF4A7C6A); // Secondary / UI Accent
+
+  // --- Neutrals & Accents ---
+  static const Color greyOlive = Color(0xFF8B9A94); // Caption Gray
+  static const Color brightSnow = Color(
+    0xFFF8F9F8,
+  ); // Light Mode Base / Dark Text
+  static const Color lightMist = Color(0xFFE9E9E9); // Light Mode Container
+  static const Color lightCoral = Color(0xFFE67E7E); // Error Color
 }
-
-

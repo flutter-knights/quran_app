@@ -16,7 +16,7 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
   late DailyPrayerContext _dailyPrayerContext;
 
   Timer? _timer;
-
+  bool _isRefreshed = false;
   void startTimer(DailyPrayerContext dailyPrayerContext) {
     _dailyPrayerContext = dailyPrayerContext;
 
@@ -29,40 +29,46 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
 
   void _emitTick() {
     DateTime now = DateTime.now();
-    DateTime fajrTime = _dailyPrayerContext
-        .prayerTimes
-        .timings[PrayerName.fajr]!
-        .parse24hTime()
-        .add(1.days);
 
-    Duration remainingTime = fajrTime.difference(now);
     PrayerName currentPrayer = PrayerName.isha;
     PrayerName nextPrayer = PrayerName.fajr;
 
+    DateTime targetNextPrayerTime = _dailyPrayerContext
+        .prayerTimes
+        .timings[PrayerName.fajr]!
+        .parse24hTime(date: _dailyPrayerContext.date.gregorianDate())
+        .add(1.days);
+
     for (PrayerName prayerName in prayersList) {
       DateTime prayerTime = _dailyPrayerContext.prayerTimes.timings[prayerName]!
-          .parse24hTime();
+          .parse24hTime(date: _dailyPrayerContext.date.gregorianDate());
 
       if (now.isAfter(prayerTime)) {
         currentPrayer = prayerName;
         continue;
       }
+
       if (now.isBefore(prayerTime)) {
-        remainingTime = prayerTime.difference(now);
+        targetNextPrayerTime = prayerTime;
         nextPrayer = prayerName;
         break;
       }
     }
-
     emit(
       PrayerCountdownTick(
         PrayerCountdown(
           currentPrayer: currentPrayer,
           nextPrayer: nextPrayer,
-          remainingTime: remainingTime,
+          remainingTime: targetNextPrayerTime.difference(now),
         ),
       ),
     );
+    if (currentPrayer == PrayerName.isha &&
+        now.day == _dailyPrayerContext.date.gregorianDate().day &&
+        !_isRefreshed) {
+      _isRefreshed = true;
+      emit(PrayerCountdownRequestRefresh());
+    }
   }
 
   @override

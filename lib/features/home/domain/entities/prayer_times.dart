@@ -19,6 +19,7 @@ class Date {
   final String day;
   final String enMonth;
   final String enWeekDay;
+  final String gregorianDate;
 
   Date({
     required this.month,
@@ -27,5 +28,6 @@ class Date {
     required this.year,
     required this.enMonth,
     required this.enWeekDay,
+    required this.gregorianDate,
   });
 }

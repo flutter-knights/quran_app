@@ -15,3 +15,5 @@ final class PrayerCountdownTick extends PrayerCountdownState {
   @override
   List<Object> get props => [prayerCountdown];
 }
+
+class PrayerCountdownRequestRefresh extends PrayerCountdownState {}

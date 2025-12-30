@@ -2,9 +2,9 @@ import 'package:hive/hive.dart'; // Change to standard hive for annotations
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 
-part 'prayer_times_hive_model.g.dart'; 
+part 'prayer_times_hive_model.g.dart';
 
-@HiveType(typeId: 0) 
+@HiveType(typeId: 0)
 class PrayerTimesHiveModel extends HiveObject {
   @HiveField(0)
   final String fajr;
@@ -40,10 +40,10 @@ class PrayerTimesHiveModel extends HiveObject {
   @override
   final String key;
 
-  @HiveField(11) 
+  @HiveField(11)
   final String enHijriMonth;
 
-  @HiveField(12) 
+  @HiveField(12)
   final String enHijriWeekDay;
 
   PrayerTimesHiveModel({
@@ -102,6 +102,7 @@ extension PrayerTimesHiveMapper on PrayerTimesHiveModel {
         day: hijriDay,
         enMonth: enHijriMonth,
         enWeekDay: enHijriWeekDay,
+        gregorianDate: key,
       ),
     );
   }

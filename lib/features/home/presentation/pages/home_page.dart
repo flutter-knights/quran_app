@@ -16,9 +16,16 @@ class HomePage extends StatelessWidget {
           create: (_) =>
               sl<DailyPrayerContextCubit>()..fetchDailyPrayerContext(),
         ),
-        BlocProvider(create: (_) => sl<PrayerCountdownCubit>()),
+        BlocProvider(create: (_) => PrayerCountdownCubit()),
       ],
-      child: HomeView(),
+      child: BlocListener<PrayerCountdownCubit, PrayerCountdownState>(
+        listener: (context, state) {
+          if (state is PrayerCountdownRequestRefresh) {
+            sl<DailyPrayerContextCubit>().fetchDailyPrayerContext();
+          }
+        },
+        child: HomeView(),
+      ),
     );
   }
 }
