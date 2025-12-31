@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:quran_app/config/theme/typography_styles.dart';
 
 import 'surah_segment_selector.dart';
 

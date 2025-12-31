@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 
@@ -7,6 +8,8 @@ import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../core/constants/assets_dir.dart';
 import '../../../../../../core/helper functions/locale_helpers.dart';
 import '../../../../../../core/widgets/last_quran_read.dart';
+import '../../../../domain/entities/surah_entity.dart';
+import '../../../cubit/surah/surah_cubit.dart';
 import 'search_delegate.dart';
 import 'surah_list_app_bar.dart';
 import 'surah_search_bar.dart';
@@ -62,17 +65,30 @@ class SurahListSelection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
-        return SurahListTile(index: index + 1);
-      }, childCount: 114),
+    return BlocBuilder<SurahCubit, List<SurahEntity>>(
+      builder: (context, surahs) {
+        return SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final surah = surahs[index];
+            return SurahListTile(surah: surah);
+          }, childCount: surahs.length),
+        );
+      },
     );
   }
 }
 
 class SurahListTile extends StatelessWidget {
-  final int index;
-  const SurahListTile({super.key, required this.index});
+  final SurahEntity surah;
+
+  const SurahListTile({super.key, required this.surah});
+  String ayahLabel(int count) {
+    if (count > 10) {
+      return "آية";
+    } else {
+      return "آيات";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +111,7 @@ class SurahListTile extends StatelessWidget {
                 textDirection: context.isArabic ? .rtl : .ltr,
                 children: [
                   Text(
-                    "سُورَةُ الفَاتِحَةِ",
+                    "سُورَةُ ${surah.name}",
                     style: TS.bold20,
                     overflow: .ellipsis,
                   ),
@@ -104,14 +120,14 @@ class SurahListTile extends StatelessWidget {
                     spacing: 6,
                     children: [
                       Text(
-                        "مكية",
+                        "${surah.revelationType} ",
                         style: TS.regular15.copyWith(
                           color: context.colorScheme.onSurfaceVariant,
                         ),
                       ),
                       CirclerBullet(),
                       Text(
-                        "7 آيات",
+                        "${surah.numberOfAyahs} ${ayahLabel(surah.numberOfAyahs)}",
                         style: TS.regular15.copyWith(
                           color: context.colorScheme.onSurfaceVariant,
                         ),
@@ -119,7 +135,7 @@ class SurahListTile extends StatelessWidget {
                       CirclerBullet(),
 
                       Text(
-                        "7 صفحة",
+                        "صفحة${surah.pageNumber}",
                         style: TS.regular15.copyWith(
                           color: context.colorScheme.onSurfaceVariant,
                         ),
@@ -128,7 +144,7 @@ class SurahListTile extends StatelessWidget {
                   ),
                 ],
               ),
-              SurahNumberStar(surahNumber: index),
+              SurahNumberStar(surahNumber: surah.number),
             ],
           ),
         ),

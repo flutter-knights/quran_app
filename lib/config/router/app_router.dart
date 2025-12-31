@@ -1,9 +1,13 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_transitions/go_transitions.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
+import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_pages.dart';
 import 'package:quran_app/features/surah/presentation/pages/surah_list/surah_list_page.dart';
+
+import '../../core/di/dependency_injection.dart';
 
 abstract class AppRouter {
   static const String homePath = "/home";
@@ -29,7 +33,10 @@ abstract class AppRouter {
       GoRoute(
         path: surahListPath,
         pageBuilder: GoTransitions.fade.withScale.build(
-          builder: (context, state) => SurahListPage(),
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<SurahCubit>()..fetchSurahs(),
+            child: SurahListPage(),
+          ),
         ),
       ),
       GoRoute(

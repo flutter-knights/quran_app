@@ -49,9 +49,19 @@ class _SurahSegmentSelectorState extends State<SurahSegmentSelector> {
                 child: GestureDetector(
                   onTap: () => setState(() => selected = index),
                   child: Container(
-                    margin: EdgeInsets.symmetric(
-                      horizontal: index == 3 ? 4 : 16,
+                    padding: .only(
+                      left: context.isArabic
+                          ? index == 3
+                                ? 0
+                                : 30
+                          : 0,
+                      right: !context.isArabic
+                          ? index == 3
+                                ? 0
+                                : 30
+                          : 0,
                     ),
+
                     child: Center(
                       child: Text(
                         options[index],
@@ -77,12 +87,12 @@ class _SurahSegmentSelectorState extends State<SurahSegmentSelector> {
   double _calculatePosition(int index) {
     final containerWidth = MediaQuery.of(context).size.width - 32;
     final segmentWidth = containerWidth / options.length;
-    return (segmentWidth * index) + (index == 3 ? 4 : 16);
+    return (segmentWidth * index) + (index == 3 ? 4 : 4);
   }
 
   double _calculateWidth(int index) {
     final containerWidth = MediaQuery.of(context).size.width - 32;
     final segmentWidth = containerWidth / options.length;
-    return segmentWidth - (index == 3 ? 8 : 32);
+    return segmentWidth - (index == 3 ? 8 : 38);
   }
 }
