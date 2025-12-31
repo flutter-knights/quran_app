@@ -108,6 +108,96 @@ class S {
       args: [weekday, day, month, year],
     );
   }
+
+  /// `Sahih Bukhari`
+  String get sahih_bukhari {
+    return Intl.message(
+      'Sahih Bukhari',
+      name: 'sahih_bukhari',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sahih Muslim`
+  String get sahih_muslim {
+    return Intl.message(
+      'Sahih Muslim',
+      name: 'sahih_muslim',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Jami' Al-Tirmidhi`
+  String get al_tirmidhi {
+    return Intl.message(
+      'Jami\' Al-Tirmidhi',
+      name: 'al_tirmidhi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sunan Abu Dawood`
+  String get abu_dawood {
+    return Intl.message(
+      'Sunan Abu Dawood',
+      name: 'abu_dawood',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sunan Ibn-e-Majah`
+  String get ibn_e_majah {
+    return Intl.message(
+      'Sunan Ibn-e-Majah',
+      name: 'ibn_e_majah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sunan An-Nasa'i`
+  String get sunan_nasai {
+    return Intl.message(
+      'Sunan An-Nasa\'i',
+      name: 'sunan_nasai',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mishkat Al-Masabih`
+  String get mishkat {
+    return Intl.message(
+      'Mishkat Al-Masabih',
+      name: 'mishkat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Musnad Ahmad`
+  String get musnad_ahmad {
+    return Intl.message(
+      'Musnad Ahmad',
+      name: 'musnad_ahmad',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Al-Silsila Sahiha`
+  String get al_silsila_sahiha {
+    return Intl.message(
+      'Al-Silsila Sahiha',
+      name: 'al_silsila_sahiha',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

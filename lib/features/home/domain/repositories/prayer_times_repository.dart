@@ -5,4 +5,7 @@ import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 
 abstract class PrayerTimesRepository {
   Future<Either<Failure, PrayerTimes>> getPrayerTimes(Location location);
+
+
+  Future<void> prayerTimesBackgroundPreCache(Location location);
 }

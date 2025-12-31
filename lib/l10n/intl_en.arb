@@ -7,5 +7,15 @@
 "maghrib": "Maghrib",
 "isha": "Isha",
 "remainingTimeLabel": "{time} remaining for {prayerName}",
-"hijriDateWithDay": "{weekday}, {day} {month} {year} AH"
+"hijriDateWithDay": "{weekday}, {day} {month} {year} AH",
+"sahih_bukhari": "Sahih Bukhari",
+"sahih_muslim": "Sahih Muslim",
+"al_tirmidhi": "Jami' Al-Tirmidhi",
+"abu_dawood": "Sunan Abu Dawood",
+"ibn_e_majah": "Sunan Ibn-e-Majah",
+"sunan_nasai": "Sunan An-Nasa'i",
+"mishkat": "Mishkat Al-Masabih",
+"musnad_ahmad": "Musnad Ahmad",
+"al_silsila_sahiha": "Al-Silsila Sahiha"
+
 }

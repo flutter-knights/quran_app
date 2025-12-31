@@ -7,6 +7,15 @@
 "maghrib": "المغرب",
 "isha": "العشاء",
 "remainingTimeLabel": "متبقي {time} على صلاة {prayerName}",
-"hijriDateWithDay": "{weekday}، {day} {month} {year} هـ"
+"hijriDateWithDay": "{weekday}، {day} {month} {year} هـ",
+"sahih_bukhari": "صحيح البخاري",
+"sahih_muslim": "صحيح مسلم",
+"al_tirmidhi": "جامع الترمذي",
+"abu_dawood": "سنن أبي داود",
+"ibn_e_majah": "سنن ابن ماجه",
+"sunan_nasai": "سنن النسائي",
+"mishkat": "مشكاة المصابيح",
+"musnad_ahmad": "مسند أحمد",
+"al_silsila_sahiha": "السلسلة الصحيحة"
 
 }
