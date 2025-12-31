@@ -13,8 +13,8 @@ extension DateTimeFormatting on DateTime {
 }
 
 extension StringTimes on String {
-  DateTime parse24hTime() {
-    final now = DateTime.now();
+  DateTime parse24hTime({DateTime? date}) {
+    final now = date ?? DateTime.now();
     final parts = split(':');
 
     return DateTime(
@@ -28,5 +28,13 @@ extension StringTimes on String {
 
   String removeTimeZone() {
     return split(' ').first;
+  }
+
+  DateTime gregorianDate() {
+    DateFormat format = DateFormat("dd-MM-yyyy", 'en');
+
+    DateTime dateTime = format.parse(this);
+
+    return dateTime;
   }
 }

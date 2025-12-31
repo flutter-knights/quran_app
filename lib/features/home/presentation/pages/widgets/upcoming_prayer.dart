@@ -30,10 +30,7 @@ class UpcomingPrayer extends StatelessWidget {
           return Column(
             children: [
               Gap(24),
-              Text(
-                    DateTime.now().to24hTime(),
-                    style: TS.extra36.cairo,
-                  )
+              Text(DateTime.now().to24hTime(), style: TS.extra36.cairo)
                   .animate(
                     target:
                         sl<SettingsCubit>().state.settingsModel.isFormat12Hours

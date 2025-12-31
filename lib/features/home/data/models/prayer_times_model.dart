@@ -30,6 +30,7 @@ class PrayerTimesModel extends PrayerTimes {
         year: date['year'],
         weekDay: date['weekday']['ar'],
         enWeekDay: date['weekday']['en'],
+        gregorianDate: key,
       ),
       key: key,
     );

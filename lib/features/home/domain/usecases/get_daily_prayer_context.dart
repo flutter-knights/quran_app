@@ -23,7 +23,11 @@ class GetDailyPrayerContext
       return prayerTimes.fold(
         (failure) => left(failure),
         (prayerTimes) => Right(
-          DailyPrayerContext(location: location, prayerTimes: prayerTimes),
+          DailyPrayerContext(
+            location: location,
+            prayerTimes: prayerTimes,
+            date: prayerTimes.date.gregorianDate,
+          ),
         ),
       );
     });

@@ -21,11 +21,13 @@ abstract class TypographyStyles {
   static TextStyle bold20 = _baseCairo(20, FontWeight.w700);
   static TextStyle bold16 = _baseCairo(16, FontWeight.w700);
   static TextStyle bold14 = _baseCairo(14, FontWeight.w700);
+  static TextStyle bold12 = _baseCairo(12, FontWeight.w700);
 
   static TextStyle semi24 = _baseCairo(24, FontWeight.w600);
   static TextStyle semi20 = _baseCairo(20, FontWeight.w600);
   static TextStyle semi16 = _baseCairo(16, FontWeight.w600);
   static TextStyle semi12 = _baseCairo(12, FontWeight.w600);
+  static TextStyle semi14 = _baseCairo(14, FontWeight.w600);
 
   static TextStyle medium16 = _baseCairo(16, FontWeight.w500);
   static TextStyle medium14 = _baseCairo(14, FontWeight.w500);

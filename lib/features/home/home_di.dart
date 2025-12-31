@@ -12,7 +12,6 @@ import 'package:quran_app/features/home/domain/repositories/location_repository.
 import 'package:quran_app/features/home/domain/repositories/prayer_times_repository.dart';
 import 'package:quran_app/features/home/domain/usecases/get_daily_prayer_context.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
-import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 
 void initHome() {
   final prayerTimesBox = Hive.box<PrayerTimesHiveModel>('prayerTimesCache');
@@ -55,5 +54,4 @@ void initHome() {
   sl.registerFactory(
     () => DailyPrayerContextCubit(getDailyPrayerContext: sl()),
   );
-  sl.registerFactory(() => PrayerCountdownCubit());
 }
