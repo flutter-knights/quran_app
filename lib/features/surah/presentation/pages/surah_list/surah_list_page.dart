@@ -103,6 +103,7 @@ class SurahListSelection extends StatelessWidget {
             ),
           ),
         ),
+        SearchBar(searchController: TextEditingController()),
       ],
     );
   }
@@ -120,6 +121,46 @@ class CustomPressedButton extends StatelessWidget {
         borderRadius: .all(Radius.circular(8)),
       ),
       child: Text("تابع التلاوة", style: TS.semi12),
+    );
+  }
+}
+
+class SearchBar extends StatelessWidget {
+  const SearchBar({super.key, required this.searchController});
+
+  final TextEditingController searchController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 48,
+              child: TextField(
+                onSubmitted: (value) {},
+                textInputAction: TextInputAction.search,
+                keyboardType: TextInputType.text,
+                controller: searchController,
+                decoration: InputDecoration(
+                  prefixIcon: IconButton(
+                    onPressed: () {},
+                    icon: HugeIcon(icon: HugeIcons.strokeRoundedSearch01),
+                  ),
+                  hintText: "البحث عن سورة  ...",
+                  prefixIconColor: context.colorScheme.onSecondary,
+                  hintStyle: TS.regular14.copyWith(
+                    color: context.colorScheme.onSecondary,
+                  ),
+                ),
+                onChanged: (value) {},
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
