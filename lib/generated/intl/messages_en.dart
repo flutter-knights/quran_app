@@ -27,13 +27,24 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "abu_dawood": MessageLookupByLibrary.simpleMessage("Sunan Abu Dawood"),
+    "al_silsila_sahiha": MessageLookupByLibrary.simpleMessage(
+      "Al-Silsila Sahiha",
+    ),
+    "al_tirmidhi": MessageLookupByLibrary.simpleMessage("Jami\' Al-Tirmidhi"),
     "asr": MessageLookupByLibrary.simpleMessage("Asr"),
     "dhuhr": MessageLookupByLibrary.simpleMessage("Dhuhr"),
     "fajr": MessageLookupByLibrary.simpleMessage("Fajr"),
     "hijriDateWithDay": m0,
+    "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn-e-Majah"),
     "isha": MessageLookupByLibrary.simpleMessage("Isha"),
     "maghrib": MessageLookupByLibrary.simpleMessage("Maghrib"),
+    "mishkat": MessageLookupByLibrary.simpleMessage("Mishkat Al-Masabih"),
+    "musnad_ahmad": MessageLookupByLibrary.simpleMessage("Musnad Ahmad"),
     "remainingTimeLabel": m1,
+    "sahih_bukhari": MessageLookupByLibrary.simpleMessage("Sahih Bukhari"),
+    "sahih_muslim": MessageLookupByLibrary.simpleMessage("Sahih Muslim"),
+    "sunan_nasai": MessageLookupByLibrary.simpleMessage("Sunan An-Nasa\'i"),
     "sunrise": MessageLookupByLibrary.simpleMessage("Sunrise"),
   };
 }

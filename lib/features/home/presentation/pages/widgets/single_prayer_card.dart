@@ -5,6 +5,7 @@ import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/helper%20functions/time_helpers.dart';
+import 'package:quran_app/core/widgets/toggle_widget.dart';
 
 class SinglePrayerCard extends StatelessWidget {
   const SinglePrayerCard({
@@ -48,31 +49,29 @@ class SinglePrayerCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    ToggleWidget(
+                      targetChild: Text(
+                        time24.toLocalized(context),
+                        style: TS.bold12
+                            .copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            )
+                            .cairo,
+                      ),
+                      defaultChild: Text(
+                        time24
+                            .parse24hTime()
+                            .format12h(context)
+                            .toLocalized(context),
+                        style: TS.bold12
+                            .copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            )
+                            .cairo,
+                      ),
 
-                    Text(
-                          time24.toLocalized(context),
-                          style: TS.bold12
-                              .copyWith(
-                                color: context.colorScheme.onSurfaceVariant,
-                              )
-                              .cairo,
-                        )
-                        .animate(target: is24 ? 0 : 1)
-                        .fadeOut(duration: 200.ms)
-                        .swap(
-                          duration: 200.ms,
-                          builder: (_, _) => Text(
-                            time24
-                                .parse24hTime()
-                                .format12h(context)
-                                .toLocalized(context),
-                            style: TS.bold12
-                                .copyWith(
-                                  color: context.colorScheme.onSurfaceVariant,
-                                )
-                                .cairo,
-                          ).animate().fadeIn(duration: 200.ms),
-                        ),
+                      value: is24,
+                    ),
                   ],
                 )
                 .animate(target: isCurrent ? 1 : 0)

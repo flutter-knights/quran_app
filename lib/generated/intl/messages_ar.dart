@@ -27,13 +27,24 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "abu_dawood": MessageLookupByLibrary.simpleMessage("سنن أبي داود"),
+    "al_silsila_sahiha": MessageLookupByLibrary.simpleMessage(
+      "السلسلة الصحيحة",
+    ),
+    "al_tirmidhi": MessageLookupByLibrary.simpleMessage("جامع الترمذي"),
     "asr": MessageLookupByLibrary.simpleMessage("العصر"),
     "dhuhr": MessageLookupByLibrary.simpleMessage("الظهر"),
     "fajr": MessageLookupByLibrary.simpleMessage("الفجر"),
     "hijriDateWithDay": m0,
+    "ibn_e_majah": MessageLookupByLibrary.simpleMessage("سنن ابن ماجه"),
     "isha": MessageLookupByLibrary.simpleMessage("العشاء"),
     "maghrib": MessageLookupByLibrary.simpleMessage("المغرب"),
+    "mishkat": MessageLookupByLibrary.simpleMessage("مشكاة المصابيح"),
+    "musnad_ahmad": MessageLookupByLibrary.simpleMessage("مسند أحمد"),
     "remainingTimeLabel": m1,
+    "sahih_bukhari": MessageLookupByLibrary.simpleMessage("صحيح البخاري"),
+    "sahih_muslim": MessageLookupByLibrary.simpleMessage("صحيح مسلم"),
+    "sunan_nasai": MessageLookupByLibrary.simpleMessage("سنن النسائي"),
     "sunrise": MessageLookupByLibrary.simpleMessage("الشروق"),
   };
 }
