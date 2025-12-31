@@ -40,7 +40,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: surahListPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) => BlocProvider(
             create: (_) => sl<SurahCubit>()..fetchSurahs(),
             child: SurahListPage(),
