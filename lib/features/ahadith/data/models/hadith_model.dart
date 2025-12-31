@@ -1,6 +1,4 @@
-
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
-import 'package:quran_app/features/ahadith/domain/entities/hadith_page.dart';
 
 class HadithModel extends Hadith {
   HadithModel({
@@ -38,6 +36,3 @@ class HadithModel extends Hadith {
     }
   }
 }
-
-
-

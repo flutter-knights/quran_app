@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/config/hive_config.dart';
 import 'package:quran_app/config/hydrated_bloc_config.dart';
@@ -11,8 +12,10 @@ import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+  );
   WidgetsFlutterBinding.ensureInitialized();
-
   await initHydratedCubit();
   await initHive();
   await initGetIt();
@@ -39,7 +42,6 @@ class QuranApp extends StatelessWidget {
           title: 'Quran',
           theme: settings.isDarkMode ? darkTheme : lightTheme,
           themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-          debugShowCheckedModeBanner: false,
           locale: settings.isArabic ? const Locale('ar') : const Locale('en'),
           supportedLocales: S.delegate.supportedLocales,
           localizationsDelegates: const [

@@ -45,7 +45,7 @@ class UpcomingPrayer extends StatelessWidget {
                   ) // Shrink slightly
                   .swap(
                     duration: 300.ms,
-                    builder: (_, __) =>
+                    builder: (_, _) =>
                         Text(
                               DateTime.now()
                                   .format12h(context)
