@@ -18,7 +18,7 @@ abstract class AppRouter {
   static const String booksPath = "/books";
 
   static final router = GoRouter(
-    initialLocation: surahListPath,
+    initialLocation: splashPath,
     routes: [
       GoRoute(
         path: homePath,
@@ -49,8 +49,12 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: mushafPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
-          builder: (context, state) => MushafPage(),
+        pageBuilder: GoTransitions.fade.withFade.build(
+          builder: (context, state) {
+            final int pageNo = (state.extra as int?) ?? 1;
+
+            return MushafPage(pageNumber: pageNo);
+          },
         ),
       ),
     ],

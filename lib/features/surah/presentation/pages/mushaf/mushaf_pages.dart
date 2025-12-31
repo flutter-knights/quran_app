@@ -4,25 +4,28 @@ import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/musha
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class MushafPage extends StatefulWidget {
-  const MushafPage({super.key});
+  final int pageNumber;
+  const MushafPage({super.key, required this.pageNumber});
 
   @override
   State<MushafPage> createState() => _MushafPageState();
 }
 
 class _MushafPageState extends State<MushafPage> {
+  late PageController _pageController;
   @override
   void initState() {
+    super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     WakelockPlus.enable();
-    super.initState();
+    _pageController = PageController(initialPage: widget.pageNumber - 1);
   }
 
   @override
   void dispose() {
+    _pageController.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
     WakelockPlus.disable();
     super.dispose();
   }
@@ -31,6 +34,7 @@ class _MushafPageState extends State<MushafPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView.builder(
+        controller: _pageController,
         itemCount: 604,
         itemBuilder: (context, index) {
           int pageNumber = index + 1;

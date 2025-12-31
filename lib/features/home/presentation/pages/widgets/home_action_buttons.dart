@@ -23,7 +23,9 @@ class HomeActionButtons extends StatelessWidget {
             child: HomeButton(
               title: 'القران',
               icon: HugeIcons.strokeRoundedQuran02,
-              action: () {},
+              action: () {
+                onPressed(context, path: AppRouter.surahListPath);
+              },
             ),
           ),
           Expanded(
