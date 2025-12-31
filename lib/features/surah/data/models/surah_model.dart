@@ -10,6 +10,7 @@ class SurahModel extends SurahEntity {
     required super.revelationType,
     required super.pageNumber,
     required this.englishNameTranslation,
+    required super.qcfSurahName,
   });
 
   factory SurahModel.fromJson(Map<String, dynamic> json) {
@@ -21,6 +22,7 @@ class SurahModel extends SurahEntity {
       numberOfAyahs: json["numberOfAyahs"],
       revelationType: json["revelationType"],
       pageNumber: json["pageNumber"],
+      qcfSurahName: json["qcfSurahName"],
     );
   }
 }
