@@ -45,6 +45,7 @@ class LocationRepositoryImpl extends LocationRepository {
     }
   }
 
+  @override
   bool isLocationChanged(Position? freshLocation) {
     final cachedLocation = locationLocalDataSource.getCached();
     if (cachedLocation == null) return true;

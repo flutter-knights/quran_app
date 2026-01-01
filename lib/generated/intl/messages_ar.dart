@@ -32,7 +32,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "السلسلة الصحيحة",
     ),
     "al_tirmidhi": MessageLookupByLibrary.simpleMessage("جامع الترمذي"),
+    "arabicLanguage": MessageLookupByLibrary.simpleMessage("اللغة العربية"),
     "asr": MessageLookupByLibrary.simpleMessage("العصر"),
+    "darkMode": MessageLookupByLibrary.simpleMessage("الوضع الداكن"),
     "dhuhr": MessageLookupByLibrary.simpleMessage("الظهر"),
     "fajr": MessageLookupByLibrary.simpleMessage("الفجر"),
     "hijriDateWithDay": m0,
@@ -44,7 +46,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "remainingTimeLabel": m1,
     "sahih_bukhari": MessageLookupByLibrary.simpleMessage("صحيح البخاري"),
     "sahih_muslim": MessageLookupByLibrary.simpleMessage("صحيح مسلم"),
+    "settings": MessageLookupByLibrary.simpleMessage("الإعدادات"),
     "sunan_nasai": MessageLookupByLibrary.simpleMessage("سنن النسائي"),
     "sunrise": MessageLookupByLibrary.simpleMessage("الشروق"),
+    "twentyFourHourFormat": MessageLookupByLibrary.simpleMessage(
+      "تنسيق 24 ساعة",
+    ),
   };
 }

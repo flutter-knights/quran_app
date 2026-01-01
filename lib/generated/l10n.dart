@@ -199,6 +199,36 @@ class S {
       args: [],
     );
   }
+
+  /// `Settings`
+  String get settings {
+    return Intl.message('Settings', name: 'settings', desc: '', args: []);
+  }
+
+  /// `Dark Mode`
+  String get darkMode {
+    return Intl.message('Dark Mode', name: 'darkMode', desc: '', args: []);
+  }
+
+  /// `24-Hour Format`
+  String get twentyFourHourFormat {
+    return Intl.message(
+      '24-Hour Format',
+      name: 'twentyFourHourFormat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Arabic Language`
+  String get arabicLanguage {
+    return Intl.message(
+      'Arabic Language',
+      name: 'arabicLanguage',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

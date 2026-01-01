@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';

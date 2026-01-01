@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:go_transitions/go_transitions.dart';
+import 'package:quran_app/features/ahadith/presentation/pages/ahadith_list_page.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/books_list_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
@@ -8,6 +9,7 @@ abstract class AppRouter {
   static const String homePath = "/home";
   static const String splashPath = "/splash";
   static const String booksPath = "/books";
+  static const String ahadithPath = "/ahadith";
 
   static final router = GoRouter(
     initialLocation: splashPath,
@@ -28,6 +30,17 @@ abstract class AppRouter {
         path: booksPath,
         pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) => BooksListPage(),
+        ),
+      ),
+      GoRoute(
+        path: ahadithPath,
+
+        pageBuilder: GoTransitions.fade.withScale.build(
+          builder: (context, state) {
+            final bookSlug = state.extra as String;
+
+            return AhadithListPage(bookSlug: bookSlug);
+          },
         ),
       ),
     ],

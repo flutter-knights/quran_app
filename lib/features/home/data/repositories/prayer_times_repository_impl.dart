@@ -46,6 +46,11 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
       final List<PrayerTimes> prayerTimesList = await prayerTimeRemoteDataSource
           .getPrayerTimesList(location);
       await prayerTimesLocalDataSource.cache(prayerTimesList);
+
+      for (final prayerTimes in prayerTimesList) {
+        print(prayerTimes.date.gregorianDate);
+      }
+
       return Right(prayerTimesLocalDataSource.getCached(date: targetDate)!);
     } on DioException catch (e) {
       return left(DioErrorHandler.handle(e));
@@ -54,6 +59,7 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
     }
   }
 
+  @override
   Future<void> prayerTimesBackgroundPreCache(Location location) async {
     final now = DateTime.now();
     final dayAfterAfterAfterAfterTomorrow = now.add(const Duration(days: 5));

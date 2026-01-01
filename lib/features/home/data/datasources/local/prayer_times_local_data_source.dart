@@ -28,12 +28,27 @@ class PrayerTimesLocalDataSource {
   }
 
   Future<void> clearOldCache() async {
-    final prayerTimesKeys = prayerTimesBox.keys.toList();
-    final keysLength = prayerTimesKeys.length;
-    if (keysLength < 40) return;
-    final keysToRemove = prayerTimesKeys.sublist(0, keysLength - 40);
+    final now = DateTime.now();
+    final threshold = DateTime(now.year, now.month, now.day - 1);
 
-    await prayerTimesBox.deleteAll(keysToRemove);
+    final keysToRemove = <dynamic>[];
+
+    for (var key in prayerTimesBox.keys) {
+      DateTime? keyDate;
+      if (key is DateTime) {
+        keyDate = key;
+      } else if (key is String) {
+        keyDate = DateTime.tryParse(key);
+      }
+
+      if (keyDate != null && keyDate.isBefore(threshold)) {
+        keysToRemove.add(key);
+      }
+    }
+
+    if (keysToRemove.isNotEmpty) {
+      await prayerTimesBox.deleteAll(keysToRemove);
+    }
   }
 }
 

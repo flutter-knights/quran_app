@@ -30,6 +30,11 @@ class AhadithRepositoryImpl implements AhadithRepository {
     try {
       final HadithPage ahadithPage = await ahadithRemoteDataSource
           .getAhadithPage(pageNumber, bookSlug);
+          ahadithLocalDataSource.cachePage(
+        ahadithPage,
+        pageNumber,
+        bookSlug,
+      );
       return Right(ahadithPage);
     } on DioException catch (e) {
       return left(UnknownFailure(e.toString()));

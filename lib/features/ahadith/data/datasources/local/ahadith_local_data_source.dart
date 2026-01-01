@@ -5,22 +5,19 @@ import 'package:quran_app/features/ahadith/domain/entities/hadith_page.dart';
 
 class AhadithLocalDataSource {
   final Box<HadithHiveModel> hadithBox;
-
   AhadithLocalDataSource({required this.hadithBox});
 
   HadithPage? getCachedPage(int pageNumber, String bookSlug) {
     final String keyPrefix = "${bookSlug}_${pageNumber}_";
-    final String nextKeyPrefix = "${bookSlug}_${pageNumber + 1}_";
 
-    final relevantKeys = hadithBox.keys
-        .where((key) => key.toString().startsWith(keyPrefix))
+    final allKeys = hadithBox.keys.map((e) => e.toString()).toList();
+    final relevantKeys = allKeys
+        .where((key) => key.startsWith(keyPrefix))
         .toList();
 
     if (relevantKeys.isEmpty) return null;
 
-    final bool isLastPage = hadithBox.keys
-        .where((key) => key.toString().startsWith(nextKeyPrefix))
-        .isEmpty;
+    final bool isLastPage = relevantKeys.any((key) => key.contains("_last"));
 
     final List<Hadith> ahadithList = relevantKeys
         .map((key) => hadithBox.get(key)!.toEntity())
@@ -34,10 +31,13 @@ class AhadithLocalDataSource {
   }
 
   void cachePage(HadithPage hadithPage, int pageNumber, String bookSlug) {
-    final Map<dynamic, HadithHiveModel> entries = {};
+    final Map<String, HadithHiveModel> entries = {};
 
     for (var hadith in hadithPage.ahadithList) {
-      final String compositeKey = "${bookSlug}_${pageNumber}_${hadith.id}";
+      String compositeKey = "${bookSlug}_${pageNumber}_${hadith.id}";
+      if (hadithPage.lastPage) {
+        compositeKey += "_last";
+      }
 
       entries[compositeKey] = HadithHiveModel.fromEntity(
         hadith,
@@ -45,10 +45,7 @@ class AhadithLocalDataSource {
         bookSlug,
       );
     }
-    hadithBox.putAll(entries);
-  }
 
-  void clearCache() {
-    hadithBox.clear();
+    hadithBox.putAll(entries);
   }
 }
