@@ -1,7 +1,7 @@
 [
   {
     "number": 1,
-    "name": "ٱلْفَاتِحَةِ",
+    "name": "ٱلفَاتِحَةِ",
     "englishName": "Al-Faatiha",
     "englishNameTranslation": "The Opening",
     "numberOfAyahs": 7,
@@ -23,7 +23,7 @@
   },
   {
     "number": 3,
-    "name": "آلِ عِمۡرَانَ",
+    "name": "آلِ عِمرَانَ",
     "englishName": "Aal-i-Imraan",
     "englishNameTranslation": "The Family of Imraan",
     "numberOfAyahs": 200,
@@ -56,7 +56,7 @@
   },
   {
     "number": 6,
-    "name": "الأَنۡعَامِ",
+    "name": "الأَنعَامِ",
     "englishName": "Al-An'aam",
     "englishNameTranslation": "The Cattle",
     "numberOfAyahs": 165,
@@ -67,7 +67,7 @@
   },
   {
     "number": 7,
-    "name": "الأَعۡرَافِ",
+    "name": "الأَعرَافِ",
     "englishName": "Al-A'raaf",
     "englishNameTranslation": "The Heights",
     "numberOfAyahs": 206,
@@ -89,7 +89,7 @@
   },
   {
     "number": 9,
-    "name": "التَّوۡبَةِ",
+    "name": "التَّوبَةِ",
     "englishName": "At-Tawba",
     "englishNameTranslation": "The Repentance",
     "numberOfAyahs": 129,
@@ -133,7 +133,7 @@
   },
   {
     "number": 13,
-    "name": "الرَّعۡدِ",
+    "name": "الرَّعدِ",
     "englishName": "Ar-Ra'd",
     "englishNameTranslation": "The Thunder",
     "numberOfAyahs": 43,
@@ -144,7 +144,7 @@
   },
   {
     "number": 14,
-    "name": "إِبۡرَاهِيمَ",
+    "name": "إِبرَاهِيمَ",
     "englishName": "Ibrahim",
     "englishNameTranslation": "Abraham",
     "numberOfAyahs": 52,
@@ -155,7 +155,7 @@
   },
   {
     "number": 15,
-    "name": "الحِجۡرِ",
+    "name": "الحِجرِ",
     "englishName": "Al-Hijr",
     "englishNameTranslation": "The Rock",
     "numberOfAyahs": 99,
@@ -166,7 +166,7 @@
   },
   {
     "number": 16,
-    "name": "النَّحۡلِ",
+    "name": "النَّحلِ",
     "englishName": "An-Nahl",
     "englishNameTranslation": "The Bee",
     "numberOfAyahs": 128,
@@ -177,7 +177,7 @@
   },
   {
     "number": 17,
-    "name": "الإِسۡرَاءِ",
+    "name": "الإِسرَاءِ",
     "englishName": "Al-Israa",
     "englishNameTranslation": "The Night Journey",
     "numberOfAyahs": 111,
@@ -188,7 +188,7 @@
   },
   {
     "number": 18,
-    "name": "الكَهۡفِ",
+    "name": "الكَهفِ",
     "englishName": "Al-Kahf",
     "englishNameTranslation": "The Cave",
     "numberOfAyahs": 110,
@@ -199,7 +199,7 @@
   },
   {
     "number": 19,
-    "name": "مَرۡيَمَ",
+    "name": "مَريَمَ",
     "englishName": "Maryam",
     "englishNameTranslation": "Mary",
     "numberOfAyahs": 98,
@@ -243,7 +243,7 @@
   },
   {
     "number": 23,
-    "name": "المُؤۡمِنُونَ",
+    "name": "المُؤمِنُونَ",
     "englishName": "Al-Muminoon",
     "englishNameTranslation": "The Believers",
     "numberOfAyahs": 118,
@@ -265,7 +265,7 @@
   },
   {
     "number": 25,
-    "name": "الفُرۡقَانِ",
+    "name": "الفُرقَانِ",
     "englishName": "Al-Furqaan",
     "englishNameTranslation": "The Criterion",
     "numberOfAyahs": 77,
@@ -287,7 +287,7 @@
   },
   {
     "number": 27,
-    "name": "النَّمۡلِ",
+    "name": "النَّملِ",
     "englishName": "An-Naml",
     "englishNameTranslation": "The Ant",
     "numberOfAyahs": 93,
@@ -331,7 +331,7 @@
   },
   {
     "number": 31,
-    "name": "لُقۡمَانَ",
+    "name": "لُقمَانَ",
     "englishName": "Luqman",
     "englishNameTranslation": "Luqman",
     "numberOfAyahs": 34,
@@ -342,7 +342,7 @@
   },
   {
     "number": 32,
-    "name": "السَّجۡدَةِ",
+    "name": "السَّجدَةِ",
     "englishName": "As-Sajda",
     "englishNameTranslation": "The Prostration",
     "numberOfAyahs": 30,
@@ -353,7 +353,7 @@
   },
   {
     "number": 33,
-    "name": "الأَحۡزَابِ",
+    "name": "الأَحزَابِ",
     "englishName": "Al-Ahzaab",
     "englishNameTranslation": "The Clans",
     "numberOfAyahs": 73,
@@ -441,7 +441,7 @@
   },
   {
     "number": 41,
-    "name": "فُصِّلَتۡ",
+    "name": "فُصِّلَت",
     "englishName": "Fussilat",
     "englishNameTranslation": "Explained in detail",
     "numberOfAyahs": 54,
@@ -463,7 +463,7 @@
   },
   {
     "number": 43,
-    "name": "الزُّخۡرُفِ",
+    "name": "الزُّخرُفِ",
     "englishName": "Az-Zukhruf",
     "englishNameTranslation": "Ornaments of gold",
     "numberOfAyahs": 89,
@@ -496,7 +496,7 @@
   },
   {
     "number": 46,
-    "name": "الأَحۡقَافِ",
+    "name": "الأَحقَافِ",
     "englishName": "Al-Ahqaf",
     "englishNameTranslation": "The Dunes",
     "numberOfAyahs": 35,
@@ -518,7 +518,7 @@
   },
   {
     "number": 48,
-    "name": "الفَتۡحِ",
+    "name": "الفَتحِ",
     "englishName": "Al-Fath",
     "englishNameTranslation": "The Victory",
     "numberOfAyahs": 29,
@@ -573,7 +573,7 @@
   },
   {
     "number": 53,
-    "name": "النَّجۡمِ",
+    "name": "النَّجمِ",
     "englishName": "An-Najm",
     "englishNameTranslation": "The Star",
     "numberOfAyahs": 62,
@@ -595,7 +595,7 @@
   },
   {
     "number": 55,
-    "name": "الرَّحۡمَٰن",
+    "name": "الرَّحمَٰن",
     "englishName": "Ar-Rahmaan",
     "englishNameTranslation": "The Beneficent",
     "numberOfAyahs": 78,
@@ -639,7 +639,7 @@
   },
   {
     "number": 59,
-    "name": "الحَشۡرِ",
+    "name": "الحَشرِ",
     "englishName": "Al-Hashr",
     "englishNameTranslation": "The Exile",
     "numberOfAyahs": 24,
@@ -650,7 +650,7 @@
   },
   {
     "number": 60,
-    "name": "المُمۡتَحنَةِ",
+    "name": "المُمتَحنَةِ",
     "englishName": "Al-Mumtahana",
     "englishNameTranslation": "She that is to be examined",
     "numberOfAyahs": 13,
@@ -716,7 +716,7 @@
   },
   {
     "number": 66,
-    "name": "التَّحۡرِيمِ",
+    "name": "التَّحرِيمِ",
     "englishName": "At-Tahrim",
     "englishNameTranslation": "The Prohibition",
     "numberOfAyahs": 12,
@@ -727,7 +727,7 @@
   },
   {
     "number": 67,
-    "name": "المُلۡكِ",
+    "name": "المُلكِ",
     "englishName": "Al-Mulk",
     "englishNameTranslation": "The Sovereignty",
     "numberOfAyahs": 30,
@@ -837,7 +837,7 @@
   },
   {
     "number": 77,
-    "name": "المُرۡسَلَاتِ",
+    "name": "المُرسَلَاتِ",
     "englishName": "Al-Mursalaat",
     "englishNameTranslation": "The Emissaries",
     "numberOfAyahs": 50,
@@ -881,7 +881,7 @@
   },
   {
     "number": 81,
-    "name": "التَّكۡوِيرِ",
+    "name": "التَّكوِيرِ",
     "englishName": "At-Takwir",
     "englishNameTranslation": "The Overthrowing",
     "numberOfAyahs": 29,
@@ -947,7 +947,7 @@
   },
   {
     "number": 87,
-    "name": "الأَعۡلَىٰ",
+    "name": "الأَعلَىٰ",
     "englishName": "Al-A'laa",
     "englishNameTranslation": "The Most High",
     "numberOfAyahs": 19,
@@ -969,7 +969,7 @@
   },
   {
     "number": 89,
-    "name": "الفَجۡرِ",
+    "name": "الفَجرِ",
     "englishName": "Al-Fajr",
     "englishNameTranslation": "The Dawn",
     "numberOfAyahs": 30,
@@ -991,7 +991,7 @@
   },
   {
     "number": 91,
-    "name": "الشَّمۡسِ",
+    "name": "الشَّمسِ",
     "englishName": "Ash-Shams",
     "englishNameTranslation": "The Sun",
     "numberOfAyahs": 15,
@@ -1002,7 +1002,7 @@
   },
   {
     "number": 92,
-    "name": "اللَّيۡلِ",
+    "name": "اللَّيلِ",
     "englishName": "Al-Lail",
     "englishNameTranslation": "The Night",
     "numberOfAyahs": 21,
@@ -1024,7 +1024,7 @@
   },
   {
     "number": 94,
-    "name": "الشَّرۡحِ",
+    "name": "الشَّرحِ",
     "englishName": "Ash-Sharh",
     "englishNameTranslation": "The Consolation",
     "numberOfAyahs": 8,
@@ -1057,7 +1057,7 @@
   },
   {
     "number": 97,
-    "name": "القَدۡرِ",
+    "name": "القَدرِ",
     "englishName": "Al-Qadr",
     "englishNameTranslation": "The Power, Fate",
     "numberOfAyahs": 5,
@@ -1079,7 +1079,7 @@
   },
   {
     "number": 99,
-    "name": "الزَّلۡزَلَةِ",
+    "name": "الزَّلزَلَةِ",
     "englishName": "Az-Zalzala",
     "englishNameTranslation": "The Earthquake",
     "numberOfAyahs": 8,
@@ -1123,7 +1123,7 @@
   },
   {
     "number": 103,
-    "name": "العَصۡرِ",
+    "name": "العَصرِ",
     "englishName": "Al-Asr",
     "englishNameTranslation": "The Declining Day, Epoch",
     "numberOfAyahs": 3,
@@ -1156,7 +1156,7 @@
   },
   {
     "number": 106,
-    "name": "قُرَيۡشٍ",
+    "name": "قُرَيشٍ",
     "englishName": "Quraish",
     "englishNameTranslation": "Quraysh",
     "numberOfAyahs": 4,
@@ -1178,7 +1178,7 @@
   },
   {
     "number": 108,
-    "name": "الكَوۡثَرِ",
+    "name": "الكَوثَرِ",
     "englishName": "Al-Kawthar",
     "englishNameTranslation": "Abundance",
     "numberOfAyahs": 3,
@@ -1200,7 +1200,7 @@
   },
   {
     "number": 110,
-    "name": "النَّصۡرِ",
+    "name": "النَّصرِ",
     "englishName": "An-Nasr",
     "englishNameTranslation": "Divine Support",
     "numberOfAyahs": 3,
@@ -1222,7 +1222,7 @@
   },
   {
     "number": 112,
-    "name": "الإِخۡلَاصِ",
+    "name": "الإِخلَاصِ",
     "englishName": "Al-Ikhlaas",
     "englishNameTranslation": "Sincerity",
     "numberOfAyahs": 4,

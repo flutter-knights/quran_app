@@ -16,7 +16,7 @@ class SurahModel extends SurahEntity {
   factory SurahModel.fromJson(Map<String, dynamic> json) {
     return SurahModel(
       number: json["number"],
-      name: json["name"],
+      name: "سُورَةُ ${json["name"]}",
       englishName: json["englishName"],
       englishNameTranslation: json["englishNameTranslation"],
       numberOfAyahs: json["numberOfAyahs"],

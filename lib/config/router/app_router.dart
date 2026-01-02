@@ -18,7 +18,7 @@ abstract class AppRouter {
   static const String booksPath = "/books";
 
   static final router = GoRouter(
-    initialLocation: splashPath,
+    initialLocation: surahListPath,
     routes: [
       GoRoute(
         path: homePath,

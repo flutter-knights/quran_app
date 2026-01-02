@@ -1,6 +1,21 @@
+import 'package:dio/dio.dart';
+
+import '../utils/dio_error_handler.dart';
+import '../utils/geolocator_error_handler.dart';
+import 'exceptions.dart';
+
 abstract class Failure {
   final String message;
   const Failure(this.message);
+  factory Failure.fromException(dynamic exception) {
+    if (exception is DioException) {
+      return DioErrorHandler.handle(exception);
+    } else if (exception is LocationException) {
+      return GeolocatorErrorHandler.handle(exception);
+    } else {
+      return UnknownFailure("Unexpected error occurred.");
+    }
+  }
 }
 
 class ServerFailure extends Failure {

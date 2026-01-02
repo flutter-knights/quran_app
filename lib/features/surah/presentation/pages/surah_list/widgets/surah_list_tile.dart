@@ -48,14 +48,7 @@ class SurahListTile extends StatelessWidget {
                   crossAxisAlignment: .start,
                   textDirection: context.isArabic ? .rtl : .ltr,
                   children: [
-                    Text(
-                      surah.qcfSurahName,
-                      style: TS.medium32.copyWith(
-                        fontFamily: "QCF_P000",
-                        height: 1.1,
-                      ),
-                      overflow: .ellipsis,
-                    ),
+                    Text(surah.name, style: TS.bold20),
                     Row(
                       spacing: 6,
                       children: [

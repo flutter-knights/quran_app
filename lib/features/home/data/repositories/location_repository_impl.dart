@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:quran_app/core/errors/exceptions.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/utils/dio_error_handler.dart';
-import 'package:quran_app/core/utils/goelocator_error_handler.dart';
+import 'package:quran_app/core/utils/geolocator_error_handler.dart';
 import 'package:quran_app/features/home/data/datasources/local/location_local_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/remote/location_remote_data_source.dart';
