@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/hadith_book_list_item.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class BooksListView extends StatelessWidget {
   const BooksListView({super.key});
+
+  void onPressed(BuildContext context, {required String bookSlug}) {
+    GoRouter.of(context).push(AppRouter.ahadithPath, extra: bookSlug);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +23,7 @@ class BooksListView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: HadithBookListItem(
                     title: getLocalizedName(slug),
-                    onTap: () {},
+                    onTap: () => onPressed(context, bookSlug: slug),
                   ),
                 ),
               )

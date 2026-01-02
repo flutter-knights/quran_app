@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
-import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/setting_switch.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:quran_app/generated/l10n.dart';
 
 void showSettings(BuildContext context) {
   showModalBottomSheet(
     context: context,
-    builder: (_) => SettingsBottomSheet(),
+    builder: (_) => const SettingsBottomSheet(),
     isScrollControlled: false,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
@@ -32,21 +31,23 @@ class SettingsBottomSheet extends StatelessWidget {
         final settings = state.settingsModel;
         return Padding(
           padding: const EdgeInsets.all(16),
-
           child: Column(
-            mainAxisSize: .min,
-            mainAxisAlignment: .start,
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
             spacing: 8,
             children: [
-              Text('الإعدادات', style: TS.bold20.cairo),
+              Text(S.current.settings, style: TS.bold20.cairo),
               Padding(
-                padding: .symmetric(horizontal: 28, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 16,
+                ),
                 child: Divider(color: context.colorScheme.primary),
               ),
               SettingSwitch(
                 settings: settings,
-                settingTitle: 'الوضع الداكن',
-                icons: [
+                settingTitle: S.current.darkMode,
+                icons: const [
                   HugeIcons.strokeRoundedSun01,
                   HugeIcons.strokeRoundedMoon01,
                 ],
@@ -55,11 +56,10 @@ class SettingsBottomSheet extends StatelessWidget {
                   isDarkMode: !settings.isDarkMode,
                 ),
               ),
-
               SettingSwitch(
                 settings: settings,
-                settingTitle: '24 ساعه'.toLocalized(context),
-                icons: [
+                settingTitle: S.current.twentyFourHourFormat,
+                icons: const [
                   HugeIcons.strokeRoundedClock01,
                   HugeIcons.strokeRoundedTimeQuarterPass,
                 ],
@@ -70,8 +70,8 @@ class SettingsBottomSheet extends StatelessWidget {
               ),
               SettingSwitch(
                 settings: settings,
-                settingTitle: 'اللغه العربيه',
-                icons: [
+                settingTitle: S.current.arabicLanguage,
+                icons: const [
                   HugeIcons.strokeRoundedLanguageSquare,
                   HugeIcons.strokeRoundedLanguageSquare,
                 ],
@@ -80,7 +80,7 @@ class SettingsBottomSheet extends StatelessWidget {
                   isArabic: !settings.isArabic,
                 ),
               ),
-              Gap(48),
+              const Gap(48),
             ],
           ),
         );

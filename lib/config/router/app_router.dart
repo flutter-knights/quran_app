@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_transitions/go_transitions.dart';
+import 'package:quran_app/features/ahadith/presentation/pages/ahadith_list_page.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/books_list_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
@@ -16,6 +17,7 @@ abstract class AppRouter {
   static const String mushafPath = "/mushaf";
   static const String surahListPath = "/surahList";
   static const String booksPath = "/books";
+  static const String ahadithPath = "/ahadith";
 
   static final router = GoRouter(
     initialLocation: surahListPath,
@@ -54,6 +56,17 @@ abstract class AppRouter {
             final int pageNo = (state.extra as int?) ?? 1;
 
             return MushafPage(pageNumber: pageNo);
+          },
+        ),
+      ),
+      GoRoute(
+        path: ahadithPath,
+
+        pageBuilder: GoTransitions.fade.withScale.build(
+          builder: (context, state) {
+            final bookSlug = state.extra as String;
+
+            return AhadithListPage(bookSlug: bookSlug);
           },
         ),
       ),

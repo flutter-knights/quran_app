@@ -16,6 +16,9 @@
 "sunan_nasai": "سنن النسائي",
 "mishkat": "مشكاة المصابيح",
 "musnad_ahmad": "مسند أحمد",
-"al_silsila_sahiha": "السلسلة الصحيحة"
-
+"al_silsila_sahiha": "السلسلة الصحيحة",
+"settings": "الإعدادات" ,
+"darkMode": "الوضع الداكن" ,
+"twentyFourHourFormat": "تنسيق 24 ساعة" ,
+"arabicLanguage": "اللغة العربية"
 }
