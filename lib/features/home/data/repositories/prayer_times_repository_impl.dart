@@ -21,36 +21,42 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
 
   @override
   Future<Either<Failure, PrayerTimes>> getPrayerTimes(Location location) async {
-    final todayData = prayerTimesLocalDataSource.getCached(
-      date: DateTime.now(),
-    );
+    final now = DateTime.now();
+    final todayData = prayerTimesLocalDataSource.getCached(date: now);
 
-    DateTime targetDate = DateTime.now();
+    if (todayData == null) {
+      return _fetchAndCacheRemote(location, now);
+    }
 
-    if (todayData != null) {
-      final ishaTime = todayData.timings[PrayerName.isha]!.parse24hTime();
+    final ishaTime = todayData.timings[PrayerName.isha]!.parse24hTime();
+    if (now.isAfter(ishaTime)) {
+      final tomorrowDate = now.add(const Duration(days: 1));
+      final tomorrowData = prayerTimesLocalDataSource.getCached(
+        date: tomorrowDate,
+      );
 
-      if (DateTime.now().isAfter(ishaTime)) {
-        targetDate = DateTime.now().add(const Duration(days: 1));
+      if (tomorrowData != null) {
+        return Right(
+          PrayerTimes(
+            key: todayData.key,
+            date: todayData.date,
+            timings: tomorrowData.timings,
+          ),
+        );
       }
     }
 
-    final cachedPrayerTimes = prayerTimesLocalDataSource.getCached(
-      date: targetDate,
-    );
-    if (cachedPrayerTimes != null) {
-      prayerTimesBackgroundPreCache(location);
-      return Right(cachedPrayerTimes);
-    }
+    return Right(todayData);
+  }
+
+  Future<Either<Failure, PrayerTimes>> _fetchAndCacheRemote(
+    Location location,
+    DateTime targetDate,
+  ) async {
     try {
       final List<PrayerTimes> prayerTimesList = await prayerTimeRemoteDataSource
           .getPrayerTimesList(location);
       await prayerTimesLocalDataSource.cache(prayerTimesList);
-
-      for (final prayerTimes in prayerTimesList) {
-        print(prayerTimes.date.gregorianDate);
-      }
-
       return Right(prayerTimesLocalDataSource.getCached(date: targetDate)!);
     } on DioException catch (e) {
       return left(DioErrorHandler.handle(e));

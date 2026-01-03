@@ -9,15 +9,20 @@ part 'daily_prayer_context_state.dart';
 class DailyPrayerContextCubit extends Cubit<DailyPrayerContextState> {
   DailyPrayerContextCubit({required this.getDailyPrayerContext})
     : super(DailyPrayerContextInitial());
+
   final GetDailyPrayerContext getDailyPrayerContext;
 
-  void fetchDailyPrayerContext() async {
+  Future<void> fetchDailyPrayerContext() async {
     emit(DailyPrayerContextLoading());
-    final result = await getDailyPrayerContext(NoParams());
-    result.fold(
-      (failure) => emit(DailyPrayerContextFailed(failure.message)),
-      (dailyPrayerContext) =>
-          emit(DailyPrayerContextLoaded(dailyPrayerContext)),
-    );
+
+    await getDailyPrayerContext(NoParams()).forEach((result) {
+      if (isClosed) return;
+
+      result.fold(
+        (failure) => emit(DailyPrayerContextFailed(failure.message)),
+        (dailyPrayerContext) =>
+            emit(DailyPrayerContextLoaded(dailyPrayerContext)),
+      );
+    });
   }
 }

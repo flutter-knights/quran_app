@@ -20,10 +20,20 @@ class LocationModel extends Location {
     return LocationModel(
       latitude: double.parse(arJson['lat']),
       longitude: double.parse(arJson['lon']),
-      country: arAddress['country'],
-      city: arAddress['city'] ?? arAddress['town'] ?? arAddress['village'],
-      enCountry: enAddress['country'],
-      enCity: enAddress['city'] ?? enAddress['town'] ?? enAddress['village'],
+      country: arAddress['country'] ?? '',
+      city:
+          arAddress['city'] ??
+          arAddress['town'] ??
+          arAddress['village'] ??
+          arAddress['state'] ??
+          '',
+      enCountry: enAddress['country'] ?? '',
+      enCity:
+          enAddress['city'] ??
+          enAddress['town'] ??
+          enAddress['village'] ??
+          enAddress['state'] ??
+          '',
     );
   }
 }

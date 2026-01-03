@@ -12,7 +12,7 @@ abstract class AppRouter {
   static const String ahadithPath = "/ahadith";
 
   static final router = GoRouter(
-    initialLocation: splashPath,
+    initialLocation: homePath,
     routes: [
       GoRoute(
         path: homePath,
