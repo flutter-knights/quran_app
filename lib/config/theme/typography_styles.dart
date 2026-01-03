@@ -40,6 +40,8 @@ abstract class TypographyStyles {
   static TextStyle regular15 = _baseCairo(15, FontWeight.w400);
   static TextStyle regular14 = _baseCairo(14, FontWeight.w400);
   static TextStyle regular12 = _baseCairo(12, FontWeight.w400);
+  static TextStyle regular10 = _baseCairo(10, FontWeight.w400);
+  static TextStyle regular9 = _baseCairo(9, FontWeight.w400);
 
   static TextStyle _baseCairo(
     double size,

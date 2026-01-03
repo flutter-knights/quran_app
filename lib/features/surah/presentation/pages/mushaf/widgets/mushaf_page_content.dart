@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/constants/device_size_info.dart';
 import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
 
+import '../../../../../../config/theme/color_scheme.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 
@@ -9,6 +14,8 @@ class MushafPageContent extends StatelessWidget {
   final int pageNumber;
 
   const MushafPageContent({super.key, required this.pageNumber});
+
+  static const int totalLines = 15;
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +31,31 @@ class MushafPageContent extends StatelessWidget {
 
         if (state is MushafLoaded) {
           return Padding(
-            padding: const EdgeInsets.all(16),
-            child: _buildMushafRichText(context, state.pageContent, pageNumber),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: 1 / 1.55, // Mushaf page ratio
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final pageWidth = constraints.maxWidth;
+
+                    final lineHeight = pageWidth / 15 * 1.4;
+                    final fontSize = pageWidth / 15 * 0.85;
+                    final letterSpacing = fontSize * 0.16;
+
+                    return _buildMushafRichText(
+                      context,
+                      state.pageContent,
+                      pageNumber,
+                      fontSize,
+                      lineHeight,
+                      pageWidth,
+                      letterSpacing,
+                    );
+                  },
+                ),
+              ),
+            ),
           );
         }
 
@@ -38,173 +68,138 @@ class MushafPageContent extends StatelessWidget {
     BuildContext context,
     MushafPageEntity page,
     int pageIndex,
+    double fontSize,
+    double lineHeight,
+    double pageWidth,
+    double letterSpacing,
   ) {
     final List<InlineSpan> spans = [];
 
     int currentSurahIndex = 0;
 
     for (int i = 0; i < page.ayahs.length; i++) {
-      // Insert surah header when needed
       if (page.surahHeadersIndexes.contains(i)) {
-        final name = page.surahNames[currentSurahIndex];
         final basmala = page.showBasmalaList[currentSurahIndex];
 
-        // Surah Name
         spans.add(
           WidgetSpan(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Center(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    fontFamily: "QCF_P000",
-                    fontSize: 42,
-                    height: 1.2,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+            child: SizedBox(
+              width: pageWidth,
+              child: SurahHeader(name: page.surahNames[currentSurahIndex]),
             ),
           ),
         );
-
-        // Basmala if needed
         if (basmala) {
           spans.add(
-            const TextSpan(
+            TextSpan(
               text: "\u0021\u0022\u0023\n",
               style: TextStyle(
                 fontFamily: "QCF_P000",
-                height: 1.5,
-                fontSize: 26,
+                fontSize: fontSize,
+                height: lineHeight / fontSize,
+                color: context.colorScheme.onSurface,
               ),
             ),
           );
         }
-
         currentSurahIndex++;
       }
 
-      // Ayah text
       spans.add(
         TextSpan(
           locale: const Locale('ar'),
           text: page.ayahs[i],
           style: TextStyle(
-            letterSpacing: 0.7,
             fontFamily: "QCF_P${pageIndex.toString().padLeft(3, "0")}",
-            fontWeight: FontWeight.w500,
-            color: Colors.black,
-            height: 1.95,
+            fontSize: fontSize,
+            height: lineHeight / fontSize,
+            letterSpacing: letterSpacing,
+            color: context.colorScheme.onSurface,
           ),
         ),
       );
     }
 
-    return RichText(
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.center,
-      text: TextSpan(
-        children: spans,
-        style: TextStyle(
-          color: Colors.black,
-
-          fontSize: pageIndex == 1 || pageIndex == 2
-              ? 28
-              : pageIndex == 145 || pageIndex == 201
-              ? pageIndex == 532 || pageIndex == 533
-                    ? 22.5
-                    : 22.4
-              : 23.1,
-        ),
+    return SizedBox(
+      width: pageWidth,
+      child: RichText(
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.center,
+        maxLines: 15,
+        overflow: TextOverflow.clip,
+        text: TextSpan(children: spans),
       ),
     );
   }
+}
 
-  // Widget _buildMushafRichText(MushafPageEntity page, int pageIndex) {
-  //   final List<InlineSpan> spans = [];
+class SurahHeader extends StatelessWidget {
+  const SurahHeader({
+    super.key,
+    required this.name,
+    this.verseCount = "000",
+    this.surahNumber = "116",
+  });
 
-  //   if (page.surahName != null) {
-  //     spans.add(
-  //       WidgetSpan(
-  //         child: Row(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             Text(
-  //               page.surahName!,
-  //               textAlign: TextAlign.center,
-  //               style: const TextStyle(fontFamily: "QCF_P000", fontSize: 42),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     );
+  final String name;
+  final String verseCount;
+  final String surahNumber;
 
-  //     // Add basmala except Surah 9
-  //     if (page.showBasmala) {
-  //       spans.add(
-  //         const TextSpan(
-  //           text: "\u0021\u0022\u0023\n", // Basmala characters
-  //           style: TextStyle(
-  //             fontFamily: "QCF_P000",
-  //             fontSize: 28,
-  //             fontWeight: FontWeight.w100,
-  //           ),
-  //         ),
-  //       );
-  //     }
-  //   }
+  @override
+  Widget build(BuildContext context) {
+    final double width = context.width;
 
-  //   // Add ayahs
-  //   for (final ayah in page.ayahs) {
-  //     spans.add(
-  //       TextSpan(
-  //         locale: const Locale('ar'),
-  //         text: ayah,
-  //         style: TextStyle(
-  //           letterSpacing: 0.7,
-  //           fontFamily: "QCF_P${pageIndex.toString().padLeft(3, "0")}",
-  //           fontSize: 23,
-  //           height: 1.95,
-  //         ),
-  //       ),
-  //     );
-  //   }
+    return SizedBox(
+      height: width * 0.22, // header occupies ~1 line visually
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SvgPicture.asset(
+            "assets/images/surah_header.svg",
+            width: width,
+            fit: BoxFit.fill,
+            colorFilter: ColorFilter.mode(
+              context.colorScheme.onSurface,
+              BlendMode.srcIn,
+            ),
+          ),
 
-  //   return RichText(
-  //     textDirection: TextDirection.rtl,
-  //     textAlign: TextAlign.center,
-  //     text: TextSpan(children: spans),
-  //   );
-  // }
+          Positioned(
+            top: width * 0.06,
+            child: Text(
+              name,
+              style: TextStyle(
+                fontFamily: "QCF_P000",
+                fontSize: width * 0.075,
+                height: 1.2,
+                color: context.colorScheme.onSurface,
+              ),
+            ),
+          ),
 
-  // Widget _buildMushafRichText(List<String> ayahs, int pageIndex) {
-  //   return RichText(
-  //     textDirection: TextDirection.rtl,
-  //     textAlign: TextAlign.center,
-  //     text: TextSpan(
-  //       children: [
-  //         for (final ayah in ayahs)
-  //           TextSpan(
-  //             locale: const Locale('ar'),
-  //             text: ayah,
+          Positioned(
+            left: width * 0.18,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("رقمها", style: TS.regular9),
+                Text(surahNumber, style: TS.regular10.copyWith(height: 1)),
+              ],
+            ),
+          ),
 
-  //             style: TextStyle(
-  //               letterSpacing: 0.7,
-  //               fontFamily: "QCF_P${pageIndex.toString().padLeft(3, "0")}",
-  //               fontSize: pageIndex == 1 || pageIndex == 2
-  //                   ? 28
-  //                   : pageIndex == 145 || pageIndex == 201
-  //                   ? pageIndex == 532 || pageIndex == 533
-  //                         ? 22.5
-  //                         : 22.4
-  //                   : 23,
-  //               height: 1.95,
-  //             ),
-  //           ),
-  //       ],
-  //     ),
-  //   );
-  // }
+          Positioned(
+            right: width * 0.18,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("آياتها", style: TS.regular9),
+                Text(verseCount, style: TS.regular10.copyWith(height: 1)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
