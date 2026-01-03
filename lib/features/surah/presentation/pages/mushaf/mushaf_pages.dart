@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_content.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+
+import '../../../../../core/di/dependency_injection.dart';
+import '../../cubit/mushaf/mushaf_cubit.dart';
 
 class MushafPage extends StatefulWidget {
   final int pageNumber;
@@ -38,7 +42,10 @@ class _MushafPageState extends State<MushafPage> {
         itemCount: 604,
         itemBuilder: (context, index) {
           int pageNumber = index + 1;
-          return MushafPageContent(pageNumber: pageNumber);
+          return BlocProvider(
+            create: (_) => sl<MushafCubit>()..loadPage(pageNumber),
+            child: MushafPageContent(pageNumber: pageNumber),
+          );
         },
       ),
     );

@@ -4,7 +4,8 @@ import 'package:quran_app/features/ahadith/ahadith_di.dart';
 import 'package:quran_app/features/home/home_di.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
-import '../../features/surah/presentation/pages/surah_list_di.dart';
+import '../../features/surah/presentation/pages/mushaf/mushaf_di.dart';
+import '../../features/surah/presentation/pages/surah_list/surah_list_di.dart';
 
 final sl = GetIt.instance;
 
@@ -13,5 +14,6 @@ Future<void> initGetIt() async {
   sl.registerSingleton<SettingsCubit>(SettingsCubit());
   initHome();
   initSurahList();
+  initMushaf();
   initAhadith();
 }
