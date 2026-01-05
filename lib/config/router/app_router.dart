@@ -20,7 +20,7 @@ abstract class AppRouter {
   static const String ahadithPath = "/ahadith";
 
   static final router = GoRouter(
-    initialLocation: mushafPath,
+    initialLocation: surahListPath,
     routes: [
       GoRoute(
         path: homePath,
@@ -53,7 +53,7 @@ abstract class AppRouter {
         path: mushafPath,
         pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) {
-            final int pageNo = (state.extra as int?) ?? 543;
+            final int pageNo = (state.extra as int?) ?? 1;
 
             return MushafPage(pageNumber: pageNo);
           },
