@@ -32,29 +32,35 @@ class MushafPageContent extends StatelessWidget {
         if (state is MushafLoaded) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: 1 / 1.55, // Mushaf page ratio
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final pageWidth = constraints.maxWidth;
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                  child: AspectRatio(
+                    aspectRatio: 1 / 1.55, // Mushaf page ratio
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final pageWidth = constraints.maxWidth;
 
-                    final lineHeight = pageWidth / 15 * 1.4;
-                    final fontSize = pageWidth / 15 * 0.85;
-                    final letterSpacing = fontSize * 0.16;
+                        final lineHeight = pageWidth / 15 * 1.4;
+                        final fontSize = pageWidth / 15 * 0.85;
+                        final letterSpacing = fontSize * 0.16;
 
-                    return _buildMushafRichText(
-                      context,
-                      state.pageContent,
-                      pageNumber,
-                      fontSize,
-                      lineHeight,
-                      pageWidth,
-                      letterSpacing,
-                    );
-                  },
+                        return _buildMushafRichText(
+                          context,
+                          state.pageContent,
+                          pageNumber,
+                          fontSize,
+                          lineHeight,
+                          pageWidth,
+                          letterSpacing,
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ),
+                Center(child: Text(pageNumber.toString())),
+              ],
             ),
           );
         }

@@ -53,7 +53,7 @@ abstract class AppRouter {
         path: mushafPath,
         pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) {
-            final int pageNo = (state.extra as int?) ?? 34;
+            final int pageNo = (state.extra as int?) ?? 543;
 
             return MushafPage(pageNumber: pageNo);
           },
