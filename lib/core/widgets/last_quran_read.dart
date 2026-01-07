@@ -13,7 +13,7 @@ class LastQuranRead extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 3.08,
+      aspectRatio: 2.9,
       child: Container(
         padding: .only(
           left: context.isArabic ? 6 : 12,

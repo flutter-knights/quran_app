@@ -10,6 +10,7 @@ import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_pages.
 import 'package:quran_app/features/surah/presentation/pages/surah_list/surah_list_page.dart';
 
 import '../../core/di/dependency_injection.dart';
+import '../../features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 
 abstract class AppRouter {
   static const String homePath = "/home";
@@ -54,8 +55,10 @@ abstract class AppRouter {
         pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) {
             final int pageNo = (state.extra as int?) ?? 1;
-
-            return MushafPage(pageNumber: pageNo);
+            return BlocProvider(
+              create: (context) => sl<PlaybackCubit>(),
+              child: MushafPage(pageNumber: pageNo),
+            );
           },
         ),
       ),

@@ -12,11 +12,12 @@ class SurahSelectionList extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SurahCubit, List<SurahEntity>>(
       builder: (context, surahs) {
-        return SliverList(
-          delegate: SliverChildBuilderDelegate((context, index) {
+        return SliverList.builder(
+          itemCount: surahs.length,
+          itemBuilder: (context, index) {
             final surah = surahs[index];
             return SurahListTile(surah: surah);
-          }, childCount: surahs.length),
+          },
         );
       },
     );

@@ -7,17 +7,13 @@ import '../../../domain/usecases/get_surah_list.dart';
 import '../../cubit/surah/surah_cubit.dart';
 
 void initSurahList() {
-  // 📌 Data Source
   sl.registerLazySingleton<SurahLocalDataSource>(
     () => SurahLocalDataSourceImpl(),
   );
 
-  // 📌 Repository
   sl.registerLazySingleton<SurahRepository>(() => SurahRepositoryImpl(sl()));
 
-  // 📌 Usecase
   sl.registerLazySingleton(() => GetSurahList(sl()));
 
-  // 📌 Cubit (Factory)
   sl.registerFactory(() => SurahCubit(sl()));
 }
