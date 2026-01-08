@@ -33,7 +33,7 @@ class SurahListTile extends StatelessWidget {
           ).push(AppRouter.mushafPath, extra: surah.pageNumber);
         },
         child: AspectRatio(
-          aspectRatio: 4.9,
+          aspectRatio: 4.8,
 
           child: Container(
             padding: .all(8),
