@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_content.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -39,6 +40,7 @@ class _MushafPageState extends State<MushafPage> {
     return Scaffold(
       body: PageView.builder(
         controller: _pageController,
+        reverse: context.isArabic ? false : true,
         itemCount: 604,
         itemBuilder: (context, index) {
           int pageNumber = index + 1;

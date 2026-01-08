@@ -91,7 +91,11 @@ class MushafPageContent extends StatelessWidget {
           WidgetSpan(
             child: SizedBox(
               width: pageWidth,
-              child: SurahHeader(name: page.surahNames[currentSurahIndex]),
+              child: SurahHeader(
+                name: page.surahNames[currentSurahIndex],
+                surahNumber: 1,
+                verseCount: 1,
+              ),
             ),
           ),
         );
@@ -143,13 +147,13 @@ class SurahHeader extends StatelessWidget {
   const SurahHeader({
     super.key,
     required this.name,
-    this.verseCount = "000",
-    this.surahNumber = "116",
+    required this.verseCount,
+    required this.surahNumber,
   });
 
   final String name;
-  final String verseCount;
-  final String surahNumber;
+  final int verseCount;
+  final int surahNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -172,13 +176,17 @@ class SurahHeader extends StatelessWidget {
 
           Positioned(
             top: width * 0.06,
-            child: Text(
-              name,
-              style: TextStyle(
-                fontFamily: "QCF_P000",
-                fontSize: width * 0.075,
-                height: 1.2,
-                color: context.colorScheme.onSurface,
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Text(
+                name,
+                locale: const Locale('ar'),
+                style: TextStyle(
+                  fontFamily: "QCF_P000",
+                  fontSize: width * 0.075,
+                  height: 1.2,
+                  color: context.colorScheme.onSurface,
+                ),
               ),
             ),
           ),
@@ -189,7 +197,10 @@ class SurahHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text("رقمها", style: TS.regular9),
-                Text(surahNumber, style: TS.regular10.copyWith(height: 1)),
+                Text(
+                  surahNumber.toString(),
+                  style: TS.regular10.copyWith(height: 1),
+                ),
               ],
             ),
           ),
@@ -200,7 +211,10 @@ class SurahHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text("آياتها", style: TS.regular9),
-                Text(verseCount, style: TS.regular10.copyWith(height: 1)),
+                Text(
+                  verseCount.toString(),
+                  style: TS.regular10.copyWith(height: 1),
+                ),
               ],
             ),
           ),
