@@ -33,9 +33,6 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
     prepared.fold(
       (failure) {
-        print("a7777a");
-        print(failure.message);
-
         emit(state.copyWith(isPlaying: false, error: failure.message));
       },
       (localPath) async {
