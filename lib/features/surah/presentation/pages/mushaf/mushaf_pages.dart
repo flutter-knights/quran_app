@@ -8,6 +8,7 @@ import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/musha
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../../../../core/di/dependency_injection.dart';
+import '../../../../quran_playback/data/repositories/helper/repeat_mode.dart';
 import '../../cubit/mushaf/mushaf_cubit.dart';
 
 class MushafPage extends StatefulWidget {
@@ -24,8 +25,12 @@ class _MushafPageState extends State<MushafPage> {
   void initState() {
     super.initState();
     context.read<PlaybackCubit>().startAutoPlay(
-      startSurah: 4,
+      startSurah: 112,
       startAyah: 1,
+      endSurah: 113,
+      endAyah: 1,
+      repeatMode: RepeatMode.times,
+      repeatTimes: 2,
       reciter: Reciter.alafasy,
     );
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

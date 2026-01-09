@@ -6,6 +6,7 @@ import 'package:quran_app/features/quran_playback/domain/repositories/quran_play
 import 'package:quran_app/features/quran_playback/domain/services/aya_sequence_service.dart';
 
 import '../../../data/repositories/helper/reciter.dart';
+import '../../../data/repositories/helper/repeat_mode.dart';
 import '../../../domain/entities/ayah_identifier.dart';
 import 'playback_state.dart';
 
@@ -18,6 +19,11 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   Reciter? _reciter;
   int? _endSurah;
   int? _endAyah;
+  RepeatMode _repeatMode = RepeatMode.once;
+  int _repeatTimes = 1; // used only for RepeatMode.times
+  int _currentRepeat = 0;
+
+  AyahIdentifier? _startAyah;
 
   PlaybackCubit({required this.ayahSequenceService, required this.repository})
     : super(const PlaybackState()) {
@@ -41,16 +47,23 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     required Reciter reciter,
     int? endSurah,
     int? endAyah,
+    RepeatMode repeatMode = RepeatMode.once,
+    int repeatTimes = 1,
   }) async {
     if (isClosed) return;
 
     _reciter = reciter;
     _endSurah = endSurah;
     _endAyah = endAyah;
+    _repeatMode = repeatMode;
+    _repeatTimes = repeatTimes;
+    _currentRepeat = 0;
+
+    _startAyah = AyahIdentifier(surah: startSurah, ayah: startAyah);
 
     emit(state.copyWith(isAutoPlaying: true, isLoading: true, error: null));
 
-    await _playAyah(AyahIdentifier(surah: startSurah, ayah: startAyah));
+    await _playAyah(_startAyah!);
   }
 
   Future<void> _playAyah(AyahIdentifier ayah) async {
@@ -125,8 +138,28 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       endAyah: _endAyah,
     );
 
+    // If range finished
     if (next == null) {
-      stop();
+      switch (_repeatMode) {
+        case RepeatMode.once:
+          stop();
+          return;
+
+        case RepeatMode.times:
+          _currentRepeat++;
+          if (_currentRepeat >= _repeatTimes) {
+            stop();
+            return;
+          }
+          break;
+
+        case RepeatMode.infinite:
+          // do nothing, just restart
+          break;
+      }
+
+      // Restart from beginning of range
+      _playAyah(_startAyah!);
       return;
     }
 
