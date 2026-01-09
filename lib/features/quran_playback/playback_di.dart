@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/features/quran_playback/domain/services/aya_sequence_service.dart';
 
 import 'data/datasources/local/quran_playback_local_data_source.dart';
 import 'data/datasources/remote/quran_playback_remote_data_source.dart';
@@ -24,7 +25,11 @@ void initPlayback() {
       local: sl<QuranPlaybackLocalDataSource>(),
     ),
   );
+  sl.registerLazySingleton<AyahSequenceService>(() => AyahSequenceService());
   sl.registerFactory<PlaybackCubit>(
-    () => PlaybackCubit(sl<QuranPlaybackRepo>()),
+    () => PlaybackCubit(
+      ayahSequenceService: sl<AyahSequenceService>(),
+      repository: sl<QuranPlaybackRepo>(),
+    ),
   );
 }

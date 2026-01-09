@@ -32,6 +32,11 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   Stream<AyahIdentifier> get currentAyahStream => _ayahController.stream;
 
   @override
+  Stream<void> get onAudioCompleted => player.playerStateStream
+      .where((state) => state.processingState == ProcessingState.completed)
+      .map((_) => null);
+  //TO-DO
+  @override
   Future<Either<Failure, String>> prepareAyahAudio({
     required AyahIdentifier ayah,
     required Reciter reciter,

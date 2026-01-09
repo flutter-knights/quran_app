@@ -6,7 +6,7 @@ import '../entities/ayah_identifier.dart';
 
 abstract class QuranPlaybackRepo {
   Stream<AyahIdentifier> get currentAyahStream;
-
+  Stream<void> get onAudioCompleted;
   Future<Either<Failure, String>> prepareAyahAudio({
     required AyahIdentifier ayah,
     required Reciter reciter,
