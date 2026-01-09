@@ -24,9 +24,9 @@ class _MushafPageState extends State<MushafPage> {
   void initState() {
     super.initState();
     context.read<PlaybackCubit>().startAutoPlay(
-      startSurah: 1,
+      startSurah: 110,
       startAyah: 1,
-      reciter: Reciter.abdulBasitMujawwad,
+      reciter: Reciter.alafasy,
     );
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);

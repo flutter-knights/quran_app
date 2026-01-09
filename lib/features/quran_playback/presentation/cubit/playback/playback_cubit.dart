@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/features/quran_playback/domain/repositories/quran_playback_repo.dart';
 import 'package:quran_app/features/quran_playback/domain/services/aya_sequence_service.dart';
 
@@ -24,6 +25,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       emit(
         state.copyWith(currentAyah: ayah, isPlaying: true, isLoading: false),
       );
+      _preloadNextAyahs(ayah);
     });
 
     _completeSub = repository.onAudioCompleted.listen((_) {
@@ -71,6 +73,40 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         await repository.playPreparedAudio(path);
       },
     );
+  }
+
+  Future<void> preloadFullSurah({
+    required int surah,
+    required Reciter reciter,
+  }) async {
+    final totalAyahs = quran.getVerseCount(surah);
+
+    emit(state.copyWith(isLoading: true));
+
+    for (int ayah = 1; ayah <= totalAyahs; ayah++) {
+      await repository.prepareAyahAudio(
+        ayah: AyahIdentifier(surah: surah, ayah: ayah),
+        reciter: reciter,
+      );
+    }
+
+    emit(state.copyWith(isLoading: false));
+  }
+
+  Future<void> _preloadNextAyahs(AyahIdentifier current) async {
+    if (_reciter == null) return;
+
+    final nextAyahs = ayahSequenceService.getNextAyahs(
+      current: current,
+      count: 5,
+      endSurah: _endSurah,
+      endAyah: _endAyah,
+    );
+
+    for (final ayah in nextAyahs) {
+      // 🔥 fire-and-forget
+      repository.prepareAyahAudio(ayah: ayah, reciter: _reciter!);
+    }
   }
 
   void _handleNextAyah() {

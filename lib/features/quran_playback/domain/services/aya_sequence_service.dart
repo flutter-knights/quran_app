@@ -26,4 +26,24 @@ class AyahSequenceService {
 
     return null;
   }
+
+  /// ✅ NEW: get next N ayahs
+  List<AyahIdentifier> getNextAyahs({
+    required AyahIdentifier current,
+    required int count,
+    int? endSurah,
+    int? endAyah,
+  }) {
+    final List<AyahIdentifier> ayahs = [];
+    AyahIdentifier? temp = current;
+
+    for (int i = 0; i < count; i++) {
+      temp = getNextAyah(current: temp!, endSurah: endSurah, endAyah: endAyah);
+
+      if (temp == null) break;
+      ayahs.add(temp);
+    }
+
+    return ayahs;
+  }
 }
