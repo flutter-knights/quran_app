@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
-import 'package:quran_app/features/quran_playback/data/repositories/reciter.dart';
+import 'package:quran_app/features/quran_playback/data/repositories/helper/reciter.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_content.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -24,7 +24,7 @@ class _MushafPageState extends State<MushafPage> {
   void initState() {
     super.initState();
     context.read<PlaybackCubit>().startAutoPlay(
-      startSurah: 110,
+      startSurah: 4,
       startAyah: 1,
       reciter: Reciter.alafasy,
     );

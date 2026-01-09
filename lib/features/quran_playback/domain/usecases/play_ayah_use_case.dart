@@ -3,7 +3,7 @@ import 'package:quran_app/core/usecases/usecase.dart';
 import 'package:quran_app/features/quran_playback/domain/repositories/quran_playback_repo.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../../data/repositories/reciter.dart';
+import '../../data/repositories/helper/reciter.dart';
 import '../entities/ayah_identifier.dart';
 
 class PlayAyahUseCase

@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/quran_playback/domain/services/aya_sequence_service.dart';
 
@@ -9,8 +10,10 @@ import 'data/repositories/quran_playback_repo_impl.dart';
 import 'domain/repositories/quran_playback_repo.dart';
 import 'presentation/cubit/playback/playback_cubit.dart';
 
-void initPlayback() {
+void initPlayback() async {
   final audioCacheBox = Hive.box<String>('ayahAudioCache');
+  final dir = await getApplicationDocumentsDirectory();
+
   sl.registerLazySingleton<QuranPlaybackRemoteDataSource>(
     () => QuranPlaybackRemoteDataSource(dio: sl()),
   );
@@ -23,6 +26,7 @@ void initPlayback() {
       player: sl<AudioPlayer>(),
       remote: sl<QuranPlaybackRemoteDataSource>(),
       local: sl<QuranPlaybackLocalDataSource>(),
+      dir: dir,
     ),
   );
   sl.registerLazySingleton<AyahSequenceService>(() => AyahSequenceService());

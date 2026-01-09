@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../../data/repositories/reciter.dart';
+import '../../data/repositories/helper/reciter.dart';
 import '../entities/ayah_identifier.dart';
 
 abstract class QuranPlaybackRepo {
@@ -11,7 +11,10 @@ abstract class QuranPlaybackRepo {
     required AyahIdentifier ayah,
     required Reciter reciter,
   });
-
+  Future<void> preloadAyahs({
+    required List<AyahIdentifier> ayahs,
+    required Reciter reciter,
+  });
   Future<Either<Failure, void>> playPreparedAudio(String localPath);
   void notifyAyahChanged(AyahIdentifier ayah);
   Future<void> stop();

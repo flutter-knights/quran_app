@@ -47,9 +47,9 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
           .getPrayerTimesList(location);
       await prayerTimesLocalDataSource.cache(prayerTimesList);
 
-      for (final prayerTimes in prayerTimesList) {
-        print(prayerTimes.date.gregorianDate);
-      }
+      // for (final prayerTimes in prayerTimesList) {
+      //   print(prayerTimes.date.gregorianDate);
+      // }
 
       return Right(prayerTimesLocalDataSource.getCached(date: targetDate)!);
     } on DioException catch (e) {

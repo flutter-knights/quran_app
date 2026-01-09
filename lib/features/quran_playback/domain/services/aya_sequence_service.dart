@@ -27,7 +27,6 @@ class AyahSequenceService {
     return null;
   }
 
-  /// ✅ NEW: get next N ayahs
   List<AyahIdentifier> getNextAyahs({
     required AyahIdentifier current,
     required int count,

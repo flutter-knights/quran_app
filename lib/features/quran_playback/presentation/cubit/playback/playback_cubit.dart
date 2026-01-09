@@ -5,7 +5,7 @@ import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/features/quran_playback/domain/repositories/quran_playback_repo.dart';
 import 'package:quran_app/features/quran_playback/domain/services/aya_sequence_service.dart';
 
-import '../../../data/repositories/reciter.dart';
+import '../../../data/repositories/helper/reciter.dart';
 import '../../../domain/entities/ayah_identifier.dart';
 import 'playback_state.dart';
 
@@ -22,6 +22,8 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   PlaybackCubit({required this.ayahSequenceService, required this.repository})
     : super(const PlaybackState()) {
     _ayahSub = repository.currentAyahStream.listen((ayah) {
+      if (isClosed) return;
+
       emit(
         state.copyWith(currentAyah: ayah, isPlaying: true, isLoading: false),
       );
@@ -33,7 +35,6 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     });
   }
 
-  /// ▶️ Start auto play
   Future<void> startAutoPlay({
     required int startSurah,
     required int startAyah,
@@ -41,6 +42,8 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     int? endSurah,
     int? endAyah,
   }) async {
+    if (isClosed) return;
+
     _reciter = reciter;
     _endSurah = endSurah;
     _endAyah = endAyah;
@@ -51,6 +54,8 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> _playAyah(AyahIdentifier ayah) async {
+    if (isClosed) return;
+
     emit(state.copyWith(isLoading: true));
 
     final result = await repository.prepareAyahAudio(
@@ -58,8 +63,11 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       reciter: _reciter!,
     );
 
+    if (isClosed) return;
+
     result.fold(
       (failure) {
+        if (isClosed) return;
         emit(
           state.copyWith(
             isPlaying: false,
@@ -69,6 +77,8 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         );
       },
       (path) async {
+        if (isClosed) return;
+
         repository.notifyAyahChanged(ayah);
         await repository.playPreparedAudio(path);
       },
@@ -81,14 +91,14 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }) async {
     final totalAyahs = quran.getVerseCount(surah);
 
+    final ayahs = List.generate(
+      totalAyahs,
+      (i) => AyahIdentifier(surah: surah, ayah: i + 1),
+    );
+
     emit(state.copyWith(isLoading: true));
 
-    for (int ayah = 1; ayah <= totalAyahs; ayah++) {
-      await repository.prepareAyahAudio(
-        ayah: AyahIdentifier(surah: surah, ayah: ayah),
-        reciter: reciter,
-      );
-    }
+    await repository.preloadAyahs(ayahs: ayahs, reciter: reciter);
 
     emit(state.copyWith(isLoading: false));
   }
@@ -103,10 +113,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       endAyah: _endAyah,
     );
 
-    for (final ayah in nextAyahs) {
-      // 🔥 fire-and-forget
-      repository.prepareAyahAudio(ayah: ayah, reciter: _reciter!);
-    }
+    repository.preloadAyahs(ayahs: nextAyahs, reciter: _reciter!);
   }
 
   void _handleNextAyah() {

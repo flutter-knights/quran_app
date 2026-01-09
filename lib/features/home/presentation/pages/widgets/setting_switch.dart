@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
