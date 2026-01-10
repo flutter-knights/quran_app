@@ -38,7 +38,6 @@ class HadithHiveModel extends HiveObject {
       englishHadith: englishHadith,
       arabicHadith: arabicHadith,
       englishNarrator: englishNarrator,
-      chapter: 0,
       chapterId: 0,
       bookId: bookId,
       status: HadithStatus.values.firstWhere((e) => e.name == status),

@@ -8,13 +8,17 @@ class HadithPageModel extends HadithPage {
     required super.lastPage,
   });
 
-  factory HadithPageModel.fromJson(Map<String, dynamic> json) {
+  factory HadithPageModel.fromJson(
+    Map<String, dynamic> json,
+    Map<String, dynamic> chaptersMap,
+  ) {
     final hadithsData = json['hadiths'];
+
     return HadithPageModel(
       currentPage: hadithsData['current_page'],
       lastPage: hadithsData['next_page_url'] == null,
       ahadithList: (hadithsData['data'] as List)
-          .map((e) => HadithModel.fromJson(e))
+          .map((e) => HadithModel.fromJson(e, chaptersMap)) // Pass the map here
           .toList(),
     );
   }

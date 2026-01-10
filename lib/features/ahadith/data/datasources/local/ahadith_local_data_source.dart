@@ -5,7 +5,8 @@ import 'package:quran_app/features/ahadith/domain/entities/hadith_page.dart';
 
 class AhadithLocalDataSource {
   final Box<HadithHiveModel> hadithBox;
-  AhadithLocalDataSource({required this.hadithBox});
+  final Map<String, dynamic> chapters;
+  AhadithLocalDataSource({required this.hadithBox, required this.chapters});
 
   HadithPage? getCachedPage(int pageNumber, String bookSlug) {
     final String keyPrefix = "${bookSlug}_${pageNumber}_";

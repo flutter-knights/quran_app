@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/ahadith_cubit.dart';
 
@@ -66,7 +65,7 @@ class _AhadithListViewState extends State<AhadithListView> {
                   }
 
                   final hadith = ahadith[index];
-                  return SizedBox(child: Text(hadith.arabicHadith));
+                  return SizedBox(child: Text(hadith.chapter!.chapterArabic));
                 },
               );
             }
