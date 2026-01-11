@@ -8,5 +8,6 @@ class MushafPageModel extends MushafPageEntity {
     required super.surahNames,
     required super.surahHeadersIndexes,
     required super.showBasmalaList,
+    required super.ayahIdentifiers,
   });
 }

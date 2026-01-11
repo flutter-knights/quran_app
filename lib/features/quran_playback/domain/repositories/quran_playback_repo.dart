@@ -16,6 +16,8 @@ abstract class QuranPlaybackRepo {
     required Reciter reciter,
   });
   Future<Either<Failure, void>> playPreparedAudio(String localPath);
+  Future<void> pause();
+  Future<void> resume();
   void notifyAyahChanged(AyahIdentifier ayah);
   Future<void> stop();
 }

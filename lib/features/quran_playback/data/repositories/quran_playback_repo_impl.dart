@@ -103,6 +103,12 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   Future<void> stop() => player.stop();
 
   @override
+  Future<void> pause() => player.pause();
+
+  @override
+  Future<void> resume() => player.play();
+
+  @override
   void notifyAyahChanged(AyahIdentifier ayah) {
     if (!_ayahController.isClosed) {
       _ayahController.add(ayah);

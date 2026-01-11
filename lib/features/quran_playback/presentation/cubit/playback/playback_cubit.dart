@@ -170,6 +170,16 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     emit(const PlaybackState());
   }
 
+  Future<void> pause() async {
+    emit(state.copyWith(isPlaying: false));
+    await repository.pause();
+  }
+
+  Future<void> resume() async {
+    emit(state.copyWith(isPlaying: true));
+    await repository.resume();
+  }
+
   @override
   Future<void> close() async {
     await _ayahSub.cancel();

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
 
 import '../../../../../../config/theme/color_scheme.dart';
+import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import 'basmala_text.dart';
 import 'surah_header.dart';
 
@@ -14,6 +15,7 @@ class AyahTextSpanBuilder {
     required double fontSize,
     required double lineHeight,
     required double pageWidth,
+    required AyahIdentifier? currentAyah,
   }) {
     final List<InlineSpan> spans = [];
     int currentSurahIndex = 0;
@@ -39,6 +41,12 @@ class AyahTextSpanBuilder {
 
         currentSurahIndex++;
       }
+      final ayahId = page.ayahIdentifiers[i];
+
+      final bool isHighlighted =
+          currentAyah != null &&
+          currentAyah.surah == ayahId.surah &&
+          currentAyah.ayah == ayahId.ayah;
 
       spans.add(
         TextSpan(
@@ -48,7 +56,10 @@ class AyahTextSpanBuilder {
             fontFamily: "QCF_P${pageNumber.toString().padLeft(3, "0")}",
             fontSize: fontSize,
             height: lineHeight / fontSize,
-            color: context.colorScheme.onSurface,
+            color: isHighlighted
+                ? context.colorScheme.onPrimary
+                : context.colorScheme.onSurface,
+            backgroundColor: isHighlighted ? context.colorScheme.primary : null,
           ),
         ),
       );

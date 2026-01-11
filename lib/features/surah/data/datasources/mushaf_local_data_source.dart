@@ -1,5 +1,6 @@
 import 'package:quran/line_break.dart';
 import 'package:quran/quran.dart' as quran;
+import '../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../models/mushaf_page_model.dart';
 
 class MushafLocalDataSource {
@@ -19,6 +20,7 @@ class MushafLocalDataSource {
     final List<int> surahHeadersIndexes = [];
     final List<String> surahNames = [];
     final List<bool> surahHasBasmala = [];
+    final List<AyahIdentifier> ayahIdentifiers = [];
 
     for (var block in pageData) {
       int surah = block["surah"];
@@ -46,6 +48,7 @@ class MushafLocalDataSource {
         String finalVerse = preprocessVerse(verseWithBreaks, ayah, start);
 
         ayahs.add(finalVerse);
+        ayahIdentifiers.add(AyahIdentifier(surah: surah, ayah: ayah));
       }
     }
 
@@ -55,6 +58,7 @@ class MushafLocalDataSource {
       surahNames: surahNames,
       surahHeadersIndexes: surahHeadersIndexes,
       showBasmalaList: surahHasBasmala,
+      ayahIdentifiers: ayahIdentifiers,
     );
   }
 

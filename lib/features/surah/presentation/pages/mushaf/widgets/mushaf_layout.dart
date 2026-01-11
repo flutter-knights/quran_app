@@ -27,7 +27,6 @@ class MushafLayout extends StatelessWidget {
                   final pageWidth = constraints.maxWidth;
                   final fontSize = pageWidth / totalLines * 0.85;
                   final lineHeight = pageWidth / totalLines * 1.4;
-                  final letterSpacing = fontSize * 0.16;
 
                   return MushafText(
                     page: page,
@@ -35,7 +34,6 @@ class MushafLayout extends StatelessWidget {
                     pageWidth: pageWidth,
                     fontSize: fontSize,
                     lineHeight: lineHeight,
-                    letterSpacing: letterSpacing,
                   );
                 },
               ),
