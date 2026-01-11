@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
-
 import '../../../../../../config/theme/color_scheme.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import 'basmala_text.dart';
@@ -18,31 +17,48 @@ class AyahTextSpanBuilder {
     required AyahIdentifier? currentAyah,
   }) {
     final List<InlineSpan> spans = [];
+
+    // Convert headers list to Set for O(1) lookup
+    final Set<int> headerIndexes = page.surahHeadersIndexes.toSet();
     int currentSurahIndex = 0;
 
+    // Precompute styles to reduce TextStyle recreation
+    final normalStyle = TextStyle(
+      fontFamily: "QCF_P${pageNumber.toString().padLeft(3, "0")}",
+      fontSize: fontSize,
+      height: lineHeight / fontSize,
+      color: context.colorScheme.onSurface,
+    );
+
+    final highlightedStyle = normalStyle.copyWith(
+      color: context.colorScheme.onPrimary,
+      backgroundColor: context.colorScheme.primary,
+    );
+
     for (int i = 0; i < page.ayahs.length; i++) {
-      if (page.surahHeadersIndexes.contains(i)) {
+      // Surah header
+      if (headerIndexes.contains(i)) {
         spans.add(
           WidgetSpan(
-            child: SizedBox(
-              width: pageWidth,
-              child: SurahHeader(
-                name: page.surahNames[currentSurahIndex],
-                surahNumber: 1, // TODO: inject real value
-                verseCount: 1, // TODO: inject real value
-              ),
+            alignment: PlaceholderAlignment.middle,
+            child: SurahHeader(
+              name: page.surahNames[currentSurahIndex],
+              surahNumber: 1,
+              verseCount: 1,
             ),
           ),
         );
 
+        // Basmala
         if (page.showBasmalaList[currentSurahIndex]) {
           spans.add(BasmalaText(fontSize: fontSize, lineHeight: lineHeight));
         }
 
         currentSurahIndex++;
       }
-      final ayahId = page.ayahIdentifiers[i];
 
+      // Determine highlighting once per ayah
+      final ayahId = page.ayahIdentifiers[i];
       final bool isHighlighted =
           currentAyah != null &&
           currentAyah.surah == ayahId.surah &&
@@ -52,15 +68,7 @@ class AyahTextSpanBuilder {
         TextSpan(
           locale: const Locale('ar'),
           text: page.ayahs[i],
-          style: TextStyle(
-            fontFamily: "QCF_P${pageNumber.toString().padLeft(3, "0")}",
-            fontSize: fontSize,
-            height: lineHeight / fontSize,
-            color: isHighlighted
-                ? context.colorScheme.onPrimary
-                : context.colorScheme.onSurface,
-            backgroundColor: isHighlighted ? context.colorScheme.primary : null,
-          ),
+          style: isHighlighted ? highlightedStyle : normalStyle,
         ),
       );
     }
