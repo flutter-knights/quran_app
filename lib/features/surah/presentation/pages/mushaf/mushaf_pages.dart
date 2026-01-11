@@ -25,12 +25,9 @@ class _MushafPageState extends State<MushafPage> {
   void initState() {
     super.initState();
     context.read<PlaybackCubit>().startAutoPlay(
-      startSurah: 112,
+      startSurah: 1,
       startAyah: 1,
-      endSurah: 113,
-      endAyah: 1,
-      repeatMode: RepeatMode.times,
-      repeatTimes: 2,
+      repeatMode: RepeatMode.once,
       reciter: Reciter.alafasy,
     );
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -42,6 +39,7 @@ class _MushafPageState extends State<MushafPage> {
   @override
   void dispose() {
     _pageController.dispose();
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     WakelockPlus.disable();
     super.dispose();
