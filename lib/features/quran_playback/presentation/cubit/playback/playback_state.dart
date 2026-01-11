@@ -3,31 +3,31 @@ import '../../../domain/entities/ayah_identifier.dart';
 class PlaybackState {
   final AyahIdentifier? currentAyah;
   final bool isPlaying;
+  final bool isAutoPlaying;
   final bool isLoading;
   final String? error;
-  final bool isAutoPlaying;
 
   const PlaybackState({
     this.currentAyah,
     this.isPlaying = false,
+    this.isAutoPlaying = false,
     this.isLoading = false,
     this.error,
-    this.isAutoPlaying = false,
   });
 
   PlaybackState copyWith({
     AyahIdentifier? currentAyah,
     bool? isPlaying,
+    bool? isAutoPlaying,
     bool? isLoading,
     String? error,
-    bool? isAutoPlaying,
   }) {
     return PlaybackState(
       currentAyah: currentAyah ?? this.currentAyah,
       isPlaying: isPlaying ?? this.isPlaying,
+      isAutoPlaying: isAutoPlaying ?? this.isAutoPlaying,
       isLoading: isLoading ?? this.isLoading,
       error: error,
-      isAutoPlaying: isAutoPlaying ?? this.isAutoPlaying,
     );
   }
 }
