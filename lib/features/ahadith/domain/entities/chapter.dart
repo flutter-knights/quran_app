@@ -1,6 +1,6 @@
 class Chapter {
   final int id;
-  final String chapterNumber;
+  final int chapterNumber;
   final String chapterArabic;
   final String chapterEnglish;
 

@@ -15,18 +15,23 @@ import 'package:quran_app/features/ahadith/presentation/cubit/ahadith_cubit.dart
 void initAhadith() async {
   final hadithBox = Hive.box<HadithHiveModel>('ahadithCache');
   final Map<String, dynamic> chaptersJson = await getChapters();
+  sl.registerSingleton<Map<String, dynamic>>(
+    chaptersJson,
+    instanceName: 'chapters',
+  );
   sl.registerLazySingleton<AhadithRemoteDataSource>(
-    () => AhadithRemoteDataSource(dio: sl(), chapters: chaptersJson),
+    () => AhadithRemoteDataSource(dio: sl()),
   );
 
   sl.registerLazySingleton<AhadithLocalDataSource>(
-    () => AhadithLocalDataSource(hadithBox: hadithBox, chapters: chaptersJson),
+    () => AhadithLocalDataSource(hadithBox: hadithBox),
   );
 
   sl.registerLazySingleton<AhadithRepository>(
     () => AhadithRepositoryImpl(
       ahadithLocalDataSource: sl(),
       ahadithRemoteDataSource: sl(),
+      allChapters: sl(instanceName: 'chapters'),
     ),
   );
   sl.registerLazySingleton<GetAhadithPageUseCase>(

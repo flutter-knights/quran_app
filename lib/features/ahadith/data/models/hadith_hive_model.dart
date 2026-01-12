@@ -5,55 +5,68 @@ part 'hadith_hive_model.g.dart';
 @HiveType(typeId: 4)
 class HadithHiveModel extends HiveObject {
   @HiveField(0)
-  final int id;
+  final int hadithNumber;
   @HiveField(1)
   final String englishHadith;
   @HiveField(2)
   final String arabicHadith;
   @HiveField(3)
-  final String englishNarrator;
+  final String englishHeader;
   @HiveField(4)
-  final String status;
+  final String arabicHeader;
   @HiveField(5)
-  final int bookId;
+  final String englishNarrator;
   @HiveField(6)
-  final int pageNumber;
+  final String status;
   @HiveField(7)
-  final String bookSlug; 
+  final int pageNumber;
+  @HiveField(8)
+  final String bookSlug;
+  @HiveField(9)
+  final int chapterId;
 
   HadithHiveModel({
-    required this.id,
+    required this.hadithNumber,
     required this.englishHadith,
     required this.arabicHadith,
     required this.englishNarrator,
+    required this.arabicHeader,
+    required this.englishHeader,
     required this.status,
-    required this.bookId,
     required this.pageNumber,
     required this.bookSlug,
+    required this.chapterId,
   });
 
   Hadith toEntity() {
     return Hadith(
-      id: id,
+      hadithNumber: hadithNumber,
       englishHadith: englishHadith,
       arabicHadith: arabicHadith,
       englishNarrator: englishNarrator,
-      chapterId: 0,
-      bookId: bookId,
-      status: HadithStatus.values.firstWhere((e) => e.name == status),
+      englishHeader: englishHeader,
+      arabicHeader: arabicHeader,
+      chapterId: chapterId,
+
+      status: HadithStatus.values.firstWhere(
+        (e) => e.name == status,
+        orElse: () => HadithStatus.daeef,
+      ),
     );
   }
 
   factory HadithHiveModel.fromEntity(Hadith entity, int page, String slug) {
     return HadithHiveModel(
-      id: entity.id,
+      hadithNumber: entity.hadithNumber,
       englishHadith: entity.englishHadith,
       arabicHadith: entity.arabicHadith,
       englishNarrator: entity.englishNarrator,
+      arabicHeader: entity.arabicHeader,
+      englishHeader: entity.englishHeader,
       status: entity.status.name,
-      bookId: entity.bookId,
       pageNumber: page,
       bookSlug: slug,
+      chapterId: entity.chapterId,
     );
   }
 }

@@ -1,2478 +1,2478 @@
-{"al-silsila-sahiha": [
-    {
-      "id": 448,
-      "chapterNumber": "1",
-      "chapterArabic": "الأخلاق والخير والثواب الرحيم",
-      "chapterEnglish": "Morality, goodness and merciful reward"
-    },
-    {
-      "id": 449,
-      "chapterNumber": "2",
-      "chapterArabic": "الأدب والبيان يطلب الإذن",
-      "chapterEnglish": "Literature and statement seeking permission"
-    },
-    {
-      "id": 450,
-      "chapterNumber": "3",
-      "chapterArabic": "بيان الأذان والصلاة",
-      "chapterEnglish": "Statement of Adhan and Prayer"
-    },
-    {
-      "id": 451,
-      "chapterNumber": "4",
-      "chapterArabic": "بيان النحر والذبح والعقيقة والأكل والشرب والرفق بالحيوان",
-      "chapterEnglish": "Statement of Sacrifice, Slaughter, Aqeeqah, Eating, Drinking and Gentleness with Animals"
-    },
-    {
-      "id": 452,
-      "chapterNumber": "5",
-      "chapterArabic": "بيان العقيدة والتوحيد والدين والقدر",
-      "chapterEnglish": "Statement of faith, monotheism, religion and destiny"
-    },
-    {
-      "id": 453,
-      "chapterNumber": "6",
-      "chapterArabic": "القسم والنذور وأقوال الكفار",
-      "chapterEnglish": "Swearing, vows and statement of infidels"
-    },
-    {
-      "id": 454,
-      "chapterNumber": "7",
-      "chapterArabic": "بيان التجارة والعمل والزهد",
-      "chapterEnglish": "Statement of trade, labor and asceticism"
-    },
-    {
-      "id": 455,
-      "chapterNumber": "8",
-      "chapterArabic": "بيان التوبة والوعظ والتلاوة",
-      "chapterEnglish": "Statement of repentance, admonition and recitation"
-    },
-    {
-      "id": 456,
-      "chapterNumber": "9",
-      "chapterArabic": "بيان الجنة والنار",
-      "chapterEnglish": "Statement of Heaven and Hell"
-    },
-    {
-      "id": 457,
-      "chapterNumber": "10",
-      "chapterArabic": "بيان الحج والعمرة",
-      "chapterEnglish": "Statement of Hajj and Umrah"
-    },
-    {
-      "id": 458,
-      "chapterNumber": "11",
-      "chapterArabic": "بيان الحدود والمسائل والقواعد",
-      "chapterEnglish": "Statement of limits, matters and rules"
-    },
-    {
-      "id": 459,
-      "chapterNumber": "12",
-      "chapterArabic": "بيان الخلافة والولاء والطاعة والإمارة",
-      "chapterEnglish": "Statement of Khilafah, Allegiance, Obedience and Emirate"
-    },
-    {
-      "id": 460,
-      "chapterNumber": "13",
-      "chapterArabic": "بيان الزكاة والكرم والصدقة والهبة",
-      "chapterEnglish": "Statement of Zakat, Generosity, Charity and Gift"
-    },
-    {
-      "id": 461,
-      "chapterNumber": "14",
-      "chapterArabic": "الزواج ، العدل بين الزوجات ، تربية الأولاد ، العدل بينهم وبين أسمائهم الحسنة",
-      "chapterEnglish": "Marriage, justice between wives, training of children, justice between them and their good names"
-    },
-    {
-      "id": 462,
-      "chapterNumber": "15",
-      "chapterArabic": "بيان السفر والجهاد والتسامح مع الحيوانات",
-      "chapterEnglish": "Statement of travel, jihad and leniency towards animals"
-    },
-    {
-      "id": 463,
-      "chapterNumber": "16",
-      "chapterArabic": "سيرة الرسول صلى الله عليه وسلم وصفات الرسول صلى الله عليه وسلم",
-      "chapterEnglish": "The biography of the Prophet and the attributes of the Prophet (peace be upon him)"
-    },
-    {
-      "id": 464,
-      "chapterNumber": "17",
-      "chapterArabic": "بيان الصيام والتهجد",
-      "chapterEnglish": "Statement of fasting and tahajjud"
-    },
-    {
-      "id": 465,
-      "chapterNumber": "18",
-      "chapterArabic": "بيان الطب وزيارة المريض",
-      "chapterEnglish": "The statement of medicine and visiting the sick"
-    },
-    {
-      "id": 466,
-      "chapterNumber": "19",
-      "chapterArabic": "بيان الطهارة والوضوء",
-      "chapterEnglish": "Statement of purity and ablution"
-    },
-    {
-      "id": 467,
-      "chapterNumber": "20",
-      "chapterArabic": "بيان العلم والسنة والأحاديث النبوية",
-      "chapterEnglish": "Statement of knowledge, Sunnah and Hadith of the Prophet"
-    },
-    {
-      "id": 468,
-      "chapterNumber": "21",
-      "chapterArabic": "أيام الضيق وعلامات القيامة والقيامة",
-      "chapterEnglish": "Days of tribulation, signs of resurrection and resurrection"
-    },
-    {
-      "id": 469,
-      "chapterNumber": "22",
-      "chapterArabic": "فَضَائِلُ الْقُرْآنِ وَالْأَدْعِيَةُ وَالْأَذْكَارُ وَالرُّقٰى",
-      "chapterEnglish": "Statement of virtues of Qur'an, supplications, invocations and incantations"
-    },
-    {
-      "id": 470,
-      "chapterNumber": "23",
-      "chapterArabic": "وصف الملابس والزينة والألعاب والصور",
-      "chapterEnglish": "Description of clothing, adornment, games and pictures"
-    },
-    {
-      "id": 471,
-      "chapterNumber": "24",
-      "chapterArabic": "وصف الأيام الأولى والأنبياء والمخلوقات الغريبة",
-      "chapterEnglish": "Description of the early days, prophets and strange creatures"
-    },
-    {
-      "id": 472,
-      "chapterNumber": "25",
-      "chapterArabic": "بيان المرض والجنازات والقبور",
-      "chapterEnglish": "Statement of Illness, Funerals and Graves"
-    },
-    {
-      "id": 473,
-      "chapterNumber": "26",
-      "chapterArabic": "بيان نقاط القوة والضعف",
-      "chapterEnglish": "Statement of strengths and weaknesses"
-    },
-    {
-      "id": 474,
-      "chapterNumber": "27",
-      "chapterArabic": "نصائح وكلمات مهدئة",
-      "chapterEnglish": "Tips and soothing words"
-    },
-    {
-      "id": 475,
-      "chapterNumber": "28",
-      "chapterArabic": "متنوع",
-      "chapterEnglish": "Miscellaneous"
-    }
-  ],
-  "mishkat": [
-    {
-      "id": 376,
-      "chapterNumber": "1",
-      "chapterArabic": "كتاب الإيمان",
-      "chapterEnglish": "Faith"
-    },
-    {
-      "id": 377,
-      "chapterNumber": "2",
-      "chapterArabic": "كتاب العلم",
-      "chapterEnglish": "Knowledge"
-    },
-    {
-      "id": 378,
-      "chapterNumber": "3",
-      "chapterArabic": "كتاب الطهارة",
-      "chapterEnglish": "Purification"
-    },
-    {
-      "id": 379,
-      "chapterNumber": "4",
-      "chapterArabic": "كتاب الصلاة",
-      "chapterEnglish": "Prayer"
-    },
-    {
-      "id": 380,
-      "chapterNumber": "5",
-      "chapterArabic": "كتاب الجنائز",
-      "chapterEnglish": "Funerals"
-    },
-    {
-      "id": 381,
-      "chapterNumber": "6",
-      "chapterArabic": "كتاب الزكاة",
-      "chapterEnglish": "Zakat"
-    },
-    {
-      "id": 382,
-      "chapterNumber": "7",
-      "chapterArabic": "كتاب الصوم",
-      "chapterEnglish": "Fasting"
-    },
-    {
-      "id": 383,
-      "chapterNumber": "8",
-      "chapterArabic": "كتاب فضائل القرآن",
-      "chapterEnglish": "The Excellent Qualities of the Qur'an"
-    },
-    {
-      "id": 384,
-      "chapterNumber": "9",
-      "chapterArabic": "كتاب الدعوات",
-      "chapterEnglish": "Supplications"
-    },
-    {
-      "id": 385,
-      "chapterNumber": "10",
-      "chapterArabic": "كتاب المناسك",
-      "chapterEnglish": "The Rites of Pilgrimage"
-    },
-    {
-      "id": 386,
-      "chapterNumber": "11",
-      "chapterArabic": "كتاب البيوع",
-      "chapterEnglish": "Business Transactions"
-    },
-    {
-      "id": 387,
-      "chapterNumber": "12",
-      "chapterArabic": "كتاب الفرائض والوصايا",
-      "chapterEnglish": "Inheritance and Wills"
-    },
-    {
-      "id": 388,
-      "chapterNumber": "13",
-      "chapterArabic": "كتاب النكاح",
-      "chapterEnglish": "Marriage"
-    },
-    {
-      "id": 389,
-      "chapterNumber": "14",
-      "chapterArabic": "كتاب العتق",
-      "chapterEnglish": "Emancipation"
-    },
-    {
-      "id": 390,
-      "chapterNumber": "15",
-      "chapterArabic": "كتاب القصاص",
-      "chapterEnglish": "Retaliation"
-    },
-    {
-      "id": 391,
-      "chapterNumber": "16",
-      "chapterArabic": "كتاب الحدود",
-      "chapterEnglish": "Prescribed Punishments"
-    },
-    {
-      "id": 392,
-      "chapterNumber": "17",
-      "chapterArabic": "كتاب الإمارة والقضاء",
-      "chapterEnglish": "The Offices of Commander and Qadi"
-    },
-    {
-      "id": 393,
-      "chapterNumber": "18",
-      "chapterArabic": "كتاب الجهاد",
-      "chapterEnglish": "Jihad"
-    },
-    {
-      "id": 394,
-      "chapterNumber": "19",
-      "chapterArabic": "كتاب الصيد والذبائح",
-      "chapterEnglish": "Game and Animals Which May Be Slaughtered"
-    },
-    {
-      "id": 395,
-      "chapterNumber": "20",
-      "chapterArabic": "كتاب الأطعمة",
-      "chapterEnglish": "Foods"
-    },
-    {
-      "id": 396,
-      "chapterNumber": "21",
-      "chapterArabic": "كتاب اللباس",
-      "chapterEnglish": "Clothing"
-    },
-    {
-      "id": 397,
-      "chapterNumber": "22",
-      "chapterArabic": "كتاب الطب والرقى",
-      "chapterEnglish": "Medicine and Spells"
-    },
-    {
-      "id": 398,
-      "chapterNumber": "23",
-      "chapterArabic": "كتاب الرؤيا",
-      "chapterEnglish": "Visions"
-    },
-    {
-      "id": 399,
-      "chapterNumber": "24",
-      "chapterArabic": "كتاب الْآدَاب",
-      "chapterEnglish": "Etiquette"
-    },
-    {
-      "id": 400,
-      "chapterNumber": "25",
-      "chapterArabic": "کتاب الرقاق",
-      "chapterEnglish": "Things that soften the heart"
-    },
-    {
-      "id": 401,
-      "chapterNumber": "26",
-      "chapterArabic": "کتاب الفتن",
-      "chapterEnglish": "Tribulations"
-    },
-    {
-      "id": 402,
-      "chapterNumber": "27",
-      "chapterArabic": "كتاب أَحْوَال الْقِيَامَة وبدء الْخلق",
-      "chapterEnglish": "The Conditions of Resurrection"
-    },
-    {
-      "id": 403,
-      "chapterNumber": "28",
-      "chapterArabic": "كتاب الْفَضَائِل وَالشَّمَائِل",
-      "chapterEnglish": "Virtues and merits"
-    },
-    {
-      "id": 404,
-      "chapterNumber": "29",
-      "chapterArabic": "كتاب المناقب",
-      "chapterEnglish": "Virtues"
-    }
-  ],
-  "ibn-e-majah": [
+{"ibn-e-majah": [
     {
       "id": 249,
-      "chapterNumber": "1",
+      "chapterNumber": 1,
       "chapterArabic": "كتاب السنة",
       "chapterEnglish": "The Book of the Sunnah"
     },
     {
       "id": 250,
-      "chapterNumber": "2",
+      "chapterNumber": 2,
       "chapterArabic": "كتاب الطهارة وسننها",
       "chapterEnglish": "The Book of Purification and its Sunnah"
     },
     {
       "id": 251,
-      "chapterNumber": "3",
+      "chapterNumber": 3,
       "chapterArabic": "كتاب التيمم",
       "chapterEnglish": "The Book of Tayammum (Rubbing Hands And Feet With Dust)"
     },
     {
       "id": 252,
-      "chapterNumber": "4",
+      "chapterNumber": 4,
       "chapterArabic": "كتاب الصلاة",
       "chapterEnglish": "The Book of the Prayer"
     },
     {
       "id": 253,
-      "chapterNumber": "5",
+      "chapterNumber": 5,
       "chapterArabic": "كتاب الأذان والسنة فيها",
       "chapterEnglish": "The Book of the Adhan and the Sunnah Regarding It"
     },
     {
       "id": 254,
-      "chapterNumber": "6",
+      "chapterNumber": 6,
       "chapterArabic": "كتاب المساجد والجماعات",
       "chapterEnglish": "The Book on the Mosques and the Congregations"
     },
     {
       "id": 255,
-      "chapterNumber": "7",
+      "chapterNumber": 7,
       "chapterArabic": "كتاب إقامة الصلاة والسنة فيها",
       "chapterEnglish": "Establishing the Prayer and the Sunnah Regarding Them"
     },
     {
       "id": 256,
-      "chapterNumber": "8",
+      "chapterNumber": 8,
       "chapterArabic": "كتاب الجنائز",
       "chapterEnglish": "Chapter Regarding Funerals"
     },
     {
       "id": 257,
-      "chapterNumber": "9",
+      "chapterNumber": 9,
       "chapterArabic": "كتاب الصيام",
       "chapterEnglish": "Fasting"
     },
     {
       "id": 258,
-      "chapterNumber": "10",
+      "chapterNumber": 10,
       "chapterArabic": "كتاب الزكاة",
       "chapterEnglish": "The Chapter Regarding Zakat"
     },
     {
       "id": 259,
-      "chapterNumber": "11",
+      "chapterNumber": 11,
       "chapterArabic": "كتاب النكاح",
       "chapterEnglish": "The Chapter on Marriage"
     },
     {
       "id": 260,
-      "chapterNumber": "12",
+      "chapterNumber": 12,
       "chapterArabic": "كتاب الطلاق",
       "chapterEnglish": "The Chapter on Divorce"
     },
     {
       "id": 261,
-      "chapterNumber": "13",
+      "chapterNumber": 13,
       "chapterArabic": "كتاب الكفارات",
       "chapterEnglish": "The Chapter on Expiation"
     },
     {
       "id": 262,
-      "chapterNumber": "14",
+      "chapterNumber": 14,
       "chapterArabic": "كتاب التجارات",
       "chapterEnglish": "The Chapter on Business Transactions"
     },
     {
       "id": 263,
-      "chapterNumber": "15",
+      "chapterNumber": 15,
       "chapterArabic": "كتاب الأحكام",
       "chapterEnglish": "The Chapter on Rulings"
     },
     {
       "id": 264,
-      "chapterNumber": "16",
+      "chapterNumber": 16,
       "chapterArabic": "كتاب الهبات",
       "chapterEnglish": "The Chapter on Gifts"
     },
     {
       "id": 265,
-      "chapterNumber": "17",
+      "chapterNumber": 17,
       "chapterArabic": "كتاب الصدقات",
       "chapterEnglish": "The Chapter on Charity"
     },
     {
       "id": 266,
-      "chapterNumber": "18",
+      "chapterNumber": 18,
       "chapterArabic": "كتاب الرهون",
       "chapterEnglish": "The Chapter on Pawning"
     },
     {
       "id": 267,
-      "chapterNumber": "19",
+      "chapterNumber": 19,
       "chapterArabic": "كتاب الشفعة",
       "chapterEnglish": "The Chapter on Pre-emption"
     },
     {
       "id": 268,
-      "chapterNumber": "20",
+      "chapterNumber": 20,
       "chapterArabic": "كتاب اللقطة",
       "chapterEnglish": "The Chapter on Lost Property"
     },
     {
       "id": 269,
-      "chapterNumber": "21",
+      "chapterNumber": 21,
       "chapterArabic": "كتاب العتق",
       "chapterEnglish": "The Chapter on Manumission (of Slaves)"
     },
     {
       "id": 270,
-      "chapterNumber": "22",
+      "chapterNumber": 22,
       "chapterArabic": "كتاب الحدود",
       "chapterEnglish": "The Chapter on Legal Punishments"
     },
     {
       "id": 271,
-      "chapterNumber": "23",
+      "chapterNumber": 23,
       "chapterArabic": "كتاب الديات",
       "chapterEnglish": "The Chapter on Blood Money"
     },
     {
       "id": 272,
-      "chapterNumber": "24",
+      "chapterNumber": 24,
       "chapterArabic": "كتاب الوصايا",
       "chapterEnglish": "The Chapter on Wills"
     },
     {
       "id": 273,
-      "chapterNumber": "25",
+      "chapterNumber": 25,
       "chapterArabic": "كتاب الفرائض",
       "chapterEnglish": "The Chapter on Shares of Inheritance"
     },
     {
       "id": 274,
-      "chapterNumber": "26",
+      "chapterNumber": 26,
       "chapterArabic": "كتاب الجهاد",
       "chapterEnglish": "The Chapter on Jihad"
     },
     {
       "id": 275,
-      "chapterNumber": "27",
+      "chapterNumber": 27,
       "chapterArabic": "كتاب المناسك",
       "chapterEnglish": "The Chapter on Hajj Rituals"
     },
     {
       "id": 276,
-      "chapterNumber": "28",
+      "chapterNumber": 28,
       "chapterArabic": "كتاب الأضاحي",
       "chapterEnglish": "The Chapter on Sacrifices"
     },
     {
       "id": 277,
-      "chapterNumber": "29",
+      "chapterNumber": 29,
       "chapterArabic": "كتاب الذبائح",
       "chapterEnglish": "The Chapter on Slaughtering"
     },
     {
       "id": 278,
-      "chapterNumber": "30",
+      "chapterNumber": 30,
       "chapterArabic": "كتاب الصيد",
       "chapterEnglish": "The Chapter on Hunting"
     },
     {
       "id": 279,
-      "chapterNumber": "31",
+      "chapterNumber": 31,
       "chapterArabic": "كتاب الأطعمة",
       "chapterEnglish": "The Chapter on Food"
     },
     {
       "id": 280,
-      "chapterNumber": "32",
+      "chapterNumber": 32,
       "chapterArabic": "كتاب الأشربة",
       "chapterEnglish": "The Chapter on Drinks"
     },
     {
       "id": 281,
-      "chapterNumber": "33",
+      "chapterNumber": 33,
       "chapterArabic": "كتاب الطب",
       "chapterEnglish": "The Chapter on Medicine"
     },
     {
       "id": 282,
-      "chapterNumber": "34",
+      "chapterNumber": 34,
       "chapterArabic": "كتاب اللباس",
       "chapterEnglish": "The Chapter on Dress"
     },
     {
       "id": 283,
-      "chapterNumber": "35",
+      "chapterNumber": 35,
       "chapterArabic": "كتاب الأدب",
       "chapterEnglish": "Etiquette"
     },
     {
       "id": 284,
-      "chapterNumber": "36",
+      "chapterNumber": 36,
       "chapterArabic": "كتاب الدعاء",
       "chapterEnglish": "Supplication"
     },
     {
       "id": 285,
-      "chapterNumber": "37",
+      "chapterNumber": 37,
       "chapterArabic": "كتاب تعبير الرؤيا",
       "chapterEnglish": "Interpretation of Dreams"
     },
     {
       "id": 286,
-      "chapterNumber": "38",
+      "chapterNumber": 38,
       "chapterArabic": "كتاب الفتن",
       "chapterEnglish": "Tribulations"
     },
     {
       "id": 287,
-      "chapterNumber": "39",
+      "chapterNumber": 39,
       "chapterArabic": "كتاب الزهد",
       "chapterEnglish": "Zuhd"
     }
   ],
-  "sahih-bukhari": [
+  "al-silsila-sahiha": [
     {
-      "id": 1,
-      "chapterNumber": "1",
-      "chapterArabic": "كتاب بدء الوحى",
-      "chapterEnglish": "Revelation"
+      "id": 448,
+      "chapterNumber": 1,
+      "chapterArabic": "الأخلاق والخير والثواب الرحيم",
+      "chapterEnglish": "Morality, goodness and merciful reward"
     },
     {
-      "id": 2,
-      "chapterNumber": "2",
-      "chapterArabic": "كتاب الإيمان",
-      "chapterEnglish": "Belief"
+      "id": 449,
+      "chapterNumber": 2,
+      "chapterArabic": "الأدب والبيان يطلب الإذن",
+      "chapterEnglish": "Literature and statement seeking permission"
     },
     {
-      "id": 3,
-      "chapterNumber": "3",
-      "chapterArabic": "كتاب العلم",
-      "chapterEnglish": "Knowledge"
+      "id": 450,
+      "chapterNumber": 3,
+      "chapterArabic": "بيان الأذان والصلاة",
+      "chapterEnglish": "Statement of Adhan and Prayer"
     },
     {
-      "id": 4,
-      "chapterNumber": "4",
-      "chapterArabic": "كتاب الوضوء",
-      "chapterEnglish": "Ablutions (Wudu')"
+      "id": 451,
+      "chapterNumber": 4,
+      "chapterArabic": "بيان النحر والذبح والعقيقة والأكل والشرب والرفق بالحيوان",
+      "chapterEnglish": "Statement of Sacrifice, Slaughter, Aqeeqah, Eating, Drinking and Gentleness with Animals"
     },
     {
-      "id": 5,
-      "chapterNumber": "5",
-      "chapterArabic": "كتاب الغسل",
-      "chapterEnglish": "Bathing (Ghusl)"
+      "id": 452,
+      "chapterNumber": 5,
+      "chapterArabic": "بيان العقيدة والتوحيد والدين والقدر",
+      "chapterEnglish": "Statement of faith, monotheism, religion and destiny"
     },
     {
-      "id": 6,
-      "chapterNumber": "6",
-      "chapterArabic": "كتاب الحيض",
-      "chapterEnglish": "Menstrual Periods"
+      "id": 453,
+      "chapterNumber": 6,
+      "chapterArabic": "القسم والنذور وأقوال الكفار",
+      "chapterEnglish": "Swearing, vows and statement of infidels"
     },
     {
-      "id": 7,
-      "chapterNumber": "7",
-      "chapterArabic": "كتاب التيمم",
-      "chapterEnglish": "Rubbing hands and feet with dust (Tayammum)"
+      "id": 454,
+      "chapterNumber": 7,
+      "chapterArabic": "بيان التجارة والعمل والزهد",
+      "chapterEnglish": "Statement of trade, labor and asceticism"
     },
     {
-      "id": 8,
-      "chapterNumber": "8",
-      "chapterArabic": "كتاب الصلاة",
-      "chapterEnglish": "Prayers (Salat)"
+      "id": 455,
+      "chapterNumber": 8,
+      "chapterArabic": "بيان التوبة والوعظ والتلاوة",
+      "chapterEnglish": "Statement of repentance, admonition and recitation"
     },
     {
-      "id": 9,
-      "chapterNumber": "9",
-      "chapterArabic": "كتاب مواقيت الصلاة",
-      "chapterEnglish": "Times of the Prayers"
+      "id": 456,
+      "chapterNumber": 9,
+      "chapterArabic": "بيان الجنة والنار",
+      "chapterEnglish": "Statement of Heaven and Hell"
     },
     {
-      "id": 10,
-      "chapterNumber": "10",
-      "chapterArabic": "كتاب الأذان",
-      "chapterEnglish": "Call to Prayers (Adhaan)"
+      "id": 457,
+      "chapterNumber": 10,
+      "chapterArabic": "بيان الحج والعمرة",
+      "chapterEnglish": "Statement of Hajj and Umrah"
     },
     {
-      "id": 11,
-      "chapterNumber": "11",
-      "chapterArabic": "كتاب الأذان (صفة الصلوة)",
-      "chapterEnglish": "Call to Prayers (Adhaan) (Sufa-Tu-Salat)"
+      "id": 458,
+      "chapterNumber": 11,
+      "chapterArabic": "بيان الحدود والمسائل والقواعد",
+      "chapterEnglish": "Statement of limits, matters and rules"
     },
     {
-      "id": 12,
-      "chapterNumber": "12",
-      "chapterArabic": "كتاب الجمعة",
-      "chapterEnglish": "Friday Prayer"
+      "id": 459,
+      "chapterNumber": 12,
+      "chapterArabic": "بيان الخلافة والولاء والطاعة والإمارة",
+      "chapterEnglish": "Statement of Khilafah, Allegiance, Obedience and Emirate"
     },
     {
-      "id": 13,
-      "chapterNumber": "13",
-      "chapterArabic": "كتاب صلاة الخوف",
-      "chapterEnglish": "Fear Prayer"
+      "id": 460,
+      "chapterNumber": 13,
+      "chapterArabic": "بيان الزكاة والكرم والصدقة والهبة",
+      "chapterEnglish": "Statement of Zakat, Generosity, Charity and Gift"
     },
     {
-      "id": 14,
-      "chapterNumber": "14",
-      "chapterArabic": "كتاب العيدين",
-      "chapterEnglish": "The Two Festivals (Eids)"
+      "id": 461,
+      "chapterNumber": 14,
+      "chapterArabic": "الزواج ، العدل بين الزوجات ، تربية الأولاد ، العدل بينهم وبين أسمائهم الحسنة",
+      "chapterEnglish": "Marriage, justice between wives, training of children, justice between them and their good names"
     },
     {
-      "id": 15,
-      "chapterNumber": "15",
-      "chapterArabic": "كتاب الوتر",
-      "chapterEnglish": "Witr Prayer"
+      "id": 462,
+      "chapterNumber": 15,
+      "chapterArabic": "بيان السفر والجهاد والتسامح مع الحيوانات",
+      "chapterEnglish": "Statement of travel, jihad and leniency towards animals"
     },
     {
-      "id": 16,
-      "chapterNumber": "16",
-      "chapterArabic": "كتاب الاستسقاء",
-      "chapterEnglish": "Invoking Allah for Rain (Istisqaa)"
+      "id": 463,
+      "chapterNumber": 16,
+      "chapterArabic": "سيرة الرسول صلى الله عليه وسلم وصفات الرسول صلى الله عليه وسلم",
+      "chapterEnglish": "The biography of the Prophet and the attributes of the Prophet (peace be upon him)"
     },
     {
-      "id": 17,
-      "chapterNumber": "17",
-      "chapterArabic": "كتاب الكسوف",
-      "chapterEnglish": "Eclipses"
+      "id": 464,
+      "chapterNumber": 17,
+      "chapterArabic": "بيان الصيام والتهجد",
+      "chapterEnglish": "Statement of fasting and tahajjud"
     },
     {
-      "id": 18,
-      "chapterNumber": "18",
-      "chapterArabic": "كتاب سجود القرآن",
-      "chapterEnglish": "Prostration During Recital of Qur'an"
+      "id": 465,
+      "chapterNumber": 18,
+      "chapterArabic": "بيان الطب وزيارة المريض",
+      "chapterEnglish": "The statement of medicine and visiting the sick"
     },
     {
-      "id": 19,
-      "chapterNumber": "19",
-      "chapterArabic": "كتاب تقصير الصلاة",
-      "chapterEnglish": "Shortening the Prayers (At-Taqseer)"
+      "id": 466,
+      "chapterNumber": 19,
+      "chapterArabic": "بيان الطهارة والوضوء",
+      "chapterEnglish": "Statement of purity and ablution"
     },
     {
-      "id": 20,
-      "chapterNumber": "20",
-      "chapterArabic": "كتاب التهجد",
-      "chapterEnglish": "Prayer at Night (Tahajjud)"
+      "id": 467,
+      "chapterNumber": 20,
+      "chapterArabic": "بيان العلم والسنة والأحاديث النبوية",
+      "chapterEnglish": "Statement of knowledge, Sunnah and Hadith of the Prophet"
     },
     {
-      "id": 21,
-      "chapterNumber": "21",
-      "chapterArabic": "كتاب فضل الصلاة",
-      "chapterEnglish": "Virtues of Prayer at Masjid Makkah and Madinah"
+      "id": 468,
+      "chapterNumber": 21,
+      "chapterArabic": "أيام الضيق وعلامات القيامة والقيامة",
+      "chapterEnglish": "Days of tribulation, signs of resurrection and resurrection"
     },
     {
-      "id": 22,
-      "chapterNumber": "22",
-      "chapterArabic": "كتاب العمل في الصلاة",
-      "chapterEnglish": "Actions while Praying"
+      "id": 469,
+      "chapterNumber": 22,
+      "chapterArabic": "فَضَائِلُ الْقُرْآنِ وَالْأَدْعِيَةُ وَالْأَذْكَارُ وَالرُّقٰى",
+      "chapterEnglish": "Statement of virtues of Qur'an, supplications, invocations and incantations"
     },
     {
-      "id": 23,
-      "chapterNumber": "23",
-      "chapterArabic": "كتاب السهو",
-      "chapterEnglish": "Forgetfulness in Prayer"
+      "id": 470,
+      "chapterNumber": 23,
+      "chapterArabic": "وصف الملابس والزينة والألعاب والصور",
+      "chapterEnglish": "Description of clothing, adornment, games and pictures"
     },
     {
-      "id": 24,
-      "chapterNumber": "24",
-      "chapterArabic": "كتاب الجنائز",
-      "chapterEnglish": "Funerals (Al-Janaa'iz)"
+      "id": 471,
+      "chapterNumber": 24,
+      "chapterArabic": "وصف الأيام الأولى والأنبياء والمخلوقات الغريبة",
+      "chapterEnglish": "Description of the early days, prophets and strange creatures"
     },
     {
-      "id": 25,
-      "chapterNumber": "25",
-      "chapterArabic": "كتاب الزكاة",
-      "chapterEnglish": "Obligatory Charity Tax (Zakat)"
+      "id": 472,
+      "chapterNumber": 25,
+      "chapterArabic": "بيان المرض والجنازات والقبور",
+      "chapterEnglish": "Statement of Illness, Funerals and Graves"
     },
     {
-      "id": 26,
-      "chapterNumber": "26",
-      "chapterArabic": "كتاب الحج",
-      "chapterEnglish": "Hajj (Pilgrimage)"
+      "id": 473,
+      "chapterNumber": 26,
+      "chapterArabic": "بيان نقاط القوة والضعف",
+      "chapterEnglish": "Statement of strengths and weaknesses"
     },
     {
-      "id": 27,
-      "chapterNumber": "27",
-      "chapterArabic": "كتاب العمرة",
-      "chapterEnglish": "`Umrah (Minor pilgrimage)"
+      "id": 474,
+      "chapterNumber": 27,
+      "chapterArabic": "نصائح وكلمات مهدئة",
+      "chapterEnglish": "Tips and soothing words"
     },
     {
-      "id": 28,
-      "chapterNumber": "28",
-      "chapterArabic": "كتاب المحصر",
-      "chapterEnglish": "Pilgrims Prevented from Completing the Pilgrimage"
-    },
-    {
-      "id": 29,
-      "chapterNumber": "29",
-      "chapterArabic": "كتاب جزاء الصيد",
-      "chapterEnglish": "Penalty of Hunting while on Pilgrimage"
-    },
-    {
-      "id": 30,
-      "chapterNumber": "30",
-      "chapterArabic": "كتاب فضائل المدينة",
-      "chapterEnglish": "Virtues of Madinah"
-    },
-    {
-      "id": 31,
-      "chapterNumber": "31",
-      "chapterArabic": "كتاب الصوم",
-      "chapterEnglish": "Fasting"
-    },
-    {
-      "id": 32,
-      "chapterNumber": "32",
-      "chapterArabic": "كتاب صلاة التراويح",
-      "chapterEnglish": "Praying at Night in Ramadaan (Taraweeh)"
-    },
-    {
-      "id": 33,
-      "chapterNumber": "33",
-      "chapterArabic": "كتاب فضل ليلة القدر",
-      "chapterEnglish": "Virtues of the Night of Qadr"
-    },
-    {
-      "id": 34,
-      "chapterNumber": "34",
-      "chapterArabic": "كتاب الاعتكاف",
-      "chapterEnglish": "Retiring to a Mosque for Remembrance of Allah (I'tikaf)"
-    },
-    {
-      "id": 35,
-      "chapterNumber": "35",
-      "chapterArabic": "كتاب البيوع",
-      "chapterEnglish": "Sales and Trade"
-    },
-    {
-      "id": 36,
-      "chapterNumber": "36",
-      "chapterArabic": "كتاب السلم",
-      "chapterEnglish": "Sales in which a Price is paid for Goods to be Delivered Later (As-Salam)"
-    },
-    {
-      "id": 37,
-      "chapterNumber": "37",
-      "chapterArabic": "كتاب الشفعة",
-      "chapterEnglish": "Shuf'a"
-    },
-    {
-      "id": 38,
-      "chapterNumber": "38",
-      "chapterArabic": "كتاب الإجارة",
-      "chapterEnglish": "Hiring"
-    },
-    {
-      "id": 39,
-      "chapterNumber": "39",
-      "chapterArabic": "كتاب الحوالات",
-      "chapterEnglish": "Transferance of a Debt from One Person to Another (Al-Hawaala)"
-    },
-    {
-      "id": 40,
-      "chapterNumber": "40",
-      "chapterArabic": "كتاب الكفالة",
-      "chapterEnglish": "Kafalah"
-    },
-    {
-      "id": 41,
-      "chapterNumber": "41",
-      "chapterArabic": "كتاب الوكالة",
-      "chapterEnglish": "Representation, Authorization, Business by Proxy"
-    },
-    {
-      "id": 42,
-      "chapterNumber": "42",
-      "chapterArabic": "كتاب المزارعة",
-      "chapterEnglish": "Agriculture"
-    },
-    {
-      "id": 43,
-      "chapterNumber": "43",
-      "chapterArabic": "كتاب المساقاة",
-      "chapterEnglish": "Distribution of Water"
-    },
-    {
-      "id": 44,
-      "chapterNumber": "44",
-      "chapterArabic": "كتاب الاستقراض",
-      "chapterEnglish": "Loans, Payment of Loans, Freezing of Property, Bankruptcy"
-    },
-    {
-      "id": 45,
-      "chapterNumber": "45",
-      "chapterArabic": "كتاب الخصومات",
-      "chapterEnglish": "Khusoomaat"
-    },
-    {
-      "id": 46,
-      "chapterNumber": "46",
-      "chapterArabic": "كتاب اللقطة",
-      "chapterEnglish": "Lost Things Picked up by Someone (Luqatah)"
-    },
-    {
-      "id": 47,
-      "chapterNumber": "47",
-      "chapterArabic": "کتاب المظالم والغصب",
-      "chapterEnglish": "Oppressions"
-    },
-    {
-      "id": 48,
-      "chapterNumber": "48",
-      "chapterArabic": "كتاب الشركة",
-      "chapterEnglish": "Partnership"
-    },
-    {
-      "id": 49,
-      "chapterNumber": "49",
-      "chapterArabic": "كتاب الرهن",
-      "chapterEnglish": "Mortgaging"
-    },
-    {
-      "id": 50,
-      "chapterNumber": "50",
-      "chapterArabic": "كتاب العتق",
-      "chapterEnglish": "Manumission of Slaves"
-    },
-    {
-      "id": 51,
-      "chapterNumber": "51",
-      "chapterArabic": "كتاب المكاتب",
-      "chapterEnglish": "Makaatib"
-    },
-    {
-      "id": 52,
-      "chapterNumber": "52",
-      "chapterArabic": "كتاب الهبة",
-      "chapterEnglish": "Gifts"
-    },
-    {
-      "id": 53,
-      "chapterNumber": "53",
-      "chapterArabic": "كتاب الشهادات",
-      "chapterEnglish": "Witnesses"
-    },
-    {
-      "id": 54,
-      "chapterNumber": "54",
-      "chapterArabic": "كتاب الصلح",
-      "chapterEnglish": "Peacemaking"
-    },
-    {
-      "id": 55,
-      "chapterNumber": "55",
-      "chapterArabic": "كتاب الشروط",
-      "chapterEnglish": "Conditions"
-    },
-    {
-      "id": 56,
-      "chapterNumber": "56",
-      "chapterArabic": "كتاب الوصايا",
-      "chapterEnglish": "Wills and Testaments (Wasaayaa)"
-    },
-    {
-      "id": 57,
-      "chapterNumber": "57",
-      "chapterArabic": "كتاب الجهاد والسير",
-      "chapterEnglish": "Fighting for the Cause of Allah (Jihaad)"
-    },
-    {
-      "id": 58,
-      "chapterNumber": "58",
-      "chapterArabic": "كتاب فرض الخمس",
-      "chapterEnglish": "One-fifth of Booty to the Cause of Allah (Khumus)"
-    },
-    {
-      "id": 59,
-      "chapterNumber": "59",
-      "chapterArabic": "كتاب کتاب الجزیہ والموادعہ",
-      "chapterEnglish": "Jizyah and Mawaada'ah"
-    },
-    {
-      "id": 60,
-      "chapterNumber": "60",
-      "chapterArabic": "كتاب بدء الخلق",
-      "chapterEnglish": "Beginning of Creation"
-    },
-    {
-      "id": 61,
-      "chapterNumber": "61",
-      "chapterArabic": "كتاب أحاديث الأنبياء",
-      "chapterEnglish": "Prophets"
-    },
-    {
-      "id": 62,
-      "chapterNumber": "62",
-      "chapterArabic": "كتاب المناقب",
-      "chapterEnglish": "Virtues and Merits of the Prophet (PBUH) and his Companions"
-    },
-    {
-      "id": 63,
-      "chapterNumber": "63",
-      "chapterArabic": "كتاب فضائل الصحابة",
-      "chapterEnglish": "Companions of the Prophet"
-    },
-    {
-      "id": 64,
-      "chapterNumber": "64",
-      "chapterArabic": "كتاب مناقب الأنصار",
-      "chapterEnglish": "Merits of the Helpers in Madinah (Ansaar)"
-    },
-    {
-      "id": 65,
-      "chapterNumber": "65",
-      "chapterArabic": "كتاب المغازي",
-      "chapterEnglish": "Military Expeditions led by the Prophet (PBUH) (Al-Maghaazi)"
-    },
-    {
-      "id": 66,
-      "chapterNumber": "66",
-      "chapterArabic": "كتاب التفسير",
-      "chapterEnglish": "Prophetic Commentary on the Qur'an (Tafseer of the Prophet (PBUH))"
-    },
-    {
-      "id": 67,
-      "chapterNumber": "67",
-      "chapterArabic": "كتاب فضائل القرآن",
-      "chapterEnglish": "Virtues of the Qur'an"
-    },
-    {
-      "id": 68,
-      "chapterNumber": "68",
-      "chapterArabic": "كتاب النكاح",
-      "chapterEnglish": "Wedlock, Marriage (Nikaah)"
-    },
-    {
-      "id": 69,
-      "chapterNumber": "69",
-      "chapterArabic": "كتاب الطلاق",
-      "chapterEnglish": "Divorce"
-    },
-    {
-      "id": 70,
-      "chapterNumber": "70",
-      "chapterArabic": "كتاب النفقات",
-      "chapterEnglish": "Supporting the Family"
-    },
-    {
-      "id": 71,
-      "chapterNumber": "71",
-      "chapterArabic": "كتاب الأطعمة",
-      "chapterEnglish": "Food, Meals"
-    },
-    {
-      "id": 72,
-      "chapterNumber": "72",
-      "chapterArabic": "كتاب العقيقة",
-      "chapterEnglish": "Sacrifice on Occasion of Birth (`Aqiqa)"
-    },
-    {
-      "id": 73,
-      "chapterNumber": "73",
-      "chapterArabic": "كتاب الذبائح والصيد",
-      "chapterEnglish": "Hunting, Slaughtering"
-    },
-    {
-      "id": 74,
-      "chapterNumber": "74",
-      "chapterArabic": "كتاب الأضاحي",
-      "chapterEnglish": "Al-Adha Festival Sacrifice (Adaahi)"
-    },
-    {
-      "id": 75,
-      "chapterNumber": "75",
-      "chapterArabic": "كتاب الأشربة",
-      "chapterEnglish": "Drinks"
-    },
-    {
-      "id": 76,
-      "chapterNumber": "76",
-      "chapterArabic": "كتاب المرضى",
-      "chapterEnglish": "Patients"
-    },
-    {
-      "id": 77,
-      "chapterNumber": "77",
-      "chapterArabic": "كتاب الطب",
-      "chapterEnglish": "Medicine"
-    },
-    {
-      "id": 78,
-      "chapterNumber": "78",
-      "chapterArabic": "كتاب اللباس",
-      "chapterEnglish": "Dress"
-    },
-    {
-      "id": 79,
-      "chapterNumber": "79",
-      "chapterArabic": "كتاب الأدب",
-      "chapterEnglish": "Good Manners and Form (Al-Adab)"
-    },
-    {
-      "id": 80,
-      "chapterNumber": "80",
-      "chapterArabic": "كتاب الاستئذان",
-      "chapterEnglish": "Asking Permission"
-    },
-    {
-      "id": 81,
-      "chapterNumber": "81",
-      "chapterArabic": "كتاب الدعوات",
-      "chapterEnglish": "Invocations"
-    },
-    {
-      "id": 82,
-      "chapterNumber": "82",
-      "chapterArabic": "كتاب الرقاق",
-      "chapterEnglish": "To make the Heart Tender (Ar-Riqaq)"
-    },
-    {
-      "id": 83,
-      "chapterNumber": "83",
-      "chapterArabic": "كتاب القدر",
-      "chapterEnglish": "Divine Will (Al-Qadar)"
-    },
-    {
-      "id": 84,
-      "chapterNumber": "84",
-      "chapterArabic": "كتاب الأيمان والنذور",
-      "chapterEnglish": "Oaths and Vows"
-    },
-    {
-      "id": 85,
-      "chapterNumber": "85",
-      "chapterArabic": "كتاب كفارات الأيمان",
-      "chapterEnglish": "Expiation for Unfulfilled Oaths"
-    },
-    {
-      "id": 86,
-      "chapterNumber": "86",
-      "chapterArabic": "كتاب الفرائض",
-      "chapterEnglish": "Laws of Inheritance (Al-Faraa'id)"
-    },
-    {
-      "id": 87,
-      "chapterNumber": "87",
-      "chapterArabic": "كتاب الحدود",
-      "chapterEnglish": "Limits and Punishments set by Allah (Hudood)"
-    },
-    {
-      "id": 88,
-      "chapterNumber": "88",
-      "chapterArabic": "كتاب المحاربين",
-      "chapterEnglish": "Al-Maharbeen"
-    },
-    {
-      "id": 89,
-      "chapterNumber": "89",
-      "chapterArabic": "كتاب الديات",
-      "chapterEnglish": "Blood Money (Ad-Diyat)"
-    },
-    {
-      "id": 90,
-      "chapterNumber": "90",
-      "chapterArabic": "كتاب استتابة المرتدين",
-      "chapterEnglish": "Apostates"
-    },
-    {
-      "id": 91,
-      "chapterNumber": "91",
-      "chapterArabic": "كتاب الإكراه",
-      "chapterEnglish": "(Statements made under) Coercion"
-    },
-    {
-      "id": 92,
-      "chapterNumber": "92",
-      "chapterArabic": "كتاب الحيل",
-      "chapterEnglish": "Tricks"
-    },
-    {
-      "id": 93,
-      "chapterNumber": "93",
-      "chapterArabic": "كتاب التعبير",
-      "chapterEnglish": "Interpretation of Dreams"
-    },
-    {
-      "id": 94,
-      "chapterNumber": "94",
-      "chapterArabic": "كتاب الفتن",
-      "chapterEnglish": "Afflictions and the End of the World"
-    },
-    {
-      "id": 95,
-      "chapterNumber": "95",
-      "chapterArabic": "كتاب الأحكام",
-      "chapterEnglish": "Judgments (Ahkaam)"
-    },
-    {
-      "id": 96,
-      "chapterNumber": "96",
-      "chapterArabic": "كتاب التمني",
-      "chapterEnglish": "Wishes"
-    },
-    {
-      "id": 97,
-      "chapterNumber": "97",
-      "chapterArabic": "كتاب أخبار الآحاد",
-      "chapterEnglish": "Accepting Information Given by a Truthful Person"
-    },
-    {
-      "id": 98,
-      "chapterNumber": "98",
-      "chapterArabic": "كتاب الاعتصام بال والسنة",
-      "chapterEnglish": "Holding Fast to the Qur'an and Sunnah"
-    },
-    {
-      "id": 99,
-      "chapterNumber": "99",
-      "chapterArabic": "كتاب التوحيد",
-      "chapterEnglish": "Oneness, Uniqueness of Allah (Tawheed)"
-    }
-  ],
-  "musnad-ahmad": [
-    {
-      "id": 434,
-      "chapterNumber": "1",
-      "chapterArabic": "جزء من مبادئ التوحيد والدين",
-      "chapterEnglish": "The part of the principles of monotheism and religion"
-    },
-    {
-      "id": 435,
-      "chapterNumber": "2",
-      "chapterArabic": "كتاب الإيمان والإسلام",
-      "chapterEnglish": "The book of faith and Islam"
-    },
-    {
-      "id": 436,
-      "chapterNumber": "3",
-      "chapterArabic": "ديننا هو أرقى صور الإسلام ونفتخر به ونكون أحب الدين عند الله تعالى.",
-      "chapterEnglish": "Our religion is the highest form of Islam and to be proud of it and to be the most beloved religion in the sight of Allah Almighty"
-    },
-    {
-      "id": 437,
-      "chapterNumber": "4",
-      "chapterArabic": "فصول المعرفة",
-      "chapterEnglish": "Chapters of knowledge"
-    },
-    {
-      "id": 438,
-      "chapterNumber": "5",
-      "chapterArabic": "أبواب عقد القرآن والسنة",
-      "chapterEnglish": "Chapters on holding the Qur'an and Sunnah"
-    },
-    {
-      "id": 439,
-      "chapterNumber": "6",
-      "chapterArabic": "فصول الطهارة",
-      "chapterEnglish": "Chapters of Purity"
-    },
-    {
-      "id": 440,
-      "chapterNumber": "7",
-      "chapterArabic": "فصول في تنقية النجاسة",
-      "chapterEnglish": "Chapters on Purification of Impurity"
-    },
-    {
-      "id": 441,
-      "chapterNumber": "8",
-      "chapterArabic": "بيان ترتيب البول والمذي والسائل المنوي ... الخ.",
-      "chapterEnglish": "Statement of the order of urine, madhi and semen etc."
-    },
-    {
-      "id": 442,
-      "chapterNumber": "9",
-      "chapterArabic": "أبواب الوضوء والاستنجا بالحجارة وآدابها",
-      "chapterEnglish": "Chapters on ablution, istanja, using stones and their etiquette"
-    },
-    {
-      "id": 443,
-      "chapterNumber": "10",
-      "chapterArabic": "وصف اسطنبول بالحجارة وآدابها",
-      "chapterEnglish": "Description of istanja with stones and its etiquette"
-    },
-    {
-      "id": 444,
-      "chapterNumber": "11",
-      "chapterArabic": "فصول السواك",
-      "chapterEnglish": "Chapters of Miswak"
-    },
-    {
-      "id": 445,
-      "chapterNumber": "12",
-      "chapterArabic": "فصول عن الوضوء",
-      "chapterEnglish": "Chapters on ablution"
-    },
-    {
-      "id": 446,
-      "chapterNumber": "13",
-      "chapterArabic": "بيان آداب الوضوء",
-      "chapterEnglish": "Statement of etiquette related to ablution"
-    },
-    {
-      "id": 447,
-      "chapterNumber": "14",
-      "chapterArabic": "حال وضوء الرسول الكريم صلى الله عليه وسلم",
-      "chapterEnglish": "The state of ablution of the Holy Prophet (peace be upon him)"
-    }
-  ],
-  "sunan-nasai": [
-    {
-      "id": 288,
-      "chapterNumber": "1",
-      "chapterArabic": "كتاب الطهارة",
-      "chapterEnglish": "The Book of Purification"
-    },
-    {
-      "id": 289,
-      "chapterNumber": "2",
-      "chapterArabic": "كتاب المياه",
-      "chapterEnglish": "The Book of Water"
-    },
-    {
-      "id": 290,
-      "chapterNumber": "3",
-      "chapterArabic": "كتاب الحيض والاستحاضة",
-      "chapterEnglish": "The Book of Menstruation and Istihadah"
-    },
-    {
-      "id": 291,
-      "chapterNumber": "4",
-      "chapterArabic": "كتاب الغسل والتيمم",
-      "chapterEnglish": "The Book of Ghusl and Tayammum"
-    },
-    {
-      "id": 292,
-      "chapterNumber": "5",
-      "chapterArabic": "كتاب الصلاة",
-      "chapterEnglish": "The Book of Salah"
-    },
-    {
-      "id": 293,
-      "chapterNumber": "6",
-      "chapterArabic": "كتاب المواقيت",
-      "chapterEnglish": "The Book of the Times (of Prayer)"
-    },
-    {
-      "id": 294,
-      "chapterNumber": "7",
-      "chapterArabic": "كتاب الأذان",
-      "chapterEnglish": "The Book of the Adhan (The Call to Prayer)"
-    },
-    {
-      "id": 295,
-      "chapterNumber": "8",
-      "chapterArabic": "كتاب المساجد",
-      "chapterEnglish": "The Book of the Masjids"
-    },
-    {
-      "id": 296,
-      "chapterNumber": "9",
-      "chapterArabic": "كتاب القبلة",
-      "chapterEnglish": "The Book of the Qiblah"
-    },
-    {
-      "id": 297,
-      "chapterNumber": "10",
-      "chapterArabic": "كتاب الإمامة",
-      "chapterEnglish": "The Book of Leading the Prayer (Al-Imamah)"
-    },
-    {
-      "id": 298,
-      "chapterNumber": "11",
-      "chapterArabic": "كتاب الافتتاح",
-      "chapterEnglish": "The Book of the Commencement of the Prayer"
-    },
-    {
-      "id": 299,
-      "chapterNumber": "12",
-      "chapterArabic": "كتاب التطبيق",
-      "chapterEnglish": "The Book of The At-Tatbiq (Clasping One's Hands Together)"
-    },
-    {
-      "id": 300,
-      "chapterNumber": "13",
-      "chapterArabic": "كتاب السهو",
-      "chapterEnglish": "The Book of Forgetfulness (In Prayer)"
-    },
-    {
-      "id": 301,
-      "chapterNumber": "14",
-      "chapterArabic": "كتاب الجمعة",
-      "chapterEnglish": "The Book of Jumu`ah (Friday Prayer)"
-    },
-    {
-      "id": 302,
-      "chapterNumber": "15",
-      "chapterArabic": "كتاب تقصير الصلاة فى السفر",
-      "chapterEnglish": "The Book of Shortening the Prayer When Traveling"
-    },
-    {
-      "id": 303,
-      "chapterNumber": "16",
-      "chapterArabic": "كتاب الكسوف",
-      "chapterEnglish": "The Book of Eclipses"
-    },
-    {
-      "id": 304,
-      "chapterNumber": "17",
-      "chapterArabic": "كتاب الاستسقاء",
-      "chapterEnglish": "The Book of Praying for Rain (Al-Istisqa`)"
-    },
-    {
-      "id": 305,
-      "chapterNumber": "18",
-      "chapterArabic": "كتاب صلاة الخوف",
-      "chapterEnglish": "The Book of the Fear Prayer"
-    },
-    {
-      "id": 306,
-      "chapterNumber": "19",
-      "chapterArabic": "كتاب صلاة العيدين",
-      "chapterEnglish": "The Book of the Prayer for the Two `Eids"
-    },
-    {
-      "id": 307,
-      "chapterNumber": "20",
-      "chapterArabic": "كتاب قيام الليل وتطوع النهار",
-      "chapterEnglish": "The Book of Qiyam Al-Lail (The Night Prayer) and Voluntary Prayers During the Day"
-    },
-    {
-      "id": 343,
-      "chapterNumber": "21",
-      "chapterArabic": "كتاب الجنائز",
-      "chapterEnglish": "The Book of Funerals"
-    },
-    {
-      "id": 344,
-      "chapterNumber": "22",
-      "chapterArabic": "كتاب الصيام",
-      "chapterEnglish": "The Book of Fasting"
-    },
-    {
-      "id": 345,
-      "chapterNumber": "23",
-      "chapterArabic": "كتاب الزكاة",
-      "chapterEnglish": "The Book of Zakah"
-    },
-    {
-      "id": 405,
-      "chapterNumber": "24",
-      "chapterArabic": "كتاب مناسك الحج",
-      "chapterEnglish": "The Book of Hajj"
-    },
-    {
-      "id": 406,
-      "chapterNumber": "25",
-      "chapterArabic": "كتاب الجهاد",
-      "chapterEnglish": "The Book of Jihad"
-    },
-    {
-      "id": 407,
-      "chapterNumber": "26",
-      "chapterArabic": "كتاب النكاح",
-      "chapterEnglish": "The Book of Marriage"
-    },
-    {
-      "id": 408,
-      "chapterNumber": "27",
-      "chapterArabic": "كتاب عشرة النساء",
-      "chapterEnglish": "The Book of the Kind Treatment of Women"
-    },
-    {
-      "id": 409,
-      "chapterNumber": "28",
-      "chapterArabic": "كتاب الطلاق",
-      "chapterEnglish": "The Book of Divorce"
-    },
-    {
-      "id": 410,
-      "chapterNumber": "29",
-      "chapterArabic": "كتاب الخيل",
-      "chapterEnglish": "The Book of Horses, Races and Shooting"
-    },
-    {
-      "id": 411,
-      "chapterNumber": "30",
-      "chapterArabic": "كتاب الإحباس",
-      "chapterEnglish": "The Book of Endowments"
-    },
-    {
-      "id": 412,
-      "chapterNumber": "31",
-      "chapterArabic": "كتاب الوصايا",
-      "chapterEnglish": "The Book of Wills"
-    },
-    {
-      "id": 413,
-      "chapterNumber": "32",
-      "chapterArabic": "كتاب النحل",
-      "chapterEnglish": "The Book of Presents"
-    },
-    {
-      "id": 414,
-      "chapterNumber": "33",
-      "chapterArabic": "كتاب الهبة",
-      "chapterEnglish": "The Book of Gifts"
-    },
-    {
-      "id": 415,
-      "chapterNumber": "34",
-      "chapterArabic": "كتاب الرقبى",
-      "chapterEnglish": "The Book of Ar-Ruqba"
-    },
-    {
-      "id": 416,
-      "chapterNumber": "35",
-      "chapterArabic": "كتاب العمرى",
-      "chapterEnglish": "The Book of `Umra"
-    },
-    {
-      "id": 417,
-      "chapterNumber": "36",
-      "chapterArabic": "كتاب الأيمان والنذور",
-      "chapterEnglish": "The Book of Oaths and Vows"
-    },
-    {
-      "id": 418,
-      "chapterNumber": "37",
-      "chapterArabic": "كتاب المزارعة",
-      "chapterEnglish": "The Book of Agriculture"
-    },
-    {
-      "id": 419,
-      "chapterNumber": "38",
-      "chapterArabic": "كتاب تحريم الدم",
-      "chapterEnglish": "The Book of Fighting [The Prohibition of Bloodshed]"
-    },
-    {
-      "id": 420,
-      "chapterNumber": "39",
-      "chapterArabic": "كتاب قسم الفىء",
-      "chapterEnglish": "The Book Of The Distribution Of Al-Fay'"
-    },
-    {
-      "id": 421,
-      "chapterNumber": "40",
-      "chapterArabic": "كتاب البيعة",
-      "chapterEnglish": "The Book of al-Bay`ah"
-    },
-    {
-      "id": 422,
-      "chapterNumber": "41",
-      "chapterArabic": "كتاب العقيقة",
-      "chapterEnglish": "The Book of Al-`Aqiqah"
-    },
-    {
-      "id": 423,
-      "chapterNumber": "42",
-      "chapterArabic": "كتاب الفرع والعتيرة",
-      "chapterEnglish": "The Book of Al-Fara` and Al-`Atirah"
-    },
-    {
-      "id": 424,
-      "chapterNumber": "43",
-      "chapterArabic": "كتاب الصيد والذبائح",
-      "chapterEnglish": "The Book of Hunting and Slaughtering"
-    },
-    {
-      "id": 425,
-      "chapterNumber": "44",
-      "chapterArabic": "كتاب الضحايا",
-      "chapterEnglish": "The Book of Ad-Dahaya (Sacrifices)"
-    },
-    {
-      "id": 426,
-      "chapterNumber": "45",
-      "chapterArabic": "كتاب البيوع",
-      "chapterEnglish": "The Book of Financial Transactions"
-    },
-    {
-      "id": 427,
-      "chapterNumber": "46",
-      "chapterArabic": "كتاب القسامة",
-      "chapterEnglish": "The Book of Oaths (qasamah), Retaliation and Blood Money"
-    },
-    {
-      "id": 428,
-      "chapterNumber": "47",
-      "chapterArabic": "كتاب قطع السارق",
-      "chapterEnglish": "The Book of Cutting off the Hand of the Thief"
-    },
-    {
-      "id": 429,
-      "chapterNumber": "48",
-      "chapterArabic": "كتاب الإيمان وشرائعه",
-      "chapterEnglish": "The Book Of Faith and its Signs"
-    },
-    {
-      "id": 430,
-      "chapterNumber": "49",
-      "chapterArabic": "كتاب الزينة من السنن",
-      "chapterEnglish": "The Book of Adornment"
-    },
-    {
-      "id": 431,
-      "chapterNumber": "50",
-      "chapterArabic": "كتاب آداب القضاة",
-      "chapterEnglish": "The Book of the Etiquette of Judges"
-    },
-    {
-      "id": 432,
-      "chapterNumber": "51",
-      "chapterArabic": "كتاب الاستعاذة",
-      "chapterEnglish": "The Book of Seeking Refuge with Allah"
-    },
-    {
-      "id": 433,
-      "chapterNumber": "52",
-      "chapterArabic": "كتاب الأشربة",
-      "chapterEnglish": "The Book of Drinks"
+      "id": 475,
+      "chapterNumber": 28,
+      "chapterArabic": "متنوع",
+      "chapterEnglish": "Miscellaneous"
     }
   ],
   "sahih-muslim": [
     {
       "id": 100,
-      "chapterNumber": "0",
+      "chapterNumber": 0,
       "chapterArabic": "كتاب مُقَدِّمَةٌ",
       "chapterEnglish": "Introduction"
     },
     {
       "id": 101,
-      "chapterNumber": "1",
+      "chapterNumber": 1,
       "chapterArabic": "كتاب الْإِيمَانِ",
       "chapterEnglish": "The Book of Faith"
     },
     {
       "id": 102,
-      "chapterNumber": "2",
+      "chapterNumber": 2,
       "chapterArabic": "كتاب الطَّهَارَةِ",
       "chapterEnglish": "The Book of Purification"
     },
     {
       "id": 103,
-      "chapterNumber": "3",
+      "chapterNumber": 3,
       "chapterArabic": "كتاب الْحَيْضِ",
       "chapterEnglish": "The Book of Menstruation"
     },
     {
       "id": 104,
-      "chapterNumber": "4",
+      "chapterNumber": 4,
       "chapterArabic": "كتاب الصَّلَاةِ",
       "chapterEnglish": "The Book of Prayers"
     },
     {
       "id": 105,
-      "chapterNumber": "5",
+      "chapterNumber": 5,
       "chapterArabic": "كتاب الْمَسَاجِدِ وَمَوَاضِعِ الصَّلَاة",
       "chapterEnglish": "The Book of Mosques and Places of Prayer"
     },
     {
       "id": 106,
-      "chapterNumber": "6",
+      "chapterNumber": 6,
       "chapterArabic": "كتاب صَلَاةِ الْمُسَافِرِينَ وَقَصْرِهَا",
       "chapterEnglish": "The Book of Prayer - Travellers"
     },
     {
       "id": 107,
-      "chapterNumber": "7",
+      "chapterNumber": 7,
       "chapterArabic": "کتاب فَضَائِلِ الْقُرْآنِ وَمَا يَتَعَلَّقُ بِهِ",
       "chapterEnglish": "The Book Of the Merit Of The Holy Quran"
     },
     {
       "id": 108,
-      "chapterNumber": "8",
+      "chapterNumber": 8,
       "chapterArabic": "كتاب الْجُمُعَةِ",
       "chapterEnglish": "The Book of Prayer - Friday"
     },
     {
       "id": 109,
-      "chapterNumber": "9",
+      "chapterNumber": 9,
       "chapterArabic": "كتاب صَلَاةِ الْعِيدَيْنِ",
       "chapterEnglish": "The Book of Prayer - Two Eids"
     },
     {
       "id": 110,
-      "chapterNumber": "10",
+      "chapterNumber": 10,
       "chapterArabic": "كتاب صَلَاةِ الِاسْتِسْقَاءِ",
       "chapterEnglish": "The Book of Prayer - Rain"
     },
     {
       "id": 111,
-      "chapterNumber": "11",
+      "chapterNumber": 11,
       "chapterArabic": "كتاب الْكُسُوفِ",
       "chapterEnglish": "The Book of Prayer - Eclipses"
     },
     {
       "id": 112,
-      "chapterNumber": "12",
+      "chapterNumber": 12,
       "chapterArabic": "كتاب الْجَنَائِزِ",
       "chapterEnglish": "The Book of Prayer - Funerals"
     },
     {
       "id": 113,
-      "chapterNumber": "13",
+      "chapterNumber": 13,
       "chapterArabic": "كتاب الزَّكَاةِ",
       "chapterEnglish": "The Book of Zakat"
     },
     {
       "id": 114,
-      "chapterNumber": "14",
+      "chapterNumber": 14,
       "chapterArabic": "كتاب الصِّيَامِ",
       "chapterEnglish": "The Book of Fasting"
     },
     {
       "id": 115,
-      "chapterNumber": "15",
+      "chapterNumber": 15,
       "chapterArabic": "كتاب الِاعْتِكَافِ",
       "chapterEnglish": "The Book of I'tikaaf"
     },
     {
       "id": 116,
-      "chapterNumber": "16",
+      "chapterNumber": 16,
       "chapterArabic": "كتاب الْحَجِّ",
       "chapterEnglish": "The Book of Pilgrimage"
     },
     {
       "id": 117,
-      "chapterNumber": "17",
+      "chapterNumber": 17,
       "chapterArabic": "كتاب النِّكَاحِ",
       "chapterEnglish": "The Book of Marriage"
     },
     {
       "id": 118,
-      "chapterNumber": "18",
+      "chapterNumber": 18,
       "chapterArabic": "كتاب الرِّضَاعِ",
       "chapterEnglish": "The Book of Suckling"
     },
     {
       "id": 119,
-      "chapterNumber": "19",
+      "chapterNumber": 19,
       "chapterArabic": "كتاب الطَّلَاقِ",
       "chapterEnglish": "The Book of Divorce"
     },
     {
       "id": 120,
-      "chapterNumber": "20",
+      "chapterNumber": 20,
       "chapterArabic": "كتاب اللِّعَانِ",
       "chapterEnglish": "The Book of Invoking Curses"
     },
     {
       "id": 121,
-      "chapterNumber": "21",
+      "chapterNumber": 21,
       "chapterArabic": "كتاب الْعِتْقِ",
       "chapterEnglish": "The Book of Emancipating Slaves"
     },
     {
       "id": 122,
-      "chapterNumber": "22",
+      "chapterNumber": 22,
       "chapterArabic": "كتاب الْبُيُوعِ",
       "chapterEnglish": "The Book of Transactions"
     },
     {
       "id": 123,
-      "chapterNumber": "23",
+      "chapterNumber": 23,
       "chapterArabic": "كتاب الْمُسَاقَاةِ",
       "chapterEnglish": "The Book Of Musaqah"
     },
     {
       "id": 124,
-      "chapterNumber": "24",
+      "chapterNumber": 24,
       "chapterArabic": "كتاب الْفَرَائِضِ",
       "chapterEnglish": "The Book Of The Rules Of Inheritance"
     },
     {
       "id": 125,
-      "chapterNumber": "25",
+      "chapterNumber": 25,
       "chapterArabic": "كتاب الْهِبَاتِ",
       "chapterEnglish": "The Book Of Gifts"
     },
     {
       "id": 126,
-      "chapterNumber": "26",
+      "chapterNumber": 26,
       "chapterArabic": "كتاب الْوَصِيَّةِ",
       "chapterEnglish": "The Book Of Wills"
     },
     {
       "id": 127,
-      "chapterNumber": "27",
+      "chapterNumber": 27,
       "chapterArabic": "كتاب النَّذْرِ",
       "chapterEnglish": "The Book Of Vows"
     },
     {
       "id": 128,
-      "chapterNumber": "28",
+      "chapterNumber": 28,
       "chapterArabic": "كتاب الْأَيْمَانِ",
       "chapterEnglish": "The Book Of Oaths"
     },
     {
       "id": 129,
-      "chapterNumber": "29",
+      "chapterNumber": 29,
       "chapterArabic": "كتاب الْقَسَامَةِ وَالْمُحَارِبِينَ وَالْقِصَاصِ وَالدِّيَاتِ",
       "chapterEnglish": "The Book of Oaths, Muharibin, Qasas (Retaliation), and Diyat (Blood Money)"
     },
     {
       "id": 130,
-      "chapterNumber": "30",
+      "chapterNumber": 30,
       "chapterArabic": "كتاب الْحُدُودِ",
       "chapterEnglish": "The Book Of Legal Punishments"
     },
     {
       "id": 131,
-      "chapterNumber": "31",
+      "chapterNumber": 31,
       "chapterArabic": "كتاب الْأَقْضِيَةِ",
       "chapterEnglish": "The Book Of Judicial Decisions"
     },
     {
       "id": 132,
-      "chapterNumber": "32",
+      "chapterNumber": 32,
       "chapterArabic": "كتاب اللُّقَطَةِ",
       "chapterEnglish": "The Book Of Lost Property"
     },
     {
       "id": 133,
-      "chapterNumber": "33",
+      "chapterNumber": 33,
       "chapterArabic": "كتاب الْجِهَادِ وَالسِّيَرِ",
       "chapterEnglish": "The Book Of Jihad And Expeditions"
     },
     {
       "id": 134,
-      "chapterNumber": "34",
+      "chapterNumber": 34,
       "chapterArabic": "كتاب الْإِمَارَةِ",
       "chapterEnglish": "The Book of Government"
     },
     {
       "id": 135,
-      "chapterNumber": "35",
+      "chapterNumber": 35,
       "chapterArabic": "كتاب الصَّيْدِ وَالذَّبَائِحِ وَمَا يُؤْكَلُ مِنْ الْحَيَوَانِ",
       "chapterEnglish": "The Book of Hunting , Slaughter and what may be Eaten"
     },
     {
       "id": 136,
-      "chapterNumber": "36",
+      "chapterNumber": 36,
       "chapterArabic": "كتاب الْأَضَاحِيِّ",
       "chapterEnglish": "The Book of Sacrifices"
     },
     {
       "id": 137,
-      "chapterNumber": "37",
+      "chapterNumber": 37,
       "chapterArabic": "كتاب الْأَشْرِبَةِ",
       "chapterEnglish": "The Book of Drink"
     },
     {
       "id": 138,
-      "chapterNumber": "38",
+      "chapterNumber": 38,
       "chapterArabic": "كتاب اللِّبَاسِ وَالزِّينَةِ",
       "chapterEnglish": "The Book of Clothes and Adornment"
     },
     {
       "id": 139,
-      "chapterNumber": "39",
+      "chapterNumber": 39,
       "chapterArabic": "كتاب الْآدَابِ",
       "chapterEnglish": "The Book of Manners and Etiquette"
     },
     {
       "id": 140,
-      "chapterNumber": "40",
+      "chapterNumber": 40,
       "chapterArabic": "كتاب السَّلَامِ",
       "chapterEnglish": "The Book of Greetings"
     },
     {
       "id": 141,
-      "chapterNumber": "41",
+      "chapterNumber": 41,
       "chapterArabic": "كتاب الْأَلْفَاظِ مِنْ الْأَدَبِ وَغَيْرِهَا",
       "chapterEnglish": "The Book Concerning the use of Correct Words"
     },
     {
       "id": 142,
-      "chapterNumber": "42",
+      "chapterNumber": 42,
       "chapterArabic": "كتاب الشِّعْرِ",
       "chapterEnglish": "The Book of Poetry"
     },
     {
       "id": 143,
-      "chapterNumber": "43",
+      "chapterNumber": 43,
       "chapterArabic": "كتاب الرُّؤْيَا",
       "chapterEnglish": "The Book of Dreams"
     },
     {
       "id": 144,
-      "chapterNumber": "44",
+      "chapterNumber": 44,
       "chapterArabic": "كتاب الْفَضَائِلِ",
       "chapterEnglish": "The Book of Virtues"
     },
     {
       "id": 145,
-      "chapterNumber": "45",
+      "chapterNumber": 45,
       "chapterArabic": "كتاب فَضَائِلِ الصَّحَابَةِ",
       "chapterEnglish": "The Book of the Merits of the Companions"
     },
     {
       "id": 146,
-      "chapterNumber": "46",
+      "chapterNumber": 46,
       "chapterArabic": "كتاب الْبِرِّ وَالصِّلَةِ وَالْآدَابِ",
       "chapterEnglish": "The Book of Virtue, Enjoining Good Manners, and Joining of the Ties of Kinship"
     },
     {
       "id": 147,
-      "chapterNumber": "47",
+      "chapterNumber": 47,
       "chapterArabic": "كتاب الْقَدَرِ",
       "chapterEnglish": "The Book of Destiny"
     },
     {
       "id": 148,
-      "chapterNumber": "48",
+      "chapterNumber": 48,
       "chapterArabic": "كتاب الْعِلْمِ",
       "chapterEnglish": "The Book of Knowledge"
     },
     {
       "id": 149,
-      "chapterNumber": "49",
+      "chapterNumber": 49,
       "chapterArabic": "كتاب الذِّكْرِ وَالدُّعَاءِ وَالتَّوْبَةِ وَالِاسْتِغْفَارِ",
       "chapterEnglish": "The Book Pertaining to the Remembrance of Allah, Supplication, Repentance and Seeking Forgiveness"
     },
     {
       "id": 150,
-      "chapterNumber": "50",
+      "chapterNumber": 50,
       "chapterArabic": "كتاب التَّوْبَةِ",
       "chapterEnglish": "The Book of Repentance"
     },
     {
       "id": 151,
-      "chapterNumber": "51",
+      "chapterNumber": 51,
       "chapterArabic": "كتاب صِفَاتِ الْمُنَافِقِينَ وَأَحْكَامِهِمْ",
       "chapterEnglish": "Characteristics of The Hypocrites And Rulings Concerning Them"
     },
     {
       "id": 152,
-      "chapterNumber": "52",
+      "chapterNumber": 52,
       "chapterArabic": "كتاب الْجَنَّةِ وَصِفَةِ نَعِيمِهَا وَأَهْلِهَا",
       "chapterEnglish": "The Book of Paradise, its Description, its Bounties and its Inhabitants"
     },
     {
       "id": 153,
-      "chapterNumber": "53",
+      "chapterNumber": 53,
       "chapterArabic": "كتاب الْفِتَنِ وَأَشْرَاطِ السَّاعَةِ",
       "chapterEnglish": "The Book of Tribulations and Portents of the Last Hour"
     },
     {
       "id": 154,
-      "chapterNumber": "54",
+      "chapterNumber": 54,
       "chapterArabic": "كتاب الزُّهْدِ وَالرَّقَائِقِ",
       "chapterEnglish": "The Book of Zuhd and Softening of Hearts"
     },
     {
       "id": 155,
-      "chapterNumber": "55",
+      "chapterNumber": 55,
       "chapterArabic": "كتاب التَّفْسِيرِ",
       "chapterEnglish": "The Book of Commentary on the Qur'an"
-    }
-  ],
-  "abu-dawood": [
-    {
-      "id": 206,
-      "chapterNumber": "1",
-      "chapterArabic": "كتاب الطهارة",
-      "chapterEnglish": "Purification (Kitab Al-Taharah)"
-    },
-    {
-      "id": 207,
-      "chapterNumber": "2",
-      "chapterArabic": "كتاب الصلاة",
-      "chapterEnglish": "Prayer (Kitab Al-Salat)"
-    },
-    {
-      "id": 208,
-      "chapterNumber": "3",
-      "chapterArabic": "كتاب الاستسقاء",
-      "chapterEnglish": "The Book Of The Prayer For Rain (Kitab al-Istisqa')"
-    },
-    {
-      "id": 209,
-      "chapterNumber": "4",
-      "chapterArabic": "كتاب صلاة السفر",
-      "chapterEnglish": "Prayer (Kitab Al-Salat): Detailed Rules of Law about the Prayer during Journey"
-    },
-    {
-      "id": 210,
-      "chapterNumber": "5",
-      "chapterArabic": "كتاب التطوع",
-      "chapterEnglish": "Prayer (Kitab Al-Salat): Voluntary Prayers"
-    },
-    {
-      "id": 211,
-      "chapterNumber": "6",
-      "chapterArabic": "كتاب شهر رمضان",
-      "chapterEnglish": "Prayer (Kitab Al-Salat): Detailed Injunctions about Ramadan"
-    },
-    {
-      "id": 212,
-      "chapterNumber": "7",
-      "chapterArabic": "كتاب سجود القرآن",
-      "chapterEnglish": "Prayer (Kitab Al-Salat): Prostration while reciting the Qur'an"
-    },
-    {
-      "id": 213,
-      "chapterNumber": "8",
-      "chapterArabic": "كتاب الوتر",
-      "chapterEnglish": "Prayer (Kitab Al-Salat): Detailed Injunctions about Witr"
-    },
-    {
-      "id": 214,
-      "chapterNumber": "9",
-      "chapterArabic": "كتاب الزكاة",
-      "chapterEnglish": "Zakat (Kitab Al-Zakat)"
-    },
-    {
-      "id": 215,
-      "chapterNumber": "10",
-      "chapterArabic": "كتاب اللقطة",
-      "chapterEnglish": "The Book of Lost and Found Items"
-    },
-    {
-      "id": 216,
-      "chapterNumber": "11",
-      "chapterArabic": "كتاب المناسك",
-      "chapterEnglish": "The Rites of Hajj (Kitab Al-Manasik Wa'l-Hajj)"
-    },
-    {
-      "id": 217,
-      "chapterNumber": "12",
-      "chapterArabic": "كتاب النكاح",
-      "chapterEnglish": "Marriage (Kitab Al-Nikah)"
-    },
-    {
-      "id": 218,
-      "chapterNumber": "13",
-      "chapterArabic": "كتاب الطلاق",
-      "chapterEnglish": "Divorce (Kitab Al-Talaq)"
-    },
-    {
-      "id": 219,
-      "chapterNumber": "14",
-      "chapterArabic": "كتاب الصوم",
-      "chapterEnglish": "Fasting (Kitab Al-Siyam)"
-    },
-    {
-      "id": 220,
-      "chapterNumber": "15",
-      "chapterArabic": "كتاب الجهاد",
-      "chapterEnglish": "Jihad (Kitab Al-Jihad)"
-    },
-    {
-      "id": 221,
-      "chapterNumber": "16",
-      "chapterArabic": "كتاب الضحايا",
-      "chapterEnglish": "Sacrifice (Kitab Al-Dahaya)"
-    },
-    {
-      "id": 222,
-      "chapterNumber": "17",
-      "chapterArabic": "كتاب الصيد",
-      "chapterEnglish": "Game (Kitab Al-Said)"
-    },
-    {
-      "id": 223,
-      "chapterNumber": "18",
-      "chapterArabic": "كتاب الوصايا",
-      "chapterEnglish": "Wills (Kitab Al-Wasaya)"
-    },
-    {
-      "id": 224,
-      "chapterNumber": "19",
-      "chapterArabic": "كتاب الفرائض",
-      "chapterEnglish": "Shares of Inheritance (Kitab Al-Fara'id)"
-    },
-    {
-      "id": 225,
-      "chapterNumber": "20",
-      "chapterArabic": "كتاب الخراج والإمارة والفىء",
-      "chapterEnglish": "Tribute, Spoils, and Rulership (Kitab Al-Kharaj, Wal-Fai' Wal-Imarah)"
-    },
-    {
-      "id": 226,
-      "chapterNumber": "21",
-      "chapterArabic": "كتاب الجنائز",
-      "chapterEnglish": "Funerals (Kitab Al-Jana'iz)"
-    },
-    {
-      "id": 227,
-      "chapterNumber": "22",
-      "chapterArabic": "كتاب الأيمان والنذور",
-      "chapterEnglish": "Oaths and Vows (Kitab Al-Aiman Wa Al-Nudhur)"
-    },
-    {
-      "id": 228,
-      "chapterNumber": "23",
-      "chapterArabic": "كتاب البيوع",
-      "chapterEnglish": "Commercial Transactions (Kitab Al-Buyu)"
-    },
-    {
-      "id": 229,
-      "chapterNumber": "24",
-      "chapterArabic": "كتاب الإجارة",
-      "chapterEnglish": "Wages (Kitab Al-Ijarah)"
-    },
-    {
-      "id": 230,
-      "chapterNumber": "25",
-      "chapterArabic": "كتاب الأقضية",
-      "chapterEnglish": "The Office of the Judge (Kitab Al-Aqdiyah)"
-    },
-    {
-      "id": 231,
-      "chapterNumber": "26",
-      "chapterArabic": "كتاب العلم",
-      "chapterEnglish": "Knowledge (Kitab Al-Ilm)"
-    },
-    {
-      "id": 232,
-      "chapterNumber": "27",
-      "chapterArabic": "كتاب الأشربة",
-      "chapterEnglish": "Drinks (Kitab Al-Ashribah)"
-    },
-    {
-      "id": 233,
-      "chapterNumber": "28",
-      "chapterArabic": "كتاب الأطعمة",
-      "chapterEnglish": "Foods (Kitab Al-At'imah)"
-    },
-    {
-      "id": 234,
-      "chapterNumber": "29",
-      "chapterArabic": "كتاب الطب",
-      "chapterEnglish": "Medicine (Kitab Al-Tibb)"
-    },
-    {
-      "id": 235,
-      "chapterNumber": "30",
-      "chapterArabic": "كتاب الكهانة و التطير",
-      "chapterEnglish": "Divination and Omens (Kitab Al-Kahanah Wa Al-Tatayyur)"
-    },
-    {
-      "id": 236,
-      "chapterNumber": "31",
-      "chapterArabic": "كتاب العتق",
-      "chapterEnglish": "The Book of Manumission of Slaves"
-    },
-    {
-      "id": 237,
-      "chapterNumber": "32",
-      "chapterArabic": "كتاب الحروف والقراءات",
-      "chapterEnglish": "Dialects and Readings of the Qur'an (Kitab Al-Huruf Wa Al-Qira'at)"
-    },
-    {
-      "id": 238,
-      "chapterNumber": "33",
-      "chapterArabic": "كتاب الحمَّام",
-      "chapterEnglish": "Hot Baths (Kitab Al-Hammam)"
-    },
-    {
-      "id": 239,
-      "chapterNumber": "34",
-      "chapterArabic": "كتاب اللباس",
-      "chapterEnglish": "Clothing (Kitab Al-Libas)"
-    },
-    {
-      "id": 240,
-      "chapterNumber": "35",
-      "chapterArabic": "كتاب الترجل",
-      "chapterEnglish": "Combing the Hair (Kitab Al-Tarajjul)"
-    },
-    {
-      "id": 241,
-      "chapterNumber": "36",
-      "chapterArabic": "كتاب الخاتم",
-      "chapterEnglish": "Signet-Rings (Kitab Al-Khatam)"
-    },
-    {
-      "id": 242,
-      "chapterNumber": "37",
-      "chapterArabic": "كتاب الفتن والملاحم",
-      "chapterEnglish": "Trials and Fierce Battles (Kitab Al-Fitan Wa Al-Malahim)"
-    },
-    {
-      "id": 243,
-      "chapterNumber": "38",
-      "chapterArabic": "كتاب المهدى",
-      "chapterEnglish": "The Promised Deliverer (Kitab Al-Mahdi)"
-    },
-    {
-      "id": 244,
-      "chapterNumber": "39",
-      "chapterArabic": "كتاب الملاحم",
-      "chapterEnglish": "Battles (Kitab Al-Malahim)"
-    },
-    {
-      "id": 245,
-      "chapterNumber": "40",
-      "chapterArabic": "كتاب الحدود",
-      "chapterEnglish": "Prescribed Punishments (Kitab Al-Hudud)"
-    },
-    {
-      "id": 246,
-      "chapterNumber": "41",
-      "chapterArabic": "كتاب الديات",
-      "chapterEnglish": "Types of Blood-Wit (Kitab Al-Diyat)"
-    },
-    {
-      "id": 247,
-      "chapterNumber": "42",
-      "chapterArabic": "كتاب السنة",
-      "chapterEnglish": "Model Behavior of the Prophet (Kitab Al-Sunnah)"
-    },
-    {
-      "id": 248,
-      "chapterNumber": "43",
-      "chapterArabic": "كتاب الأدب",
-      "chapterEnglish": "General Behavior (Kitab Al-Adab)"
     }
   ],
   "al-tirmidhi": [
     {
       "id": 156,
-      "chapterNumber": "1",
+      "chapterNumber": 1,
       "chapterArabic": "كتاب الطهارة عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Purification"
     },
     {
       "id": 157,
-      "chapterNumber": "2",
+      "chapterNumber": 2,
       "chapterArabic": "كتاب الصلاة",
       "chapterEnglish": "The Book on Salat (Prayer)"
     },
     {
       "id": 158,
-      "chapterNumber": "3",
+      "chapterNumber": 3,
       "chapterArabic": "كتاب أحكام ومسائل النسيان في الصلاة",
       "chapterEnglish": "The Book on Rulings and issues related to forgetfulness in prayer"
     },
     {
       "id": 159,
-      "chapterNumber": "4",
+      "chapterNumber": 4,
       "chapterArabic": "أَبْوَابُ الْوِتْرِ",
       "chapterEnglish": "The Book on Al-Witr"
     },
     {
       "id": 160,
-      "chapterNumber": "5",
+      "chapterNumber": 5,
       "chapterArabic": "كِتَاب الْجُمُعَةِ عَنْ رَسُولِ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ",
       "chapterEnglish": "The Book on the Day of Friday"
     },
     {
       "id": 161,
-      "chapterNumber": "6",
+      "chapterNumber": 6,
       "chapterArabic": "أَبْوَابُ الْعِيدَيْنِ عَنْ رَسُولِ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ",
       "chapterEnglish": "The Book on the Two Eids"
     },
     {
       "id": 162,
-      "chapterNumber": "7",
+      "chapterNumber": 7,
       "chapterArabic": "أَبْوَابُ السَّفَرِ",
       "chapterEnglish": "The Book on Traveling"
     },
     {
       "id": 163,
-      "chapterNumber": "8",
+      "chapterNumber": 8,
       "chapterArabic": "كتاب الزكاة عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Zakat"
     },
     {
       "id": 164,
-      "chapterNumber": "9",
+      "chapterNumber": 9,
       "chapterArabic": "كتاب الصوم عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Fasting"
     },
     {
       "id": 165,
-      "chapterNumber": "10",
+      "chapterNumber": 10,
       "chapterArabic": "كتاب الحج عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Hajj"
     },
     {
       "id": 166,
-      "chapterNumber": "11",
+      "chapterNumber": 11,
       "chapterArabic": "كتاب الجنائز عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Jana`iz (Funerals)"
     },
     {
       "id": 167,
-      "chapterNumber": "12",
+      "chapterNumber": 12,
       "chapterArabic": "كتاب النكاح عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Marriage"
     },
     {
       "id": 168,
-      "chapterNumber": "13",
+      "chapterNumber": 13,
       "chapterArabic": "كتاب الرضاع",
       "chapterEnglish": "The Book on Suckling"
     },
     {
       "id": 169,
-      "chapterNumber": "14",
+      "chapterNumber": 14,
       "chapterArabic": "كتاب الطلاق واللعان عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Divorce and Li'an"
     },
     {
       "id": 170,
-      "chapterNumber": "15",
+      "chapterNumber": 15,
       "chapterArabic": "كتاب البيوع عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Business"
     },
     {
       "id": 171,
-      "chapterNumber": "16",
+      "chapterNumber": 16,
       "chapterArabic": "كتاب الأحكام عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Chapters On Judgements From The Messenger of Allah"
     },
     {
       "id": 172,
-      "chapterNumber": "17",
+      "chapterNumber": 17,
       "chapterArabic": "كتاب الديات عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Blood Money"
     },
     {
       "id": 173,
-      "chapterNumber": "18",
+      "chapterNumber": 18,
       "chapterArabic": "كتاب الحدود عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Legal Punishments (Al-Hudud)"
     },
     {
       "id": 174,
-      "chapterNumber": "19",
+      "chapterNumber": 19,
       "chapterArabic": "كتاب الصيد والذبائح عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Hunting"
     },
     {
       "id": 175,
-      "chapterNumber": "20",
+      "chapterNumber": 20,
       "chapterArabic": "كتاب الأضاحى عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Sacrifices"
     },
     {
       "id": 176,
-      "chapterNumber": "21",
+      "chapterNumber": 21,
       "chapterArabic": "كتاب النذور والأيمان عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Vows and Oaths"
     },
     {
       "id": 177,
-      "chapterNumber": "22",
+      "chapterNumber": 22,
       "chapterArabic": "كتاب السير عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Military Expeditions"
     },
     {
       "id": 178,
-      "chapterNumber": "23",
+      "chapterNumber": 23,
       "chapterArabic": "كتاب فضائل الجهاد عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Virtues of Jihad"
     },
     {
       "id": 179,
-      "chapterNumber": "24",
+      "chapterNumber": 24,
       "chapterArabic": "كتاب الجهاد عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Jihad"
     },
     {
       "id": 180,
-      "chapterNumber": "25",
+      "chapterNumber": 25,
       "chapterArabic": "كتاب اللباس",
       "chapterEnglish": "The Book on Clothing"
     },
     {
       "id": 181,
-      "chapterNumber": "26",
+      "chapterNumber": 26,
       "chapterArabic": "كتاب الأطعمة عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Food"
     },
     {
       "id": 182,
-      "chapterNumber": "27",
+      "chapterNumber": 27,
       "chapterArabic": "كتاب الأشربة عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Drinks"
     },
     {
       "id": 183,
-      "chapterNumber": "28",
+      "chapterNumber": 28,
       "chapterArabic": "كتاب البر والصلة عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Righteousness And Maintaining Good Relations With Relatives"
     },
     {
       "id": 184,
-      "chapterNumber": "29",
+      "chapterNumber": 29,
       "chapterArabic": "كتاب الطب عن رسول اللَّهِ صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Medicine"
     },
     {
       "id": 185,
-      "chapterNumber": "30",
+      "chapterNumber": 30,
       "chapterArabic": "كتاب الفرائض عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Inheritance"
     },
     {
       "id": 186,
-      "chapterNumber": "31",
+      "chapterNumber": 31,
       "chapterArabic": "كتاب الوصايا عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Wasaya (Wills and Testament)"
     },
     {
       "id": 187,
-      "chapterNumber": "32",
+      "chapterNumber": 32,
       "chapterArabic": "كتاب الولاء والهبة عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Wala' And Gifts"
     },
     {
       "id": 188,
-      "chapterNumber": "33",
+      "chapterNumber": 33,
       "chapterArabic": "كتاب القدر عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Al-Qadar"
     },
     {
       "id": 189,
-      "chapterNumber": "34",
+      "chapterNumber": 34,
       "chapterArabic": "كتاب الفتن عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Al-Fitan"
     },
     {
       "id": 190,
-      "chapterNumber": "35",
+      "chapterNumber": 35,
       "chapterArabic": "كتاب الرؤيا عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Dreams"
     },
     {
       "id": 191,
-      "chapterNumber": "36",
+      "chapterNumber": 36,
       "chapterArabic": "كتاب الشهادات عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Witnesses"
     },
     {
       "id": 192,
-      "chapterNumber": "37",
+      "chapterNumber": 37,
       "chapterArabic": "كتاب الزهد عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Zuhd"
     },
     {
       "id": 193,
-      "chapterNumber": "38",
+      "chapterNumber": 38,
       "chapterArabic": "كتاب صفة القيامة والرقائق والورع عن رسول الله صلى الله",
       "chapterEnglish": "Chapter on the description of the Day of Judgement, Ar-Riqaq, and Al-Wara`"
     },
     {
       "id": 194,
-      "chapterNumber": "39",
+      "chapterNumber": 39,
       "chapterArabic": "كتاب صفة الجنة عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on the description of Paradise"
     },
     {
       "id": 195,
-      "chapterNumber": "40",
+      "chapterNumber": 40,
       "chapterArabic": "كتاب صفة جهنم عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on the Description of Hellfire"
     },
     {
       "id": 196,
-      "chapterNumber": "41",
+      "chapterNumber": 41,
       "chapterArabic": "كتاب الإيمان عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "The Book on Faith"
     },
     {
       "id": 197,
-      "chapterNumber": "42",
+      "chapterNumber": 42,
       "chapterArabic": "كتاب العلم عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Knowledge"
     },
     {
       "id": 198,
-      "chapterNumber": "43",
+      "chapterNumber": 43,
       "chapterArabic": "كتاب الاستئذان والآداب عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Seeking Permission"
     },
     {
       "id": 199,
-      "chapterNumber": "44",
+      "chapterNumber": 44,
       "chapterArabic": "كتاب الأدب عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Manners"
     },
     {
       "id": 200,
-      "chapterNumber": "45",
+      "chapterNumber": 45,
       "chapterArabic": "كتاب الأمثال عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Parables"
     },
     {
       "id": 201,
-      "chapterNumber": "46",
+      "chapterNumber": 46,
       "chapterArabic": "كتاب فضائل القرآن عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on The Virtues of the Qur`an"
     },
     {
       "id": 202,
-      "chapterNumber": "47",
+      "chapterNumber": 47,
       "chapterArabic": "كتاب القراءات عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Recitation"
     },
     {
       "id": 203,
-      "chapterNumber": "48",
+      "chapterNumber": 48,
       "chapterArabic": "كتاب تفسير القرآن عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Tafsir"
     },
     {
       "id": 204,
-      "chapterNumber": "49",
+      "chapterNumber": 49,
       "chapterArabic": "كتاب الدعوات عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Supplication"
     },
     {
       "id": 205,
-      "chapterNumber": "50",
+      "chapterNumber": 50,
       "chapterArabic": "كتاب المناقب عن رسول الله صلى الله عليه وسلم",
       "chapterEnglish": "Chapter on Virtues"
+    }
+  ],
+  "sahih-bukhari": [
+    {
+      "id": 1,
+      "chapterNumber": 1,
+      "chapterArabic": "كتاب بدء الوحى",
+      "chapterEnglish": "Revelation"
+    },
+    {
+      "id": 2,
+      "chapterNumber": 2,
+      "chapterArabic": "كتاب الإيمان",
+      "chapterEnglish": "Belief"
+    },
+    {
+      "id": 3,
+      "chapterNumber": 3,
+      "chapterArabic": "كتاب العلم",
+      "chapterEnglish": "Knowledge"
+    },
+    {
+      "id": 4,
+      "chapterNumber": 4,
+      "chapterArabic": "كتاب الوضوء",
+      "chapterEnglish": "Ablutions (Wudu')"
+    },
+    {
+      "id": 5,
+      "chapterNumber": 5,
+      "chapterArabic": "كتاب الغسل",
+      "chapterEnglish": "Bathing (Ghusl)"
+    },
+    {
+      "id": 6,
+      "chapterNumber": 6,
+      "chapterArabic": "كتاب الحيض",
+      "chapterEnglish": "Menstrual Periods"
+    },
+    {
+      "id": 7,
+      "chapterNumber": 7,
+      "chapterArabic": "كتاب التيمم",
+      "chapterEnglish": "Rubbing hands and feet with dust (Tayammum)"
+    },
+    {
+      "id": 8,
+      "chapterNumber": 8,
+      "chapterArabic": "كتاب الصلاة",
+      "chapterEnglish": "Prayers (Salat)"
+    },
+    {
+      "id": 9,
+      "chapterNumber": 9,
+      "chapterArabic": "كتاب مواقيت الصلاة",
+      "chapterEnglish": "Times of the Prayers"
+    },
+    {
+      "id": 10,
+      "chapterNumber": 10,
+      "chapterArabic": "كتاب الأذان",
+      "chapterEnglish": "Call to Prayers (Adhaan)"
+    },
+    {
+      "id": 11,
+      "chapterNumber": 11,
+      "chapterArabic": "كتاب الأذان (صفة الصلوة)",
+      "chapterEnglish": "Call to Prayers (Adhaan) (Sufa-Tu-Salat)"
+    },
+    {
+      "id": 12,
+      "chapterNumber": 12,
+      "chapterArabic": "كتاب الجمعة",
+      "chapterEnglish": "Friday Prayer"
+    },
+    {
+      "id": 13,
+      "chapterNumber": 13,
+      "chapterArabic": "كتاب صلاة الخوف",
+      "chapterEnglish": "Fear Prayer"
+    },
+    {
+      "id": 14,
+      "chapterNumber": 14,
+      "chapterArabic": "كتاب العيدين",
+      "chapterEnglish": "The Two Festivals (Eids)"
+    },
+    {
+      "id": 15,
+      "chapterNumber": 15,
+      "chapterArabic": "كتاب الوتر",
+      "chapterEnglish": "Witr Prayer"
+    },
+    {
+      "id": 16,
+      "chapterNumber": 16,
+      "chapterArabic": "كتاب الاستسقاء",
+      "chapterEnglish": "Invoking Allah for Rain (Istisqaa)"
+    },
+    {
+      "id": 17,
+      "chapterNumber": 17,
+      "chapterArabic": "كتاب الكسوف",
+      "chapterEnglish": "Eclipses"
+    },
+    {
+      "id": 18,
+      "chapterNumber": 18,
+      "chapterArabic": "كتاب سجود القرآن",
+      "chapterEnglish": "Prostration During Recital of Qur'an"
+    },
+    {
+      "id": 19,
+      "chapterNumber": 19,
+      "chapterArabic": "كتاب تقصير الصلاة",
+      "chapterEnglish": "Shortening the Prayers (At-Taqseer)"
+    },
+    {
+      "id": 20,
+      "chapterNumber": 20,
+      "chapterArabic": "كتاب التهجد",
+      "chapterEnglish": "Prayer at Night (Tahajjud)"
+    },
+    {
+      "id": 21,
+      "chapterNumber": 21,
+      "chapterArabic": "كتاب فضل الصلاة",
+      "chapterEnglish": "Virtues of Prayer at Masjid Makkah and Madinah"
+    },
+    {
+      "id": 22,
+      "chapterNumber": 22,
+      "chapterArabic": "كتاب العمل في الصلاة",
+      "chapterEnglish": "Actions while Praying"
+    },
+    {
+      "id": 23,
+      "chapterNumber": 23,
+      "chapterArabic": "كتاب السهو",
+      "chapterEnglish": "Forgetfulness in Prayer"
+    },
+    {
+      "id": 24,
+      "chapterNumber": 24,
+      "chapterArabic": "كتاب الجنائز",
+      "chapterEnglish": "Funerals (Al-Janaa'iz)"
+    },
+    {
+      "id": 25,
+      "chapterNumber": 25,
+      "chapterArabic": "كتاب الزكاة",
+      "chapterEnglish": "Obligatory Charity Tax (Zakat)"
+    },
+    {
+      "id": 26,
+      "chapterNumber": 26,
+      "chapterArabic": "كتاب الحج",
+      "chapterEnglish": "Hajj (Pilgrimage)"
+    },
+    {
+      "id": 27,
+      "chapterNumber": 27,
+      "chapterArabic": "كتاب العمرة",
+      "chapterEnglish": "`Umrah (Minor pilgrimage)"
+    },
+    {
+      "id": 28,
+      "chapterNumber": 28,
+      "chapterArabic": "كتاب المحصر",
+      "chapterEnglish": "Pilgrims Prevented from Completing the Pilgrimage"
+    },
+    {
+      "id": 29,
+      "chapterNumber": 29,
+      "chapterArabic": "كتاب جزاء الصيد",
+      "chapterEnglish": "Penalty of Hunting while on Pilgrimage"
+    },
+    {
+      "id": 30,
+      "chapterNumber": 30,
+      "chapterArabic": "كتاب فضائل المدينة",
+      "chapterEnglish": "Virtues of Madinah"
+    },
+    {
+      "id": 31,
+      "chapterNumber": 31,
+      "chapterArabic": "كتاب الصوم",
+      "chapterEnglish": "Fasting"
+    },
+    {
+      "id": 32,
+      "chapterNumber": 32,
+      "chapterArabic": "كتاب صلاة التراويح",
+      "chapterEnglish": "Praying at Night in Ramadaan (Taraweeh)"
+    },
+    {
+      "id": 33,
+      "chapterNumber": 33,
+      "chapterArabic": "كتاب فضل ليلة القدر",
+      "chapterEnglish": "Virtues of the Night of Qadr"
+    },
+    {
+      "id": 34,
+      "chapterNumber": 34,
+      "chapterArabic": "كتاب الاعتكاف",
+      "chapterEnglish": "Retiring to a Mosque for Remembrance of Allah (I'tikaf)"
+    },
+    {
+      "id": 35,
+      "chapterNumber": 35,
+      "chapterArabic": "كتاب البيوع",
+      "chapterEnglish": "Sales and Trade"
+    },
+    {
+      "id": 36,
+      "chapterNumber": 36,
+      "chapterArabic": "كتاب السلم",
+      "chapterEnglish": "Sales in which a Price is paid for Goods to be Delivered Later (As-Salam)"
+    },
+    {
+      "id": 37,
+      "chapterNumber": 37,
+      "chapterArabic": "كتاب الشفعة",
+      "chapterEnglish": "Shuf'a"
+    },
+    {
+      "id": 38,
+      "chapterNumber": 38,
+      "chapterArabic": "كتاب الإجارة",
+      "chapterEnglish": "Hiring"
+    },
+    {
+      "id": 39,
+      "chapterNumber": 39,
+      "chapterArabic": "كتاب الحوالات",
+      "chapterEnglish": "Transferance of a Debt from One Person to Another (Al-Hawaala)"
+    },
+    {
+      "id": 40,
+      "chapterNumber": 40,
+      "chapterArabic": "كتاب الكفالة",
+      "chapterEnglish": "Kafalah"
+    },
+    {
+      "id": 41,
+      "chapterNumber": 41,
+      "chapterArabic": "كتاب الوكالة",
+      "chapterEnglish": "Representation, Authorization, Business by Proxy"
+    },
+    {
+      "id": 42,
+      "chapterNumber": 42,
+      "chapterArabic": "كتاب المزارعة",
+      "chapterEnglish": "Agriculture"
+    },
+    {
+      "id": 43,
+      "chapterNumber": 43,
+      "chapterArabic": "كتاب المساقاة",
+      "chapterEnglish": "Distribution of Water"
+    },
+    {
+      "id": 44,
+      "chapterNumber": 44,
+      "chapterArabic": "كتاب الاستقراض",
+      "chapterEnglish": "Loans, Payment of Loans, Freezing of Property, Bankruptcy"
+    },
+    {
+      "id": 45,
+      "chapterNumber": 45,
+      "chapterArabic": "كتاب الخصومات",
+      "chapterEnglish": "Khusoomaat"
+    },
+    {
+      "id": 46,
+      "chapterNumber": 46,
+      "chapterArabic": "كتاب اللقطة",
+      "chapterEnglish": "Lost Things Picked up by Someone (Luqatah)"
+    },
+    {
+      "id": 47,
+      "chapterNumber": 47,
+      "chapterArabic": "کتاب المظالم والغصب",
+      "chapterEnglish": "Oppressions"
+    },
+    {
+      "id": 48,
+      "chapterNumber": 48,
+      "chapterArabic": "كتاب الشركة",
+      "chapterEnglish": "Partnership"
+    },
+    {
+      "id": 49,
+      "chapterNumber": 49,
+      "chapterArabic": "كتاب الرهن",
+      "chapterEnglish": "Mortgaging"
+    },
+    {
+      "id": 50,
+      "chapterNumber": 50,
+      "chapterArabic": "كتاب العتق",
+      "chapterEnglish": "Manumission of Slaves"
+    },
+    {
+      "id": 51,
+      "chapterNumber": 51,
+      "chapterArabic": "كتاب المكاتب",
+      "chapterEnglish": "Makaatib"
+    },
+    {
+      "id": 52,
+      "chapterNumber": 52,
+      "chapterArabic": "كتاب الهبة",
+      "chapterEnglish": "Gifts"
+    },
+    {
+      "id": 53,
+      "chapterNumber": 53,
+      "chapterArabic": "كتاب الشهادات",
+      "chapterEnglish": "Witnesses"
+    },
+    {
+      "id": 54,
+      "chapterNumber": 54,
+      "chapterArabic": "كتاب الصلح",
+      "chapterEnglish": "Peacemaking"
+    },
+    {
+      "id": 55,
+      "chapterNumber": 55,
+      "chapterArabic": "كتاب الشروط",
+      "chapterEnglish": "Conditions"
+    },
+    {
+      "id": 56,
+      "chapterNumber": 56,
+      "chapterArabic": "كتاب الوصايا",
+      "chapterEnglish": "Wills and Testaments (Wasaayaa)"
+    },
+    {
+      "id": 57,
+      "chapterNumber": 57,
+      "chapterArabic": "كتاب الجهاد والسير",
+      "chapterEnglish": "Fighting for the Cause of Allah (Jihaad)"
+    },
+    {
+      "id": 58,
+      "chapterNumber": 58,
+      "chapterArabic": "كتاب فرض الخمس",
+      "chapterEnglish": "One-fifth of Booty to the Cause of Allah (Khumus)"
+    },
+    {
+      "id": 59,
+      "chapterNumber": 59,
+      "chapterArabic": "كتاب کتاب الجزیہ والموادعہ",
+      "chapterEnglish": "Jizyah and Mawaada'ah"
+    },
+    {
+      "id": 60,
+      "chapterNumber": 60,
+      "chapterArabic": "كتاب بدء الخلق",
+      "chapterEnglish": "Beginning of Creation"
+    },
+    {
+      "id": 61,
+      "chapterNumber": 61,
+      "chapterArabic": "كتاب أحاديث الأنبياء",
+      "chapterEnglish": "Prophets"
+    },
+    {
+      "id": 62,
+      "chapterNumber": 62,
+      "chapterArabic": "كتاب المناقب",
+      "chapterEnglish": "Virtues and Merits of the Prophet (PBUH) and his Companions"
+    },
+    {
+      "id": 63,
+      "chapterNumber": 63,
+      "chapterArabic": "كتاب فضائل الصحابة",
+      "chapterEnglish": "Companions of the Prophet"
+    },
+    {
+      "id": 64,
+      "chapterNumber": 64,
+      "chapterArabic": "كتاب مناقب الأنصار",
+      "chapterEnglish": "Merits of the Helpers in Madinah (Ansaar)"
+    },
+    {
+      "id": 65,
+      "chapterNumber": 65,
+      "chapterArabic": "كتاب المغازي",
+      "chapterEnglish": "Military Expeditions led by the Prophet (PBUH) (Al-Maghaazi)"
+    },
+    {
+      "id": 66,
+      "chapterNumber": 66,
+      "chapterArabic": "كتاب التفسير",
+      "chapterEnglish": "Prophetic Commentary on the Qur'an (Tafseer of the Prophet (PBUH))"
+    },
+    {
+      "id": 67,
+      "chapterNumber": 67,
+      "chapterArabic": "كتاب فضائل القرآن",
+      "chapterEnglish": "Virtues of the Qur'an"
+    },
+    {
+      "id": 68,
+      "chapterNumber": 68,
+      "chapterArabic": "كتاب النكاح",
+      "chapterEnglish": "Wedlock, Marriage (Nikaah)"
+    },
+    {
+      "id": 69,
+      "chapterNumber": 69,
+      "chapterArabic": "كتاب الطلاق",
+      "chapterEnglish": "Divorce"
+    },
+    {
+      "id": 70,
+      "chapterNumber": 70,
+      "chapterArabic": "كتاب النفقات",
+      "chapterEnglish": "Supporting the Family"
+    },
+    {
+      "id": 71,
+      "chapterNumber": 71,
+      "chapterArabic": "كتاب الأطعمة",
+      "chapterEnglish": "Food, Meals"
+    },
+    {
+      "id": 72,
+      "chapterNumber": 72,
+      "chapterArabic": "كتاب العقيقة",
+      "chapterEnglish": "Sacrifice on Occasion of Birth (`Aqiqa)"
+    },
+    {
+      "id": 73,
+      "chapterNumber": 73,
+      "chapterArabic": "كتاب الذبائح والصيد",
+      "chapterEnglish": "Hunting, Slaughtering"
+    },
+    {
+      "id": 74,
+      "chapterNumber": 74,
+      "chapterArabic": "كتاب الأضاحي",
+      "chapterEnglish": "Al-Adha Festival Sacrifice (Adaahi)"
+    },
+    {
+      "id": 75,
+      "chapterNumber": 75,
+      "chapterArabic": "كتاب الأشربة",
+      "chapterEnglish": "Drinks"
+    },
+    {
+      "id": 76,
+      "chapterNumber": 76,
+      "chapterArabic": "كتاب المرضى",
+      "chapterEnglish": "Patients"
+    },
+    {
+      "id": 77,
+      "chapterNumber": 77,
+      "chapterArabic": "كتاب الطب",
+      "chapterEnglish": "Medicine"
+    },
+    {
+      "id": 78,
+      "chapterNumber": 78,
+      "chapterArabic": "كتاب اللباس",
+      "chapterEnglish": "Dress"
+    },
+    {
+      "id": 79,
+      "chapterNumber": 79,
+      "chapterArabic": "كتاب الأدب",
+      "chapterEnglish": "Good Manners and Form (Al-Adab)"
+    },
+    {
+      "id": 80,
+      "chapterNumber": 80,
+      "chapterArabic": "كتاب الاستئذان",
+      "chapterEnglish": "Asking Permission"
+    },
+    {
+      "id": 81,
+      "chapterNumber": 81,
+      "chapterArabic": "كتاب الدعوات",
+      "chapterEnglish": "Invocations"
+    },
+    {
+      "id": 82,
+      "chapterNumber": 82,
+      "chapterArabic": "كتاب الرقاق",
+      "chapterEnglish": "To make the Heart Tender (Ar-Riqaq)"
+    },
+    {
+      "id": 83,
+      "chapterNumber": 83,
+      "chapterArabic": "كتاب القدر",
+      "chapterEnglish": "Divine Will (Al-Qadar)"
+    },
+    {
+      "id": 84,
+      "chapterNumber": 84,
+      "chapterArabic": "كتاب الأيمان والنذور",
+      "chapterEnglish": "Oaths and Vows"
+    },
+    {
+      "id": 85,
+      "chapterNumber": 85,
+      "chapterArabic": "كتاب كفارات الأيمان",
+      "chapterEnglish": "Expiation for Unfulfilled Oaths"
+    },
+    {
+      "id": 86,
+      "chapterNumber": 86,
+      "chapterArabic": "كتاب الفرائض",
+      "chapterEnglish": "Laws of Inheritance (Al-Faraa'id)"
+    },
+    {
+      "id": 87,
+      "chapterNumber": 87,
+      "chapterArabic": "كتاب الحدود",
+      "chapterEnglish": "Limits and Punishments set by Allah (Hudood)"
+    },
+    {
+      "id": 88,
+      "chapterNumber": 88,
+      "chapterArabic": "كتاب المحاربين",
+      "chapterEnglish": "Al-Maharbeen"
+    },
+    {
+      "id": 89,
+      "chapterNumber": 89,
+      "chapterArabic": "كتاب الديات",
+      "chapterEnglish": "Blood Money (Ad-Diyat)"
+    },
+    {
+      "id": 90,
+      "chapterNumber": 90,
+      "chapterArabic": "كتاب استتابة المرتدين",
+      "chapterEnglish": "Apostates"
+    },
+    {
+      "id": 91,
+      "chapterNumber": 91,
+      "chapterArabic": "كتاب الإكراه",
+      "chapterEnglish": "(Statements made under) Coercion"
+    },
+    {
+      "id": 92,
+      "chapterNumber": 92,
+      "chapterArabic": "كتاب الحيل",
+      "chapterEnglish": "Tricks"
+    },
+    {
+      "id": 93,
+      "chapterNumber": 93,
+      "chapterArabic": "كتاب التعبير",
+      "chapterEnglish": "Interpretation of Dreams"
+    },
+    {
+      "id": 94,
+      "chapterNumber": 94,
+      "chapterArabic": "كتاب الفتن",
+      "chapterEnglish": "Afflictions and the End of the World"
+    },
+    {
+      "id": 95,
+      "chapterNumber": 95,
+      "chapterArabic": "كتاب الأحكام",
+      "chapterEnglish": "Judgments (Ahkaam)"
+    },
+    {
+      "id": 96,
+      "chapterNumber": 96,
+      "chapterArabic": "كتاب التمني",
+      "chapterEnglish": "Wishes"
+    },
+    {
+      "id": 97,
+      "chapterNumber": 97,
+      "chapterArabic": "كتاب أخبار الآحاد",
+      "chapterEnglish": "Accepting Information Given by a Truthful Person"
+    },
+    {
+      "id": 98,
+      "chapterNumber": 98,
+      "chapterArabic": "كتاب الاعتصام بال والسنة",
+      "chapterEnglish": "Holding Fast to the Qur'an and Sunnah"
+    },
+    {
+      "id": 99,
+      "chapterNumber": 99,
+      "chapterArabic": "كتاب التوحيد",
+      "chapterEnglish": "Oneness, Uniqueness of Allah (Tawheed)"
+    }
+  ],
+  "abu-dawood": [
+    {
+      "id": 206,
+      "chapterNumber": 1,
+      "chapterArabic": "كتاب الطهارة",
+      "chapterEnglish": "Purification (Kitab Al-Taharah)"
+    },
+    {
+      "id": 207,
+      "chapterNumber": 2,
+      "chapterArabic": "كتاب الصلاة",
+      "chapterEnglish": "Prayer (Kitab Al-Salat)"
+    },
+    {
+      "id": 208,
+      "chapterNumber": 3,
+      "chapterArabic": "كتاب الاستسقاء",
+      "chapterEnglish": "The Book Of The Prayer For Rain (Kitab al-Istisqa')"
+    },
+    {
+      "id": 209,
+      "chapterNumber": 4,
+      "chapterArabic": "كتاب صلاة السفر",
+      "chapterEnglish": "Prayer (Kitab Al-Salat): Detailed Rules of Law about the Prayer during Journey"
+    },
+    {
+      "id": 210,
+      "chapterNumber": 5,
+      "chapterArabic": "كتاب التطوع",
+      "chapterEnglish": "Prayer (Kitab Al-Salat): Voluntary Prayers"
+    },
+    {
+      "id": 211,
+      "chapterNumber": 6,
+      "chapterArabic": "كتاب شهر رمضان",
+      "chapterEnglish": "Prayer (Kitab Al-Salat): Detailed Injunctions about Ramadan"
+    },
+    {
+      "id": 212,
+      "chapterNumber": 7,
+      "chapterArabic": "كتاب سجود القرآن",
+      "chapterEnglish": "Prayer (Kitab Al-Salat): Prostration while reciting the Qur'an"
+    },
+    {
+      "id": 213,
+      "chapterNumber": 8,
+      "chapterArabic": "كتاب الوتر",
+      "chapterEnglish": "Prayer (Kitab Al-Salat): Detailed Injunctions about Witr"
+    },
+    {
+      "id": 214,
+      "chapterNumber": 9,
+      "chapterArabic": "كتاب الزكاة",
+      "chapterEnglish": "Zakat (Kitab Al-Zakat)"
+    },
+    {
+      "id": 215,
+      "chapterNumber": 10,
+      "chapterArabic": "كتاب اللقطة",
+      "chapterEnglish": "The Book of Lost and Found Items"
+    },
+    {
+      "id": 216,
+      "chapterNumber": 11,
+      "chapterArabic": "كتاب المناسك",
+      "chapterEnglish": "The Rites of Hajj (Kitab Al-Manasik Wa'l-Hajj)"
+    },
+    {
+      "id": 217,
+      "chapterNumber": 12,
+      "chapterArabic": "كتاب النكاح",
+      "chapterEnglish": "Marriage (Kitab Al-Nikah)"
+    },
+    {
+      "id": 218,
+      "chapterNumber": 13,
+      "chapterArabic": "كتاب الطلاق",
+      "chapterEnglish": "Divorce (Kitab Al-Talaq)"
+    },
+    {
+      "id": 219,
+      "chapterNumber": 14,
+      "chapterArabic": "كتاب الصوم",
+      "chapterEnglish": "Fasting (Kitab Al-Siyam)"
+    },
+    {
+      "id": 220,
+      "chapterNumber": 15,
+      "chapterArabic": "كتاب الجهاد",
+      "chapterEnglish": "Jihad (Kitab Al-Jihad)"
+    },
+    {
+      "id": 221,
+      "chapterNumber": 16,
+      "chapterArabic": "كتاب الضحايا",
+      "chapterEnglish": "Sacrifice (Kitab Al-Dahaya)"
+    },
+    {
+      "id": 222,
+      "chapterNumber": 17,
+      "chapterArabic": "كتاب الصيد",
+      "chapterEnglish": "Game (Kitab Al-Said)"
+    },
+    {
+      "id": 223,
+      "chapterNumber": 18,
+      "chapterArabic": "كتاب الوصايا",
+      "chapterEnglish": "Wills (Kitab Al-Wasaya)"
+    },
+    {
+      "id": 224,
+      "chapterNumber": 19,
+      "chapterArabic": "كتاب الفرائض",
+      "chapterEnglish": "Shares of Inheritance (Kitab Al-Fara'id)"
+    },
+    {
+      "id": 225,
+      "chapterNumber": 20,
+      "chapterArabic": "كتاب الخراج والإمارة والفىء",
+      "chapterEnglish": "Tribute, Spoils, and Rulership (Kitab Al-Kharaj, Wal-Fai' Wal-Imarah)"
+    },
+    {
+      "id": 226,
+      "chapterNumber": 21,
+      "chapterArabic": "كتاب الجنائز",
+      "chapterEnglish": "Funerals (Kitab Al-Jana'iz)"
+    },
+    {
+      "id": 227,
+      "chapterNumber": 22,
+      "chapterArabic": "كتاب الأيمان والنذور",
+      "chapterEnglish": "Oaths and Vows (Kitab Al-Aiman Wa Al-Nudhur)"
+    },
+    {
+      "id": 228,
+      "chapterNumber": 23,
+      "chapterArabic": "كتاب البيوع",
+      "chapterEnglish": "Commercial Transactions (Kitab Al-Buyu)"
+    },
+    {
+      "id": 229,
+      "chapterNumber": 24,
+      "chapterArabic": "كتاب الإجارة",
+      "chapterEnglish": "Wages (Kitab Al-Ijarah)"
+    },
+    {
+      "id": 230,
+      "chapterNumber": 25,
+      "chapterArabic": "كتاب الأقضية",
+      "chapterEnglish": "The Office of the Judge (Kitab Al-Aqdiyah)"
+    },
+    {
+      "id": 231,
+      "chapterNumber": 26,
+      "chapterArabic": "كتاب العلم",
+      "chapterEnglish": "Knowledge (Kitab Al-Ilm)"
+    },
+    {
+      "id": 232,
+      "chapterNumber": 27,
+      "chapterArabic": "كتاب الأشربة",
+      "chapterEnglish": "Drinks (Kitab Al-Ashribah)"
+    },
+    {
+      "id": 233,
+      "chapterNumber": 28,
+      "chapterArabic": "كتاب الأطعمة",
+      "chapterEnglish": "Foods (Kitab Al-At'imah)"
+    },
+    {
+      "id": 234,
+      "chapterNumber": 29,
+      "chapterArabic": "كتاب الطب",
+      "chapterEnglish": "Medicine (Kitab Al-Tibb)"
+    },
+    {
+      "id": 235,
+      "chapterNumber": 30,
+      "chapterArabic": "كتاب الكهانة و التطير",
+      "chapterEnglish": "Divination and Omens (Kitab Al-Kahanah Wa Al-Tatayyur)"
+    },
+    {
+      "id": 236,
+      "chapterNumber": 31,
+      "chapterArabic": "كتاب العتق",
+      "chapterEnglish": "The Book of Manumission of Slaves"
+    },
+    {
+      "id": 237,
+      "chapterNumber": 32,
+      "chapterArabic": "كتاب الحروف والقراءات",
+      "chapterEnglish": "Dialects and Readings of the Qur'an (Kitab Al-Huruf Wa Al-Qira'at)"
+    },
+    {
+      "id": 238,
+      "chapterNumber": 33,
+      "chapterArabic": "كتاب الحمَّام",
+      "chapterEnglish": "Hot Baths (Kitab Al-Hammam)"
+    },
+    {
+      "id": 239,
+      "chapterNumber": 34,
+      "chapterArabic": "كتاب اللباس",
+      "chapterEnglish": "Clothing (Kitab Al-Libas)"
+    },
+    {
+      "id": 240,
+      "chapterNumber": 35,
+      "chapterArabic": "كتاب الترجل",
+      "chapterEnglish": "Combing the Hair (Kitab Al-Tarajjul)"
+    },
+    {
+      "id": 241,
+      "chapterNumber": 36,
+      "chapterArabic": "كتاب الخاتم",
+      "chapterEnglish": "Signet-Rings (Kitab Al-Khatam)"
+    },
+    {
+      "id": 242,
+      "chapterNumber": 37,
+      "chapterArabic": "كتاب الفتن والملاحم",
+      "chapterEnglish": "Trials and Fierce Battles (Kitab Al-Fitan Wa Al-Malahim)"
+    },
+    {
+      "id": 243,
+      "chapterNumber": 38,
+      "chapterArabic": "كتاب المهدى",
+      "chapterEnglish": "The Promised Deliverer (Kitab Al-Mahdi)"
+    },
+    {
+      "id": 244,
+      "chapterNumber": 39,
+      "chapterArabic": "كتاب الملاحم",
+      "chapterEnglish": "Battles (Kitab Al-Malahim)"
+    },
+    {
+      "id": 245,
+      "chapterNumber": 40,
+      "chapterArabic": "كتاب الحدود",
+      "chapterEnglish": "Prescribed Punishments (Kitab Al-Hudud)"
+    },
+    {
+      "id": 246,
+      "chapterNumber": 41,
+      "chapterArabic": "كتاب الديات",
+      "chapterEnglish": "Types of Blood-Wit (Kitab Al-Diyat)"
+    },
+    {
+      "id": 247,
+      "chapterNumber": 42,
+      "chapterArabic": "كتاب السنة",
+      "chapterEnglish": "Model Behavior of the Prophet (Kitab Al-Sunnah)"
+    },
+    {
+      "id": 248,
+      "chapterNumber": 43,
+      "chapterArabic": "كتاب الأدب",
+      "chapterEnglish": "General Behavior (Kitab Al-Adab)"
+    }
+  ],
+  "musnad-ahmad": [
+    {
+      "id": 434,
+      "chapterNumber": 1,
+      "chapterArabic": "جزء من مبادئ التوحيد والدين",
+      "chapterEnglish": "The part of the principles of monotheism and religion"
+    },
+    {
+      "id": 435,
+      "chapterNumber": 2,
+      "chapterArabic": "كتاب الإيمان والإسلام",
+      "chapterEnglish": "The book of faith and Islam"
+    },
+    {
+      "id": 436,
+      "chapterNumber": 3,
+      "chapterArabic": "ديننا هو أرقى صور الإسلام ونفتخر به ونكون أحب الدين عند الله تعالى.",
+      "chapterEnglish": "Our religion is the highest form of Islam and to be proud of it and to be the most beloved religion in the sight of Allah Almighty"
+    },
+    {
+      "id": 437,
+      "chapterNumber": 4,
+      "chapterArabic": "فصول المعرفة",
+      "chapterEnglish": "Chapters of knowledge"
+    },
+    {
+      "id": 438,
+      "chapterNumber": 5,
+      "chapterArabic": "أبواب عقد القرآن والسنة",
+      "chapterEnglish": "Chapters on holding the Qur'an and Sunnah"
+    },
+    {
+      "id": 439,
+      "chapterNumber": 6,
+      "chapterArabic": "فصول الطهارة",
+      "chapterEnglish": "Chapters of Purity"
+    },
+    {
+      "id": 440,
+      "chapterNumber": 7,
+      "chapterArabic": "فصول في تنقية النجاسة",
+      "chapterEnglish": "Chapters on Purification of Impurity"
+    },
+    {
+      "id": 441,
+      "chapterNumber": 8,
+      "chapterArabic": "بيان ترتيب البول والمذي والسائل المنوي ... الخ.",
+      "chapterEnglish": "Statement of the order of urine, madhi and semen etc."
+    },
+    {
+      "id": 442,
+      "chapterNumber": 9,
+      "chapterArabic": "أبواب الوضوء والاستنجا بالحجارة وآدابها",
+      "chapterEnglish": "Chapters on ablution, istanja, using stones and their etiquette"
+    },
+    {
+      "id": 443,
+      "chapterNumber": 10,
+      "chapterArabic": "وصف اسطنبول بالحجارة وآدابها",
+      "chapterEnglish": "Description of istanja with stones and its etiquette"
+    },
+    {
+      "id": 444,
+      "chapterNumber": 11,
+      "chapterArabic": "فصول السواك",
+      "chapterEnglish": "Chapters of Miswak"
+    },
+    {
+      "id": 445,
+      "chapterNumber": 12,
+      "chapterArabic": "فصول عن الوضوء",
+      "chapterEnglish": "Chapters on ablution"
+    },
+    {
+      "id": 446,
+      "chapterNumber": 13,
+      "chapterArabic": "بيان آداب الوضوء",
+      "chapterEnglish": "Statement of etiquette related to ablution"
+    },
+    {
+      "id": 447,
+      "chapterNumber": 14,
+      "chapterArabic": "حال وضوء الرسول الكريم صلى الله عليه وسلم",
+      "chapterEnglish": "The state of ablution of the Holy Prophet (peace be upon him)"
+    }
+  ],
+  "mishkat": [
+    {
+      "id": 376,
+      "chapterNumber": 1,
+      "chapterArabic": "كتاب الإيمان",
+      "chapterEnglish": "Faith"
+    },
+    {
+      "id": 377,
+      "chapterNumber": 2,
+      "chapterArabic": "كتاب العلم",
+      "chapterEnglish": "Knowledge"
+    },
+    {
+      "id": 378,
+      "chapterNumber": 3,
+      "chapterArabic": "كتاب الطهارة",
+      "chapterEnglish": "Purification"
+    },
+    {
+      "id": 379,
+      "chapterNumber": 4,
+      "chapterArabic": "كتاب الصلاة",
+      "chapterEnglish": "Prayer"
+    },
+    {
+      "id": 380,
+      "chapterNumber": 5,
+      "chapterArabic": "كتاب الجنائز",
+      "chapterEnglish": "Funerals"
+    },
+    {
+      "id": 381,
+      "chapterNumber": 6,
+      "chapterArabic": "كتاب الزكاة",
+      "chapterEnglish": "Zakat"
+    },
+    {
+      "id": 382,
+      "chapterNumber": 7,
+      "chapterArabic": "كتاب الصوم",
+      "chapterEnglish": "Fasting"
+    },
+    {
+      "id": 383,
+      "chapterNumber": 8,
+      "chapterArabic": "كتاب فضائل القرآن",
+      "chapterEnglish": "The Excellent Qualities of the Qur'an"
+    },
+    {
+      "id": 384,
+      "chapterNumber": 9,
+      "chapterArabic": "كتاب الدعوات",
+      "chapterEnglish": "Supplications"
+    },
+    {
+      "id": 385,
+      "chapterNumber": 10,
+      "chapterArabic": "كتاب المناسك",
+      "chapterEnglish": "The Rites of Pilgrimage"
+    },
+    {
+      "id": 386,
+      "chapterNumber": 11,
+      "chapterArabic": "كتاب البيوع",
+      "chapterEnglish": "Business Transactions"
+    },
+    {
+      "id": 387,
+      "chapterNumber": 12,
+      "chapterArabic": "كتاب الفرائض والوصايا",
+      "chapterEnglish": "Inheritance and Wills"
+    },
+    {
+      "id": 388,
+      "chapterNumber": 13,
+      "chapterArabic": "كتاب النكاح",
+      "chapterEnglish": "Marriage"
+    },
+    {
+      "id": 389,
+      "chapterNumber": 14,
+      "chapterArabic": "كتاب العتق",
+      "chapterEnglish": "Emancipation"
+    },
+    {
+      "id": 390,
+      "chapterNumber": 15,
+      "chapterArabic": "كتاب القصاص",
+      "chapterEnglish": "Retaliation"
+    },
+    {
+      "id": 391,
+      "chapterNumber": 16,
+      "chapterArabic": "كتاب الحدود",
+      "chapterEnglish": "Prescribed Punishments"
+    },
+    {
+      "id": 392,
+      "chapterNumber": 17,
+      "chapterArabic": "كتاب الإمارة والقضاء",
+      "chapterEnglish": "The Offices of Commander and Qadi"
+    },
+    {
+      "id": 393,
+      "chapterNumber": 18,
+      "chapterArabic": "كتاب الجهاد",
+      "chapterEnglish": "Jihad"
+    },
+    {
+      "id": 394,
+      "chapterNumber": 19,
+      "chapterArabic": "كتاب الصيد والذبائح",
+      "chapterEnglish": "Game and Animals Which May Be Slaughtered"
+    },
+    {
+      "id": 395,
+      "chapterNumber": 20,
+      "chapterArabic": "كتاب الأطعمة",
+      "chapterEnglish": "Foods"
+    },
+    {
+      "id": 396,
+      "chapterNumber": 21,
+      "chapterArabic": "كتاب اللباس",
+      "chapterEnglish": "Clothing"
+    },
+    {
+      "id": 397,
+      "chapterNumber": 22,
+      "chapterArabic": "كتاب الطب والرقى",
+      "chapterEnglish": "Medicine and Spells"
+    },
+    {
+      "id": 398,
+      "chapterNumber": 23,
+      "chapterArabic": "كتاب الرؤيا",
+      "chapterEnglish": "Visions"
+    },
+    {
+      "id": 399,
+      "chapterNumber": 24,
+      "chapterArabic": "كتاب الْآدَاب",
+      "chapterEnglish": "Etiquette"
+    },
+    {
+      "id": 400,
+      "chapterNumber": 25,
+      "chapterArabic": "کتاب الرقاق",
+      "chapterEnglish": "Things that soften the heart"
+    },
+    {
+      "id": 401,
+      "chapterNumber": 26,
+      "chapterArabic": "کتاب الفتن",
+      "chapterEnglish": "Tribulations"
+    },
+    {
+      "id": 402,
+      "chapterNumber": 27,
+      "chapterArabic": "كتاب أَحْوَال الْقِيَامَة وبدء الْخلق",
+      "chapterEnglish": "The Conditions of Resurrection"
+    },
+    {
+      "id": 403,
+      "chapterNumber": 28,
+      "chapterArabic": "كتاب الْفَضَائِل وَالشَّمَائِل",
+      "chapterEnglish": "Virtues and merits"
+    },
+    {
+      "id": 404,
+      "chapterNumber": 29,
+      "chapterArabic": "كتاب المناقب",
+      "chapterEnglish": "Virtues"
+    }
+  ],
+  "sunan-nasai": [
+    {
+      "id": 288,
+      "chapterNumber": 1,
+      "chapterArabic": "كتاب الطهارة",
+      "chapterEnglish": "The Book of Purification"
+    },
+    {
+      "id": 289,
+      "chapterNumber": 2,
+      "chapterArabic": "كتاب المياه",
+      "chapterEnglish": "The Book of Water"
+    },
+    {
+      "id": 290,
+      "chapterNumber": 3,
+      "chapterArabic": "كتاب الحيض والاستحاضة",
+      "chapterEnglish": "The Book of Menstruation and Istihadah"
+    },
+    {
+      "id": 291,
+      "chapterNumber": 4,
+      "chapterArabic": "كتاب الغسل والتيمم",
+      "chapterEnglish": "The Book of Ghusl and Tayammum"
+    },
+    {
+      "id": 292,
+      "chapterNumber": 5,
+      "chapterArabic": "كتاب الصلاة",
+      "chapterEnglish": "The Book of Salah"
+    },
+    {
+      "id": 293,
+      "chapterNumber": 6,
+      "chapterArabic": "كتاب المواقيت",
+      "chapterEnglish": "The Book of the Times (of Prayer)"
+    },
+    {
+      "id": 294,
+      "chapterNumber": 7,
+      "chapterArabic": "كتاب الأذان",
+      "chapterEnglish": "The Book of the Adhan (The Call to Prayer)"
+    },
+    {
+      "id": 295,
+      "chapterNumber": 8,
+      "chapterArabic": "كتاب المساجد",
+      "chapterEnglish": "The Book of the Masjids"
+    },
+    {
+      "id": 296,
+      "chapterNumber": 9,
+      "chapterArabic": "كتاب القبلة",
+      "chapterEnglish": "The Book of the Qiblah"
+    },
+    {
+      "id": 297,
+      "chapterNumber": 10,
+      "chapterArabic": "كتاب الإمامة",
+      "chapterEnglish": "The Book of Leading the Prayer (Al-Imamah)"
+    },
+    {
+      "id": 298,
+      "chapterNumber": 11,
+      "chapterArabic": "كتاب الافتتاح",
+      "chapterEnglish": "The Book of the Commencement of the Prayer"
+    },
+    {
+      "id": 299,
+      "chapterNumber": 12,
+      "chapterArabic": "كتاب التطبيق",
+      "chapterEnglish": "The Book of The At-Tatbiq (Clasping One's Hands Together)"
+    },
+    {
+      "id": 300,
+      "chapterNumber": 13,
+      "chapterArabic": "كتاب السهو",
+      "chapterEnglish": "The Book of Forgetfulness (In Prayer)"
+    },
+    {
+      "id": 301,
+      "chapterNumber": 14,
+      "chapterArabic": "كتاب الجمعة",
+      "chapterEnglish": "The Book of Jumu`ah (Friday Prayer)"
+    },
+    {
+      "id": 302,
+      "chapterNumber": 15,
+      "chapterArabic": "كتاب تقصير الصلاة فى السفر",
+      "chapterEnglish": "The Book of Shortening the Prayer When Traveling"
+    },
+    {
+      "id": 303,
+      "chapterNumber": 16,
+      "chapterArabic": "كتاب الكسوف",
+      "chapterEnglish": "The Book of Eclipses"
+    },
+    {
+      "id": 304,
+      "chapterNumber": 17,
+      "chapterArabic": "كتاب الاستسقاء",
+      "chapterEnglish": "The Book of Praying for Rain (Al-Istisqa`)"
+    },
+    {
+      "id": 305,
+      "chapterNumber": 18,
+      "chapterArabic": "كتاب صلاة الخوف",
+      "chapterEnglish": "The Book of the Fear Prayer"
+    },
+    {
+      "id": 306,
+      "chapterNumber": 19,
+      "chapterArabic": "كتاب صلاة العيدين",
+      "chapterEnglish": "The Book of the Prayer for the Two `Eids"
+    },
+    {
+      "id": 307,
+      "chapterNumber": 20,
+      "chapterArabic": "كتاب قيام الليل وتطوع النهار",
+      "chapterEnglish": "The Book of Qiyam Al-Lail (The Night Prayer) and Voluntary Prayers During the Day"
+    },
+    {
+      "id": 343,
+      "chapterNumber": 21,
+      "chapterArabic": "كتاب الجنائز",
+      "chapterEnglish": "The Book of Funerals"
+    },
+    {
+      "id": 344,
+      "chapterNumber": 22,
+      "chapterArabic": "كتاب الصيام",
+      "chapterEnglish": "The Book of Fasting"
+    },
+    {
+      "id": 345,
+      "chapterNumber": 23,
+      "chapterArabic": "كتاب الزكاة",
+      "chapterEnglish": "The Book of Zakah"
+    },
+    {
+      "id": 405,
+      "chapterNumber": 24,
+      "chapterArabic": "كتاب مناسك الحج",
+      "chapterEnglish": "The Book of Hajj"
+    },
+    {
+      "id": 406,
+      "chapterNumber": 25,
+      "chapterArabic": "كتاب الجهاد",
+      "chapterEnglish": "The Book of Jihad"
+    },
+    {
+      "id": 407,
+      "chapterNumber": 26,
+      "chapterArabic": "كتاب النكاح",
+      "chapterEnglish": "The Book of Marriage"
+    },
+    {
+      "id": 408,
+      "chapterNumber": 27,
+      "chapterArabic": "كتاب عشرة النساء",
+      "chapterEnglish": "The Book of the Kind Treatment of Women"
+    },
+    {
+      "id": 409,
+      "chapterNumber": 28,
+      "chapterArabic": "كتاب الطلاق",
+      "chapterEnglish": "The Book of Divorce"
+    },
+    {
+      "id": 410,
+      "chapterNumber": 29,
+      "chapterArabic": "كتاب الخيل",
+      "chapterEnglish": "The Book of Horses, Races and Shooting"
+    },
+    {
+      "id": 411,
+      "chapterNumber": 30,
+      "chapterArabic": "كتاب الإحباس",
+      "chapterEnglish": "The Book of Endowments"
+    },
+    {
+      "id": 412,
+      "chapterNumber": 31,
+      "chapterArabic": "كتاب الوصايا",
+      "chapterEnglish": "The Book of Wills"
+    },
+    {
+      "id": 413,
+      "chapterNumber": 32,
+      "chapterArabic": "كتاب النحل",
+      "chapterEnglish": "The Book of Presents"
+    },
+    {
+      "id": 414,
+      "chapterNumber": 33,
+      "chapterArabic": "كتاب الهبة",
+      "chapterEnglish": "The Book of Gifts"
+    },
+    {
+      "id": 415,
+      "chapterNumber": 34,
+      "chapterArabic": "كتاب الرقبى",
+      "chapterEnglish": "The Book of Ar-Ruqba"
+    },
+    {
+      "id": 416,
+      "chapterNumber": 35,
+      "chapterArabic": "كتاب العمرى",
+      "chapterEnglish": "The Book of `Umra"
+    },
+    {
+      "id": 417,
+      "chapterNumber": 36,
+      "chapterArabic": "كتاب الأيمان والنذور",
+      "chapterEnglish": "The Book of Oaths and Vows"
+    },
+    {
+      "id": 418,
+      "chapterNumber": 37,
+      "chapterArabic": "كتاب المزارعة",
+      "chapterEnglish": "The Book of Agriculture"
+    },
+    {
+      "id": 419,
+      "chapterNumber": 38,
+      "chapterArabic": "كتاب تحريم الدم",
+      "chapterEnglish": "The Book of Fighting [The Prohibition of Bloodshed]"
+    },
+    {
+      "id": 420,
+      "chapterNumber": 39,
+      "chapterArabic": "كتاب قسم الفىء",
+      "chapterEnglish": "The Book Of The Distribution Of Al-Fay'"
+    },
+    {
+      "id": 421,
+      "chapterNumber": 40,
+      "chapterArabic": "كتاب البيعة",
+      "chapterEnglish": "The Book of al-Bay`ah"
+    },
+    {
+      "id": 422,
+      "chapterNumber": 41,
+      "chapterArabic": "كتاب العقيقة",
+      "chapterEnglish": "The Book of Al-`Aqiqah"
+    },
+    {
+      "id": 423,
+      "chapterNumber": 42,
+      "chapterArabic": "كتاب الفرع والعتيرة",
+      "chapterEnglish": "The Book of Al-Fara` and Al-`Atirah"
+    },
+    {
+      "id": 424,
+      "chapterNumber": 43,
+      "chapterArabic": "كتاب الصيد والذبائح",
+      "chapterEnglish": "The Book of Hunting and Slaughtering"
+    },
+    {
+      "id": 425,
+      "chapterNumber": 44,
+      "chapterArabic": "كتاب الضحايا",
+      "chapterEnglish": "The Book of Ad-Dahaya (Sacrifices)"
+    },
+    {
+      "id": 426,
+      "chapterNumber": 45,
+      "chapterArabic": "كتاب البيوع",
+      "chapterEnglish": "The Book of Financial Transactions"
+    },
+    {
+      "id": 427,
+      "chapterNumber": 46,
+      "chapterArabic": "كتاب القسامة",
+      "chapterEnglish": "The Book of Oaths (qasamah), Retaliation and Blood Money"
+    },
+    {
+      "id": 428,
+      "chapterNumber": 47,
+      "chapterArabic": "كتاب قطع السارق",
+      "chapterEnglish": "The Book of Cutting off the Hand of the Thief"
+    },
+    {
+      "id": 429,
+      "chapterNumber": 48,
+      "chapterArabic": "كتاب الإيمان وشرائعه",
+      "chapterEnglish": "The Book Of Faith and its Signs"
+    },
+    {
+      "id": 430,
+      "chapterNumber": 49,
+      "chapterArabic": "كتاب الزينة من السنن",
+      "chapterEnglish": "The Book of Adornment"
+    },
+    {
+      "id": 431,
+      "chapterNumber": 50,
+      "chapterArabic": "كتاب آداب القضاة",
+      "chapterEnglish": "The Book of the Etiquette of Judges"
+    },
+    {
+      "id": 432,
+      "chapterNumber": 51,
+      "chapterArabic": "كتاب الاستعاذة",
+      "chapterEnglish": "The Book of Seeking Refuge with Allah"
+    },
+    {
+      "id": 433,
+      "chapterNumber": 52,
+      "chapterArabic": "كتاب الأشربة",
+      "chapterEnglish": "The Book of Drinks"
     }
   ]}

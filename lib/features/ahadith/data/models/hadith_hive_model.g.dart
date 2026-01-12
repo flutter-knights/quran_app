@@ -17,37 +17,43 @@ class HadithHiveModelAdapter extends TypeAdapter<HadithHiveModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return HadithHiveModel(
-      id: fields[0] as int,
+      hadithNumber: fields[0] as int,
       englishHadith: fields[1] as String,
       arabicHadith: fields[2] as String,
-      englishNarrator: fields[3] as String,
-      status: fields[4] as String,
-      bookId: fields[5] as int,
-      pageNumber: fields[6] as int,
-      bookSlug: fields[7] as String,
+      englishNarrator: fields[5] as String,
+      arabicHeader: fields[4] as String,
+      englishHeader: fields[3] as String,
+      status: fields[6] as String,
+      pageNumber: fields[7] as int,
+      bookSlug: fields[8] as String,
+      chapterId: fields[9] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, HadithHiveModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(10)
       ..writeByte(0)
-      ..write(obj.id)
+      ..write(obj.hadithNumber)
       ..writeByte(1)
       ..write(obj.englishHadith)
       ..writeByte(2)
       ..write(obj.arabicHadith)
       ..writeByte(3)
-      ..write(obj.englishNarrator)
+      ..write(obj.englishHeader)
       ..writeByte(4)
-      ..write(obj.status)
+      ..write(obj.arabicHeader)
       ..writeByte(5)
-      ..write(obj.bookId)
+      ..write(obj.englishNarrator)
       ..writeByte(6)
-      ..write(obj.pageNumber)
+      ..write(obj.status)
       ..writeByte(7)
-      ..write(obj.bookSlug);
+      ..write(obj.pageNumber)
+      ..writeByte(8)
+      ..write(obj.bookSlug)
+      ..writeByte(9)
+      ..write(obj.chapterId);
   }
 
   @override

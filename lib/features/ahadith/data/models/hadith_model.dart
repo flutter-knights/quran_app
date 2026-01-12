@@ -1,4 +1,3 @@
-import 'package:quran_app/features/ahadith/domain/entities/chapter.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 
 class HadithModel extends Hadith {
@@ -6,41 +5,24 @@ class HadithModel extends Hadith {
     required super.englishHadith,
     required super.arabicHadith,
     required super.englishNarrator,
-    required super.id,
+    required super.hadithNumber,
     required super.status,
-    required super.bookId,
+    required super.englishHeader,
+    required super.arabicHeader,
     required super.chapterId,
     super.chapter,
   });
 
-  factory HadithModel.fromJson(
-    Map<String, dynamic> json,
-    Map<String, dynamic> chaptersMap,
-  ) {
-    final int cId = int.parse(json['chapterId'].toString());
-
-    // Efficient lookup from the local JSON map
-    final chapterData = chaptersMap[cId.toString()];
-
-    Chapter? chapter;
-    if (chapterData != null) {
-      chapter = Chapter(
-        id: chapterData['id'],
-        chapterNumber: chapterData['chapterNumber'],
-        chapterArabic: chapterData['chapterArabic'],
-        chapterEnglish: chapterData['chapterEnglish'],
-      );
-    }
-
+  factory HadithModel.fromJson(Map<String, dynamic> json) {
     return HadithModel(
-      id: json['id'],
+      hadithNumber: int.parse(json['hadithNumber']) ,
       englishHadith: json['hadithEnglish'] ?? '',
       arabicHadith: json['hadithArabic'] ?? '',
+      englishHeader: json['headingEnglish'] ?? '',
+      arabicHeader: json['headingArabic'] ?? '',
       englishNarrator: json['englishNarrator'] ?? '',
-      chapterId: cId,
-      bookId: json['book']['id'],
+      chapterId: json['chapter']['id'],
       status: _mapStatus(json['status']),
-      chapter: chapter,
     );
   }
 
