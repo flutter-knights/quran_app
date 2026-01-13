@@ -17,23 +17,27 @@ class MushafLayout extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Center(
-          child: AspectRatio(
-            aspectRatio: 1 / 1.82,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final pageWidth = constraints.maxWidth;
-                final fontSize = pageWidth / totalLines * 0.9;
-                final lineHeight = pageWidth / totalLines * 1.8;
+        Expanded(
+          // <--- This tells the widget to only take available vertical space
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: 1 / 1.82,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final pageWidth = constraints.maxWidth;
+                  // Note: constraints.maxHeight is now also limited by the Column/Expanded
+                  final fontSize = pageWidth / totalLines * 0.9;
+                  final lineHeight = pageWidth / totalLines * 1.8;
 
-                return MushafText(
-                  page: page,
-                  pageNumber: pageNumber,
-                  pageWidth: pageWidth,
-                  fontSize: fontSize,
-                  lineHeight: lineHeight,
-                );
-              },
+                  return MushafText(
+                    page: page,
+                    pageNumber: pageNumber,
+                    pageWidth: pageWidth,
+                    fontSize: fontSize,
+                    lineHeight: lineHeight,
+                  );
+                },
+              ),
             ),
           ),
         ),

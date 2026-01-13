@@ -12,10 +12,10 @@ import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
-  WidgetsFlutterBinding.ensureInitialized();
   await initHydratedCubit();
   await initHive();
   await initGetIt();
