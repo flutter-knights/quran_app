@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 
-import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/device_size_info.dart';
 
 import '../../../../../../config/theme/color_scheme.dart';
@@ -28,19 +26,15 @@ class SurahHeader extends StatelessWidget {
     final double width = context.width;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          SvgPicture.asset(
-            "assets/images/surah_header.svg",
+          Image.asset(
+            "assets/images/header.png",
             width: width,
-
+            color: context.colorScheme.onSurface.withValues(alpha: 0.9),
             fit: BoxFit.fill,
-            colorFilter: ColorFilter.mode(
-              context.colorScheme.onSurface,
-              BlendMode.srcIn,
-            ),
           ),
 
           Directionality(
@@ -49,7 +43,7 @@ class SurahHeader extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Gap(12),
+                Gap(4),
                 Text(
                   name,
                   locale: const Locale('ar'),
@@ -58,34 +52,6 @@ class SurahHeader extends StatelessWidget {
                     fontSize: fontSize * 1.4,
                     color: context.colorScheme.onSurface,
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          Positioned(
-            left: width * 0.18,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("رقمها", style: TS.regular9),
-                Text(
-                  surahNumber.toString(),
-                  style: TS.regular10.copyWith(height: 1),
-                ),
-              ],
-            ),
-          ),
-
-          Positioned(
-            right: width * 0.18,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("آياتها", style: TS.regular9),
-                Text(
-                  verseCount.toString(),
-                  style: TS.regular10.copyWith(height: 1),
                 ),
               ],
             ),
