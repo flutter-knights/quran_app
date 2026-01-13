@@ -86,9 +86,7 @@ int getVerseCountByPage(int pageNumber) {
   }
   int totalVerseCount = 0;
   for (int i = 0; i < pageData[pageNumber - 1].length; i++) {
-    totalVerseCount += int.parse(
-      pageData[pageNumber - 1][i]!["end"].toString(),
-    );
+    totalVerseCount += int.parse(pageData[pageNumber - 1][i]["end"].toString());
   }
   return totalVerseCount;
 }

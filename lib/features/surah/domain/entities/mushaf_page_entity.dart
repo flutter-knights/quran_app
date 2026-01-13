@@ -6,6 +6,7 @@ class MushafPageEntity {
   final String? surahName;
   final List<String> surahNames;
   final List<int> surahHeadersIndexes;
+  final List<int> basmalaIndexes;
   final List<bool> showBasmalaList;
   final List<AyahIdentifier> ayahIdentifiers;
 
@@ -17,5 +18,6 @@ class MushafPageEntity {
     required this.surahHeadersIndexes,
     required this.showBasmalaList,
     required this.ayahIdentifiers,
+    required this.basmalaIndexes,
   });
 }

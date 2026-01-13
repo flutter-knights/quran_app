@@ -16,13 +16,13 @@ class AyahTextSpanBuilder {
     required double pageWidth,
     required AyahIdentifier? currentAyah,
   }) {
-    final List<InlineSpan> spans = [];
+    final spans = <InlineSpan>[];
 
-    // Convert headers list to Set for O(1) lookup
-    final Set<int> headerIndexes = page.surahHeadersIndexes.toSet();
+    final headerIndexes = page.surahHeadersIndexes.toSet();
+    final basmalaIndexes = page.basmalaIndexes.toSet();
+
     int currentSurahIndex = 0;
 
-    // Precompute styles to reduce TextStyle recreation
     final normalStyle = TextStyle(
       fontFamily: "QCF_P${pageNumber.toString().padLeft(3, "0")}",
       fontSize: fontSize,
@@ -35,8 +35,8 @@ class AyahTextSpanBuilder {
       backgroundColor: context.colorScheme.primary,
     );
 
-    for (int i = 0; i < page.ayahs.length; i++) {
-      // Surah header
+    for (int i = 0; i <= page.ayahs.length; i++) {
+      // -------- SURAH HEADER --------
       if (headerIndexes.contains(i)) {
         spans.add(
           WidgetSpan(
@@ -50,35 +50,36 @@ class AyahTextSpanBuilder {
             ),
           ),
         );
-
-        // Basmala
-        if (page.showBasmalaList[currentSurahIndex]) {
-          spans.add(
-            BasmalaText(
-              fontSize: fontSize,
-              lineHeight: lineHeight,
-              color: context.colorScheme.onSurface,
-            ),
-          );
-        }
-
         currentSurahIndex++;
       }
 
-      // Determine highlighting once per ayah
-      final ayahId = page.ayahIdentifiers[i];
-      final bool isHighlighted =
-          currentAyah != null &&
-          currentAyah.surah == ayahId.surah &&
-          currentAyah.ayah == ayahId.ayah;
+      // -------- BASMALA --------
+      if (basmalaIndexes.contains(i)) {
+        spans.add(
+          BasmalaText(
+            fontSize: fontSize,
+            lineHeight: lineHeight,
+            color: context.colorScheme.onSurface,
+          ),
+        );
+      }
 
-      spans.add(
-        TextSpan(
-          locale: const Locale('ar'),
-          text: page.ayahs[i],
-          style: isHighlighted ? highlightedStyle : normalStyle,
-        ),
-      );
+      // -------- AYAH TEXT --------
+      if (i < page.ayahs.length) {
+        final ayahId = page.ayahIdentifiers[i];
+        final isHighlighted =
+            currentAyah != null &&
+            currentAyah.surah == ayahId.surah &&
+            currentAyah.ayah == ayahId.ayah;
+
+        spans.add(
+          TextSpan(
+            locale: const Locale('ar'),
+            text: page.ayahs[i],
+            style: isHighlighted ? highlightedStyle : normalStyle,
+          ),
+        );
+      }
     }
 
     return spans;

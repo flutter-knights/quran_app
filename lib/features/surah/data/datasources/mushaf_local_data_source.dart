@@ -4,7 +4,6 @@ import '../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../models/mushaf_page_model.dart';
 
 class MushafLocalDataSource {
-  // Track current line and how many symbols we've placed on it
   int _currentLine = 1;
   int _symbolsOnCurrentLine = 0;
 
@@ -12,41 +11,45 @@ class MushafLocalDataSource {
     final pageData = quran.getPageData(pageNumber);
     final Map<int, int>? linesConfig = lineSymbolsCount[pageNumber];
 
-    // Reset counters for the new page
     _currentLine = 1;
     _symbolsOnCurrentLine = 0;
 
     final List<String> ayahs = [];
     final List<int> surahHeadersIndexes = [];
+    final List<int> basmalaIndexes = [];
     final List<String> surahNames = [];
     final List<bool> surahHasBasmala = [];
     final List<AyahIdentifier> ayahIdentifiers = [];
 
     for (var block in pageData) {
-      int surah = block["surah"];
-      int start = block["start"];
-      int end = block["end"];
-
+      final int surah = block["surah"];
+      final int start = block["start"];
+      final int end = block["end"];
+      if (start == 0 && end == 0) {
+        surahNames.add(quran.getQcfSurahName(surah));
+        surahHeadersIndexes.add(ayahs.length);
+        continue;
+      }
       if (start == 0) {
         surahNames.add(quran.getQcfSurahName(surah));
         surahHeadersIndexes.add(ayahs.length);
       }
+
       if (start == 1) {
-        bool hasBasmala = surah != 9 && pageNumber != 1;
+        final bool hasBasmala = surah != 9 && pageNumber != 1;
         surahHasBasmala.add(hasBasmala);
+
+        if (hasBasmala) {
+          basmalaIndexes.add(ayahs.length);
+        }
       }
 
       for (int ayah = start; ayah <= end; ayah++) {
-        if (ayah == 0) {
-          continue;
-        }
-        String rawVerse = quran.getVerseQCF(surah, ayah);
+        if (ayah == 0) continue;
 
-        // 1. Apply your custom symbol/line break logic
-        String verseWithBreaks = _injectLineBreaks(rawVerse, linesConfig);
-
-        // 2. Apply your original preprocessing (uFB50 logic)
-        String finalVerse = preprocessVerse(verseWithBreaks, ayah, start);
+        final rawVerse = quran.getVerseQCF(surah, ayah);
+        final verseWithBreaks = _injectLineBreaks(rawVerse, linesConfig);
+        final finalVerse = preprocessVerse(verseWithBreaks, ayah, start);
 
         ayahs.add(finalVerse);
         ayahIdentifiers.add(AyahIdentifier(surah: surah, ayah: ayah));
@@ -58,6 +61,7 @@ class MushafLocalDataSource {
       ayahs: ayahs,
       surahNames: surahNames,
       surahHeadersIndexes: surahHeadersIndexes,
+      basmalaIndexes: basmalaIndexes,
       showBasmalaList: surahHasBasmala,
       ayahIdentifiers: ayahIdentifiers,
     );
