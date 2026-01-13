@@ -34,7 +34,7 @@ class AhadithLocalDataSource {
     final Map<String, HadithHiveModel> entries = {};
 
     for (var hadith in hadithPage.ahadithList) {
-      String compositeKey = "${bookSlug}_${pageNumber}_${hadith.id}";
+      String compositeKey = "${bookSlug}_${pageNumber}_${hadith.hadithNumber}";
       if (hadithPage.lastPage) {
         compositeKey += "_last";
       }
@@ -47,5 +47,9 @@ class AhadithLocalDataSource {
     }
 
     hadithBox.putAll(entries);
+  }
+
+  Future<void> clearAllCache() async {
+    await hadithBox.clear();
   }
 }

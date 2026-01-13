@@ -22,26 +22,30 @@ class LocationRepositoryImpl extends LocationRepository {
     required this.prayerTimesLocalDataSource,
   });
   @override
-  Future<Either<Failure, Location>> getCurrentLocation() async {
-    final Position position = await locationRemoteDataSource
-        .determinePosition();
-
+  Stream<Either<Failure, Location>> getCurrentLocation() async* {
     final cachedLocation = locationLocalDataSource.getCached();
-    if (!isLocationChanged(position)) {
-      return Right(cachedLocation!);
+
+    if (cachedLocation != null) {
+      yield Right(cachedLocation);
     }
+
     try {
-      final Location location = await locationRemoteDataSource
-          .getCurrentLocation(position);
-      locationLocalDataSource.cache(location);
-      return Right(location);
+      final Position position = await locationRemoteDataSource
+          .determinePosition();
+
+      if (isLocationChanged(position)) {
+        final Location freshLocation = await locationRemoteDataSource
+            .getCurrentLocation(position);
+        await locationLocalDataSource.cache(freshLocation);
+
+        yield Right(freshLocation);
+      }
     } on LocationException catch (e) {
-      if (cachedLocation != null) return Right(cachedLocation);
-      return left(GeolocatorErrorHandler.handle(e));
+      if (cachedLocation == null) yield left(GeolocatorErrorHandler.handle(e));
     } on DioException catch (e) {
-      return left(DioErrorHandler.handle(e));
+      if (cachedLocation == null) yield left(DioErrorHandler.handle(e));
     } catch (e) {
-      return left(UnknownFailure(e.toString()));
+      if (cachedLocation == null) yield left(UnknownFailure(e.toString()));
     }
   }
 

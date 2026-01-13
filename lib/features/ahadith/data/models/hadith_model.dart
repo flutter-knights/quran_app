@@ -5,22 +5,23 @@ class HadithModel extends Hadith {
     required super.englishHadith,
     required super.arabicHadith,
     required super.englishNarrator,
-    required super.id,
-    required super.chapter,
+    required super.hadithNumber,
     required super.status,
-    required super.bookId,
+    required super.englishHeader,
+    required super.arabicHeader,
     required super.chapterId,
+    super.chapter,
   });
 
   factory HadithModel.fromJson(Map<String, dynamic> json) {
     return HadithModel(
-      id: json['id'],
+      hadithNumber: int.parse(json['hadithNumber'].toString().split(',')[0]),
       englishHadith: json['hadithEnglish'] ?? '',
       arabicHadith: json['hadithArabic'] ?? '',
+      englishHeader: json['headingEnglish'] ?? '',
+      arabicHeader: json['headingArabic'] ?? '',
       englishNarrator: json['englishNarrator'] ?? '',
-      chapter: int.parse(json['chapterId'].toString()),
-      chapterId: int.parse(json['chapterId'].toString()),
-      bookId: json['book']['id'],
+      chapterId: json['chapter']['id'],
       status: _mapStatus(json['status']),
     );
   }

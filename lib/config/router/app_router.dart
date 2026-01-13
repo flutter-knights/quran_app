@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_transitions/go_transitions.dart';
+import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/ahadith_list_page.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/books_list_page.dart';
+import 'package:quran_app/features/ahadith/presentation/pages/hadith_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
@@ -19,9 +21,10 @@ abstract class AppRouter {
   static const String surahListPath = "/surahList";
   static const String booksPath = "/books";
   static const String ahadithPath = "/ahadith";
+  static const String hadithPath = "/hadith";
 
   static final router = GoRouter(
-    initialLocation: surahListPath,
+    initialLocation: homePath,
     routes: [
       GoRoute(
         path: homePath,
@@ -70,6 +73,15 @@ abstract class AppRouter {
             final bookSlug = state.extra as String;
 
             return AhadithListPage(bookSlug: bookSlug);
+          },
+        ),
+      ),
+      GoRoute(
+        path: hadithPath,
+        pageBuilder: GoTransitions.fade.withScale.build(
+          builder: (context, state) {
+            final hadith = state.extra as Hadith;
+            return HadithPage(hadith: hadith);
           },
         ),
       ),

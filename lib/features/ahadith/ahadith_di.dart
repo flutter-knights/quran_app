@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
+import 'package:quran_app/core/constants/assets_dir.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/ahadith/data/datasources/local/ahadith_local_data_source.dart';
 import 'package:quran_app/features/ahadith/data/datasources/remote/ahadith_remote_data_source.dart';
@@ -10,6 +14,11 @@ import 'package:quran_app/features/ahadith/presentation/cubit/ahadith_cubit.dart
 
 void initAhadith() async {
   final hadithBox = Hive.box<HadithHiveModel>('ahadithCache');
+  final Map<String, dynamic> chaptersJson = await getChapters();
+  sl.registerSingleton<Map<String, dynamic>>(
+    chaptersJson,
+    instanceName: 'chapters',
+  );
   sl.registerLazySingleton<AhadithRemoteDataSource>(
     () => AhadithRemoteDataSource(dio: sl()),
   );
@@ -22,6 +31,7 @@ void initAhadith() async {
     () => AhadithRepositoryImpl(
       ahadithLocalDataSource: sl(),
       ahadithRemoteDataSource: sl(),
+      allChapters: sl(instanceName: 'chapters'),
     ),
   );
   sl.registerLazySingleton<GetAhadithPageUseCase>(
@@ -30,4 +40,12 @@ void initAhadith() async {
   sl.registerFactory<AhadithCubit>(
     () => AhadithCubit(getAhadithPageUseCase: sl()),
   );
+}
+
+Future<Map<String, dynamic>> getChapters() async {
+  final String response = await rootBundle.loadString(
+    AssetsDir.jsonDir('all_chapters.json'),
+  );
+  final Map<String, dynamic> chaptersJson = json.decode(response);
+  return chaptersJson;
 }

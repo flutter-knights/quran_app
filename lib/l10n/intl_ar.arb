@@ -8,6 +8,19 @@
 "isha": "العشاء",
 "remainingTimeLabel": "متبقي {time} على صلاة {prayerName}",
 "hijriDateWithDay": "{weekday}، {day} {month} {year} هـ",
+
+"settings": "الإعدادات" ,
+"darkMode": "الوضع الداكن" ,
+"twentyFourHourFormat": "تنسيق 24 ساعة" ,
+"arabicLanguage": "اللغة العربية",
+
+"hadith_number_label": "حديث رقم",
+"hadith_total_label": "إجمالي الأحاديث",
+"hadith_heading_label": "عنوان الحديث",
+"status_sahih": "صحيح",
+"status_hasan": "حسن",
+"status_daeef": "ضعيف",
+"status_mudu": "موضوع",
 "sahih_bukhari": "صحيح البخاري",
 "sahih_muslim": "صحيح مسلم",
 "al_tirmidhi": "جامع الترمذي",
@@ -17,8 +30,40 @@
 "mishkat": "مشكاة المصابيح",
 "musnad_ahmad": "مسند أحمد",
 "al_silsila_sahiha": "السلسلة الصحيحة",
-"settings": "الإعدادات" ,
-"darkMode": "الوضع الداكن" ,
-"twentyFourHourFormat": "تنسيق 24 ساعة" ,
-"arabicLanguage": "اللغة العربية"
+
+"author_bukhari": "محمد بن إسماعيل البخاري",
+"death_bukhari": "٢٥٦ هـ",
+"full_title_bukhari": "الجامع المسند الصحيح المختصر",
+
+"author_muslim": "مسلم بن الحجاج النيسابوري",
+"death_muslim": "٢٦١ هـ",
+"full_title_muslim": "المسند الصحيح المختصر",
+
+"author_tirmidhi": "محمد بن عيسى الترمذي",
+"death_tirmidhi": "٢٧٩ هـ",
+"full_title_tirmidhi": "جامع الترمذي",
+
+"author_abu_dawood": "أبو داود السجستاني",
+"death_abu_dawood": "٢٧٥ هـ",
+"full_title_abu_dawood": "سنن أبي داود",
+
+"author_ibn_majah": "ابن ماجه القزويني",
+"death_ibn_majah": "٢٧٣ هـ",
+"full_title_ibn_majah": "سنن ابن ماجه",
+
+"author_nasai": "أحمد بن شعيب النسائي",
+"death_nasai": "٣٠٣ هـ",
+"full_title_nasai": "سنن النسائي",
+
+"author_mishkat": "الخطيب التبريزي",
+"death_mishkat": "٧٤١ هـ",
+"full_title_mishkat": "مشكاة المصابيح",
+
+"author_ahmad": "أحمد بن حنبل",
+"death_ahmad": "٢٤١ هـ",
+"full_title_ahmad": "مسند أحمد بن حنبل",
+
+"author_albani": "محمد ناصر الدين الألباني",
+"death_albani": "١٤٢٠ هـ",
+"full_title_albani": "السلسلة الصحيحة"
 }

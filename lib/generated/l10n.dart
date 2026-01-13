@@ -109,6 +109,86 @@ class S {
     );
   }
 
+  /// `Settings`
+  String get settings {
+    return Intl.message('Settings', name: 'settings', desc: '', args: []);
+  }
+
+  /// `Dark Mode`
+  String get darkMode {
+    return Intl.message('Dark Mode', name: 'darkMode', desc: '', args: []);
+  }
+
+  /// `24-Hour Format`
+  String get twentyFourHourFormat {
+    return Intl.message(
+      '24-Hour Format',
+      name: 'twentyFourHourFormat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Arabic Language`
+  String get arabicLanguage {
+    return Intl.message(
+      'Arabic Language',
+      name: 'arabicLanguage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hadith No.`
+  String get hadith_number_label {
+    return Intl.message(
+      'Hadith No.',
+      name: 'hadith_number_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total Ahadith`
+  String get hadith_total_label {
+    return Intl.message(
+      'Total Ahadith',
+      name: 'hadith_total_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hadith Heading`
+  String get hadith_heading_label {
+    return Intl.message(
+      'Hadith Heading',
+      name: 'hadith_heading_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sahih`
+  String get status_sahih {
+    return Intl.message('Sahih', name: 'status_sahih', desc: '', args: []);
+  }
+
+  /// `Hasan`
+  String get status_hasan {
+    return Intl.message('Hasan', name: 'status_hasan', desc: '', args: []);
+  }
+
+  /// `Daeef`
+  String get status_daeef {
+    return Intl.message('Daeef', name: 'status_daeef', desc: '', args: []);
+  }
+
+  /// `Maudu`
+  String get status_mudu {
+    return Intl.message('Maudu', name: 'status_mudu', desc: '', args: []);
+  }
+
   /// `Sahih Bukhari`
   String get sahih_bukhari {
     return Intl.message(
@@ -199,31 +279,226 @@ class S {
     );
   }
 
-  /// `Settings`
-  String get settings {
-    return Intl.message('Settings', name: 'settings', desc: '', args: []);
-  }
-
-  /// `Dark Mode`
-  String get darkMode {
-    return Intl.message('Dark Mode', name: 'darkMode', desc: '', args: []);
-  }
-
-  /// `24-Hour Format`
-  String get twentyFourHourFormat {
+  /// `Muhammad ibn Isma'il al-Bukhari`
+  String get author_bukhari {
     return Intl.message(
-      '24-Hour Format',
-      name: 'twentyFourHourFormat',
+      'Muhammad ibn Isma\'il al-Bukhari',
+      name: 'author_bukhari',
       desc: '',
       args: [],
     );
   }
 
-  /// `Arabic Language`
-  String get arabicLanguage {
+  /// `256 AH`
+  String get death_bukhari {
+    return Intl.message('256 AH', name: 'death_bukhari', desc: '', args: []);
+  }
+
+  /// `The Abridged Collection of Authentic Hadith`
+  String get full_title_bukhari {
     return Intl.message(
-      'Arabic Language',
-      name: 'arabicLanguage',
+      'The Abridged Collection of Authentic Hadith',
+      name: 'full_title_bukhari',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Muslim ibn al-Hajjaj al-Naysaburi`
+  String get author_muslim {
+    return Intl.message(
+      'Muslim ibn al-Hajjaj al-Naysaburi',
+      name: 'author_muslim',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `261 AH`
+  String get death_muslim {
+    return Intl.message('261 AH', name: 'death_muslim', desc: '', args: []);
+  }
+
+  /// `The Abbreviated Authentic Musnad`
+  String get full_title_muslim {
+    return Intl.message(
+      'The Abbreviated Authentic Musnad',
+      name: 'full_title_muslim',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Muhammad ibn 'Isa al-Tirmidhi`
+  String get author_tirmidhi {
+    return Intl.message(
+      'Muhammad ibn \'Isa al-Tirmidhi',
+      name: 'author_tirmidhi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `279 AH`
+  String get death_tirmidhi {
+    return Intl.message('279 AH', name: 'death_tirmidhi', desc: '', args: []);
+  }
+
+  /// `Jami' at-Tirmidhi`
+  String get full_title_tirmidhi {
+    return Intl.message(
+      'Jami\' at-Tirmidhi',
+      name: 'full_title_tirmidhi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Abu Dawood al-Sijistani`
+  String get author_abu_dawood {
+    return Intl.message(
+      'Abu Dawood al-Sijistani',
+      name: 'author_abu_dawood',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `275 AH`
+  String get death_abu_dawood {
+    return Intl.message('275 AH', name: 'death_abu_dawood', desc: '', args: []);
+  }
+
+  /// `Sunan Abi Dawud`
+  String get full_title_abu_dawood {
+    return Intl.message(
+      'Sunan Abi Dawud',
+      name: 'full_title_abu_dawood',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ibn Majah al-Qazwini`
+  String get author_ibn_majah {
+    return Intl.message(
+      'Ibn Majah al-Qazwini',
+      name: 'author_ibn_majah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `273 AH`
+  String get death_ibn_majah {
+    return Intl.message('273 AH', name: 'death_ibn_majah', desc: '', args: []);
+  }
+
+  /// `Sunan Ibn Majah`
+  String get full_title_ibn_majah {
+    return Intl.message(
+      'Sunan Ibn Majah',
+      name: 'full_title_ibn_majah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ahmad ibn Shu'ayb al-Nasa'i`
+  String get author_nasai {
+    return Intl.message(
+      'Ahmad ibn Shu\'ayb al-Nasa\'i',
+      name: 'author_nasai',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `303 AH`
+  String get death_nasai {
+    return Intl.message('303 AH', name: 'death_nasai', desc: '', args: []);
+  }
+
+  /// `Sunan an-Nasa'i`
+  String get full_title_nasai {
+    return Intl.message(
+      'Sunan an-Nasa\'i',
+      name: 'full_title_nasai',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Al-Khatib al-Tabrizi`
+  String get author_mishkat {
+    return Intl.message(
+      'Al-Khatib al-Tabrizi',
+      name: 'author_mishkat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `741 AH`
+  String get death_mishkat {
+    return Intl.message('741 AH', name: 'death_mishkat', desc: '', args: []);
+  }
+
+  /// `Mishkat al-Masabih`
+  String get full_title_mishkat {
+    return Intl.message(
+      'Mishkat al-Masabih',
+      name: 'full_title_mishkat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ahmad ibn Hanbal`
+  String get author_ahmad {
+    return Intl.message(
+      'Ahmad ibn Hanbal',
+      name: 'author_ahmad',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `241 AH`
+  String get death_ahmad {
+    return Intl.message('241 AH', name: 'death_ahmad', desc: '', args: []);
+  }
+
+  /// `Musnad Ahmad ibn Hanbal`
+  String get full_title_ahmad {
+    return Intl.message(
+      'Musnad Ahmad ibn Hanbal',
+      name: 'full_title_ahmad',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Muhammad Nasiruddin al-Albani`
+  String get author_albani {
+    return Intl.message(
+      'Muhammad Nasiruddin al-Albani',
+      name: 'author_albani',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `1420 AH`
+  String get death_albani {
+    return Intl.message('1420 AH', name: 'death_albani', desc: '', args: []);
+  }
+
+  /// `The Series of Authentic Hadith`
+  String get full_title_albani {
+    return Intl.message(
+      'The Series of Authentic Hadith',
+      name: 'full_title_albani',
       desc: '',
       args: [],
     );

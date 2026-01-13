@@ -10,4 +10,16 @@ class HadithPage {
     required this.currentPage,
     required this.lastPage,
   });
+
+  HadithPage copyWith({
+    List<Hadith>? ahadithList,
+    int? currentPage,
+    bool? lastPage,
+  }) {
+    return HadithPage(
+      ahadithList: ahadithList ?? this.ahadithList,
+      currentPage: currentPage ?? this.currentPage,
+      lastPage: lastPage ?? this.lastPage,
+    );
+  }
 }

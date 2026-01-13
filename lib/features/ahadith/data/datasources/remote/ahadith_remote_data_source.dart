@@ -14,8 +14,9 @@ class AhadithRemoteDataSource {
       queryParameters: {'pagination': 50, 'page': pageNumber, 'book': bookSlug},
     );
 
-    HadithPage hadithPage = HadithPageModel.fromJson(ahadithResponse.data);
+    HadithPage hadithPage = HadithPageModel.fromJson(
+      ahadithResponse.data
+    );
     return hadithPage;
   }
 }
- 

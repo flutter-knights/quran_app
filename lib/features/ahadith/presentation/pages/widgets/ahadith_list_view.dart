@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/ahadith_cubit.dart';
+import 'package:quran_app/features/ahadith/presentation/pages/widgets/ahadith_list_item.dart';
 
 class AhadithListView extends StatefulWidget {
   final String bookSlug;
@@ -37,40 +38,45 @@ class _AhadithListViewState extends State<AhadithListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: BlocBuilder<AhadithCubit, AhadithState>(
-          builder: (context, state) {
-            if (state is AhadithError) {
-              return const Center(child: Text('error'));
-            }
-            if (state is AhadithLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state is AhadithLoaded || state is AhadithLoadingMore) {
-              final List<Hadith> ahadith = (state is AhadithLoaded)
-                  ? state.ahadith
-                  : (state as AhadithLoadingMore).oldAhadith;
-              final bool lastPage = (state is AhadithLoaded)
-                  ? state.lastPage
-                  : false;
-              return ListView.builder(
-                controller: _scrollController,
-                itemCount: lastPage ? ahadith.length : ahadith.length + 1,
-                cacheExtent: 400,
-                itemBuilder: (context, index) {
-                  if (index >= ahadith.length) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(child: CircularProgressIndicator()),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: BlocBuilder<AhadithCubit, AhadithState>(
+            builder: (context, state) {
+              if (state is AhadithError) {
+                return const Center(child: Text('error'));
+              }
+              if (state is AhadithLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state is AhadithLoaded || state is AhadithLoadingMore) {
+                final List<Hadith> ahadith = (state is AhadithLoaded)
+                    ? state.ahadith
+                    : (state as AhadithLoadingMore).oldAhadith;
+                final bool lastPage = (state is AhadithLoaded)
+                    ? state.lastPage
+                    : false;
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  controller: _scrollController,
+                  itemCount: lastPage ? ahadith.length : ahadith.length + 1,
+                  cacheExtent: 400,
+                  itemBuilder: (context, index) {
+                    if (index >= ahadith.length) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: AhadithListItem(hadith: ahadith[index]),
                     );
-                  }
-
-                  final hadith = ahadith[index];
-                  return SizedBox(child: Text(hadith.arabicHadith));
-                },
-              );
-            }
-            return SizedBox();
-          },
+                  },
+                );
+              }
+              return SizedBox();
+            },
+          ),
         ),
       ),
     );

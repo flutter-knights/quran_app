@@ -8,6 +8,22 @@
 "isha": "Isha",
 "remainingTimeLabel": "{time} remaining for {prayerName}",
 "hijriDateWithDay": "{weekday}, {day} {month} {year} AH",
+
+"settings": "Settings" ,
+"darkMode": "Dark Mode" ,
+"twentyFourHourFormat": "24-Hour Format" ,
+"arabicLanguage": "Arabic Language",
+
+
+"hadith_number_label": "Hadith No.",
+"hadith_total_label": "Total Ahadith",
+"hadith_heading_label": "Hadith Heading",
+
+"status_sahih": "Sahih",
+"status_hasan": "Hasan",
+"status_daeef": "Daeef",
+"status_mudu": "Maudu",
+
 "sahih_bukhari": "Sahih Bukhari",
 "sahih_muslim": "Sahih Muslim",
 "al_tirmidhi": "Jami' Al-Tirmidhi",
@@ -17,9 +33,41 @@
 "mishkat": "Mishkat Al-Masabih",
 "musnad_ahmad": "Musnad Ahmad",
 "al_silsila_sahiha": "Al-Silsila Sahiha",
-"settings": "Settings" ,
-"darkMode": "Dark Mode" ,
-"twentyFourHourFormat": "24-Hour Format" ,
-"arabicLanguage": "Arabic Language"
+
+"author_bukhari": "Muhammad ibn Isma'il al-Bukhari",
+"death_bukhari": "256 AH",
+"full_title_bukhari": "The Abridged Collection of Authentic Hadith",
+
+"author_muslim": "Muslim ibn al-Hajjaj al-Naysaburi",
+"death_muslim": "261 AH",
+"full_title_muslim": "The Abbreviated Authentic Musnad",
+
+"author_tirmidhi": "Muhammad ibn 'Isa al-Tirmidhi",
+"death_tirmidhi": "279 AH",
+"full_title_tirmidhi": "Jami' at-Tirmidhi",
+
+"author_abu_dawood": "Abu Dawood al-Sijistani",
+"death_abu_dawood": "275 AH",
+"full_title_abu_dawood": "Sunan Abi Dawud",
+
+"author_ibn_majah": "Ibn Majah al-Qazwini",
+"death_ibn_majah": "273 AH",
+"full_title_ibn_majah": "Sunan Ibn Majah",
+
+"author_nasai": "Ahmad ibn Shu'ayb al-Nasa'i",
+"death_nasai": "303 AH",
+"full_title_nasai": "Sunan an-Nasa'i",
+
+"author_mishkat": "Al-Khatib al-Tabrizi",
+"death_mishkat": "741 AH",
+"full_title_mishkat": "Mishkat al-Masabih",
+
+"author_ahmad": "Ahmad ibn Hanbal",
+"death_ahmad": "241 AH",
+"full_title_ahmad": "Musnad Ahmad ibn Hanbal",
+
+"author_albani": "Muhammad Nasiruddin al-Albani",
+"death_albani": "1420 AH",
+"full_title_albani": "The Series of Authentic Hadith"
 
 }

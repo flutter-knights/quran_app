@@ -10,11 +10,12 @@ class HadithPageModel extends HadithPage {
 
   factory HadithPageModel.fromJson(Map<String, dynamic> json) {
     final hadithsData = json['hadiths'];
+
     return HadithPageModel(
       currentPage: hadithsData['current_page'],
       lastPage: hadithsData['next_page_url'] == null,
       ahadithList: (hadithsData['data'] as List)
-          .map((e) => HadithModel.fromJson(e))
+          .map((e) => HadithModel.fromJson(e)) // Pass the map here
           .toList(),
     );
   }

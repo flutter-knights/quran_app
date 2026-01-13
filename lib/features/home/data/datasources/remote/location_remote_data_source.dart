@@ -37,33 +37,31 @@ class LocationRemoteDataSource {
   }
 
   Future<Location> getCurrentLocation(Position position) async {
+    final arResponse = await dio.get(
+      'https://nominatim.openstreetmap.org/reverse',
+      options: Options(headers: {'User-Agent': 'quran-app/1.0'}),
+      queryParameters: {
+        'lat': position.latitude,
+        'lon': position.longitude,
+        'format': 'json',
+        'accept-language': 'ar',
+      },
+    );
 
-  final arResponse = await dio.get(
-    'https://nominatim.openstreetmap.org/reverse',
-    options: Options(headers: {'User-Agent': 'quran-app/1.0'}),
-    queryParameters: {
-      'lat': position.latitude,
-      'lon': position.longitude,
-      'format': 'json',
-      'accept-language': 'ar',
-    },
-  );
-
-  final enResponse = await dio.get(
-    'https://nominatim.openstreetmap.org/reverse',
-    options: Options(headers: {'User-Agent': 'quran-app/1.0'}),
-    queryParameters: {
-      'lat': position.latitude,
-      'lon': position.longitude,
-      'format': 'json',
-      'accept-language': 'en',
-    },
-  );
-
-  return LocationModel.fromJson(
-    arJson: arResponse.data,
-    enJson: enResponse.data,
-  );
-}
-
+    final enResponse = await dio.get(
+      'https://nominatim.openstreetmap.org/reverse',
+      options: Options(headers: {'User-Agent': 'quran-app/1.0'}),
+      queryParameters: {
+        'lat': position.latitude,
+        'lon': position.longitude,
+        'format': 'json',
+        'accept-language': 'en',
+      },
+    );
+    print(arResponse.data);
+    return LocationModel.fromJson(
+      arJson: arResponse.data,
+      enJson: enResponse.data,
+    );
+  }
 }

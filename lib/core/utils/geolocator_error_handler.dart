@@ -1,5 +1,3 @@
-// ⚙️ lib/core/utils/geolocator_error_handler.dart
-
 import 'package:quran_app/core/errors/exceptions.dart';
 import 'package:quran_app/core/errors/failure.dart';
 

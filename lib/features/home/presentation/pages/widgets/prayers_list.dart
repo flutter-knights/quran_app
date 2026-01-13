@@ -28,7 +28,7 @@ class PrayersList extends StatelessWidget {
                 is24: sl<SettingsCubit>().state.settingsModel.isFormat12Hours,
 
                 isCurrent: state is PrayerCountdownTick
-                    ? state.prayerCountdown.currentPrayer == prayerName
+                    ? state.prayerCountdown.nextPrayer == prayerName
                     : false,
               );
             }).toList(),
