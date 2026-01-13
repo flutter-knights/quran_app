@@ -14,35 +14,32 @@ class MushafLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
-            child: AspectRatio(
-              aspectRatio: 1 / 1.55,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final pageWidth = constraints.maxWidth;
-                  final fontSize = pageWidth / totalLines * 0.85;
-                  final lineHeight = pageWidth / totalLines * 1.4;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Center(
+          child: AspectRatio(
+            aspectRatio: 1 / 1.93,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final pageWidth = constraints.maxWidth;
+                final fontSize = pageWidth / totalLines * 0.9;
+                final lineHeight = pageWidth / totalLines * 1.9;
 
-                  return MushafText(
-                    page: page,
-                    pageNumber: pageNumber,
-                    pageWidth: pageWidth,
-                    fontSize: fontSize,
-                    lineHeight: lineHeight,
-                  );
-                },
-              ),
+                return MushafText(
+                  page: page,
+                  pageNumber: pageNumber,
+                  pageWidth: pageWidth,
+                  fontSize: fontSize,
+                  lineHeight: lineHeight,
+                );
+              },
             ),
           ),
-          const SizedBox(height: 8),
-          Text(pageNumber.toString()),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Text(pageNumber.toString()),
+      ],
     );
   }
 }

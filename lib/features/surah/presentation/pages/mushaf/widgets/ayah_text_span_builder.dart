@@ -45,13 +45,21 @@ class AyahTextSpanBuilder {
               name: page.surahNames[currentSurahIndex],
               surahNumber: 1,
               verseCount: 1,
+              fontSize: fontSize,
+              lineHeight: lineHeight,
             ),
           ),
         );
 
         // Basmala
         if (page.showBasmalaList[currentSurahIndex]) {
-          spans.add(BasmalaText(fontSize: fontSize, lineHeight: lineHeight));
+          spans.add(
+            BasmalaText(
+              fontSize: fontSize,
+              lineHeight: lineHeight,
+              color: context.colorScheme.onSurface,
+            ),
+          );
         }
 
         currentSurahIndex++;
