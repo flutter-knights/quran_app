@@ -26,14 +26,14 @@ class SurahHeader extends StatelessWidget {
     final double width = context.width;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 6.0),
       child: Stack(
         alignment: Alignment.center,
         children: [
           Image.asset(
             "assets/images/header.png",
             width: width,
-            color: context.colorScheme.onSurface.withValues(alpha: 0.9),
+            color: context.colorScheme.onSurface,
             fit: BoxFit.fill,
           ),
 
@@ -43,7 +43,7 @@ class SurahHeader extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Gap(4),
+                Gap(6),
                 Text(
                   name,
                   locale: const Locale('ar'),

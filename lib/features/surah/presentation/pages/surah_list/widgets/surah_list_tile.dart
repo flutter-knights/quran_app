@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/router/app_router.dart';
-import 'package:quran_app/features/surah/presentation/pages/surah_list/widgets/circler_bullet.dart';
+import 'package:quran_app/core/widgets/circler_bullet.dart';
 
 import '../../../../../../config/theme/color_scheme.dart';
 import '../../../../../../config/theme/typography_styles.dart';

@@ -19,12 +19,12 @@ class MushafLayout extends StatelessWidget {
       children: [
         Center(
           child: AspectRatio(
-            aspectRatio: 1 / 1.93,
+            aspectRatio: 1 / 1.82,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final pageWidth = constraints.maxWidth;
                 final fontSize = pageWidth / totalLines * 0.9;
-                final lineHeight = pageWidth / totalLines * 1.9;
+                final lineHeight = pageWidth / totalLines * 1.8;
 
                 return MushafText(
                   page: page,

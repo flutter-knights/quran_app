@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../../config/theme/color_scheme.dart';
+import '../../config/theme/color_scheme.dart';
 
 class CirclerBullet extends StatelessWidget {
   const CirclerBullet({super.key});

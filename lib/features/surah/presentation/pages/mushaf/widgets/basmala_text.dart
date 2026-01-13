@@ -10,7 +10,6 @@ class BasmalaText extends TextSpan {
          style: TextStyle(
            fontFamily: "QCF_P000",
            fontSize: fontSize,
-           //  height: lineHeight / fontSize,
            color: color,
          ),
        );

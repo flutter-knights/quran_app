@@ -9872,7 +9872,7 @@ const Map<int, Map<int, int>> lineSymbolsCount = {
     9: 11,
     10: 12,
     11: 9,
-    12: 12,
+    12: 11,
     13: 11,
   },
   594: {
