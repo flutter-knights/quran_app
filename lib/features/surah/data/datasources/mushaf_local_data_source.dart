@@ -27,18 +27,19 @@ class MushafLocalDataSource {
       int start = block["start"];
       int end = block["end"];
 
-      if (start == 1) {
+      if (start == 0) {
         surahNames.add(quran.getQcfSurahName(surah));
+        surahHeadersIndexes.add(ayahs.length);
+      }
+      if (start == 1) {
         bool hasBasmala = surah != 9 && pageNumber != 1;
         surahHasBasmala.add(hasBasmala);
-        surahHeadersIndexes.add(ayahs.length);
-
-        // When a Surah Header appears, it usually consumes a line.
-        // If your lineSymbolsCount accounts for headers as lines,
-        // increment _currentLine here if necessary.
       }
 
       for (int ayah = start; ayah <= end; ayah++) {
+        if (ayah == 0) {
+          continue;
+        }
         String rawVerse = quran.getVerseQCF(surah, ayah);
 
         // 1. Apply your custom symbol/line break logic

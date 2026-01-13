@@ -79,75 +79,75 @@ class _MushafPageState extends State<MushafPage> {
           },
         ),
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton(
-            heroTag: 'autoplay_page',
-            tooltip: 'Autoplay this page',
-            child: const Icon(Icons.play_arrow),
-            onPressed: () {
-              final currentIndex =
-                  (_pageController.page ?? _pageController.initialPage).round();
-              final pageNumber = currentIndex + 1;
+      // floatingActionButton: Column(
+      //   mainAxisSize: MainAxisSize.min,
+      //   children: [
+      //     FloatingActionButton(
+      //       heroTag: 'autoplay_page',
+      //       tooltip: 'Autoplay this page',
+      //       child: const Icon(Icons.play_arrow),
+      //       onPressed: () {
+      //         final currentIndex =
+      //             (_pageController.page ?? _pageController.initialPage).round();
+      //         final pageNumber = currentIndex + 1;
 
-              try {
-                final pageData = quran.getPageData(pageNumber);
-                if (pageData.isEmpty) return;
-                final first = pageData.first as Map;
-                final startSurah = first['surah'] as int;
-                final startAyah = first['start'] as int;
+      //         try {
+      //           final pageData = quran.getPageData(pageNumber);
+      //           if (pageData.isEmpty) return;
+      //           final first = pageData.first as Map;
+      //           final startSurah = first['surah'] as int;
+      //           final startAyah = first['start'] as int;
 
-                final cubit = context.read<PlaybackCubit>();
-                cubit.startAutoPlay(
-                  startSurah: startSurah,
-                  startAyah: startAyah,
-                  reciter: Reciter.alafasy,
-                );
-              } catch (e) {
-                // ignore
-              }
-            },
-          ),
-          const SizedBox(height: 8),
-          BlocBuilder<PlaybackCubit, PlaybackState>(
-            buildWhen: (p, c) => p.isPlaying != c.isPlaying,
-            builder: (context, state) {
-              return FloatingActionButton(
-                heroTag: 'pause_playback',
-                tooltip: state.isPlaying ? 'Pause playback' : 'Resume playback',
-                child: Icon(state.isPlaying ? Icons.pause : Icons.play_arrow),
-                onPressed: () {
-                  try {
-                    final cubit = context.read<PlaybackCubit>();
-                    if (state.isPlaying) {
-                      cubit.pause();
-                    } else {
-                      cubit.resume();
-                    }
-                  } catch (e) {
-                    // ignore
-                  }
-                },
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-          FloatingActionButton(
-            heroTag: 'stop_playback',
-            tooltip: 'Stop playback',
-            child: const Icon(Icons.stop),
-            onPressed: () {
-              try {
-                final cubit = context.read<PlaybackCubit>();
-                cubit.stop();
-              } catch (e) {
-                // ignore
-              }
-            },
-          ),
-        ],
-      ),
+      //           final cubit = context.read<PlaybackCubit>();
+      //           cubit.startAutoPlay(
+      //             startSurah: startSurah,
+      //             startAyah: startAyah,
+      //             reciter: Reciter.alafasy,
+      //           );
+      //         } catch (e) {
+      //           // ignore
+      //         }
+      //       },
+      //     ),
+      //     const SizedBox(height: 8),
+      //     BlocBuilder<PlaybackCubit, PlaybackState>(
+      //       buildWhen: (p, c) => p.isPlaying != c.isPlaying,
+      //       builder: (context, state) {
+      //         return FloatingActionButton(
+      //           heroTag: 'pause_playback',
+      //           tooltip: state.isPlaying ? 'Pause playback' : 'Resume playback',
+      //           child: Icon(state.isPlaying ? Icons.pause : Icons.play_arrow),
+      //           onPressed: () {
+      //             try {
+      //               final cubit = context.read<PlaybackCubit>();
+      //               if (state.isPlaying) {
+      //                 cubit.pause();
+      //               } else {
+      //                 cubit.resume();
+      //               }
+      //             } catch (e) {
+      //               // ignore
+      //             }
+      //           },
+      //         );
+      //       },
+      //     ),
+      //     const SizedBox(height: 8),
+      //     FloatingActionButton(
+      //       heroTag: 'stop_playback',
+      //       tooltip: 'Stop playback',
+      //       child: const Icon(Icons.stop),
+      //       onPressed: () {
+      //         try {
+      //           final cubit = context.read<PlaybackCubit>();
+      //           cubit.stop();
+      //         } catch (e) {
+      //           // ignore
+      //         }
+      //       },
+      //     ),
+      //   ],
+      // ),
     );
   }
 }

@@ -147,6 +147,7 @@ const List pageData = [
     {"surah": 2, "start": 283, "end": 286},
   ],
   [
+    {"surah": 3, "start": 0, "end": 0},
     {"surah": 3, "start": 1, "end": 9},
   ],
   [
