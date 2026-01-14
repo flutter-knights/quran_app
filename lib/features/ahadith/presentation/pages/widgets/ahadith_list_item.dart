@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
@@ -11,10 +13,14 @@ class AhadithListItem extends StatelessWidget {
   final Hadith hadith;
   const AhadithListItem({super.key, required this.hadith});
 
+  void onPressed(BuildContext context) {
+    GoRouter.of(context).push(AppRouter.hadithPath, extra: hadith);
+  }
+
   @override
   Widget build(BuildContext context) {
     return PrettierTap(
-      onTap: () {},
+      onTap: () => onPressed(context),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),

@@ -23,7 +23,7 @@ class BooksListView extends StatelessWidget {
                 (bookInfo) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: HadithBookListItem(
-                    title: bookInfo.title,
+                    bookInfo: bookInfo,
                     onTap: () => onPressed(context, bookSlug: bookInfo.slug),
                   ),
                 ),
