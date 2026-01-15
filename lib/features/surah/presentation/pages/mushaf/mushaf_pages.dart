@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
-import 'package:quran_app/features/quran_playback/data/repositories/helper/reciter.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
-import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_content.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -47,23 +45,22 @@ class _MushafPageState extends State<MushafPage> {
         listenWhen: (previous, current) =>
             previous.currentAyah != current.currentAyah,
         listener: (context, state) {
-          final ayah = state.currentAyah;
-          if (ayah == null) return;
-          try {
-            final targetPage = quran.getPageNumber(ayah.surah, ayah.ayah);
-            if (!_pageController.hasClients) return;
-            final currentIndex =
-                (_pageController.page ?? _pageController.initialPage).round();
-            final targetIndex = targetPage - 1;
-            if (currentIndex != targetIndex) {
-              _pageController.animateToPage(
-                targetIndex,
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeInOut,
-              );
-            }
-          } catch (e) {
-            // ignore mapping errors
+          final cubit = context.read<PlaybackCubit>();
+          final targetPage = cubit.getPageForCurrentAyah();
+          if (targetPage == null) return;
+
+          if (!_pageController.hasClients) return;
+
+          final currentIndex =
+              (_pageController.page ?? _pageController.initialPage).round();
+          final targetIndex = targetPage - 1;
+
+          if (currentIndex != targetIndex) {
+            _pageController.animateToPage(
+              targetIndex,
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeInOut,
+            );
           }
         },
         child: PageView.builder(
@@ -89,33 +86,8 @@ class _MushafPageState extends State<MushafPage> {
             onPressed: () {
               final currentIndex =
                   (_pageController.page ?? _pageController.initialPage).round();
-              final pageNumber = currentIndex + 1;
 
-              try {
-                final pageData = quran.getPageData(pageNumber);
-                if (pageData.isEmpty) return;
-
-                final validItem = pageData.cast<Map>().firstWhere(
-                  (e) => !(e['start'] == 0 && e['end'] == 0),
-                  orElse: () => {},
-                );
-
-                if (validItem.isEmpty) return;
-
-                final startSurah = validItem['surah'] as int;
-                final startAyah = validItem['start'] as int;
-
-                if (startAyah <= 0) return;
-
-                final cubit = context.read<PlaybackCubit>();
-                cubit.startAutoPlay(
-                  startSurah: startSurah,
-                  startAyah: startAyah,
-                  reciter: Reciter.alafasy,
-                );
-              } catch (e) {
-                // ignore
-              }
+              context.read<PlaybackCubit>().autoPlayPage(currentIndex + 1);
             },
           ),
           const SizedBox(height: 8),
