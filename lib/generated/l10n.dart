@@ -28,9 +28,10 @@ class S {
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<S> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false)
-        ? locale.languageCode
-        : locale.toString();
+    final name =
+        (locale.countryCode?.isEmpty ?? false)
+            ? locale.languageCode
+            : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -179,20 +180,20 @@ class S {
     return Intl.message('Hasan', name: 'status_hasan', desc: '', args: []);
   }
 
-  /// `Daeef`
+  /// `Da'eef`
   String get status_daeef {
-    return Intl.message('Daeef', name: 'status_daeef', desc: '', args: []);
+    return Intl.message('Da\'eef', name: 'status_daeef', desc: '', args: []);
   }
 
-  /// `Maudu`
+  /// `Maudu'`
   String get status_mudu {
-    return Intl.message('Maudu', name: 'status_mudu', desc: '', args: []);
+    return Intl.message('Maudu\'', name: 'status_mudu', desc: '', args: []);
   }
 
-  /// `Sahih Bukhari`
+  /// `Sahih al-Bukhari`
   String get sahih_bukhari {
     return Intl.message(
-      'Sahih Bukhari',
+      'Sahih al-Bukhari',
       name: 'sahih_bukhari',
       desc: '',
       args: [],
@@ -209,50 +210,50 @@ class S {
     );
   }
 
-  /// `Jami' Al-Tirmidhi`
+  /// `Jami' al-Tirmidhi`
   String get al_tirmidhi {
     return Intl.message(
-      'Jami\' Al-Tirmidhi',
+      'Jami\' al-Tirmidhi',
       name: 'al_tirmidhi',
       desc: '',
       args: [],
     );
   }
 
-  /// `Sunan Abu Dawood`
+  /// `Sunan Abi Dawood`
   String get abu_dawood {
     return Intl.message(
-      'Sunan Abu Dawood',
+      'Sunan Abi Dawood',
       name: 'abu_dawood',
       desc: '',
       args: [],
     );
   }
 
-  /// `Sunan Ibn-e-Majah`
+  /// `Sunan Ibn Majah`
   String get ibn_e_majah {
     return Intl.message(
-      'Sunan Ibn-e-Majah',
+      'Sunan Ibn Majah',
       name: 'ibn_e_majah',
       desc: '',
       args: [],
     );
   }
 
-  /// `Sunan An-Nasa'i`
+  /// `Sunan an-Nasa'i`
   String get sunan_nasai {
     return Intl.message(
-      'Sunan An-Nasa\'i',
+      'Sunan an-Nasa\'i',
       name: 'sunan_nasai',
       desc: '',
       args: [],
     );
   }
 
-  /// `Mishkat Al-Masabih`
+  /// `Mishkat al-Masabih`
   String get mishkat {
     return Intl.message(
-      'Mishkat Al-Masabih',
+      'Mishkat al-Masabih',
       name: 'mishkat',
       desc: '',
       args: [],
@@ -269,20 +270,20 @@ class S {
     );
   }
 
-  /// `Al-Silsila Sahiha`
+  /// `Al-Silsila al-Sahiha`
   String get al_silsila_sahiha {
     return Intl.message(
-      'Al-Silsila Sahiha',
+      'Al-Silsila al-Sahiha',
       name: 'al_silsila_sahiha',
       desc: '',
       args: [],
     );
   }
 
-  /// `Muhammad ibn Isma'il al-Bukhari`
+  /// `Imam Muhammad ibn Isma'il al-Bukhari`
   String get author_bukhari {
     return Intl.message(
-      'Muhammad ibn Isma\'il al-Bukhari',
+      'Imam Muhammad ibn Isma\'il al-Bukhari',
       name: 'author_bukhari',
       desc: '',
       args: [],
@@ -294,20 +295,20 @@ class S {
     return Intl.message('256 AH', name: 'death_bukhari', desc: '', args: []);
   }
 
-  /// `The Abridged Collection of Authentic Hadith`
+  /// `The Abridged Authentic Collection`
   String get full_title_bukhari {
     return Intl.message(
-      'The Abridged Collection of Authentic Hadith',
+      'The Abridged Authentic Collection',
       name: 'full_title_bukhari',
       desc: '',
       args: [],
     );
   }
 
-  /// `Muslim ibn al-Hajjaj al-Naysaburi`
+  /// `Imam Muslim ibn al-Hajjaj al-Naysaburi`
   String get author_muslim {
     return Intl.message(
-      'Muslim ibn al-Hajjaj al-Naysaburi',
+      'Imam Muslim ibn al-Hajjaj al-Naysaburi',
       name: 'author_muslim',
       desc: '',
       args: [],
@@ -319,20 +320,20 @@ class S {
     return Intl.message('261 AH', name: 'death_muslim', desc: '', args: []);
   }
 
-  /// `The Abbreviated Authentic Musnad`
+  /// `The Authentic Musnad (Abridged)`
   String get full_title_muslim {
     return Intl.message(
-      'The Abbreviated Authentic Musnad',
+      'The Authentic Musnad (Abridged)',
       name: 'full_title_muslim',
       desc: '',
       args: [],
     );
   }
 
-  /// `Muhammad ibn 'Isa al-Tirmidhi`
+  /// `Imam Muhammad ibn 'Isa al-Tirmidhi`
   String get author_tirmidhi {
     return Intl.message(
-      'Muhammad ibn \'Isa al-Tirmidhi',
+      'Imam Muhammad ibn \'Isa al-Tirmidhi',
       name: 'author_tirmidhi',
       desc: '',
       args: [],
@@ -344,20 +345,20 @@ class S {
     return Intl.message('279 AH', name: 'death_tirmidhi', desc: '', args: []);
   }
 
-  /// `Jami' at-Tirmidhi`
+  /// `Jami' al-Tirmidhi`
   String get full_title_tirmidhi {
     return Intl.message(
-      'Jami\' at-Tirmidhi',
+      'Jami\' al-Tirmidhi',
       name: 'full_title_tirmidhi',
       desc: '',
       args: [],
     );
   }
 
-  /// `Abu Dawood al-Sijistani`
+  /// `Imam Abu Dawood al-Sijistani`
   String get author_abu_dawood {
     return Intl.message(
-      'Abu Dawood al-Sijistani',
+      'Imam Abu Dawood al-Sijistani',
       name: 'author_abu_dawood',
       desc: '',
       args: [],
@@ -369,20 +370,20 @@ class S {
     return Intl.message('275 AH', name: 'death_abu_dawood', desc: '', args: []);
   }
 
-  /// `Sunan Abi Dawud`
+  /// `Sunan Abi Dawood`
   String get full_title_abu_dawood {
     return Intl.message(
-      'Sunan Abi Dawud',
+      'Sunan Abi Dawood',
       name: 'full_title_abu_dawood',
       desc: '',
       args: [],
     );
   }
 
-  /// `Ibn Majah al-Qazwini`
+  /// `Imam Muhammad ibn Yazid Ibn Majah al-Qazwini`
   String get author_ibn_majah {
     return Intl.message(
-      'Ibn Majah al-Qazwini',
+      'Imam Muhammad ibn Yazid Ibn Majah al-Qazwini',
       name: 'author_ibn_majah',
       desc: '',
       args: [],
@@ -404,10 +405,10 @@ class S {
     );
   }
 
-  /// `Ahmad ibn Shu'ayb al-Nasa'i`
+  /// `Imam Ahmad ibn Shu'ayb al-Nasa'i`
   String get author_nasai {
     return Intl.message(
-      'Ahmad ibn Shu\'ayb al-Nasa\'i',
+      'Imam Ahmad ibn Shu\'ayb al-Nasa\'i',
       name: 'author_nasai',
       desc: '',
       args: [],
@@ -429,10 +430,10 @@ class S {
     );
   }
 
-  /// `Al-Khatib al-Tabrizi`
+  /// `Imam al-Khatib al-Tabrizi`
   String get author_mishkat {
     return Intl.message(
-      'Al-Khatib al-Tabrizi',
+      'Imam al-Khatib al-Tabrizi',
       name: 'author_mishkat',
       desc: '',
       args: [],
@@ -454,10 +455,10 @@ class S {
     );
   }
 
-  /// `Ahmad ibn Hanbal`
+  /// `Imam Ahmad ibn Hanbal`
   String get author_ahmad {
     return Intl.message(
-      'Ahmad ibn Hanbal',
+      'Imam Ahmad ibn Hanbal',
       name: 'author_ahmad',
       desc: '',
       args: [],
@@ -469,20 +470,20 @@ class S {
     return Intl.message('241 AH', name: 'death_ahmad', desc: '', args: []);
   }
 
-  /// `Musnad Ahmad ibn Hanbal`
+  /// `Musnad Imam Ahmad ibn Hanbal`
   String get full_title_ahmad {
     return Intl.message(
-      'Musnad Ahmad ibn Hanbal',
+      'Musnad Imam Ahmad ibn Hanbal',
       name: 'full_title_ahmad',
       desc: '',
       args: [],
     );
   }
 
-  /// `Muhammad Nasiruddin al-Albani`
+  /// `Imam Muhammad Nasiruddin al-Albani`
   String get author_albani {
     return Intl.message(
-      'Muhammad Nasiruddin al-Albani',
+      'Imam Muhammad Nasiruddin al-Albani',
       name: 'author_albani',
       desc: '',
       args: [],

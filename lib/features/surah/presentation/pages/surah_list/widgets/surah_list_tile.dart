@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/router/app_router.dart';
-import 'package:quran_app/core/widgets/circler_bullet.dart';
+import 'package:quran_app/core/widgets/circular_bullet.dart';
 
 import '../../../../../../config/theme/color_scheme.dart';
 import '../../../../../../config/theme/typography_styles.dart';
@@ -58,14 +58,14 @@ class SurahListTile extends StatelessWidget {
                             color: context.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        CirclerBullet(),
+                        CircularBullet(),
                         Text(
                           "${surah.numberOfAyahs} ${ayahLabel(surah.numberOfAyahs)}",
                           style: TS.regular15.copyWith(
                             color: context.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        CirclerBullet(),
+                        CircularBullet(),
 
                         Text(
                           "صفحة ${surah.pageNumber}",
