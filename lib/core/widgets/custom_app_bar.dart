@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -23,6 +25,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => Size.fromHeight(height);
 
+  Decoration _getDecoration(BuildContext context) {
+    return BoxDecoration(
+      color: context.colorScheme.surface,
+      border: Border(
+        bottom: BorderSide(color: context.colorScheme.secondary, width: 1),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final toolbar = _HeaderToolbar(
@@ -33,20 +44,27 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     if (isSliver) {
       return SliverAppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: context.colorScheme.surface,
         elevation: 0,
-        shadowColor: Colors.transparent,
         pinned: true,
         automaticallyImplyLeading: false,
         toolbarHeight: height,
         titleSpacing: 0,
-        title: toolbar,
+        title: Container(
+          height: height,
+          decoration: _getDecoration(context),
+          child: toolbar,
+        ),
       );
     }
 
     return SafeArea(
       bottom: false,
-      child: SizedBox(height: height, child: toolbar),
+      child: Container(
+        height: height,
+        decoration: _getDecoration(context),
+        child: toolbar,
+      ),
     );
   }
 }
@@ -64,63 +82,20 @@ class _HeaderToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Widget backBtn = leading ?? _AutoBackButton();
+    final Widget actionBtn = trailing ?? const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: NavigationToolbar(
         centerMiddle: true,
-        leading: leading != null
-            ? _SmartStyle.apply(context, leading!)
-            : _AutoBackButton(),
+
+        leading: context.isArabic ? backBtn : actionBtn,
         middle: title != null
-            ? DefaultTextStyle(
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-                child: title!,
-              )
+            ? DefaultTextStyle(style: TS.extra24, child: title!)
             : const SizedBox.shrink(),
-        trailing: trailing != null
-            ? _SmartStyle.apply(context, trailing!)
-            : const SizedBox.shrink(),
+        trailing: context.isArabic ? actionBtn : backBtn,
       ),
     );
-  }
-}
-
-class _SmartStyle {
-  static Widget apply(BuildContext context, Widget child) {
-    final resolved = _unwrap(child);
-
-    if (resolved is Icon || resolved is IconButton) {
-      return IconTheme(
-        data: const IconThemeData(color: Colors.teal, size: 28),
-        child: child,
-      );
-    }
-
-    if (resolved is Text || resolved is TextButton) {
-      return DefaultTextStyle.merge(
-        style: const TextStyle(
-          color: Colors.teal,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-        child: child,
-      );
-    }
-
-    return child;
-  }
-
-  static Widget _unwrap(Widget widget) {
-    if (widget is GestureDetector && widget.child != null) {
-      return _unwrap(widget.child!);
-    }
-    if (widget is InkWell && widget.child != null) {
-      return _unwrap(widget.child!);
-    }
-    return widget;
   }
 }
 

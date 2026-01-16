@@ -42,18 +42,19 @@ class HadithBookListItem extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: .stretch,
                     children: [
-                      Text(bookInfo.title, style: TS.bold24),
-                      Text(bookInfo.arabicTitle, style: TS.bold16),
+                      Text(bookInfo.title, style: TS.extra20),
+                      Text(bookInfo.author, style: TS.bold16),
 
                       Row(
                         spacing: 4,
                         crossAxisAlignment: .center,
                         children: [
                           Text(
-                            bookInfo.author,
+                            bookInfo.arabicTitle,
                             style: TS.bold12.copyWith(
                               color: context.colorScheme.onSurfaceVariant,
                             ),
+                            overflow: .ellipsis,
                           ),
                           CircularBullet(),
                           Text(

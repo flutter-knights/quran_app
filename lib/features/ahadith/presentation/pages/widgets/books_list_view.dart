@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/router/app_router.dart';
+import 'package:quran_app/core/widgets/custom_app_bar.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_book_info.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/hadith_book_list_item.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -15,9 +16,10 @@ class BooksListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: CustomAppBar(title: Text('مكتبه الاحاديث')),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           children: getHadithBooks(context)
               .map(
                 (bookInfo) => Padding(
