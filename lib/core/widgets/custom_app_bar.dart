@@ -91,7 +91,12 @@ class _HeaderToolbar extends StatelessWidget {
 
         leading: context.isArabic ? backBtn : actionBtn,
         middle: title != null
-            ? DefaultTextStyle(style: TS.extra24, child: title!)
+            ? DefaultTextStyle(
+                style: TS.extra24.copyWith(
+                  color: context.colorScheme.onSurface,
+                ),
+                child: title!,
+              )
             : const SizedBox.shrink(),
         trailing: context.isArabic ? actionBtn : backBtn,
       ),

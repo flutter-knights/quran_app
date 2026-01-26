@@ -55,8 +55,8 @@ class AhadithListItem extends StatelessWidget {
               Text(
                 hadith.chapter!.chapterArabic,
                 overflow: TextOverflow.ellipsis,
-                maxLines: 2,
-                style: TS.bold14.copyWith(
+                maxLines: 1,
+                style: TS.bold16.copyWith(
                   color: context.colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -77,20 +77,21 @@ Widget hadithStatusWidget(BuildContext context, HadithStatus status) {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        child: getHadithStatusText(status),
+        child: getHadithStatusText(context, status),
       ),
     ),
   );
 }
 
-Text getHadithStatusText(HadithStatus status) {
+Text getHadithStatusText(BuildContext context, HadithStatus status) {
+  final style = TS.bold12.copyWith(color: context.colorScheme.onPrimary);
   switch (status) {
     case HadithStatus.daeef:
-      return Text(S.current.status_daeef);
+      return Text(S.current.status_daeef, style: style);
 
     case HadithStatus.hasan:
-      return Text(S.current.status_hasan);
+      return Text(S.current.status_hasan, style: style);
     case HadithStatus.sahih:
-      return Text(S.current.status_sahih);
+      return Text(S.current.status_sahih, style: style);
   }
 }

@@ -6,6 +6,7 @@ class Hadith {
   final int hadithNumber;
   final String englishHadith;
   final String arabicHadith;
+  final String? arabicHadithNormalized;
   final String englishNarrator;
   final String englishHeader;
   final String arabicHeader;
@@ -16,6 +17,7 @@ class Hadith {
   Hadith({
     required this.englishHadith,
     required this.arabicHadith,
+    this.arabicHadithNormalized,
     required this.englishNarrator,
 
     required this.status,
@@ -25,7 +27,7 @@ class Hadith {
     required this.arabicHeader,
     required this.hadithNumber,
   });
-  Hadith copyWith({Chapter? chapter}) {
+  Hadith copyWith({Chapter? chapter, required String arabicNormalized}) {
     return Hadith(
       englishHadith: englishHadith,
       arabicHadith: arabicHadith,
@@ -36,6 +38,7 @@ class Hadith {
       englishHeader: englishHeader,
       chapter: chapter ?? this.chapter,
       hadithNumber: hadithNumber,
+      arabicHadithNormalized: arabicNormalized,
     );
   }
 }

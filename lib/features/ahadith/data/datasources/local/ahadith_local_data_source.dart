@@ -1,4 +1,6 @@
 import 'package:hive/hive.dart';
+import 'package:quran_app/core/constants/hadith_constants.dart';
+import 'package:quran_app/core/helper%20functions/search_helpers.dart';
 import 'package:quran_app/features/ahadith/data/models/hadith_hive_model.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_page.dart';
@@ -24,10 +26,48 @@ class AhadithLocalDataSource {
         .toList();
 
     return HadithPage(
-      ahadithList: ahadithList,
+      ahadithList: SearchHelpers.sortHadiths(ahadithList),
       currentPage: pageNumber,
       lastPage: isLastPage,
     );
+  }
+
+  List<Hadith> getSearchedHadiths(String query, String bookSlug) {
+    final bool isArabicQuery = SearchHelpers.isArabic(query);
+    final String searchQuery = isArabicQuery
+        ? SearchHelpers.cleanArabicQuery(query)
+        : query.toLowerCase();
+    final String keyPrefix = "${bookSlug}_";
+
+    final allKeys = hadithBox.keys.map((e) => e.toString()).toList();
+    final relevantKeys = allKeys
+        .where((key) => key.startsWith(keyPrefix))
+        .toList();
+
+    if (relevantKeys.isEmpty) return [];
+
+    final List<Hadith> results = [];
+
+    for (final key in relevantKeys) {
+      final model = hadithBox.get(key);
+      if (model == null) continue;
+
+      bool matches = false;
+      if (isArabicQuery) {
+        matches = SearchHelpers.cleanArabicQuery(
+          model.arabicHadith,
+        ).contains(searchQuery);
+      } else {
+        matches = model.englishHadith.toLowerCase().contains(searchQuery);
+      }
+
+      if (matches) {
+        results.add(model.toEntity());
+      }
+      if (results.length >= kPageLimit) break;
+    }
+
+    return SearchHelpers.sortHadiths(results);
   }
 
   void cachePage(HadithPage hadithPage, int pageNumber, String bookSlug) {
