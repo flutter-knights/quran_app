@@ -1,5 +1,4 @@
-
-import 'package:quran_app/core/helper%20functions/search_helpers.dart';
+import 'package:quran_app/core/helper%20functions/ahadith_helpers.dart';
 import 'package:quran_app/features/ahadith/data/models/hadith_model.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_page.dart';
 
@@ -19,7 +18,7 @@ class HadithPageModel extends HadithPage {
       ahadithList: (hadithsData['data'] as List)
           .map(
             (e) => HadithModel.fromJson(e).copyWith(
-              arabicNormalized: SearchHelpers.cleanArabicQuery(
+              arabicNormalized: AhadithHelpers.cleanArabicQuery(
                 HadithModel.fromJson(e).arabicHadith,
               ),
             ),

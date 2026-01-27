@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:quran_app/core/constants/hadith_constants.dart';
-import 'package:quran_app/core/helper%20functions/search_helpers.dart';
+import 'package:quran_app/core/helper%20functions/ahadith_helpers.dart';
 import 'package:quran_app/features/ahadith/data/models/hadith_hive_model.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_page.dart';
@@ -26,17 +26,41 @@ class AhadithLocalDataSource {
         .toList();
 
     return HadithPage(
-      ahadithList: SearchHelpers.sortHadiths(ahadithList),
+      ahadithList: AhadithHelpers.sortHadiths(ahadithList),
       currentPage: pageNumber,
       lastPage: isLastPage,
     );
   }
 
+  List<Hadith> getAhadithByNumbers(
+    List<String> ahadithNumbers,
+    String bookSlug,
+  ) {
+    final List<Hadith> results = [];
+
+    for (final number in ahadithNumbers) {
+      final int num = int.tryParse(number) ?? 0;
+      final int estimatedPage = (num / kPageLimit).ceil();
+
+      for (int p = estimatedPage - 1; p <= estimatedPage + 1; p++) {
+        if (p < 1) continue;
+
+        final String normalKey = "${bookSlug}_${p}_$number";
+        final String lastKey = "${bookSlug}_${p}_${number}_last";
+
+        if (hadithBox.containsKey(normalKey)) {
+          results.add(hadithBox.get(normalKey)!.toEntity());
+          break;
+        } else if (hadithBox.containsKey(lastKey)) {
+          results.add(hadithBox.get(lastKey)!.toEntity());
+          break;
+        }
+      }
+    }
+    return AhadithHelpers.sortHadiths(results);
+  }
+
   List<Hadith> getSearchedHadiths(String query, String bookSlug) {
-    final bool isArabicQuery = SearchHelpers.isArabic(query);
-    final String searchQuery = isArabicQuery
-        ? SearchHelpers.cleanArabicQuery(query)
-        : query.toLowerCase();
     final String keyPrefix = "${bookSlug}_";
 
     final allKeys = hadithBox.keys.map((e) => e.toString()).toList();
@@ -52,14 +76,7 @@ class AhadithLocalDataSource {
       final model = hadithBox.get(key);
       if (model == null) continue;
 
-      bool matches = false;
-      if (isArabicQuery) {
-        matches = SearchHelpers.cleanArabicQuery(
-          model.arabicHadith,
-        ).contains(searchQuery);
-      } else {
-        matches = model.englishHadith.toLowerCase().contains(searchQuery);
-      }
+      final matches = model.englishHadith.toLowerCase().contains(query);
 
       if (matches) {
         results.add(model.toEntity());
@@ -67,7 +84,7 @@ class AhadithLocalDataSource {
       if (results.length >= kPageLimit) break;
     }
 
-    return SearchHelpers.sortHadiths(results);
+    return AhadithHelpers.sortHadiths(results);
   }
 
   void cachePage(HadithPage hadithPage, int pageNumber, String bookSlug) {

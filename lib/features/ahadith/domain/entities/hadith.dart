@@ -3,7 +3,7 @@ import 'package:quran_app/features/ahadith/domain/entities/chapter.dart';
 enum HadithStatus { sahih, hasan, daeef }
 
 class Hadith {
-  final int hadithNumber;
+  final String hadithNumber;
   final String englishHadith;
   final String arabicHadith;
   final String? arabicHadithNormalized;
