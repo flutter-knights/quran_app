@@ -76,7 +76,9 @@ class AhadithLocalDataSource {
       final model = hadithBox.get(key);
       if (model == null) continue;
 
-      final matches = model.englishHadith.toLowerCase().contains(query);
+      final matches = model.englishHadith.toLowerCase().contains(
+        query.toLowerCase(),
+      );
 
       if (matches) {
         results.add(model.toEntity());
