@@ -32,14 +32,16 @@ class AhadithLocalDataSource {
     );
   }
 
-  List<Hadith> getAhadithByNumbers(
+  ({List<Hadith> found, List<String> missing}) getAhadithByNumbers(
     List<String> ahadithNumbers,
     String bookSlug,
   ) {
     final List<Hadith> results = [];
+    final List<String> missing = [];
 
     for (final number in ahadithNumbers) {
-      final int num = int.tryParse(number) ?? 0;
+      bool foundInHive = false;
+      final int num = int.tryParse(number.split(',').first) ?? 0;
       final int estimatedPage = (num / kPageLimit).ceil();
 
       for (int p = estimatedPage - 1; p <= estimatedPage + 1; p++) {
@@ -48,43 +50,42 @@ class AhadithLocalDataSource {
         final String normalKey = "${bookSlug}_${p}_$number";
         final String lastKey = "${bookSlug}_${p}_${number}_last";
 
-        if (hadithBox.containsKey(normalKey)) {
-          results.add(hadithBox.get(normalKey)!.toEntity());
-          break;
-        } else if (hadithBox.containsKey(lastKey)) {
-          results.add(hadithBox.get(lastKey)!.toEntity());
+        final model = hadithBox.get(normalKey) ?? hadithBox.get(lastKey);
+
+        if (model != null) {
+          results.add(model.toEntity());
+          foundInHive = true;
           break;
         }
       }
+      if (!foundInHive) {
+        missing.add(number);
+      }
     }
-    return AhadithHelpers.sortHadiths(results);
+
+    return (found: AhadithHelpers.sortHadiths(results), missing: missing);
   }
 
   List<Hadith> getSearchedHadiths(String query, String bookSlug) {
     final String keyPrefix = "${bookSlug}_";
+    final String lowercaseQuery = query.toLowerCase();
 
-    final allKeys = hadithBox.keys.map((e) => e.toString()).toList();
-    final relevantKeys = allKeys
-        .where((key) => key.startsWith(keyPrefix))
-        .toList();
+    final allKeys = hadithBox.keys.cast<String>();
+
+    final relevantKeys = allKeys.where((key) => key.startsWith(keyPrefix));
 
     if (relevantKeys.isEmpty) return [];
 
-    final List<Hadith> results = [];
-
-    for (final key in relevantKeys) {
-      final model = hadithBox.get(key);
-      if (model == null) continue;
-
-      final matches = model.englishHadith.toLowerCase().contains(
-        query.toLowerCase(),
-      );
-
-      if (matches) {
-        results.add(model.toEntity());
-      }
-      if (results.length >= kPageLimit) break;
-    }
+    final List<Hadith> results = relevantKeys
+        .map((key) => hadithBox.get(key))
+        .where((model) => model != null)
+        .where(
+          (model) =>
+              model!.englishHadith.toLowerCase().contains(lowercaseQuery),
+        )
+        .take(kPageLimit)
+        .map((model) => model!.toEntity())
+        .toList();
 
     return AhadithHelpers.sortHadiths(results);
   }

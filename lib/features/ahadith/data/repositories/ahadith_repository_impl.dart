@@ -92,7 +92,7 @@ class AhadithRepositoryImpl implements AhadithRepository {
       } catch (e) {
         trials--;
         if (trials > 0) {
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(milliseconds: 500));
           continue;
         }
         throw Exception('can\'n download book');

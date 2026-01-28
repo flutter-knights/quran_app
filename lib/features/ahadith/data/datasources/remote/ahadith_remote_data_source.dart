@@ -25,7 +25,7 @@ class AhadithRemoteDataSource {
     return hadithPage;
   }
 
-  Future<HadithPage> getSearchedHadiths(String query, String bookSlug) async {
+  Future<List<Hadith>> getSearchedHadiths(String query, String bookSlug) async {
     Response ahadithResponse = await dio.get(
       'https://hadithapi.com/api/hadiths/?apiKey=$hadithApiKey',
       queryParameters: {
@@ -34,9 +34,13 @@ class AhadithRemoteDataSource {
         'hadithEnglish': query,
       },
     );
+    final List<dynamic>? dataList = ahadithResponse.data['hadiths']?['data'];
 
-    HadithPage hadithPage = HadithPageModel.fromJson(ahadithResponse.data);
-    return hadithPage;
+    if (dataList == null || dataList.isEmpty) return [];
+    List<Hadith> ahadithList = dataList
+        .map((e) => HadithModel.fromJson(e))
+        .toList();
+    return ahadithList;
   }
 
   Future<List<Hadith>> getAhadithByNumbers(
@@ -53,10 +57,15 @@ class AhadithRemoteDataSource {
 
     final responses = await Future.wait(requests);
 
-    return responses.map((res) {
-      final List<dynamic> dataList = res.data['hadiths']['data'];
+    return responses
+        .map((res) {
+          final List<dynamic>? dataList = res.data['hadiths']?['data'];
 
-      return HadithModel.fromJson(dataList.first);
-    }).toList();
+          if (dataList == null || dataList.isEmpty) return null;
+
+          return HadithModel.fromJson(dataList.first);
+        })
+        .whereType<Hadith>()
+        .toList();
   }
 }
