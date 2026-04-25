@@ -2510,3 +2510,5 @@ flutter:
     - family: QCF_P604
       fonts:
         - asset: assets\fonts\QCF\QCF2604.ttf
+flutter_intl:
+  enabled: true

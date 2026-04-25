@@ -169,6 +169,26 @@ class S {
     );
   }
 
+  /// `Arabic`
+  String get arabic_label {
+    return Intl.message('Arabic', name: 'arabic_label', desc: '', args: []);
+  }
+
+  /// `Translation`
+  String get translation_label {
+    return Intl.message(
+      'Translation',
+      name: 'translation_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chapter`
+  String get chapter_label {
+    return Intl.message('Chapter', name: 'chapter_label', desc: '', args: []);
+  }
+
   /// `Sahih`
   String get status_sahih {
     return Intl.message('Sahih', name: 'status_sahih', desc: '', args: []);

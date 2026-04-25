@@ -18,6 +18,9 @@
 "hadith_number_label": "Hadith No.",
 "hadith_total_label": "Total Ahadith",
 "hadith_heading_label": "Hadith Heading",
+"arabic_label": "Arabic",
+"translation_label": "Translation",
+"chapter_label": "Chapter",
 
 "status_sahih": "Sahih",
 "status_hasan": "Hasan",
