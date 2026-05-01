@@ -16,7 +16,7 @@ final ThemeData lightTheme = ThemeData(
       borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide.none,
     ),
-    hintStyle: TS.regular15.copyWith(color: lightColorScheme.onSurface),
+    hintStyle: TS.regular15.copyWith(color: darkColorScheme.onSurfaceVariant),
     contentPadding: const EdgeInsets.symmetric(vertical: 12),
   ),
 );

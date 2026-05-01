@@ -12,6 +12,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? trailing;
   final bool isSliver;
   final double height;
+  final AppBarOptions options; // Added this
 
   const CustomAppBar({
     super.key,
@@ -20,17 +21,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.trailing,
     this.isSliver = false,
     this.height = kToolbarHeight,
+    this.options = const AppBarOptions(), // Default values
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(height);
+  Size get preferredSize => Size.fromHeight(options.expandedHeight ?? height);
 
   Decoration _getDecoration(BuildContext context) {
     return BoxDecoration(
       color: context.colorScheme.surface,
-      border: Border(
-        bottom: BorderSide(color: context.colorScheme.secondary, width: 1),
-      ),
+      border: options.showBottomLine
+          ? Border(
+              bottom: BorderSide(
+                color: context.colorScheme.secondary,
+                width: 1,
+              ),
+            )
+          : null, // Freedom to remove the line!
     );
   }
 
@@ -46,10 +53,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       return SliverAppBar(
         backgroundColor: context.colorScheme.surface,
         elevation: 0,
-        pinned: true,
+        pinned: options.pinned,
+        floating: options.floating,
+        snap: options.snap,
+        expandedHeight: options.expandedHeight,
         automaticallyImplyLeading: false,
         toolbarHeight: height,
         titleSpacing: 0,
+        // Using flexibleSpace or title depending on your preference
         title: Container(
           height: height,
           decoration: _getDecoration(context),
@@ -119,4 +130,20 @@ class _AutoBackButton extends StatelessWidget {
       onTap: () => GoRouter.of(context).pop(),
     );
   }
+}
+
+class AppBarOptions {
+  final bool pinned;
+  final bool floating;
+  final bool snap;
+  final bool showBottomLine;
+  final double? expandedHeight;
+
+  const AppBarOptions({
+    this.pinned = true,
+    this.floating = false,
+    this.snap = false,
+    this.showBottomLine = true,
+    this.expandedHeight,
+  });
 }
