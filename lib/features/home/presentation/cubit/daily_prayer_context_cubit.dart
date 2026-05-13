@@ -8,16 +8,17 @@ part 'daily_prayer_context_state.dart';
 
 class DailyPrayerContextCubit extends Cubit<DailyPrayerContextState> {
   DailyPrayerContextCubit({required this.getDailyPrayerContext})
-    : super(DailyPrayerContextInitial());
+      : super(DailyPrayerContextInitial());
 
   final GetDailyPrayerContext getDailyPrayerContext;
 
-  Future<void> fetchDailyPrayerContext() async {
-    emit(DailyPrayerContextLoading());
+  /// [silent]: when true, suppresses [DailyPrayerContextLoading].
+  /// Used by after-Isha and midnight auto-refreshes to avoid a UI flash.
+  Future<void> fetchDailyPrayerContext({bool silent = false}) async {
+    if (!silent) emit(DailyPrayerContextLoading());
 
     await getDailyPrayerContext(NoParams()).forEach((result) {
       if (isClosed) return;
-
       result.fold(
         (failure) => emit(DailyPrayerContextFailed(failure.message)),
         (dailyPrayerContext) =>
