@@ -11,6 +11,7 @@ import 'package:quran_app/features/home/data/repositories/prayer_times_repositor
 import 'package:quran_app/features/home/domain/repositories/location_repository.dart';
 import 'package:quran_app/features/home/domain/repositories/prayer_times_repository.dart';
 import 'package:quran_app/features/home/domain/usecases/get_daily_prayer_context.dart';
+import 'package:quran_app/features/home/domain/usecases/pre_cache_prayer_times.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 
 void initHome() {
@@ -48,6 +49,10 @@ void initHome() {
       prayerTimesRepository: sl(),
       locationRepository: sl(),
     ),
+  );
+
+  sl.registerLazySingleton(
+    () => PreCachePrayerTimes(prayerTimesRepository: sl()),
   );
 
   // Cubit
