@@ -59,6 +59,26 @@ void main() {
       '${d.day.toString().padLeft(2, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-${d.year}';
 
+  group('getCachedKeysForMonth', () {
+    test('returns only keys whose month/year match', () async {
+      await ds.cache([
+        mkEntry('01-05-2029'),
+        mkEntry('15-05-2029'),
+        mkEntry('02-06-2029'),
+      ]);
+
+      final mayKeys = ds.getCachedKeysForMonth(year: 2029, month: 5);
+      expect(mayKeys, containsAll(<String>['01-05-2029', '15-05-2029']));
+      expect(mayKeys, isNot(contains('02-06-2029')));
+
+      final juneKeys = ds.getCachedKeysForMonth(year: 2029, month: 6);
+      expect(juneKeys, equals(<String>['02-06-2029']));
+
+      final julyKeys = ds.getCachedKeysForMonth(year: 2029, month: 7);
+      expect(julyKeys, isEmpty);
+    });
+  });
+
   group('clearOldCache', () {
     test('deletes entries strictly before yesterday (dd-MM-yyyy keys)',
         () async {

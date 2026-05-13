@@ -23,6 +23,24 @@ class PrayerTimesLocalDataSource {
     return todaysPrayerTimes.toEntity();
   }
 
+  List<String> getCachedKeysForMonth({required int year, required int month}) {
+    final formatter = DateFormat('dd-MM-yyyy');
+    final result = <String>[];
+    for (var key in prayerTimesBox.keys) {
+      if (key is! String) continue;
+      DateTime? parsed;
+      try {
+        parsed = formatter.parseStrict(key);
+      } catch (_) {
+        continue;
+      }
+      if (parsed.year == year && parsed.month == month) {
+        result.add(key);
+      }
+    }
+    return result;
+  }
+
   void clearCache() {
     prayerTimesBox.clear();
   }
