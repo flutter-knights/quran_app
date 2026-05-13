@@ -20,7 +20,9 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
   });
 
   @override
-  Future<Either<Failure, PrayerTimes>> getPrayerTimes(Location location) async {
+  Future<Either<Failure, PrayerTimes>> getPrayerTimes(
+    Location location,
+  ) async {
     final now = DateTime.now();
     final todayData = prayerTimesLocalDataSource.getCached(date: now);
 
@@ -31,9 +33,8 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
     final ishaTime = todayData.timings[PrayerName.isha]!.parse24hTime();
     if (now.isAfter(ishaTime)) {
       final tomorrowDate = now.add(const Duration(days: 1));
-      final tomorrowData = prayerTimesLocalDataSource.getCached(
-        date: tomorrowDate,
-      );
+      final tomorrowData =
+          prayerTimesLocalDataSource.getCached(date: tomorrowDate);
 
       if (tomorrowData != null) {
         return Right(
@@ -54,10 +55,12 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
     DateTime targetDate,
   ) async {
     try {
-      final List<PrayerTimes> prayerTimesList = await prayerTimeRemoteDataSource
-          .getPrayerTimesList(location);
+      final List<PrayerTimes> prayerTimesList =
+          await prayerTimeRemoteDataSource.getPrayerTimesList(location);
       await prayerTimesLocalDataSource.cache(prayerTimesList);
-      return Right(prayerTimesLocalDataSource.getCached(date: targetDate)!);
+      return Right(
+        prayerTimesLocalDataSource.getCached(date: targetDate)!,
+      );
     } on DioException catch (e) {
       return left(DioErrorHandler.handle(e));
     } catch (e) {
@@ -66,19 +69,27 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
   }
 
   @override
-  Future<void> prayerTimesBackgroundPreCache(Location location) async {
-    final now = DateTime.now();
-    final dayAfterAfterAfterAfterTomorrow = now.add(const Duration(days: 5));
-    final cachedPrayerTimes = prayerTimesLocalDataSource.getCached(
-      date: dayAfterAfterAfterAfterTomorrow,
+  Future<void> preCacheMonth({
+    required Location location,
+    required int year,
+    required int month,
+  }) async {
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+    final cachedKeys = prayerTimesLocalDataSource.getCachedKeysForMonth(
+      year: year,
+      month: month,
     );
-    if (cachedPrayerTimes != null) return;
+    if (cachedKeys.length >= daysInMonth) return;
 
     try {
-      final List<PrayerTimes> prayerTimesList = await prayerTimeRemoteDataSource
-          .getPrayerTimesList(location);
+      final List<PrayerTimes> prayerTimesList =
+          await prayerTimeRemoteDataSource.getPrayerTimesList(
+        location,
+        year: year,
+        month: month,
+      );
       await prayerTimesLocalDataSource.cache(prayerTimesList);
-    } catch (e) {
+    } catch (_) {
       return;
     }
   }
