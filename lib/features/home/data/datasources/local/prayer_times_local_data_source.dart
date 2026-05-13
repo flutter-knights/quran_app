@@ -30,6 +30,7 @@ class PrayerTimesLocalDataSource {
   Future<void> clearOldCache() async {
     final now = DateTime.now();
     final threshold = DateTime(now.year, now.month, now.day - 1);
+    final formatter = DateFormat('dd-MM-yyyy');
 
     final keysToRemove = <dynamic>[];
 
@@ -38,7 +39,11 @@ class PrayerTimesLocalDataSource {
       if (key is DateTime) {
         keyDate = key;
       } else if (key is String) {
-        keyDate = DateTime.tryParse(key);
+        try {
+          keyDate = formatter.parseStrict(key);
+        } catch (_) {
+          keyDate = null;
+        }
       }
 
       if (keyDate != null && keyDate.isBefore(threshold)) {
