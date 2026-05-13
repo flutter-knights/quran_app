@@ -77,6 +77,5 @@ class PrayerTimesLocalDataSource {
 
 String formatKey({DateTime? date}) {
   final now = date ?? DateTime.now();
-  final String todaysDate = DateFormat('dd-MM-yyyy', 'en').format(now);
-  return todaysDate;
+  return DateFormat('dd-MM-yyyy').format(now);
 }
