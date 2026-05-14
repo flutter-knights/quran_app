@@ -57,3 +57,7 @@ class LocationPermissionDeniedFailure extends Failure {
 class LocationPermissionDeniedForeverFailure extends Failure {
   const LocationPermissionDeniedForeverFailure(super.message);
 }
+
+class CacheFailure extends Failure {
+  const CacheFailure(super.message);
+}
