@@ -80,11 +80,7 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
 
   @override
   Future<void> scheduleDailyPrayerNotifications(PrayerTimes prayerTimes) async {
-    if (!_initialized) {
-      throw StateError(
-        'PrayerNotificationSchedulerImpl.init() must be called before scheduling',
-      );
-    }
+    if (!_initialized) return;
 
     await cancelAllPrayerNotifications();
     final date = DateFormat('dd-MM-yyyy').parse(prayerTimes.date.gregorianDate);
