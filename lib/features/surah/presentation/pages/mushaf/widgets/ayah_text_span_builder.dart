@@ -1,42 +1,29 @@
 import 'package:flutter/material.dart';
 
-import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
 import '../../../../../../config/theme/color_scheme.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../../domain/entities/mushaf_page_entity.dart';
 import 'basmala_text.dart';
 import 'surah_header.dart';
 
 class AyahTextSpanBuilder {
-  static List<InlineSpan> build({
+  /// Builds the static span tree for a page. Highlight is applied separately
+  /// via [buildHighlightOverlay] so ayah-tick rebuilds don't recreate this list.
+  static List<InlineSpan> buildBase({
     required BuildContext context,
     required MushafPageEntity page,
     required int pageNumber,
     required double fontSize,
     required double lineHeight,
     required double pageWidth,
-    required AyahIdentifier? currentAyah,
+    required TextStyle normalStyle,
   }) {
     final spans = <InlineSpan>[];
-
     final headerIndexes = page.surahHeadersIndexes.toSet();
     final basmalaIndexes = page.basmalaIndexes.toSet();
-
-    int currentSurahIndex = 0;
-
-    final normalStyle = TextStyle(
-      fontFamily: "QCF_P${pageNumber.toString().padLeft(3, "0")}",
-      fontSize: fontSize,
-      height: lineHeight / fontSize,
-      color: context.colorScheme.onSurface,
-    );
-
-    final highlightedStyle = normalStyle.copyWith(
-      color: context.colorScheme.onPrimary,
-      backgroundColor: context.colorScheme.primary,
-    );
+    var currentSurahIndex = 0;
 
     for (int i = 0; i <= page.ayahs.length; i++) {
-      // -------- SURAH HEADER --------
       if (headerIndexes.contains(i)) {
         spans.add(
           WidgetSpan(
@@ -53,7 +40,6 @@ class AyahTextSpanBuilder {
         currentSurahIndex++;
       }
 
-      // -------- BASMALA --------
       if (basmalaIndexes.contains(i)) {
         spans.add(
           BasmalaText(
@@ -64,24 +50,58 @@ class AyahTextSpanBuilder {
         );
       }
 
-      // -------- AYAH TEXT --------
       if (i < page.ayahs.length) {
-        final ayahId = page.ayahIdentifiers[i];
-        final isHighlighted =
-            currentAyah != null &&
-            currentAyah.surah == ayahId.surah &&
-            currentAyah.ayah == ayahId.ayah;
-
         spans.add(
           TextSpan(
             locale: const Locale('ar'),
             text: page.ayahs[i],
-            style: isHighlighted ? highlightedStyle : normalStyle,
+            style: normalStyle,
           ),
         );
       }
     }
 
     return spans;
+  }
+
+  /// Returns a new list with the matching ayah's TextSpan replaced by a
+  /// highlighted copy. Returns [baseSpans] by identity when [currentAyah] is
+  /// null or not present on [page], so callers can skip relayout.
+  static List<InlineSpan> buildHighlightOverlay({
+    required List<InlineSpan> baseSpans,
+    required MushafPageEntity page,
+    required AyahIdentifier? currentAyah,
+    required TextStyle highlightedStyle,
+    required TextStyle normalStyle,
+  }) {
+    if (currentAyah == null) return baseSpans;
+    final ayahIndex = page.ayahIdentifiers.indexWhere(
+      (a) => a.surah == currentAyah.surah && a.ayah == currentAyah.ayah,
+    );
+    if (ayahIndex < 0) return baseSpans;
+
+    final headerIndexes = page.surahHeadersIndexes.toSet();
+    final basmalaIndexes = page.basmalaIndexes.toSet();
+
+    var pos = 0;
+    for (int i = 0; i <= page.ayahs.length; i++) {
+      if (headerIndexes.contains(i)) pos++;
+      if (basmalaIndexes.contains(i)) pos++;
+      if (i < page.ayahs.length) {
+        if (i == ayahIndex) break;
+        pos++;
+      }
+    }
+
+    final original = baseSpans[pos];
+    if (original is! TextSpan) return baseSpans;
+    final replacement = TextSpan(
+      locale: const Locale('ar'),
+      text: original.text,
+      style: highlightedStyle,
+    );
+    final result = List<InlineSpan>.of(baseSpans);
+    result[pos] = replacement;
+    return result;
   }
 }

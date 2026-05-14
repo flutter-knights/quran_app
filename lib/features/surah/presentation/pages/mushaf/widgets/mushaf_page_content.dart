@@ -6,27 +6,20 @@ import '../../../cubit/mushaf/mushaf_state.dart';
 import 'mushaf_layout.dart';
 
 class MushafPageContent extends StatelessWidget {
-  final int pageNumber;
-
   const MushafPageContent({super.key, required this.pageNumber});
+
+  final int pageNumber;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MushafCubit, MushafState>(
       builder: (context, state) {
-        if (state is MushafLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (state is MushafError) {
-          return Center(child: Text(state.message));
-        }
-
-        if (state is MushafLoaded) {
-          return MushafLayout(pageNumber: pageNumber, page: state.pageContent);
-        }
-
-        return const SizedBox();
+        return switch (state) {
+          MushafInitial() => const SizedBox(),
+          MushafLoading() => const Center(child: CircularProgressIndicator()),
+          MushafError(:final message) => Center(child: Text(message)),
+          MushafLoaded() => MushafLayout(pageNumber: pageNumber, loaded: state),
+        };
       },
     );
   }

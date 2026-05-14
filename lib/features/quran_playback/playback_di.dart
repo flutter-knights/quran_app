@@ -33,7 +33,7 @@ void initPlayback() async {
   sl.registerLazySingleton<AyahSequenceService>(() => AyahSequenceService());
   sl.registerLazySingleton<QuranPageServiceImpl>(() => QuranPageServiceImpl());
 
-  sl.registerFactory<PlaybackCubit>(
+  sl.registerLazySingleton<PlaybackCubit>(
     () => PlaybackCubit(
       ayahSequenceService: sl<AyahSequenceService>(),
       repository: sl<QuranPlaybackRepo>(),

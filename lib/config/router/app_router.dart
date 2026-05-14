@@ -58,8 +58,8 @@ abstract class AppRouter {
         pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) {
             final int pageNo = (state.extra as int?) ?? 1;
-            return BlocProvider(
-              create: (context) => sl<PlaybackCubit>(),
+            return BlocProvider.value(
+              value: sl<PlaybackCubit>(),
               child: MushafPage(pageNumber: pageNo),
             );
           },

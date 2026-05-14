@@ -5,6 +5,8 @@ import 'package:quran_app/core/constants/device_size_info.dart';
 
 import '../../../../../../config/theme/color_scheme.dart';
 
+const AssetImage kSurahHeaderImage = AssetImage('assets/images/header.png');
+
 class SurahHeader extends StatelessWidget {
   const SurahHeader({
     super.key,
@@ -23,32 +25,30 @@ class SurahHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double width = context.width;
-
+    final width = context.width;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6.0),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Image.asset(
-            "assets/images/header.png",
-            width: width,
+          Image(
+            image: ResizeImage(kSurahHeaderImage, width: width.toInt()),
             color: context.colorScheme.onSurface,
+            colorBlendMode: BlendMode.srcIn,
             fit: BoxFit.fill,
+            gaplessPlayback: true,
           ),
-
           Directionality(
             textDirection: TextDirection.rtl,
-
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Gap(6),
+                const Gap(6),
                 Text(
                   name,
                   locale: const Locale('ar'),
                   style: TextStyle(
-                    fontFamily: "QCF_P000",
+                    fontFamily: 'QCF_P000',
                     fontSize: fontSize * 1.4,
                     color: context.colorScheme.onSurface,
                   ),

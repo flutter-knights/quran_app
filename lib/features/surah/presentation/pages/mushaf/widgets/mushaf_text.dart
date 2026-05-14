@@ -1,45 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
-import '../../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
-import '../../../../domain/entities/mushaf_page_entity.dart';
-
+import '../../../../../../core/di/dependency_injection.dart';
+import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../cubit/mushaf/mushaf_state.dart';
+import '../../../utils/current_ayah_notifier.dart';
 import 'ayah_text_span_builder.dart';
 
 class MushafText extends StatelessWidget {
-  final MushafPageEntity page;
-  final int pageNumber;
-  final double pageWidth;
-  final double fontSize;
-  final double lineHeight;
+  const MushafText({super.key, required this.loaded, required this.pageNumber});
 
-  const MushafText({
-    super.key,
-    required this.page,
-    required this.pageNumber,
-    required this.pageWidth,
-    required this.fontSize,
-    required this.lineHeight,
-  });
+  final MushafLoaded loaded;
+  final int pageNumber;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlaybackCubit, PlaybackState>(
-      buildWhen: (p, c) => p.currentAyah != c.currentAyah,
-      builder: (context, state) {
-        final spans = AyahTextSpanBuilder.build(
-          context: context,
-          page: page,
-          pageNumber: pageNumber,
-          fontSize: fontSize,
-          lineHeight: lineHeight,
-          pageWidth: pageWidth,
-          currentAyah: state.currentAyah,
+    return ValueListenableBuilder<AyahIdentifier?>(
+      valueListenable: sl<CurrentAyahNotifier>(),
+      builder: (context, currentAyah, _) {
+        final spans = AyahTextSpanBuilder.buildHighlightOverlay(
+          baseSpans: loaded.spans,
+          page: loaded.page,
+          currentAyah: currentAyah,
+          highlightedStyle: loaded.highlightedStyle,
+          normalStyle: loaded.normalStyle,
         );
-
         return SizedBox(
-          width: pageWidth,
+          width: loaded.pageWidth,
           child: RichText(
             textDirection: TextDirection.rtl,
             textAlign: TextAlign.center,
