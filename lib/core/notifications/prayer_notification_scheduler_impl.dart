@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:intl/intl.dart';
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
+import 'package:quran_app/core/helper%20functions/time_helpers.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -31,24 +32,72 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     PrayerName.isha: 'Isha',
   };
 
-  static const NotificationDetails _notificationDetails = NotificationDetails(
+  static const String _fajrChannelId = 'prayer_fajr_channel';
+  static const String _standardChannelId = 'prayer_standard_channel';
+  static const String _legacyChannelId = 'prayer_times_channel';
+
+  static const AndroidNotificationChannel _fajrChannel =
+      AndroidNotificationChannel(
+    _fajrChannelId,
+    'Fajr adhan',
+    description: 'Adhan at prayer time',
+    importance: Importance.max,
+    sound: RawResourceAndroidNotificationSound('fajr_adhan'),
+    playSound: true,
+    enableVibration: false,
+  );
+
+  static const AndroidNotificationChannel _standardChannel =
+      AndroidNotificationChannel(
+    _standardChannelId,
+    'Prayer adhan',
+    description: 'Adhan at prayer time',
+    importance: Importance.max,
+    sound: RawResourceAndroidNotificationSound('normal_adhan'),
+    playSound: true,
+    enableVibration: false,
+  );
+
+  static const NotificationDetails _fajrDetails = NotificationDetails(
     android: AndroidNotificationDetails(
-      'prayer_times_channel',
-      'Prayer Times',
-      channelDescription: 'Adhan at prayer times',
+      _fajrChannelId,
+      'Fajr adhan',
+      channelDescription: 'Adhan at prayer time',
       importance: Importance.max,
       priority: Priority.high,
-      sound: RawResourceAndroidNotificationSound('adhan'),
+      sound: RawResourceAndroidNotificationSound('fajr_adhan'),
       playSound: true,
       enableVibration: false,
     ),
     iOS: DarwinNotificationDetails(
-      sound: 'adhan.mp3',
+      sound: 'fajr_adhan.caf',
       presentSound: true,
       presentAlert: true,
       presentBadge: false,
     ),
   );
+
+  static const NotificationDetails _standardDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      _standardChannelId,
+      'Prayer adhan',
+      channelDescription: 'Adhan at prayer time',
+      importance: Importance.max,
+      priority: Priority.high,
+      sound: RawResourceAndroidNotificationSound('normal_adhan'),
+      playSound: true,
+      enableVibration: false,
+    ),
+    iOS: DarwinNotificationDetails(
+      sound: 'normal_adhan.caf',
+      presentSound: true,
+      presentAlert: true,
+      presentBadge: false,
+    ),
+  );
+
+  NotificationDetails _detailsFor(PrayerName p) =>
+      p == PrayerName.fajr ? _fajrDetails : _standardDetails;
 
   @override
   Future<void> init() async {
@@ -66,31 +115,44 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     );
     await _plugin.initialize(settings: initSettings);
 
-    await _plugin
+    final androidPlugin = _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestExactAlarmsPermission();
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    // One-time migration: drop the legacy single-sound channel. No-op if absent.
+    await androidPlugin?.deleteNotificationChannel(channelId: _legacyChannelId);
+    await androidPlugin?.createNotificationChannel(_fajrChannel);
+    await androidPlugin?.createNotificationChannel(_standardChannel);
+
+    await androidPlugin?.requestNotificationsPermission();
+    await androidPlugin?.requestExactAlarmsPermission();
 
     _initialized = true;
+    debugPrint('[PrayerNotif] init complete, tz=${tz.local.name}');
   }
 
   @override
   Future<void> scheduleDailyPrayerNotifications(PrayerTimes prayerTimes) async {
-    if (!_initialized) return;
+    if (!_initialized) {
+      debugPrint('[PrayerNotif] schedule called before init — skipping');
+      return;
+    }
 
     await cancelAllPrayerNotifications();
-    final date = DateFormat('dd-MM-yyyy').parse(prayerTimes.date.gregorianDate);
+    final date = prayerTimes.date.gregorianDate.gregorianDate();
     final now = DateTime.now();
+    debugPrint('[PrayerNotif] scheduling for date=$date, now=$now');
 
+    var scheduled = 0;
+    var skipped = 0;
     for (final entry in _notificationIds.entries) {
       final prayerName = entry.key;
       final notificationId = entry.value;
       final timeStr = prayerTimes.timings[prayerName];
-      if (timeStr == null) continue;
+      if (timeStr == null) {
+        skipped++;
+        continue;
+      }
 
       try {
         final parts = timeStr.split(':');
@@ -102,21 +164,32 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
           int.parse(parts[1]),
         );
 
-        if (scheduledTime.isBefore(now)) continue;
+        if (scheduledTime.isBefore(now)) {
+          skipped++;
+          continue;
+        }
 
         await _plugin.zonedSchedule(
           id: notificationId,
           title: _prayerTitles[prayerName],
           body: 'Time for ${_prayerTitles[prayerName]} prayer',
           scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
-          notificationDetails: _notificationDetails,
+          notificationDetails: _detailsFor(prayerName),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         );
+        scheduled++;
+        debugPrint(
+          '[PrayerNotif] scheduled $prayerName id=$notificationId at $scheduledTime',
+        );
       } catch (e) {
-        // skip this prayer on malformed data
+        skipped++;
+        debugPrint('[PrayerNotif] schedule failed for $prayerName: $e');
         continue;
       }
     }
+    debugPrint(
+      '[PrayerNotif] done: scheduled=$scheduled, skipped=$skipped',
+    );
   }
 
   @override
@@ -124,5 +197,25 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     for (final id in _notificationIds.values) {
       await _plugin.cancel(id: id);
     }
+  }
+
+  @override
+  Future<void> scheduleTestNotification({
+    Duration delay = const Duration(seconds: 30),
+  }) async {
+    if (!_initialized) {
+      debugPrint('[PrayerNotif] test called before init — skipping');
+      return;
+    }
+    final fireAt = tz.TZDateTime.now(tz.local).add(delay);
+    await _plugin.zonedSchedule(
+      id: 9999,
+      title: 'Adhan test',
+      body: 'Background fire check (${delay.inSeconds}s)',
+      scheduledDate: fireAt,
+      notificationDetails: _standardDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+    debugPrint('[PrayerNotif] test scheduled at $fireAt');
   }
 }
