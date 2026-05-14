@@ -4,15 +4,14 @@ import '../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../models/mushaf_page_model.dart';
 
 class MushafLocalDataSource {
-  int _currentLine = 1;
-  int _symbolsOnCurrentLine = 0;
+  const MushafLocalDataSource();
 
   MushafPageModel getPage(int pageNumber) {
     final pageData = quran.getPageData(pageNumber);
     final Map<int, int>? linesConfig = lineSymbolsCount[pageNumber];
 
-    _currentLine = 1;
-    _symbolsOnCurrentLine = 0;
+    var currentLine = 1;
+    var symbolsOnCurrentLine = 0;
 
     final List<String> ayahs = [];
     final List<int> surahHeadersIndexes = [];
@@ -21,10 +20,10 @@ class MushafLocalDataSource {
     final List<bool> surahHasBasmala = [];
     final List<AyahIdentifier> ayahIdentifiers = [];
 
-    for (var block in pageData) {
-      final int surah = block["surah"];
-      final int start = block["start"];
-      final int end = block["end"];
+    for (final block in pageData) {
+      final int surah = block['surah'];
+      final int start = block['start'];
+      final int end = block['end'];
       if (start == 0 && end == 0) {
         surahNames.add(quran.getQcfSurahName(surah));
         surahHeadersIndexes.add(ayahs.length);
@@ -38,19 +37,24 @@ class MushafLocalDataSource {
       if (start == 1) {
         final bool hasBasmala = surah != 9 && pageNumber != 1;
         surahHasBasmala.add(hasBasmala);
-
-        if (hasBasmala) {
-          basmalaIndexes.add(ayahs.length);
-        }
+        if (hasBasmala) basmalaIndexes.add(ayahs.length);
       }
 
       for (int ayah = start; ayah <= end; ayah++) {
         if (ayah == 0) continue;
 
         final rawVerse = quran.getVerseQCF(surah, ayah);
-        final verseWithBreaks = _injectLineBreaks(rawVerse, linesConfig);
-        final finalVerse = preprocessVerse(verseWithBreaks, ayah, start);
 
+        final (verseWithBreaks, nextLine, nextSymbols) = _injectLineBreaks(
+          rawVerse,
+          linesConfig,
+          currentLine,
+          symbolsOnCurrentLine,
+        );
+        currentLine = nextLine;
+        symbolsOnCurrentLine = nextSymbols;
+
+        final finalVerse = _preprocessVerse(verseWithBreaks, ayah, start);
         ayahs.add(finalVerse);
         ayahIdentifiers.add(AyahIdentifier(surah: surah, ayah: ayah));
       }
@@ -67,35 +71,43 @@ class MushafLocalDataSource {
     );
   }
 
-  String _injectLineBreaks(String verse, Map<int, int>? linesConfig) {
-    if (linesConfig == null) return verse.replaceAll(' ', '');
-
-    List<String> symbols = verse.trim().split(' ');
-    StringBuffer buffer = StringBuffer();
-
-    for (int i = 0; i < symbols.length; i++) {
+  (String, int, int) _injectLineBreaks(
+    String verse,
+    Map<int, int>? linesConfig,
+    int currentLine,
+    int symbolsOnCurrentLine,
+  ) {
+    if (linesConfig == null) {
+      return (verse.replaceAll(' ', ''), currentLine, symbolsOnCurrentLine);
+    }
+    final symbols = verse.trim().split(' ');
+    final buffer = StringBuffer();
+    var line = currentLine;
+    var symbolsOnLine = symbolsOnCurrentLine;
+    for (var i = 0; i < symbols.length; i++) {
       buffer.write(symbols[i]);
-      _symbolsOnCurrentLine++;
-
-      int? limit = linesConfig[_currentLine];
-
-      // Check if we reached the end of the current line
-      if (limit != null && _symbolsOnCurrentLine >= limit) {
-        buffer.write('\n'); // Add the line break
-        _currentLine++; // Move to next line config
-        _symbolsOnCurrentLine = 0; // Reset counter for the new line
+      symbolsOnLine++;
+      final limit = linesConfig[line];
+      if (limit != null && symbolsOnLine >= limit) {
+        buffer.write('\n');
+        line++;
+        symbolsOnLine = 0;
       }
     }
-
-    return buffer.toString();
+    return (buffer.toString(), line, symbolsOnLine);
   }
 
-  // Your original logic - UNCHANGED
-  String preprocessVerse(String verse, int currentAyah, int startAyah) {
-    String processed = verse.replaceAll(' ', '');
+  String _preprocessVerse(String verse, int currentAyah, int startAyah) {
+    var processed = verse.replaceAll(' ', '');
     if (currentAyah == startAyah && processed.isNotEmpty) {
-      processed = '${processed.substring(0, 1)}\uFB50${processed.substring(1)}';
+      processed = '${processed.substring(0, 1)}ﭐ${processed.substring(1)}';
     }
     return processed;
   }
+}
+
+/// Top-level entry point for `compute()`. Lives next to the data source so the
+/// isolate doesn't pull the DI graph.
+MushafPageModel parseMushafPageInIsolate(int pageNumber) {
+  return const MushafLocalDataSource().getPage(pageNumber);
 }
