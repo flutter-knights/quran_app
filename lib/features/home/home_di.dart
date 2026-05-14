@@ -1,5 +1,8 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
+import 'package:quran_app/core/notifications/prayer_notification_scheduler_impl.dart';
 import 'package:quran_app/features/home/data/datasources/local/location_local_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/remote/location_remote_data_source.dart';
@@ -12,6 +15,7 @@ import 'package:quran_app/features/home/domain/repositories/location_repository.
 import 'package:quran_app/features/home/domain/repositories/prayer_times_repository.dart';
 import 'package:quran_app/features/home/domain/usecases/get_daily_prayer_context.dart';
 import 'package:quran_app/features/home/domain/usecases/pre_cache_prayer_times.dart';
+import 'package:quran_app/features/home/domain/usecases/schedule_prayer_notifications.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 
 void initHome() {
@@ -58,5 +62,15 @@ void initHome() {
   // Cubit
   sl.registerFactory(
     () => DailyPrayerContextCubit(getDailyPrayerContext: sl()),
+  );
+
+  // Notifications
+  sl.registerLazySingleton<PrayerNotificationScheduler>(
+    () => PrayerNotificationSchedulerImpl(
+      plugin: FlutterLocalNotificationsPlugin(),
+    ),
+  );
+  sl.registerLazySingleton(
+    () => SchedulePrayerNotifications(scheduler: sl()),
   );
 }
