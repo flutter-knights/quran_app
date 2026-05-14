@@ -7,6 +7,7 @@ import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/dark_theme.dart';
 import 'package:quran_app/config/theme/light_theme.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -19,6 +20,7 @@ void main() async {
   await initHydratedCubit();
   await initHive();
   await initGetIt();
+  await sl<PrayerNotificationScheduler>().init();
 
   runApp(
     MultiBlocProvider(
