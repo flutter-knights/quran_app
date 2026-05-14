@@ -1,4 +1,4 @@
-import 'package:quran_app/core/constants/prayers_list_constants.dart';
+import 'package:quran_app/core/constants/prayer_name.dart';
 
 class PrayerCountdown {
   final PrayerName currentPrayer;

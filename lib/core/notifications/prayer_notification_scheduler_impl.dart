@@ -9,12 +9,14 @@ import 'package:timezone/timezone.dart' as tz;
 
 class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
   final FlutterLocalNotificationsPlugin _plugin;
+  bool _initialized = false;
 
   PrayerNotificationSchedulerImpl({FlutterLocalNotificationsPlugin? plugin})
       : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   static const Map<PrayerName, int> _notificationIds = {
     PrayerName.fajr: 10,
+    // 11 reserved for sunrise (not scheduled — sunrise has no adhan)
     PrayerName.dhuhr: 12,
     PrayerName.asr: 13,
     PrayerName.maghrib: 14,
@@ -72,10 +74,18 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.requestExactAlarmsPermission();
+
+    _initialized = true;
   }
 
   @override
   Future<void> scheduleDailyPrayerNotifications(PrayerTimes prayerTimes) async {
+    if (!_initialized) {
+      throw StateError(
+        'PrayerNotificationSchedulerImpl.init() must be called before scheduling',
+      );
+    }
+
     await cancelAllPrayerNotifications();
     final date = DateFormat('dd-MM-yyyy').parse(prayerTimes.date.gregorianDate);
     final now = DateTime.now();
@@ -86,25 +96,30 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
       final timeStr = prayerTimes.timings[prayerName];
       if (timeStr == null) continue;
 
-      final parts = timeStr.split(':');
-      final scheduledTime = DateTime(
-        date.year,
-        date.month,
-        date.day,
-        int.parse(parts[0]),
-        int.parse(parts[1]),
-      );
+      try {
+        final parts = timeStr.split(':');
+        final scheduledTime = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+        );
 
-      if (scheduledTime.isBefore(now)) continue;
+        if (scheduledTime.isBefore(now)) continue;
 
-      await _plugin.zonedSchedule(
-        id: notificationId,
-        title: _prayerTitles[prayerName],
-        body: 'Time for ${_prayerTitles[prayerName]} prayer',
-        scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
-        notificationDetails: _notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      );
+        await _plugin.zonedSchedule(
+          id: notificationId,
+          title: _prayerTitles[prayerName],
+          body: 'Time for ${_prayerTitles[prayerName]} prayer',
+          scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
+          notificationDetails: _notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        );
+      } catch (e) {
+        // skip this prayer on malformed data
+        continue;
+      }
     }
   }
 
