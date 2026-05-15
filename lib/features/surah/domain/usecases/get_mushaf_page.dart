@@ -6,7 +6,6 @@ import '../repositories/mushaf_repo.dart';
 
 class GetMushafPage {
   GetMushafPage(this.repository);
-
   final MushafRepository repository;
 
   Future<Either<Failure, MushafPageEntity>> call(int pageNumber) {
