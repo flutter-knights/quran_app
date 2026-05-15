@@ -1,40 +1,36 @@
-import 'package:flutter/material.dart';
+import 'package:equatable/equatable.dart';
 
-import '../../../domain/entities/mushaf_page_entity.dart';
+import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 
-sealed class MushafState {
-  const MushafState();
-}
+class MushafState extends Equatable {
+  final int currentPage;
+  final AyahIdentifier? highlightedAyah;
+  final AyahIdentifier? playingAyah;
 
-final class MushafInitial extends MushafState {
-  const MushafInitial();
-}
-
-final class MushafLoading extends MushafState {
-  const MushafLoading();
-}
-
-final class MushafError extends MushafState {
-  const MushafError(this.message);
-  final String message;
-}
-
-final class MushafLoaded extends MushafState {
-  const MushafLoaded({
-    required this.page,
-    required this.spans,
-    required this.normalStyle,
-    required this.highlightedStyle,
-    required this.pageWidth,
-    required this.fontSize,
-    required this.lineHeight,
+  const MushafState({
+    required this.currentPage,
+    this.highlightedAyah,
+    this.playingAyah,
   });
 
-  final MushafPageEntity page;
-  final List<InlineSpan> spans;
-  final TextStyle normalStyle;
-  final TextStyle highlightedStyle;
-  final double pageWidth;
-  final double fontSize;
-  final double lineHeight;
+  factory MushafState.initial(int page) =>
+      MushafState(currentPage: page);
+
+  MushafState copyWith({
+    int? currentPage,
+    AyahIdentifier? highlightedAyah,
+    AyahIdentifier? playingAyah,
+    bool clearHighlighted = false,
+    bool clearPlaying = false,
+  }) {
+    return MushafState(
+      currentPage: currentPage ?? this.currentPage,
+      highlightedAyah:
+          clearHighlighted ? null : (highlightedAyah ?? this.highlightedAyah),
+      playingAyah: clearPlaying ? null : (playingAyah ?? this.playingAyah),
+    );
+  }
+
+  @override
+  List<Object?> get props => [currentPage, highlightedAyah, playingAyah];
 }
