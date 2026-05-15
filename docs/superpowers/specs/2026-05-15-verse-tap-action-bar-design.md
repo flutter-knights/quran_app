@@ -64,6 +64,18 @@ No new screen-state cubit is introduced. The bar is a pure presentation of `Mush
 - `lib/features/surah/presentation/pages/mushaf/widgets/ayah_action_sheet.dart` — removed.
 - `onLongPressStart` handler in `MushafPageView` — removed.
 
+### 3.4 Highlight shape requirement (hard requirement)
+
+**The highlight must be treated as ONE all-rounded shape when consecutive line-rects of the same ayah connect horizontally.**
+
+An ayah may wrap over multiple lines on the mushaf page. Each line is a separate `NormalizedRect` in `AyahBoundEntity.lines`. When two consecutive line-rects are vertically adjacent (i.e., their horizontal extents overlap or touch with no visible gap between bottom-of-line-N and top-of-line-N+1), they MUST be rendered as a single merged path with rounded *outer* corners only — not as separate per-line rounded rectangles.
+
+- Separate per-line rounded rectangles → forbidden when lines connect.
+- Single merged path with continuous fill, rounded only at the four outer corners, with step-corner transitions where the line widths differ → required.
+- When a vertical gap exists between two line-rects of the same ayah (e.g., the ayah spans across a paragraph break or visual divider), each connected group is its own merged path.
+
+This is already implemented in `AyahHighlightPainter._buildMergedPath` and `_groupAdjacentRects`. The spec lists it explicitly so it is a contractual requirement protected by tests, not an incidental behaviour that can regress. Both `highlightColor` (user-highlight) and `playingColor` (playback-highlight) must obey this rule.
+
 ## 4. Interaction flow
 
 ### 4.1 Tap an ayah (no current highlight)
@@ -287,6 +299,7 @@ All `Either<Failure, T>` returns per architecture rules.
    - Bookmark tap: `BookmarkCubit.toggle` called, snackbar shown.
 6. **`MushafPage` auto-swap** — mock `QuranPageService` and `MushafCubit`; emit `playingAyah` mapped to page 5 with controller on page 1; verify `animateToPage(4, ...)`.
 7. **`MushafPageView` gesture** — tap empty area while highlight exists → `MushafCubit.clearHighlight` called.
+8. **`AyahHighlightPainter` merged-shape rule (§3.4)** — given an ayah with three vertically-adjacent line-rects, the painter emits ONE `Path` (not three `RRect`s). Verify via a paint-recording test: count the number of `drawPath` calls per ayah equals the number of connected groups, not the number of lines. Also verify that when a vertical gap is injected between line-rects, the count splits accordingly.
 
 ## 12. Files changed (summary)
 
@@ -317,4 +330,5 @@ All `Either<Failure, T>` returns per architecture rules.
 - Tafsir and Translation show localised "coming soon" snackbar.
 - All new strings in both `intl_en.arb` and `intl_ar.arb`.
 - RTL layout verified in Arabic locale.
+- Highlight rendering obeys §3.4: vertically-adjacent line-rects of the same ayah render as ONE merged rounded path; this holds for both user-highlight and playback-highlight, and is protected by tests in §11.8.
 - Test plan in §11 implemented and green.
