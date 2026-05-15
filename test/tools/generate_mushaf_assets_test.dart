@@ -5,6 +5,12 @@
 //   WOFF -> in-Dart SFNT (TTF) -> FontLoader -> TextPainter -> Picture -> PNG
 //   getBoxesForSelection -> normalized ayah rects -> JSON
 //
+// Multi-surah pages: every entry in `surahHeadersIndexes` reserves a line in
+// the painter via a `​\n` placeholder; the decorative header.png frame +
+// centered surah name are overlaid at each placeholder's Y position after the
+// painter has been drawn. This keeps mid-page surah headers (e.g. page 604,
+// where Falaq and Nas start mid-page) visually identical to the top header.
+//
 // Validation per page: PNG > 10KB AND ayahs non-empty AND every ayah has rects.
 //
 //   flutter test test/tools/generate_mushaf_assets_test.dart --concurrency=1
@@ -28,6 +34,7 @@ const String _outputBoundsDir = 'assets/mushaf/bounds';
 const String _headerFontFamily = 'QCF_P000';
 const String _headerFontPath = 'assets/fonts/QCF/QCF2BSML.woff';
 const String _basmalaText = '!"#\n';
+const String _headerPlaceholder = '​\n';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -80,26 +87,21 @@ Future<void> _renderPage(int pageNumber) async {
 
   final headerIndexes = page.surahHeadersIndexes.toSet();
   final basmalaIndexes = page.basmalaIndexes.toSet();
-  final topHeaderName = headerIndexes.contains(0) ? page.surahNames.first : null;
-  final topReserve = topHeaderName != null ? lineHeight : 0.0;
 
   final children = <InlineSpan>[];
   final ayahRanges = <({int start, int end})>[];
+  final headerPlaceholders = <({int offset, String name})>[];
   var cursor = 0;
   var surahCounter = 0;
   for (var i = 0; i <= page.ayahs.length; i++) {
     if (headerIndexes.contains(i)) {
-      if (i == 0) {
-        surahCounter++;
-      } else {
-        final text = '${page.surahNames[surahCounter]}\n';
-        children.add(TextSpan(
-          text: text,
-          style: headerNameStyle.copyWith(height: lineHeight / (fontSize * 1.4)),
-        ));
-        cursor += text.length;
-        surahCounter++;
-      }
+      headerPlaceholders.add((
+        offset: cursor,
+        name: page.surahNames[surahCounter],
+      ));
+      children.add(TextSpan(text: _headerPlaceholder, style: verseStyle));
+      cursor += _headerPlaceholder.length;
+      surahCounter++;
     }
     if (basmalaIndexes.contains(i)) {
       children.add(TextSpan(text: _basmalaText, style: basmalaStyle));
@@ -122,33 +124,51 @@ Future<void> _renderPage(int pageNumber) async {
   );
   painter.layout(minWidth: _renderWidth, maxWidth: _renderWidth);
 
+  expect(painter.didExceedMaxLines, isFalse,
+      reason: 'page $pageNumber exceeded 15-line budget '
+          '(${painter.computeLineMetrics().length} lines, '
+          '${page.surahHeadersIndexes.length} headers)');
+
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
 
-  if (topHeaderName != null) {
-    final headerImage = await _loadImage(_headerImagePath);
+  painter.paint(canvas, Offset.zero);
+
+  final headerImage = await _loadImage(_headerImagePath);
+  final headerTint = Paint()
+    ..colorFilter =
+        const ColorFilter.mode(Colors.black, BlendMode.srcIn);
+  for (final h in headerPlaceholders) {
+    final boxes = painter.getBoxesForSelection(
+      TextSelection(
+        baseOffset: h.offset,
+        extentOffset: h.offset + _headerPlaceholder.length,
+      ),
+      boxHeightStyle: ui.BoxHeightStyle.includeLineSpacingMiddle,
+    );
+    final headerY = boxes.isEmpty
+        ? painter
+            .getOffsetForCaret(TextPosition(offset: h.offset), Rect.zero)
+            .dy
+        : boxes.first.top;
+
     canvas.drawImageRect(
       headerImage,
-      Rect.fromLTWH(0, 0,
-          headerImage.width.toDouble(), headerImage.height.toDouble()),
-      Rect.fromLTWH(0, 0, _renderWidth, lineHeight),
-      Paint()..colorFilter = const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+      Rect.fromLTWH(
+          0, 0, headerImage.width.toDouble(), headerImage.height.toDouble()),
+      Rect.fromLTWH(0, headerY, _renderWidth, lineHeight),
+      headerTint,
     );
 
     final namePainter = TextPainter(
-      text: TextSpan(text: topHeaderName, style: headerNameStyle),
+      text: TextSpan(text: h.name, style: headerNameStyle),
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.center,
     );
     namePainter.layout(minWidth: _renderWidth, maxWidth: _renderWidth);
-    final nameDy = (lineHeight - namePainter.height) / 2;
+    final nameDy = headerY + (lineHeight - namePainter.height) / 2;
     namePainter.paint(canvas, Offset(0, nameDy + 4));
   }
-
-  canvas.save();
-  canvas.translate(0, topReserve);
-  painter.paint(canvas, Offset.zero);
-  canvas.restore();
 
   final picture = recorder.endRecording();
   final image =
@@ -178,9 +198,11 @@ Future<void> _renderPage(int pageNumber) async {
       'lines': boxes
           .map((b) => {
                 'x': double.parse((b.left / _renderWidth).toStringAsFixed(5)),
-                'y': double.parse(((b.top + topReserve) / pageHeight).toStringAsFixed(5)),
-                'w': double.parse(((b.right - b.left) / _renderWidth).toStringAsFixed(5)),
-                'h': double.parse(((b.bottom - b.top) / pageHeight).toStringAsFixed(5)),
+                'y': double.parse((b.top / pageHeight).toStringAsFixed(5)),
+                'w': double.parse(((b.right - b.left) / _renderWidth)
+                    .toStringAsFixed(5)),
+                'h': double.parse(((b.bottom - b.top) / pageHeight)
+                    .toStringAsFixed(5)),
               })
           .toList(),
     });
