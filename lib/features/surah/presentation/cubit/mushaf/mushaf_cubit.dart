@@ -31,6 +31,11 @@ class MushafCubit extends Cubit<MushafState> {
     }
   }
 
+  void clearHighlight() {
+    if (state.highlightedAyah == null) return;
+    emit(state.copyWith(clearHighlighted: true));
+  }
+
   void _onPlayingAyahChanged() {
     final next = _notifier.value;
     if (next == null) {
