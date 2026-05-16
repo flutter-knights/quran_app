@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:quran_app/features/ahadith/ahadith_di.dart';
+import 'package:quran_app/features/bookmarks/bookmarks_di.dart';
 import 'package:quran_app/features/home/home_di.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -20,4 +21,5 @@ Future<void> initGetIt() async {
   initMushaf();
   initAhadith();
   initPlayback();
+  initBookmarks();
 }
