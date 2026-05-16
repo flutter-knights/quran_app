@@ -121,5 +121,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "twentyFourHourFormat": MessageLookupByLibrary.simpleMessage(
       "تنسيق 24 ساعة",
     ),
+    "tafsir": MessageLookupByLibrary.simpleMessage("تفسير"),
+    "translation": MessageLookupByLibrary.simpleMessage("ترجمة"),
+    "play": MessageLookupByLibrary.simpleMessage("تشغيل"),
+    "bookmark": MessageLookupByLibrary.simpleMessage("حفظ"),
+    "share": MessageLookupByLibrary.simpleMessage("مشاركة"),
+    "coming_soon": MessageLookupByLibrary.simpleMessage("قريبًا"),
+    "bookmark_added": MessageLookupByLibrary.simpleMessage("تم الحفظ"),
+    "bookmark_removed": MessageLookupByLibrary.simpleMessage("تم إزالة الحفظ"),
+    "bookmark_save_failed": MessageLookupByLibrary.simpleMessage("تعذّر حفظ المرجعية"),
+    "share_failed": MessageLookupByLibrary.simpleMessage("تعذّر فتح نافذة المشاركة"),
   };
 }
