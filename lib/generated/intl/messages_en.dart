@@ -33,6 +33,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "al_tirmidhi": MessageLookupByLibrary.simpleMessage("Jami\' al-Tirmidhi"),
     "arabicLanguage": MessageLookupByLibrary.simpleMessage("Arabic Language"),
+    "arabic_label": MessageLookupByLibrary.simpleMessage("Arabic"),
     "asr": MessageLookupByLibrary.simpleMessage("Asr"),
     "author_abu_dawood": MessageLookupByLibrary.simpleMessage(
       "Imam Abu Dawood al-Sijistani",
@@ -61,6 +62,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "author_tirmidhi": MessageLookupByLibrary.simpleMessage(
       "Imam Muhammad ibn \'Isa al-Tirmidhi",
     ),
+    "chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
     "darkMode": MessageLookupByLibrary.simpleMessage("Dark Mode"),
     "death_abu_dawood": MessageLookupByLibrary.simpleMessage("275 AH"),
     "death_ahmad": MessageLookupByLibrary.simpleMessage("241 AH"),
@@ -121,8 +123,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "status_sahih": MessageLookupByLibrary.simpleMessage("Sahih"),
     "sunan_nasai": MessageLookupByLibrary.simpleMessage("Sunan an-Nasa\'i"),
     "sunrise": MessageLookupByLibrary.simpleMessage("Sunrise"),
+    "translation_label": MessageLookupByLibrary.simpleMessage("Translation"),
     "twentyFourHourFormat": MessageLookupByLibrary.simpleMessage(
       "24-Hour Format",
     ),
+    "tafsir": MessageLookupByLibrary.simpleMessage("Tafsir"),
+    "translation": MessageLookupByLibrary.simpleMessage("Translation"),
+    "play": MessageLookupByLibrary.simpleMessage("Play"),
+    "bookmark": MessageLookupByLibrary.simpleMessage("Bookmark"),
+    "share": MessageLookupByLibrary.simpleMessage("Share"),
+    "coming_soon": MessageLookupByLibrary.simpleMessage("Coming soon"),
+    "bookmark_added": MessageLookupByLibrary.simpleMessage("Bookmarked"),
+    "bookmark_removed": MessageLookupByLibrary.simpleMessage("Bookmark removed"),
+    "bookmark_save_failed": MessageLookupByLibrary.simpleMessage("Couldn\'t save bookmark"),
+    "share_failed": MessageLookupByLibrary.simpleMessage("Couldn\'t open share sheet"),
   };
 }

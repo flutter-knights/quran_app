@@ -15,9 +15,12 @@
 "arabicLanguage": "Arabic Language",
 
 
-  "hadith_number_label": "Hadith No.",
-  "hadith_total_label": "Total Ahadith",
-  "hadith_heading_label": "Hadith Heading",
+"hadith_number_label": "Hadith No.",
+"hadith_total_label": "Total Ahadith",
+"hadith_heading_label": "Hadith Heading",
+"arabic_label": "Arabic",
+"translation_label": "Translation",
+"chapter_label": "Chapter",
 
   "status_sahih": "Sahih",
   "status_hasan": "Hasan",
@@ -66,8 +69,19 @@
   "death_ahmad": "241 AH",
   "full_title_ahmad": "Musnad Imam Ahmad ibn Hanbal",
 
-  "author_albani": "Imam Muhammad Nasiruddin al-Albani",
-  "death_albani": "1420 AH",
-  "full_title_albani": "The Series of Authentic Hadith"
+"author_albani": "Muhammad Nasiruddin al-Albani",
+"death_albani": "1420 AH",
+"full_title_albani": "The Series of Authentic Hadith",
+
+"tafsir": "Tafsir",
+"translation": "Translation",
+"play": "Play",
+"bookmark": "Bookmark",
+"share": "Share",
+"coming_soon": "Coming soon",
+"bookmark_added": "Bookmarked",
+"bookmark_removed": "Bookmark removed",
+"bookmark_save_failed": "Couldn't save bookmark",
+"share_failed": "Couldn't open share sheet"
 
 }

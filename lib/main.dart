@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:quran_app/config/hive_config.dart';
 import 'package:quran_app/config/hydrated_bloc_config.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/dark_theme.dart';
 import 'package:quran_app/config/theme/light_theme.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -22,10 +25,28 @@ void main() async {
 
   runApp(
     MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => sl<SettingsCubit>())],
+      providers: [
+        BlocProvider(create: (_) => sl<SettingsCubit>()),
+        BlocProvider(create: (_) => sl<BookmarkCubit>()),
+      ],
       child: const QuranApp(),
     ),
   );
+
+  // Sequence all startup permissions so dialogs never race each other.
+  // Order: location (home cubit handles dialog) → exact alarms → notification.
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    // Poll until the home cubit's location dialog is resolved; don't request
+    // ourselves to avoid PermissionRequestInProgressException.
+    while (await Geolocator.checkPermission() == LocationPermission.denied) {
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+    try {
+      await sl<PrayerNotificationScheduler>().init();
+    } catch (e, st) {
+      debugPrint('PrayerNotificationScheduler.init failed: $e\n$st');
+    }
+  });
 }
 
 class QuranApp extends StatelessWidget {

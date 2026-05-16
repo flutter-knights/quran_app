@@ -8,11 +8,13 @@ import '../../../data/repositories/helper/repeat_mode.dart';
 import '../../../domain/entities/ayah_identifier.dart';
 import '../../../domain/repositories/quran_playback_repo.dart';
 import '../../../domain/services/aya_sequence_service.dart';
+import '../../../domain/services/quran_page_service.dart';
 import 'playback_state.dart';
 
 class PlaybackCubit extends Cubit<PlaybackState> {
   final AyahSequenceService ayahSequenceService;
   final QuranPlaybackRepo repository;
+  final QuranPageService pageService;
 
   late final StreamSubscription _ayahSub;
   late final StreamSubscription _completeSub;
@@ -29,8 +31,11 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   bool _isPlayingAyah = false;
 
-  PlaybackCubit({required this.ayahSequenceService, required this.repository})
-    : super(const PlaybackState()) {
+  PlaybackCubit({
+    required this.ayahSequenceService,
+    required this.repository,
+    required this.pageService,
+  }) : super(const PlaybackState()) {
     _ayahSub = repository.currentAyahStream.listen((ayah) {
       if (isClosed) return;
 
@@ -160,6 +165,23 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     emit(state.copyWith(isLoading: true));
     await repository.preloadAyahs(ayahs: ayahs, reciter: reciter);
     emit(state.copyWith(isLoading: false));
+  }
+
+  int? getPageForCurrentAyah() {
+    final ayah = state.currentAyah;
+    if (ayah == null) return null;
+    return pageService.getPageForAyah(ayah.surah, ayah.ayah);
+  }
+
+  void autoPlayPage(int pageNumber) {
+    final startAyah = pageService.getFirstAyahOfPage(pageNumber);
+    if (startAyah == null) return;
+
+    startAutoPlay(
+      startSurah: startAyah.surah,
+      startAyah: startAyah.ayah,
+      reciter: _reciter ?? Reciter.alafasy,
+    );
   }
 
   Future<void> stop() async {

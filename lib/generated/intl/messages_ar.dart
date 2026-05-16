@@ -33,6 +33,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "al_tirmidhi": MessageLookupByLibrary.simpleMessage("جامع الترمذي"),
     "arabicLanguage": MessageLookupByLibrary.simpleMessage("اللغة العربية"),
+    "arabic_label": MessageLookupByLibrary.simpleMessage("العربية"),
     "asr": MessageLookupByLibrary.simpleMessage("العصر"),
     "author_abu_dawood": MessageLookupByLibrary.simpleMessage(
       "الإمام أبو داود السجستاني",
@@ -59,6 +60,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "author_tirmidhi": MessageLookupByLibrary.simpleMessage(
       "الإمام محمد بن عيسى الترمذي",
     ),
+    "chapter_label": MessageLookupByLibrary.simpleMessage("باب"),
     "darkMode": MessageLookupByLibrary.simpleMessage("الوضع الداكن"),
     "death_abu_dawood": MessageLookupByLibrary.simpleMessage("٢٧٥ هـ"),
     "death_ahmad": MessageLookupByLibrary.simpleMessage("٢٤١ هـ"),
@@ -117,8 +119,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "status_sahih": MessageLookupByLibrary.simpleMessage("صحيح"),
     "sunan_nasai": MessageLookupByLibrary.simpleMessage("سنن النسائي"),
     "sunrise": MessageLookupByLibrary.simpleMessage("الشروق"),
+    "translation_label": MessageLookupByLibrary.simpleMessage("الترجمة"),
     "twentyFourHourFormat": MessageLookupByLibrary.simpleMessage(
       "تنسيق 24 ساعة",
     ),
+    "tafsir": MessageLookupByLibrary.simpleMessage("تفسير"),
+    "translation": MessageLookupByLibrary.simpleMessage("ترجمة"),
+    "play": MessageLookupByLibrary.simpleMessage("تشغيل"),
+    "bookmark": MessageLookupByLibrary.simpleMessage("حفظ"),
+    "share": MessageLookupByLibrary.simpleMessage("مشاركة"),
+    "coming_soon": MessageLookupByLibrary.simpleMessage("قريبًا"),
+    "bookmark_added": MessageLookupByLibrary.simpleMessage("تم الحفظ"),
+    "bookmark_removed": MessageLookupByLibrary.simpleMessage("تم إزالة الحفظ"),
+    "bookmark_save_failed": MessageLookupByLibrary.simpleMessage("تعذّر حفظ المرجعية"),
+    "share_failed": MessageLookupByLibrary.simpleMessage("تعذّر فتح نافذة المشاركة"),
   };
 }

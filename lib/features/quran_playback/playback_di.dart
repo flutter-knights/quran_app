@@ -8,6 +8,7 @@ import 'data/datasources/local/quran_playback_local_data_source.dart';
 import 'data/datasources/remote/quran_playback_remote_data_source.dart';
 import 'data/repositories/quran_playback_repo_impl.dart';
 import 'domain/repositories/quran_playback_repo.dart';
+import 'domain/services/quran_page_service.dart';
 import 'presentation/cubit/playback/playback_cubit.dart';
 
 void initPlayback() async {
@@ -30,10 +31,13 @@ void initPlayback() async {
     ),
   );
   sl.registerLazySingleton<AyahSequenceService>(() => AyahSequenceService());
-  sl.registerFactory<PlaybackCubit>(
+  sl.registerLazySingleton<QuranPageService>(() => QuranPageServiceImpl());
+
+  sl.registerLazySingleton<PlaybackCubit>(
     () => PlaybackCubit(
       ayahSequenceService: sl<AyahSequenceService>(),
       repository: sl<QuranPlaybackRepo>(),
+      pageService: sl<QuranPageService>(),
     ),
   );
 }

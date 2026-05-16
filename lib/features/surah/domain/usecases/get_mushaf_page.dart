@@ -1,14 +1,14 @@
-import '../../../../core/usecases/usecase.dart';
+import 'package:dartz/dartz.dart';
+
+import '../../../../core/errors/failure.dart';
 import '../entities/mushaf_page_entity.dart';
 import '../repositories/mushaf_repo.dart';
 
-class GetMushafPage extends UseCase<MushafPageEntity, int> {
+class GetMushafPage {
+  GetMushafPage(this.repository);
   final MushafRepository repository;
 
-  GetMushafPage(this.repository);
-
-  @override
-  Future<MushafPageEntity> call(int pageNumber) {
+  Future<Either<Failure, MushafPageEntity>> call(int pageNumber) {
     return repository.getPage(pageNumber);
   }
 }

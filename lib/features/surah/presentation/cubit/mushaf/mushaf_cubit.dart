@@ -1,21 +1,53 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../domain/usecases/get_mushaf_page.dart';
+import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import 'mushaf_state.dart';
 
 class MushafCubit extends Cubit<MushafState> {
-  final GetMushafPage useCase;
+  MushafCubit({
+    required int initialPage,
+    required ValueNotifier<AyahIdentifier?> currentAyahNotifier,
+  })  : _notifier = currentAyahNotifier,
+        super(MushafState.initial(initialPage)) {
+    _notifier.addListener(_onPlayingAyahChanged);
+    _onPlayingAyahChanged();
+  }
 
-  MushafCubit(this.useCase) : super(MushafInitial());
+  final ValueNotifier<AyahIdentifier?> _notifier;
 
-  Future<void> loadPage(int pageNumber) async {
-    emit(MushafLoading());
+  @visibleForTesting
+  ValueNotifier<AyahIdentifier?> get debugNotifier => _notifier;
 
-    try {
-      final pageContent = await useCase.call(pageNumber);
-      emit(MushafLoaded(pageContent));
-    } catch (e) {
-      emit(MushafError(e.toString()));
+  void setPage(int page) {
+    emit(state.copyWith(currentPage: page, clearHighlighted: true));
+  }
+
+  void toggleHighlight(AyahIdentifier ayah) {
+    if (state.highlightedAyah == ayah) {
+      emit(state.copyWith(clearHighlighted: true));
+    } else {
+      emit(state.copyWith(highlightedAyah: ayah));
     }
+  }
+
+  void clearHighlight() {
+    if (state.highlightedAyah == null) return;
+    emit(state.copyWith(clearHighlighted: true));
+  }
+
+  void _onPlayingAyahChanged() {
+    final next = _notifier.value;
+    if (next == null) {
+      if (state.playingAyah != null) emit(state.copyWith(clearPlaying: true));
+    } else {
+      if (state.playingAyah != next) emit(state.copyWith(playingAyah: next));
+    }
+  }
+
+  @override
+  Future<void> close() {
+    _notifier.removeListener(_onPlayingAyahChanged);
+    return super.close();
   }
 }

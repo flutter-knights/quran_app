@@ -7,13 +7,21 @@ class PrayerTimeRemoteDataSource {
   final Dio dio;
   PrayerTimeRemoteDataSource({required this.dio});
 
-  Future<List<PrayerTimes>> getPrayerTimesList(Location location) async {
-    Response prayerTimesResponse = await dio.get(
+  Future<List<PrayerTimes>> getPrayerTimesList(
+    Location location, {
+    int? year,
+    int? month,
+  }) async {
+    final queryParameters = <String, dynamic>{
+      'latitude': location.latitude,
+      'longitude': location.longitude,
+    };
+    if (year != null) queryParameters['year'] = year;
+    if (month != null) queryParameters['month'] = month;
+
+    final Response prayerTimesResponse = await dio.get(
       'http://api.aladhan.com/v1/calendar',
-      queryParameters: {
-        'latitude': location.latitude,
-        'longitude': location.longitude,
-      },
+      queryParameters: queryParameters,
     );
     final prayerTimesResponseData = prayerTimesResponse.data['data'];
     return prayerTimesResponseData

@@ -1,19 +1,36 @@
-import '../../../domain/entities/mushaf_page_entity.dart';
+import 'package:equatable/equatable.dart';
 
-abstract class MushafState {}
+import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 
-class MushafInitial extends MushafState {}
+class MushafState extends Equatable {
+  final int currentPage;
+  final AyahIdentifier? highlightedAyah;
+  final AyahIdentifier? playingAyah;
 
-class MushafLoading extends MushafState {}
+  const MushafState({
+    required this.currentPage,
+    this.highlightedAyah,
+    this.playingAyah,
+  });
 
-class MushafLoaded extends MushafState {
-  final MushafPageEntity pageContent;
+  factory MushafState.initial(int page) =>
+      MushafState(currentPage: page);
 
-  MushafLoaded(this.pageContent);
-}
+  MushafState copyWith({
+    int? currentPage,
+    AyahIdentifier? highlightedAyah,
+    AyahIdentifier? playingAyah,
+    bool clearHighlighted = false,
+    bool clearPlaying = false,
+  }) {
+    return MushafState(
+      currentPage: currentPage ?? this.currentPage,
+      highlightedAyah:
+          clearHighlighted ? null : (highlightedAyah ?? this.highlightedAyah),
+      playingAyah: clearPlaying ? null : (playingAyah ?? this.playingAyah),
+    );
+  }
 
-class MushafError extends MushafState {
-  final String message;
-
-  MushafError(this.message);
+  @override
+  List<Object?> get props => [currentPage, highlightedAyah, playingAyah];
 }

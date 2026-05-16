@@ -8,7 +8,8 @@ import 'package:quran_app/features/ahadith/presentation/pages/hadith_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_pages.dart';
+import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/pages/surah_list/surah_list_page.dart';
 
 import '../../core/di/dependency_injection.dart';
@@ -18,6 +19,7 @@ abstract class AppRouter {
   static const String homePath = "/home";
   static const String splashPath = "/splash";
   static const String mushafPath = "/mushaf";
+  static const String mushafImagePath = "/mushafImage";
   static const String surahListPath = "/surahList";
   static const String booksPath = "/books";
   static const String ahadithPath = "/ahadith";
@@ -58,9 +60,29 @@ abstract class AppRouter {
         pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) {
             final int pageNo = (state.extra as int?) ?? 1;
-            return BlocProvider(
-              create: (context) => sl<PlaybackCubit>(),
-              child: MushafPage(pageNumber: pageNo),
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: sl<PlaybackCubit>()),
+                BlocProvider(
+                    create: (_) => sl<MushafCubit>(param1: pageNo)),
+              ],
+              child: MushafPage(initialPage: pageNo),
+            );
+          },
+        ),
+      ),
+      GoRoute(
+        path: mushafImagePath,
+        pageBuilder: GoTransitions.fade.withFade.build(
+          builder: (context, state) {
+            final int pageNo = (state.extra as int?) ?? 1;
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: sl<PlaybackCubit>()),
+                BlocProvider(
+                    create: (_) => sl<MushafCubit>(param1: pageNo)),
+              ],
+              child: MushafPage(initialPage: pageNo),
             );
           },
         ),

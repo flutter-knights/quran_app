@@ -1,7 +1,8 @@
 import 'package:quran_app/core/constants/assets_dir.dart';
+import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/generated/l10n.dart';
 
-enum PrayerName { fajr, sunrise, dhuhr, asr, maghrib, isha }
+export 'package:quran_app/core/constants/prayer_name.dart';
 
 class PrayerData<T1, T2> {
   final T1 prayerName;

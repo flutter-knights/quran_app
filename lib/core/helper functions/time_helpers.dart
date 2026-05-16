@@ -31,10 +31,7 @@ extension StringTimes on String {
   }
 
   DateTime gregorianDate() {
-    DateFormat format = DateFormat("dd-MM-yyyy", 'en');
-
-    DateTime dateTime = format.parse(this);
-
-    return dateTime;
+    final format = DateFormat('dd-MM-yyyy');
+    return format.parse(this);
   }
 }

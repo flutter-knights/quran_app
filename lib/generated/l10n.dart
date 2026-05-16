@@ -170,6 +170,26 @@ class S {
     );
   }
 
+  /// `Arabic`
+  String get arabic_label {
+    return Intl.message('Arabic', name: 'arabic_label', desc: '', args: []);
+  }
+
+  /// `Translation`
+  String get translation_label {
+    return Intl.message(
+      'Translation',
+      name: 'translation_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chapter`
+  String get chapter_label {
+    return Intl.message('Chapter', name: 'chapter_label', desc: '', args: []);
+  }
+
   /// `Sahih`
   String get status_sahih {
     return Intl.message('Sahih', name: 'status_sahih', desc: '', args: []);
@@ -503,6 +523,56 @@ class S {
       desc: '',
       args: [],
     );
+  }
+
+  /// `Tafsir`
+  String get tafsir {
+    return Intl.message('Tafsir', name: 'tafsir', desc: '', args: []);
+  }
+
+  /// `Translation`
+  String get translation {
+    return Intl.message('Translation', name: 'translation', desc: '', args: []);
+  }
+
+  /// `Play`
+  String get play {
+    return Intl.message('Play', name: 'play', desc: '', args: []);
+  }
+
+  /// `Bookmark`
+  String get bookmark {
+    return Intl.message('Bookmark', name: 'bookmark', desc: '', args: []);
+  }
+
+  /// `Share`
+  String get share {
+    return Intl.message('Share', name: 'share', desc: '', args: []);
+  }
+
+  /// `Coming soon`
+  String get coming_soon {
+    return Intl.message('Coming soon', name: 'coming_soon', desc: '', args: []);
+  }
+
+  /// `Bookmarked`
+  String get bookmark_added {
+    return Intl.message('Bookmarked', name: 'bookmark_added', desc: '', args: []);
+  }
+
+  /// `Bookmark removed`
+  String get bookmark_removed {
+    return Intl.message('Bookmark removed', name: 'bookmark_removed', desc: '', args: []);
+  }
+
+  /// `Couldn't save bookmark`
+  String get bookmark_save_failed {
+    return Intl.message("Couldn't save bookmark", name: 'bookmark_save_failed', desc: '', args: []);
+  }
+
+  /// `Couldn't open share sheet`
+  String get share_failed {
+    return Intl.message("Couldn't open share sheet", name: 'share_failed', desc: '', args: []);
   }
 }
 

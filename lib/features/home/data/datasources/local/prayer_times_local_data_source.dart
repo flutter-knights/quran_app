@@ -23,6 +23,24 @@ class PrayerTimesLocalDataSource {
     return todaysPrayerTimes.toEntity();
   }
 
+  List<String> getCachedKeysForMonth({required int year, required int month}) {
+    final formatter = DateFormat('dd-MM-yyyy');
+    final result = <String>[];
+    for (var key in prayerTimesBox.keys) {
+      if (key is! String) continue;
+      DateTime? parsed;
+      try {
+        parsed = formatter.parseStrict(key);
+      } catch (_) {
+        continue;
+      }
+      if (parsed.year == year && parsed.month == month) {
+        result.add(key);
+      }
+    }
+    return result;
+  }
+
   void clearCache() {
     prayerTimesBox.clear();
   }
@@ -30,6 +48,7 @@ class PrayerTimesLocalDataSource {
   Future<void> clearOldCache() async {
     final now = DateTime.now();
     final threshold = DateTime(now.year, now.month, now.day - 1);
+    final formatter = DateFormat('dd-MM-yyyy');
 
     final keysToRemove = <dynamic>[];
 
@@ -38,7 +57,11 @@ class PrayerTimesLocalDataSource {
       if (key is DateTime) {
         keyDate = key;
       } else if (key is String) {
-        keyDate = DateTime.tryParse(key);
+        try {
+          keyDate = formatter.parseStrict(key);
+        } catch (_) {
+          keyDate = null;
+        }
       }
 
       if (keyDate != null && keyDate.isBefore(threshold)) {
@@ -54,6 +77,5 @@ class PrayerTimesLocalDataSource {
 
 String formatKey({DateTime? date}) {
   final now = date ?? DateTime.now();
-  final String todaysDate = DateFormat('dd-MM-yyyy', 'en').format(now);
-  return todaysDate;
+  return DateFormat('dd-MM-yyyy').format(now);
 }

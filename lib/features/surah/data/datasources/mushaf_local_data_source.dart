@@ -1,101 +1,25 @@
-import 'package:quran/line_break.dart';
-import 'package:quran/quran.dart' as quran;
-import '../../../quran_playback/domain/entities/ayah_identifier.dart';
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
+
 import '../models/mushaf_page_model.dart';
 
 class MushafLocalDataSource {
-  int _currentLine = 1;
-  int _symbolsOnCurrentLine = 0;
+  MushafLocalDataSource();
 
-  MushafPageModel getPage(int pageNumber) {
-    final pageData = quran.getPageData(pageNumber);
-    final Map<int, int>? linesConfig = lineSymbolsCount[pageNumber];
+  final Map<int, MushafPageModel> _cache = {};
 
-    _currentLine = 1;
-    _symbolsOnCurrentLine = 0;
+  Future<MushafPageModel> getPage(int pageNumber) async {
+    final cached = _cache[pageNumber];
+    if (cached != null) return cached;
 
-    final List<String> ayahs = [];
-    final List<int> surahHeadersIndexes = [];
-    final List<int> basmalaIndexes = [];
-    final List<String> surahNames = [];
-    final List<bool> surahHasBasmala = [];
-    final List<AyahIdentifier> ayahIdentifiers = [];
-
-    for (var block in pageData) {
-      final int surah = block["surah"];
-      final int start = block["start"];
-      final int end = block["end"];
-      if (start == 0 && end == 0) {
-        surahNames.add(quran.getQcfSurahName(surah));
-        surahHeadersIndexes.add(ayahs.length);
-        continue;
-      }
-      if (start == 0) {
-        surahNames.add(quran.getQcfSurahName(surah));
-        surahHeadersIndexes.add(ayahs.length);
-      }
-
-      if (start == 1) {
-        final bool hasBasmala = surah != 9 && pageNumber != 1;
-        surahHasBasmala.add(hasBasmala);
-
-        if (hasBasmala) {
-          basmalaIndexes.add(ayahs.length);
-        }
-      }
-
-      for (int ayah = start; ayah <= end; ayah++) {
-        if (ayah == 0) continue;
-
-        final rawVerse = quran.getVerseQCF(surah, ayah);
-        final verseWithBreaks = _injectLineBreaks(rawVerse, linesConfig);
-        final finalVerse = preprocessVerse(verseWithBreaks, ayah, start);
-
-        ayahs.add(finalVerse);
-        ayahIdentifiers.add(AyahIdentifier(surah: surah, ayah: ayah));
-      }
-    }
-
-    return MushafPageModel(
-      pageNumber: pageNumber,
-      ayahs: ayahs,
-      surahNames: surahNames,
-      surahHeadersIndexes: surahHeadersIndexes,
-      basmalaIndexes: basmalaIndexes,
-      showBasmalaList: surahHasBasmala,
-      ayahIdentifiers: ayahIdentifiers,
+    final path =
+        'assets/mushaf/bounds/page_${pageNumber.toString().padLeft(3, '0')}.json';
+    final raw = await rootBundle.loadString(path);
+    final model = MushafPageModel.fromJson(
+      jsonDecode(raw) as Map<String, dynamic>,
     );
-  }
-
-  String _injectLineBreaks(String verse, Map<int, int>? linesConfig) {
-    if (linesConfig == null) return verse.replaceAll(' ', '');
-
-    List<String> symbols = verse.trim().split(' ');
-    StringBuffer buffer = StringBuffer();
-
-    for (int i = 0; i < symbols.length; i++) {
-      buffer.write(symbols[i]);
-      _symbolsOnCurrentLine++;
-
-      int? limit = linesConfig[_currentLine];
-
-      // Check if we reached the end of the current line
-      if (limit != null && _symbolsOnCurrentLine >= limit) {
-        buffer.write('\n'); // Add the line break
-        _currentLine++; // Move to next line config
-        _symbolsOnCurrentLine = 0; // Reset counter for the new line
-      }
-    }
-
-    return buffer.toString();
-  }
-
-  // Your original logic - UNCHANGED
-  String preprocessVerse(String verse, int currentAyah, int startAyah) {
-    String processed = verse.replaceAll(' ', '');
-    if (currentAyah == startAyah && processed.isNotEmpty) {
-      processed = '${processed.substring(0, 1)}\uFB50${processed.substring(1)}';
-    }
-    return processed;
+    _cache[pageNumber] = model;
+    return model;
   }
 }

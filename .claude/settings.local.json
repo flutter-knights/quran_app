@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dart analyze:*)",
+      "Bash(for feature:*)",
+      "Bash(bash:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(grep -E \"\\\\.\\(dart\\)$\")",
+      "Bash(grep:*)",
+      "Bash(flutter test:*)",
+      "Bash(git:*)",
+      "Bash(Get-ChildItem *)",
+      "WebFetch(domain:aladhan.com)",
+      "WebSearch",
+      "WebFetch(domain:aladhanpy.readthedocs.io)",
+      "Bash(flutter pub *)"
+    ]
+  }
+}
