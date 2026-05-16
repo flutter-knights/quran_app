@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:quran_app/core/constants/hadith_constants.dart';
 import 'package:quran_app/features/ahadith/data/models/hadith_page_model.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_page.dart';
 
@@ -11,12 +12,14 @@ class AhadithRemoteDataSource {
   Future<HadithPage> getAhadithPage(int pageNumber, String bookSlug) async {
     Response ahadithResponse = await dio.get(
       'https://hadithapi.com/api/hadiths/?apiKey=$hadithApiKey',
-      queryParameters: {'pagination': 50, 'page': pageNumber, 'book': bookSlug},
+      queryParameters: {
+        'paginate': kPageLimit,
+        'page': pageNumber,
+        'book': bookSlug,
+      },
     );
 
-    HadithPage hadithPage = HadithPageModel.fromJson(
-      ahadithResponse.data
-    );
+    HadithPage hadithPage = HadithPageModel.fromJson(ahadithResponse.data);
     return hadithPage;
   }
 }
