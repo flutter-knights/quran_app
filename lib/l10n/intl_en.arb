@@ -71,6 +71,17 @@
 
 "author_albani": "Muhammad Nasiruddin al-Albani",
 "death_albani": "1420 AH",
-"full_title_albani": "The Series of Authentic Hadith"
+"full_title_albani": "The Series of Authentic Hadith",
+
+"tafsir": "Tafsir",
+"translation": "Translation",
+"play": "Play",
+"bookmark": "Bookmark",
+"share": "Share",
+"coming_soon": "Coming soon",
+"bookmark_added": "Bookmarked",
+"bookmark_removed": "Bookmark removed",
+"bookmark_save_failed": "Couldn't save bookmark",
+"share_failed": "Couldn't open share sheet"
 
 }

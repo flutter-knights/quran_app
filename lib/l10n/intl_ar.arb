@@ -68,5 +68,16 @@
 
 "author_albani": "محمد ناصر الدين الألباني",
 "death_albani": "١٤٢٠ هـ",
-"full_title_albani": "السلسلة الصحيحة"
+"full_title_albani": "السلسلة الصحيحة",
+
+"tafsir": "تفسير",
+"translation": "ترجمة",
+"play": "تشغيل",
+"bookmark": "حفظ",
+"share": "مشاركة",
+"coming_soon": "قريبًا",
+"bookmark_added": "تم الحفظ",
+"bookmark_removed": "تم إزالة الحفظ",
+"bookmark_save_failed": "تعذّر حفظ المرجعية",
+"share_failed": "تعذّر فتح نافذة المشاركة"
 }

@@ -125,5 +125,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "twentyFourHourFormat": MessageLookupByLibrary.simpleMessage(
       "24-Hour Format",
     ),
+    "tafsir": MessageLookupByLibrary.simpleMessage("Tafsir"),
+    "translation": MessageLookupByLibrary.simpleMessage("Translation"),
+    "play": MessageLookupByLibrary.simpleMessage("Play"),
+    "bookmark": MessageLookupByLibrary.simpleMessage("Bookmark"),
+    "share": MessageLookupByLibrary.simpleMessage("Share"),
+    "coming_soon": MessageLookupByLibrary.simpleMessage("Coming soon"),
+    "bookmark_added": MessageLookupByLibrary.simpleMessage("Bookmarked"),
+    "bookmark_removed": MessageLookupByLibrary.simpleMessage("Bookmark removed"),
+    "bookmark_save_failed": MessageLookupByLibrary.simpleMessage("Couldn\'t save bookmark"),
+    "share_failed": MessageLookupByLibrary.simpleMessage("Couldn\'t open share sheet"),
   };
 }
