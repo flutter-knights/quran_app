@@ -1,3 +1,10 @@
+class CacheException implements Exception {
+  CacheException(this.message);
+  final String message;
+  @override
+  String toString() => 'CacheException: $message';
+}
+
 abstract class LocationException implements Exception {}
 
 class LocationServiceDisabledException extends LocationException {}
