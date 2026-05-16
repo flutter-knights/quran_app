@@ -8,7 +8,6 @@ import '../../../../domain/entities/mushaf_page_entity.dart';
 import '../../../../domain/usecases/get_mushaf_page.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
-import 'ayah_action_sheet.dart';
 import 'ayah_highlight_painter.dart';
 
 class MushafPageView extends StatefulWidget {
@@ -24,6 +23,11 @@ class _MushafPageViewState extends State<MushafPageView>
     with SingleTickerProviderStateMixin {
   late final Future<MushafPageEntity> _entityFuture;
   late final AnimationController _controller;
+
+  AyahIdentifier? _shownHighlightedAyah;
+  AyahIdentifier? _shownPlayingAyah;
+  AyahIdentifier? _prevHighlightedAyah;
+  AyahIdentifier? _prevPlayingAyah;
 
   @override
   void initState() {
@@ -78,17 +82,28 @@ class _MushafPageViewState extends State<MushafPageView>
                           a.highlightedAyah != b.highlightedAyah ||
                           a.playingAyah != b.playingAyah,
                       builder: (context, state) {
-                        if (state.highlightedAyah != null ||
-                            state.playingAyah != null) {
-                          _controller.forward(from: 0);
+                        if (state.highlightedAyah != _shownHighlightedAyah ||
+                            state.playingAyah != _shownPlayingAyah) {
+                          _prevHighlightedAyah = _shownHighlightedAyah;
+                          _prevPlayingAyah = _shownPlayingAyah;
+                          _shownHighlightedAyah = state.highlightedAyah;
+                          _shownPlayingAyah = state.playingAyah;
+                          if (_shownHighlightedAyah != null ||
+                              _shownPlayingAyah != null ||
+                              _prevHighlightedAyah != null ||
+                              _prevPlayingAyah != null) {
+                            _controller.forward(from: 0);
+                          }
                         }
                         return AnimatedBuilder(
                           animation: _controller,
                           builder: (_, _) => CustomPaint(
                             painter: AyahHighlightPainter(
                               ayahs: entity.ayahs,
-                              highlightedAyah: state.highlightedAyah,
-                              playingAyah: state.playingAyah,
+                              highlightedAyah: _shownHighlightedAyah,
+                              prevHighlightedAyah: _prevHighlightedAyah,
+                              playingAyah: _shownPlayingAyah,
+                              prevPlayingAyah: _prevPlayingAyah,
                               highlightColor:
                                   Theme.of(context).colorScheme.secondary,
                               playingColor:
@@ -104,15 +119,11 @@ class _MushafPageViewState extends State<MushafPageView>
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTapUp: (details) => _handleTap(
-                            context,
-                            details.localPosition,
-                            constraints,
-                            entity.ayahs),
-                        onLongPressStart: (details) => _handleLongPress(
-                            context,
-                            details.localPosition,
-                            constraints,
-                            entity.ayahs),
+                          context,
+                          details.localPosition,
+                          constraints,
+                          entity.ayahs,
+                        ),
                       ),
                     ),
                 ],
@@ -141,16 +152,11 @@ class _MushafPageViewState extends State<MushafPageView>
   void _handleTap(BuildContext context, Offset local, BoxConstraints c,
       List<AyahBoundEntity> ayahs) {
     final hit = _hitTest(local, c, ayahs);
-    if (hit != null) context.read<MushafCubit>().toggleHighlight(hit);
-  }
-
-  void _handleLongPress(BuildContext context, Offset local, BoxConstraints c,
-      List<AyahBoundEntity> ayahs) {
-    final hit = _hitTest(local, c, ayahs);
-    if (hit == null) return;
-    showModalBottomSheet(
-      context: context,
-      builder: (_) => AyahActionSheet(ayah: hit),
-    );
+    final cubit = context.read<MushafCubit>();
+    if (hit != null) {
+      cubit.toggleHighlight(hit);
+    } else if (cubit.state.highlightedAyah != null) {
+      cubit.clearHighlight();
+    }
   }
 }
