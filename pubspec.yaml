@@ -58,6 +58,7 @@ dependencies:
   path_provider: ^2.1.5
   quran:
     path: ./quran-1.4.1
+  share_plus: ^11.0.0
   timezone: ^0.11.0
   wakelock_plus: ^1.3.3
 

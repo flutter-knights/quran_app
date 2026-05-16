@@ -14,4 +14,6 @@ Future<void> initHive() async {
   await Hive.openBox<LocationHiveModel>('userLocationCache');
   Hive.registerAdapter(HadithHiveModelAdapter());
   await Hive.openBox<HadithHiveModel>('ahadithCache');
+
+  await Hive.openBox<List>('ayah_bookmarks');
 }
