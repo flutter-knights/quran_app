@@ -15,7 +15,10 @@
       "WebFetch(domain:aladhan.com)",
       "WebSearch",
       "WebFetch(domain:aladhanpy.readthedocs.io)",
-      "Bash(flutter pub *)"
-    ]
+      "Bash(flutter pub *)",
+      "Skill(superpowers:systematic-debugging)",
+      "Skill(superpowers:brainstorming)"
+    ],
+    "defaultMode": "auto"
   }
 }

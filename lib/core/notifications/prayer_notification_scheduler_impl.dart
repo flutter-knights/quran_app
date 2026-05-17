@@ -124,8 +124,8 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     await androidPlugin?.createNotificationChannel(_fajrChannel);
     await androidPlugin?.createNotificationChannel(_standardChannel);
 
-    await androidPlugin?.requestNotificationsPermission();
     await androidPlugin?.requestExactAlarmsPermission();
+    await androidPlugin?.requestNotificationsPermission();
 
     _initialized = true;
     debugPrint('[PrayerNotif] init complete, tz=${tz.local.name}');

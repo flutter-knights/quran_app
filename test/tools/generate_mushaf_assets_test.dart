@@ -7,9 +7,17 @@
 //
 // Multi-surah pages: every entry in `surahHeadersIndexes` reserves a line in
 // the painter via a `​\n` placeholder; the decorative header.png frame +
-// centered surah name are overlaid at each placeholder's Y position after the
-// painter has been drawn. Keeps mid-page surah headers (e.g. page 604, where
-// Falaq and Nas start mid-page) visually identical to the top header.
+// centered surah name are overlaid at each placeholder's `lineIndex *
+// lineHeight` after the painter has been drawn. Keeps mid-page surah headers
+// (e.g. page 604, where Falaq and Nas start mid-page) visually identical to
+// the top header.
+//
+// Header positioning uses `lineIndex * lineHeight` rather than
+// `getBoxesForSelection(...).first.top`, because the latter's value drifts by
+// 5-30 px across pages: includeLineSpacingMiddle distributes half-leading
+// proportionally to the line's font ascent/descent, and each page uses a
+// different per-page QCF font with different metrics. Every TextStyle here
+// sets `height: lineHeight/fontSize`, so the line grid is exact.
 //
 // Spillover guard (Fix 2): on a few pages (303, 307, 335, 443, …) the
 // `quran.line_break.dart` symbols-per-line config undercounts total symbols
@@ -42,8 +50,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran_app/features/surah/data/datasources/mushaf_local_data_source.dart';
-
+import 'mushaf_page_builder.dart';
 import 'woff_to_ttf.dart';
 
 const String _headerImagePath = 'assets/images/header.png';
@@ -82,7 +89,7 @@ Future<void> _renderPage(int pageNumber) async {
       'assets/fonts/QCF/QCF2${pageNumber.toString().padLeft(3, '0')}.woff';
   await _loadFontFromWoff(pageFontFamily, pageFontPath);
 
-  final page = const MushafLocalDataSource().getPage(pageNumber);
+  final page = buildMushafPage(pageNumber);
 
   final fontSize = _renderWidth / 15 * _fontSizeFactor;
   final lineHeight = _renderWidth / 15 * 1.8;
@@ -134,17 +141,34 @@ Future<void> _renderPage(int pageNumber) async {
   final children = <InlineSpan>[];
   // Highlight units = ayahs + basmalas. Basmalas use ayah=0.
   final units = <({int surah, int ayah, int start, int end})>[];
-  final headerPlaceholders = <({int offset, String name})>[];
+  // lineIndex is captured BEFORE the placeholder's own '\n' is appended, so it
+  // maps to the painter line the header occupies — independent of per-page
+  // QCF font metrics. See header positioning below.
+  final headerPlaceholders = <({int lineIndex, String name})>[];
   var cursor = 0;
+  var lineIndex = 0;
+  // True when the painter cursor sits at the start of a fresh line (i.e., the
+  // last appended text ended with `\n`, OR nothing has been appended yet).
+  // The spillover guard above can strip the trailing `\n` from the last ayah
+  // even when that `\n` is the *only* separator between the last ayah and a
+  // trailing surah header (e.g. pages 445, 452 — Yaseen → Saaffat, Saaffat →
+  // Sad). Without this guard we'd draw the header image on the same line as
+  // the last ayah's tail. We bump `lineIndex` for the header so its image
+  // lands on the next visual line; the placeholder's own `\n` still creates
+  // that empty line in the painter, so the maxLines budget is respected.
+  var atLineStart = true;
   var surahCounter = 0;
   for (var i = 0; i <= ayahs.length; i++) {
     if (headerIndexes.contains(i)) {
+      if (!atLineStart) lineIndex++;
       headerPlaceholders.add((
-        offset: cursor,
+        lineIndex: lineIndex,
         name: page.surahNames[surahCounter],
       ));
       children.add(TextSpan(text: _headerPlaceholder, style: verseStyle));
       cursor += _headerPlaceholder.length;
+      lineIndex += '\n'.allMatches(_headerPlaceholder).length;
+      atLineStart = _headerPlaceholder.endsWith('\n');
       surahCounter++;
     }
     if (basmalaIndexes.contains(i)) {
@@ -154,6 +178,8 @@ Future<void> _renderPage(int pageNumber) async {
       final start = cursor;
       children.add(TextSpan(text: _basmalaText, style: basmalaStyle));
       cursor += _basmalaText.length;
+      lineIndex += '\n'.allMatches(_basmalaText).length;
+      atLineStart = _basmalaText.endsWith('\n');
       units.add((surah: basmalaSurah, ayah: 0, start: start, end: cursor));
     }
     if (i < ayahs.length) {
@@ -161,6 +187,8 @@ Future<void> _renderPage(int pageNumber) async {
       final ayahText = ayahs[i];
       children.add(TextSpan(text: ayahText, style: verseStyle));
       cursor += ayahText.length;
+      lineIndex += '\n'.allMatches(ayahText).length;
+      atLineStart = ayahText.endsWith('\n');
       final ident = page.ayahIdentifiers[i];
       units.add((
         surah: ident.surah,
@@ -194,18 +222,13 @@ Future<void> _renderPage(int pageNumber) async {
     ..colorFilter =
         const ColorFilter.mode(Colors.black, BlendMode.srcIn);
   for (final h in headerPlaceholders) {
-    final boxes = painter.getBoxesForSelection(
-      TextSelection(
-        baseOffset: h.offset,
-        extentOffset: h.offset + _headerPlaceholder.length,
-      ),
-      boxHeightStyle: ui.BoxHeightStyle.includeLineSpacingMiddle,
-    );
-    final headerY = boxes.isEmpty
-        ? painter
-            .getOffsetForCaret(TextPosition(offset: h.offset), Rect.zero)
-            .dy
-        : boxes.first.top;
+    // Deterministic: every style sets `height: lineHeight/fontSize`, so every
+    // painter line is exactly `lineHeight` tall regardless of which QCF font
+    // the line uses. `boxes.first.top` from includeLineSpacingMiddle drifted
+    // by 5-30 px across pages because the half-leading above line 0 is
+    // distributed proportionally to the line's font ascent/descent — and
+    // those differ per QCF page font.
+    final headerY = h.lineIndex * lineHeight;
 
     canvas.drawImageRect(
       headerImage,
@@ -350,17 +373,21 @@ double _snap(double value, List<double> clusters, double tolerance) {
   return value;
 }
 
-Future<void> _loadFontFromWoff(String family, String assetPath) async {
-  final woffBytes = (await rootBundle.load(assetPath)).buffer.asUint8List();
+// Loads from the on-disk path rather than rootBundle: the WOFF fonts and
+// header.png are not registered in pubspec.yaml at runtime (728e772 stripped
+// the 605 QCF font entries), so the asset bundle can't find them. The
+// generator only runs at build time, where direct disk access is fine.
+Future<void> _loadFontFromWoff(String family, String diskPath) async {
+  final woffBytes = await File(diskPath).readAsBytes();
   final ttfBytes = woffToSfnt(woffBytes);
   final loader = FontLoader(family);
   loader.addFont(Future.value(ByteData.view(ttfBytes.buffer)));
   await loader.load();
 }
 
-Future<ui.Image> _loadImage(String assetPath) async {
-  final data = await rootBundle.load(assetPath);
-  final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+Future<ui.Image> _loadImage(String diskPath) async {
+  final bytes = await File(diskPath).readAsBytes();
+  final codec = await ui.instantiateImageCodec(bytes);
   final frame = await codec.getNextFrame();
   return frame.image;
 }

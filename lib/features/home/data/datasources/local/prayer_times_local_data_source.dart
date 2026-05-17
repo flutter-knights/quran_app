@@ -1,5 +1,4 @@
 import 'package:hive_flutter/adapters.dart';
-import 'package:intl/intl.dart';
 import 'package:quran_app/features/home/data/models/prayer_times_hive_model.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 
@@ -24,16 +23,11 @@ class PrayerTimesLocalDataSource {
   }
 
   List<String> getCachedKeysForMonth({required int year, required int month}) {
-    final formatter = DateFormat('dd-MM-yyyy');
     final result = <String>[];
     for (var key in prayerTimesBox.keys) {
       if (key is! String) continue;
-      DateTime? parsed;
-      try {
-        parsed = formatter.parseStrict(key);
-      } catch (_) {
-        continue;
-      }
+      final parsed = _tryParseKey(key);
+      if (parsed == null) continue;
       if (parsed.year == year && parsed.month == month) {
         result.add(key);
       }
@@ -48,7 +42,6 @@ class PrayerTimesLocalDataSource {
   Future<void> clearOldCache() async {
     final now = DateTime.now();
     final threshold = DateTime(now.year, now.month, now.day - 1);
-    final formatter = DateFormat('dd-MM-yyyy');
 
     final keysToRemove = <dynamic>[];
 
@@ -57,11 +50,7 @@ class PrayerTimesLocalDataSource {
       if (key is DateTime) {
         keyDate = key;
       } else if (key is String) {
-        try {
-          keyDate = formatter.parseStrict(key);
-        } catch (_) {
-          keyDate = null;
-        }
+        keyDate = _tryParseKey(key);
       }
 
       if (keyDate != null && keyDate.isBefore(threshold)) {
@@ -77,5 +66,18 @@ class PrayerTimesLocalDataSource {
 
 String formatKey({DateTime? date}) {
   final now = date ?? DateTime.now();
-  return DateFormat('dd-MM-yyyy').format(now);
+  final day = now.day.toString().padLeft(2, '0');
+  final month = now.month.toString().padLeft(2, '0');
+  return '$day-$month-${now.year}';
+}
+
+DateTime? _tryParseKey(String key) {
+  final parts = key.split('-');
+  if (parts.length != 3) return null;
+  final day = int.tryParse(parts[0]);
+  final month = int.tryParse(parts[1]);
+  final year = int.tryParse(parts[2]);
+  if (day == null || month == null || year == null) return null;
+  if (day < 1 || day > 31 || month < 1 || month > 12) return null;
+  return DateTime(year, month, day);
 }
