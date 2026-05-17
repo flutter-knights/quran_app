@@ -40,7 +40,10 @@ class HomeAppBar extends StatelessWidget {
                 ),
 
                 Text(
-                  '${dailyPrayerContext.location.city!}, ${dailyPrayerContext.location.country!}',
+                  [
+                    dailyPrayerContext.location.city,
+                    dailyPrayerContext.location.country,
+                  ].where((s) => s != null && s.isNotEmpty).join(', '),
                   style: TS.medium14
                       .copyWith(color: context.colorScheme.onSurfaceVariant)
                       .cairo,

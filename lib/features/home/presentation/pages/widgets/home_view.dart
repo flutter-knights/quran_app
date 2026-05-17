@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_action_buttons.dart';
@@ -13,6 +16,23 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: kDebugMode
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                await sl<PrayerNotificationScheduler>()
+                    .scheduleTestNotification();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Adhan test scheduled in 30s'),
+                    ),
+                  );
+                }
+              },
+              label: const Text('Test adhan 30s'),
+              icon: const Icon(Icons.notifications_active),
+            )
+          : null,
       body: SafeArea(
         child: BlocListener<DailyPrayerContextCubit, DailyPrayerContextState>(
           listener: (context, state) {

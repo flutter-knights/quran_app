@@ -173,6 +173,12 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     return pageService.getPageForAyah(ayah.surah, ayah.ayah);
   }
 
+  Future<void> playFromAyah(AyahIdentifier ayah) => startAutoPlay(
+        startSurah: ayah.surah,
+        startAyah: ayah.ayah,
+        reciter: _reciter ?? Reciter.alafasy,
+      );
+
   void autoPlayPage(int pageNumber) {
     final startAyah = pageService.getFirstAyahOfPage(pageNumber);
     if (startAyah == null) return;

@@ -31,7 +31,11 @@ extension StringTimes on String {
   }
 
   DateTime gregorianDate() {
-    final format = DateFormat('dd-MM-yyyy');
-    return format.parse(this);
+    final parts = split('-');
+    return DateTime(
+      int.parse(parts[2]),
+      int.parse(parts[1]),
+      int.parse(parts[0]),
+    );
   }
 }

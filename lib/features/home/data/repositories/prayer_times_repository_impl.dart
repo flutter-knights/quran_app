@@ -30,8 +30,8 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
       return _fetchAndCacheRemote(location, now);
     }
 
-    final ishaTime = todayData.timings[PrayerName.isha]!.parse24hTime();
-    if (now.isAfter(ishaTime)) {
+    final ishaTime = todayData.timings[PrayerName.isha]?.parse24hTime();
+    if (ishaTime != null && now.isAfter(ishaTime)) {
       final tomorrowDate = now.add(const Duration(days: 1));
       final tomorrowData =
           prayerTimesLocalDataSource.getCached(date: tomorrowDate);
@@ -58,9 +58,15 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
       final List<PrayerTimes> prayerTimesList =
           await prayerTimeRemoteDataSource.getPrayerTimesList(location);
       await prayerTimesLocalDataSource.cache(prayerTimesList);
-      return Right(
-        prayerTimesLocalDataSource.getCached(date: targetDate)!,
-      );
+      final cached = prayerTimesLocalDataSource.getCached(date: targetDate);
+      if (cached == null) {
+        return left(
+          const UnknownFailure(
+            'Prayer times unavailable for the requested date.',
+          ),
+        );
+      }
+      return Right(cached);
     } on DioException catch (e) {
       return left(DioErrorHandler.handle(e));
     } catch (e) {
