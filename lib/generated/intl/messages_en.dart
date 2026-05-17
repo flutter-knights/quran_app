@@ -27,38 +27,40 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
-    "abu_dawood": MessageLookupByLibrary.simpleMessage("Sunan Abu Dawood"),
+    "abu_dawood": MessageLookupByLibrary.simpleMessage("Sunan Abi Dawood"),
     "al_silsila_sahiha": MessageLookupByLibrary.simpleMessage(
-      "Al-Silsila Sahiha",
+      "Al-Silsila al-Sahiha",
     ),
-    "al_tirmidhi": MessageLookupByLibrary.simpleMessage("Jami\' Al-Tirmidhi"),
+    "al_tirmidhi": MessageLookupByLibrary.simpleMessage("Jami\' al-Tirmidhi"),
     "arabicLanguage": MessageLookupByLibrary.simpleMessage("Arabic Language"),
     "arabic_label": MessageLookupByLibrary.simpleMessage("Arabic"),
     "asr": MessageLookupByLibrary.simpleMessage("Asr"),
     "author_abu_dawood": MessageLookupByLibrary.simpleMessage(
-      "Abu Dawood al-Sijistani",
+      "Imam Abu Dawood al-Sijistani",
     ),
-    "author_ahmad": MessageLookupByLibrary.simpleMessage("Ahmad ibn Hanbal"),
+    "author_ahmad": MessageLookupByLibrary.simpleMessage(
+      "Imam Ahmad ibn Hanbal",
+    ),
     "author_albani": MessageLookupByLibrary.simpleMessage(
-      "Muhammad Nasiruddin al-Albani",
+      "Imam Muhammad Nasiruddin al-Albani",
     ),
     "author_bukhari": MessageLookupByLibrary.simpleMessage(
-      "Muhammad ibn Isma\'il al-Bukhari",
+      "Imam Muhammad ibn Isma\'il al-Bukhari",
     ),
     "author_ibn_majah": MessageLookupByLibrary.simpleMessage(
-      "Ibn Majah al-Qazwini",
+      "Imam Muhammad ibn Yazid Ibn Majah al-Qazwini",
     ),
     "author_mishkat": MessageLookupByLibrary.simpleMessage(
-      "Al-Khatib al-Tabrizi",
+      "Imam al-Khatib al-Tabrizi",
     ),
     "author_muslim": MessageLookupByLibrary.simpleMessage(
-      "Muslim ibn al-Hajjaj al-Naysaburi",
+      "Imam Muslim ibn al-Hajjaj al-Naysaburi",
     ),
     "author_nasai": MessageLookupByLibrary.simpleMessage(
-      "Ahmad ibn Shu\'ayb al-Nasa\'i",
+      "Imam Ahmad ibn Shu\'ayb al-Nasa\'i",
     ),
     "author_tirmidhi": MessageLookupByLibrary.simpleMessage(
-      "Muhammad ibn \'Isa al-Tirmidhi",
+      "Imam Muhammad ibn \'Isa al-Tirmidhi",
     ),
     "chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
     "darkMode": MessageLookupByLibrary.simpleMessage("Dark Mode"),
@@ -74,16 +76,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "dhuhr": MessageLookupByLibrary.simpleMessage("Dhuhr"),
     "fajr": MessageLookupByLibrary.simpleMessage("Fajr"),
     "full_title_abu_dawood": MessageLookupByLibrary.simpleMessage(
-      "Sunan Abi Dawud",
+      "Sunan Abi Dawood",
     ),
     "full_title_ahmad": MessageLookupByLibrary.simpleMessage(
-      "Musnad Ahmad ibn Hanbal",
+      "Musnad Imam Ahmad ibn Hanbal",
     ),
     "full_title_albani": MessageLookupByLibrary.simpleMessage(
       "The Series of Authentic Hadith",
     ),
     "full_title_bukhari": MessageLookupByLibrary.simpleMessage(
-      "The Abridged Collection of Authentic Hadith",
+      "The Abridged Authentic Collection",
     ),
     "full_title_ibn_majah": MessageLookupByLibrary.simpleMessage(
       "Sunan Ibn Majah",
@@ -92,13 +94,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Mishkat al-Masabih",
     ),
     "full_title_muslim": MessageLookupByLibrary.simpleMessage(
-      "The Abbreviated Authentic Musnad",
+      "The Authentic Musnad (Abridged)",
     ),
     "full_title_nasai": MessageLookupByLibrary.simpleMessage(
       "Sunan an-Nasa\'i",
     ),
     "full_title_tirmidhi": MessageLookupByLibrary.simpleMessage(
-      "Jami\' at-Tirmidhi",
+      "Jami\' al-Tirmidhi",
     ),
     "hadith_heading_label": MessageLookupByLibrary.simpleMessage(
       "Hadith Heading",
@@ -106,20 +108,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "hadith_number_label": MessageLookupByLibrary.simpleMessage("Hadith No."),
     "hadith_total_label": MessageLookupByLibrary.simpleMessage("Total Ahadith"),
     "hijriDateWithDay": m0,
-    "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn-e-Majah"),
+    "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn Majah"),
     "isha": MessageLookupByLibrary.simpleMessage("Isha"),
     "maghrib": MessageLookupByLibrary.simpleMessage("Maghrib"),
-    "mishkat": MessageLookupByLibrary.simpleMessage("Mishkat Al-Masabih"),
+    "mishkat": MessageLookupByLibrary.simpleMessage("Mishkat al-Masabih"),
     "musnad_ahmad": MessageLookupByLibrary.simpleMessage("Musnad Ahmad"),
     "remainingTimeLabel": m1,
-    "sahih_bukhari": MessageLookupByLibrary.simpleMessage("Sahih Bukhari"),
+    "sahih_bukhari": MessageLookupByLibrary.simpleMessage("Sahih al-Bukhari"),
     "sahih_muslim": MessageLookupByLibrary.simpleMessage("Sahih Muslim"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
-    "status_daeef": MessageLookupByLibrary.simpleMessage("Daeef"),
+    "status_daeef": MessageLookupByLibrary.simpleMessage("Da\'eef"),
     "status_hasan": MessageLookupByLibrary.simpleMessage("Hasan"),
-    "status_mudu": MessageLookupByLibrary.simpleMessage("Maudu"),
+    "status_mudu": MessageLookupByLibrary.simpleMessage("Maudu\'"),
     "status_sahih": MessageLookupByLibrary.simpleMessage("Sahih"),
-    "sunan_nasai": MessageLookupByLibrary.simpleMessage("Sunan An-Nasa\'i"),
+    "sunan_nasai": MessageLookupByLibrary.simpleMessage("Sunan an-Nasa\'i"),
     "sunrise": MessageLookupByLibrary.simpleMessage("Sunrise"),
     "translation_label": MessageLookupByLibrary.simpleMessage("Translation"),
     "twentyFourHourFormat": MessageLookupByLibrary.simpleMessage(

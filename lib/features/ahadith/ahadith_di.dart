@@ -9,8 +9,10 @@ import 'package:quran_app/features/ahadith/data/datasources/remote/ahadith_remot
 import 'package:quran_app/features/ahadith/data/models/hadith_hive_model.dart';
 import 'package:quran_app/features/ahadith/data/repositories/ahadith_repository_impl.dart';
 import 'package:quran_app/features/ahadith/domain/repositories/ahadith_repository.dart';
+import 'package:quran_app/features/ahadith/domain/usecases/download_ahadith_book_use_case.dart';
 import 'package:quran_app/features/ahadith/domain/usecases/get_ahadith_page_use_case.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/ahadith_cubit.dart';
+import 'package:quran_app/features/ahadith/presentation/cubit/download_book_cubit.dart';
 
 void initAhadith() async {
   final hadithBox = Hive.box<HadithHiveModel>('ahadithCache');
@@ -34,11 +36,18 @@ void initAhadith() async {
       allChapters: sl(instanceName: 'chapters'),
     ),
   );
+
   sl.registerLazySingleton<GetAhadithPageUseCase>(
     () => GetAhadithPageUseCase(ahadithRepository: sl()),
   );
+  sl.registerLazySingleton<DownloadAhadithBookUseCase>(
+    () => DownloadAhadithBookUseCase(ahadithRepository: sl()),
+  );
   sl.registerFactory<AhadithCubit>(
     () => AhadithCubit(getAhadithPageUseCase: sl()),
+  );
+  sl.registerFactory<DownloadBookCubit>(
+    () => DownloadBookCubit(downloadAhadithBookUseCase: sl()),
   );
 }
 

@@ -36,27 +36,29 @@ class MessageLookup extends MessageLookupByLibrary {
     "arabic_label": MessageLookupByLibrary.simpleMessage("العربية"),
     "asr": MessageLookupByLibrary.simpleMessage("العصر"),
     "author_abu_dawood": MessageLookupByLibrary.simpleMessage(
-      "أبو داود السجستاني",
+      "الإمام أبو داود السجستاني",
     ),
-    "author_ahmad": MessageLookupByLibrary.simpleMessage("أحمد بن حنبل"),
+    "author_ahmad": MessageLookupByLibrary.simpleMessage("الإمام أحمد بن حنبل"),
     "author_albani": MessageLookupByLibrary.simpleMessage(
-      "محمد ناصر الدين الألباني",
+      "الإمام محمد ناصر الدين الألباني",
     ),
     "author_bukhari": MessageLookupByLibrary.simpleMessage(
-      "محمد بن إسماعيل البخاري",
+      "الإمام محمد بن إسماعيل البخاري",
     ),
     "author_ibn_majah": MessageLookupByLibrary.simpleMessage(
-      "ابن ماجه القزويني",
+      "الإمام محمد بن يزيد ابن ماجه القزويني",
     ),
-    "author_mishkat": MessageLookupByLibrary.simpleMessage("الخطيب التبريزي"),
+    "author_mishkat": MessageLookupByLibrary.simpleMessage(
+      "الإمام الخطيب التبريزي",
+    ),
     "author_muslim": MessageLookupByLibrary.simpleMessage(
-      "مسلم بن الحجاج النيسابوري",
+      "الإمام مسلم بن الحجاج النيسابوري",
     ),
     "author_nasai": MessageLookupByLibrary.simpleMessage(
-      "أحمد بن شعيب النسائي",
+      "الإمام أحمد بن شعيب النسائي",
     ),
     "author_tirmidhi": MessageLookupByLibrary.simpleMessage(
-      "محمد بن عيسى الترمذي",
+      "الإمام محمد بن عيسى الترمذي",
     ),
     "chapter_label": MessageLookupByLibrary.simpleMessage("باب"),
     "darkMode": MessageLookupByLibrary.simpleMessage("الوضع الداكن"),
@@ -75,7 +77,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "سنن أبي داود",
     ),
     "full_title_ahmad": MessageLookupByLibrary.simpleMessage(
-      "مسند أحمد بن حنبل",
+      "مسند الإمام أحمد بن حنبل",
     ),
     "full_title_albani": MessageLookupByLibrary.simpleMessage(
       "السلسلة الصحيحة",

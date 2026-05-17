@@ -94,21 +94,5 @@ List<HadithBookInfo> getHadithBooks(BuildContext context) {
       authorDeath: s.death_mishkat,
       hadithCount: 5945,
     ),
-    HadithBookInfo(
-      slug: 'musnad-ahmad',
-      title: s.musnad_ahmad,
-      arabicTitle: s.full_title_ahmad,
-      author: s.author_ahmad,
-      authorDeath: s.death_ahmad,
-      hadithCount: 28199,
-    ),
-    HadithBookInfo(
-      slug: 'al-silsila-sahiha',
-      title: s.al_silsila_sahiha,
-      arabicTitle: s.full_title_albani,
-      author: s.author_albani,
-      authorDeath: s.death_albani,
-      hadithCount: 4035,
-    ),
   ];
 }

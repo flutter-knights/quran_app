@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/color_scheme.dart';
 
-class CirclerBullet extends StatelessWidget {
-  const CirclerBullet({super.key});
+class CircularBullet extends StatelessWidget {
+  const CircularBullet({super.key});
 
   @override
   Widget build(BuildContext context) {
