@@ -49,6 +49,18 @@ class AhadithLocalDataSource {
     hadithBox.putAll(entries);
   }
 
+  Future<void> clearBookCache(String bookSlug) async {
+    final String prefix = "${bookSlug}_";
+
+    final keysToDelete = hadithBox.keys
+        .where((key) => key.toString().startsWith(prefix))
+        .toList();
+
+    if (keysToDelete.isNotEmpty) {
+      await hadithBox.deleteAll(keysToDelete);
+    }
+  }
+
   Future<void> clearAllCache() async {
     await hadithBox.clear();
   }
