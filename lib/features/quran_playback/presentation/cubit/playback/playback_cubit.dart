@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../surah/domain/entities/surah_entity.dart';
-import '../../../data/repositories/helper/reciter.dart';
+import '../../../domain/entities/reciter.dart';
 import '../../../data/repositories/helper/repeat_mode.dart';
 import '../../../domain/entities/ayah_identifier.dart';
 import '../../../domain/repositories/quran_playback_repo.dart';

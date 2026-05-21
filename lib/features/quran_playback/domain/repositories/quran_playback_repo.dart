@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../../data/repositories/helper/reciter.dart';
+import '../entities/reciter.dart';
 import '../entities/ayah_identifier.dart';
 
 abstract class QuranPlaybackRepo {

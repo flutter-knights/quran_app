@@ -1,3 +1,4 @@
+import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
 
 class SettingsModel extends Settings {
@@ -5,6 +6,8 @@ class SettingsModel extends Settings {
     required super.isDarkMode,
     required super.isFormat12Hours,
     required super.isArabic,
+    super.playbackSpeed,
+    super.defaultReciter,
   });
 
   @override
@@ -12,11 +15,15 @@ class SettingsModel extends Settings {
     bool? isDarkMode,
     bool? isFormat12Hours,
     bool? isArabic,
+    double? playbackSpeed,
+    Reciter? defaultReciter,
   }) {
     return SettingsModel(
       isArabic: isArabic ?? this.isArabic,
       isDarkMode: isDarkMode ?? this.isDarkMode,
       isFormat12Hours: isFormat12Hours ?? this.isFormat12Hours,
+      playbackSpeed: playbackSpeed ?? this.playbackSpeed,
+      defaultReciter: defaultReciter ?? this.defaultReciter,
     );
   }
 
@@ -25,6 +32,11 @@ class SettingsModel extends Settings {
       isArabic: map['isArabic'] ?? true,
       isDarkMode: map['isDarkMode'] ?? true,
       isFormat12Hours: map['isFormat12Hours'] ?? true,
+      playbackSpeed: (map['playbackSpeed'] as num?)?.toDouble() ?? 1.0,
+      defaultReciter: Reciter.values.firstWhere(
+        (r) => r.name == (map['defaultReciter'] as String?),
+        orElse: () => Reciter.alafasy,
+      ),
     );
   }
 
@@ -33,6 +45,8 @@ class SettingsModel extends Settings {
       'isArabic': isArabic,
       'isDarkMode': isDarkMode,
       'isFormat12Hours': isFormat12Hours,
+      'playbackSpeed': playbackSpeed,
+      'defaultReciter': defaultReciter.name,
     };
   }
 }

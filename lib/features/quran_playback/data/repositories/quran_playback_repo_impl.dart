@@ -12,7 +12,7 @@ import '../../domain/entities/ayah_identifier.dart';
 import '../../domain/repositories/quran_playback_repo.dart';
 import '../datasources/local/quran_playback_local_data_source.dart';
 import '../datasources/remote/quran_playback_remote_data_source.dart';
-import 'helper/reciter.dart';
+import '../../domain/entities/reciter.dart';
 
 class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   final AudioPlayer player;
