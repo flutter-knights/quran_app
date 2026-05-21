@@ -25,10 +25,11 @@
 // tail onto a 16th painter line. We pre-trim the last \n from the last ayah
 // that has one so the tail merges back onto line 15.
 //
-// FontSize factor 0.85 (was 0.9) keeps the widest QCF lines within
-// `_renderWidth` so they don't word-wrap (pages 303 and 335 word-wrapped at
-// 0.9). Trade-off: ~5 % smaller glyphs, more margin left/right — visible
-// but mild.
+// FontSize factor 0.82 (was 0.85, was 0.9) keeps the widest QCF lines within
+// `_renderWidth` so they don't word-wrap, and reduces the margin variance on
+// pages 303 and 335 (inherently wide glyphs). At 0.85 those lines had ~11 px
+// margin; at 0.82 they have ~37 px. Trade-off: ~9 % smaller glyphs vs 0.9,
+// more margin left/right — visible but acceptable.
 //
 // Bounds units: ayahs AND basmalas are recorded. Basmala bounds use
 // `ayah: 0`, matching the convention used by per-surah basmala audio files.
@@ -56,7 +57,7 @@ import 'woff_to_ttf.dart';
 const String _headerImagePath = 'assets/images/header.png';
 const double _renderWidth = 1536;
 const double _aspect = 1.82;
-const double _fontSizeFactor = 0.85;
+const double _fontSizeFactor = 0.82;
 const String _outputPagesDir = 'assets/mushaf/pages';
 const String _outputBoundsDir = 'assets/mushaf/bounds';
 const String _headerFontFamily = 'QCF_P000';
