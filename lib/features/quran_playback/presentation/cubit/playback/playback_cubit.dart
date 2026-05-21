@@ -133,6 +133,47 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   Future<void> playFromAyah(AyahIdentifier ayah) => playSelected(ayah);
 
+  Future<void> skipNext() async {
+    final current = state.currentAyah;
+    if (current == null) return;
+    final next = ayahSequenceService.getNextAyah(current: current);
+    if (next == null) return;
+    await _playAyah(next);
+  }
+
+  Future<void> skipPrevious() async {
+    final current = state.currentAyah;
+    if (current == null) return;
+    final prev = ayahSequenceService.getPreviousAyah(current: current);
+    if (prev == null) return;
+    await _playAyah(prev);
+  }
+
+  Future<void> restartCurrent() async {
+    if (state.currentAyah == null) return;
+    await repository.seek(Duration.zero);
+    await repository.resume();
+    emit(state.copyWith(isPlaying: true, isPaused: false));
+  }
+
+  Future<void> setSpeed(double speed) async {
+    emit(state.copyWith(speed: speed));
+    await repository.setSpeed(speed);
+    settingsCubit.updatePlaybackSpeed(speed);
+  }
+
+  Future<void> setReciter(Reciter reciter) async {
+    final wasActive =
+        state.currentAyah != null && (state.isPlaying || state.isPaused);
+    final activeAyah = state.currentAyah;
+    emit(state.copyWith(reciter: reciter));
+    settingsCubit.updateDefaultReciter(reciter);
+    if (wasActive && activeAyah != null) {
+      await repository.stop();
+      await _playAyah(activeAyah);
+    }
+  }
+
   void autoPlayPage(int pageNumber) {
     final startAyah = pageService.getFirstAyahOfPage(pageNumber);
     if (startAyah == null) return;
