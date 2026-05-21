@@ -8,6 +8,7 @@ import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.da
 
 import '../../features/quran_playback/playback_di.dart';
 import '../../features/surah/presentation/pages/mushaf/mushaf_di.dart';
+import '../../features/surah/last_read_di.dart';
 import '../../features/surah/presentation/pages/surah_list/surah_list_di.dart';
 
 final sl = GetIt.instance;
@@ -22,4 +23,5 @@ Future<void> initGetIt() async {
   initAhadith();
   initPlayback();
   initBookmarks();
+  initLastRead();
 }

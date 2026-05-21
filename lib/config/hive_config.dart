@@ -2,6 +2,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:quran_app/features/ahadith/data/models/hadith_hive_model.dart';
 import 'package:quran_app/features/home/data/models/location_hive_model.dart';
 import 'package:quran_app/features/home/data/models/prayer_times_hive_model.dart';
+import 'package:quran_app/features/surah/data/models/last_read_hive_model.dart';
 
 Future<void> initHive() async {
   await Hive.initFlutter();
@@ -16,4 +17,6 @@ Future<void> initHive() async {
   await Hive.openBox<HadithHiveModel>('ahadithCache');
 
   await Hive.openBox<List>('ayah_bookmarks');
+  Hive.registerAdapter(LastReadHiveModelAdapter());
+  await Hive.openBox<LastReadHiveModel>('last_read');
 }
