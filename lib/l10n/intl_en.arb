@@ -82,6 +82,17 @@
 "bookmark_added": "Bookmarked",
 "bookmark_removed": "Bookmark removed",
 "bookmark_save_failed": "Couldn't save bookmark",
-"share_failed": "Couldn't open share sheet"
+"share_failed": "Couldn't open share sheet",
+"playback_pause": "Pause",
+"playback_next": "Next ayah",
+"playback_previous": "Previous ayah",
+"playback_restart": "Restart",
+"playback_close": "Close",
+"playback_speed": "Speed",
+"reciter_label": "Reciter",
+"continue_reading": "Continue reading",
+"ayah_label": "Surah {surah}, Ayah {ayah}",
+"page_label": "Page {page}",
+"play_surah": "Play surah"
 
 }

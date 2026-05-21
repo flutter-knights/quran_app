@@ -86,5 +86,16 @@
 "bookmark_added": "تم الحفظ",
 "bookmark_removed": "تم إزالة الحفظ",
 "bookmark_save_failed": "تعذّر حفظ المرجعية",
-"share_failed": "تعذّر فتح نافذة المشاركة"
+"share_failed": "تعذّر فتح نافذة المشاركة",
+"playback_pause": "إيقاف مؤقت",
+"playback_next": "الآية التالية",
+"playback_previous": "الآية السابقة",
+"playback_restart": "إعادة",
+"playback_close": "إغلاق",
+"playback_speed": "السرعة",
+"reciter_label": "القارئ",
+"continue_reading": "متابعة التلاوة",
+"ayah_label": "سورة {surah}، الآية {ayah}",
+"page_label": "الصفحة {page}",
+"play_surah": "تشغيل السورة"
 }

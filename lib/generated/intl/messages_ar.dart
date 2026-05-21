@@ -25,6 +25,10 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(time, prayerName) => "متبقي ${time} على صلاة ${prayerName}";
 
+  static String m2(surah, ayah) => "سورة ${surah}، الآية ${ayah}";
+
+  static String m3(page) => "الصفحة ${page}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "abu_dawood": MessageLookupByLibrary.simpleMessage("سنن أبي داود"),
@@ -133,5 +137,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "bookmark_removed": MessageLookupByLibrary.simpleMessage("تم إزالة الحفظ"),
     "bookmark_save_failed": MessageLookupByLibrary.simpleMessage("تعذّر حفظ المرجعية"),
     "share_failed": MessageLookupByLibrary.simpleMessage("تعذّر فتح نافذة المشاركة"),
+    "playback_pause": MessageLookupByLibrary.simpleMessage("إيقاف مؤقت"),
+    "playback_next": MessageLookupByLibrary.simpleMessage("الآية التالية"),
+    "playback_previous": MessageLookupByLibrary.simpleMessage("الآية السابقة"),
+    "playback_restart": MessageLookupByLibrary.simpleMessage("إعادة"),
+    "playback_close": MessageLookupByLibrary.simpleMessage("إغلاق"),
+    "playback_speed": MessageLookupByLibrary.simpleMessage("السرعة"),
+    "reciter_label": MessageLookupByLibrary.simpleMessage("القارئ"),
+    "continue_reading": MessageLookupByLibrary.simpleMessage("متابعة التلاوة"),
+    "ayah_label": m2,
+    "page_label": m3,
+    "play_surah": MessageLookupByLibrary.simpleMessage("تشغيل السورة"),
   };
 }
