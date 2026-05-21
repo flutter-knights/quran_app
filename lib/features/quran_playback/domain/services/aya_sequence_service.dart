@@ -45,4 +45,15 @@ class AyahSequenceService {
 
     return ayahs;
   }
+
+  AyahIdentifier? getPreviousAyah({required AyahIdentifier current}) {
+    if (current.ayah > 1) {
+      return AyahIdentifier(surah: current.surah, ayah: current.ayah - 1);
+    }
+    if (current.surah > 1) {
+      final prevSurah = current.surah - 1;
+      return AyahIdentifier(surah: prevSurah, ayah: getVerseCount(prevSurah));
+    }
+    return null;
+  }
 }
