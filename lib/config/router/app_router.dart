@@ -14,6 +14,7 @@ import 'package:quran_app/features/surah/presentation/pages/surah_list/surah_lis
 
 import '../../core/di/dependency_injection.dart';
 import '../../features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
+import '../../features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 
 abstract class AppRouter {
   static const String homePath = "/home";
@@ -63,6 +64,7 @@ abstract class AppRouter {
             return MultiBlocProvider(
               providers: [
                 BlocProvider.value(value: sl<PlaybackCubit>()),
+                BlocProvider.value(value: sl<LastReadCubit>()),
                 BlocProvider(
                     create: (_) => sl<MushafCubit>(param1: pageNo)),
               ],
@@ -79,6 +81,7 @@ abstract class AppRouter {
             return MultiBlocProvider(
               providers: [
                 BlocProvider.value(value: sl<PlaybackCubit>()),
+                BlocProvider.value(value: sl<LastReadCubit>()),
                 BlocProvider(
                     create: (_) => sl<MushafCubit>(param1: pageNo)),
               ],
