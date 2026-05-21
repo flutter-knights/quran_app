@@ -35,12 +35,12 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
-          builder: (_, __) => BlocProvider<PlaybackCubit>.value(
+          builder: (_, _) => BlocProvider<PlaybackCubit>.value(
             value: playback,
             child: Scaffold(body: SurahListTile(surah: surah)),
           ),
         ),
-        GoRoute(path: '/mushaf', builder: (_, __) => const SizedBox()),
+        GoRoute(path: '/mushaf', builder: (_, _) => const SizedBox()),
       ],
     );
     await tester.pumpWidget(MaterialApp.router(
