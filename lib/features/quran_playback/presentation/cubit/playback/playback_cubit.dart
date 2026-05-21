@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../settings/presentation/cubit/settings_cubit.dart';
 import '../../../../surah/domain/entities/surah_entity.dart';
-import '../../../domain/entities/reciter.dart';
-import '../../../data/repositories/helper/repeat_mode.dart';
 import '../../../domain/entities/ayah_identifier.dart';
+import '../../../domain/entities/reciter.dart';
 import '../../../domain/repositories/quran_playback_repo.dart';
 import '../../../domain/services/aya_sequence_service.dart';
 import '../../../domain/services/quran_page_service.dart';
@@ -15,34 +15,36 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   final AyahSequenceService ayahSequenceService;
   final QuranPlaybackRepo repository;
   final QuranPageService pageService;
+  final SettingsCubit settingsCubit;
 
   late final StreamSubscription _ayahSub;
   late final StreamSubscription _completeSub;
 
-  Reciter? _reciter;
   int? _endSurah;
   int? _endAyah;
 
-  RepeatMode _repeatMode = RepeatMode.once;
-  int _repeatTimes = 1;
-  int _completedCycles = 0;
-
-  AyahIdentifier? _startAyah;
-
-  bool _isPlayingAyah = false;
+  /// Tracks the most recently requested ayah. Used as the race guard:
+  /// after an async prepare, if _inFlightAyah has changed, the older
+  /// call returns early without calling notifyAyahChanged.
+  AyahIdentifier? _inFlightAyah;
 
   PlaybackCubit({
     required this.ayahSequenceService,
     required this.repository,
     required this.pageService,
-  }) : super(const PlaybackState()) {
+    required this.settingsCubit,
+  }) : super(PlaybackState(
+          speed: settingsCubit.state.settingsModel.playbackSpeed,
+          reciter: settingsCubit.state.settingsModel.defaultReciter,
+        )) {
     _ayahSub = repository.currentAyahStream.listen((ayah) {
       if (isClosed) return;
-
-      emit(
-        state.copyWith(currentAyah: ayah, isPlaying: true, isLoading: false),
-      );
-
+      emit(state.copyWith(
+        currentAyah: ayah,
+        isPlaying: true,
+        isPaused: false,
+        isLoading: false,
+      ));
       _preloadNextAyahs(ayah);
     });
 
@@ -51,106 +53,63 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     });
   }
 
-  Future<void> startAutoPlay({
-    required int startSurah,
-    required int startAyah,
-    required Reciter reciter,
-    int? endSurah,
-    int? endAyah,
-    RepeatMode repeatMode = RepeatMode.once,
-    int repeatTimes = 1,
-  }) async {
-    _reciter = reciter;
-    _endSurah = endSurah;
-    _endAyah = endAyah;
-    _repeatMode = repeatMode;
-    _repeatTimes = repeatTimes;
-    _completedCycles = 0;
-
-    _startAyah = AyahIdentifier(surah: startSurah, ayah: startAyah);
-
+  Future<void> playSelected(AyahIdentifier ayah) async {
+    _endSurah = null;
+    _endAyah = null;
     emit(state.copyWith(isAutoPlaying: true, isLoading: true));
-    await _playAyah(_startAyah!);
+    await _playAyah(ayah);
   }
 
   Future<void> _playAyah(AyahIdentifier ayah) async {
-    if (_isPlayingAyah || isClosed) return;
-    _isPlayingAyah = true;
+    if (isClosed) return;
+    _inFlightAyah = ayah;
 
-    try {
-      final result = await repository.prepareAyahAudio(
-        ayah: ayah,
-        reciter: _reciter!,
-      );
+    final result = await repository.prepareAyahAudio(
+      ayah: ayah,
+      reciter: state.reciter,
+    );
 
-      if (isClosed) return;
+    if (isClosed) return;
+    if (_inFlightAyah != ayah) return; // race guard
 
-      result.fold(
-        (failure) {
-          emit(
-            state.copyWith(
-              isPlaying: false,
-              isLoading: false,
-              error: failure.message,
-            ),
-          );
-        },
-        (path) async {
-          repository.notifyAyahChanged(ayah);
-          await repository.playPreparedAudio(path);
-        },
-      );
-    } finally {
-      _isPlayingAyah = false;
-    }
+    await result.fold(
+      (failure) async {
+        emit(state.copyWith(
+          isPlaying: false,
+          isLoading: false,
+          error: failure.message,
+        ));
+      },
+      (path) async {
+        repository.notifyAyahChanged(ayah);
+        await repository.setSpeed(state.speed);
+        await repository.playPreparedAudio(path);
+      },
+    );
   }
 
   void _handleNextAyah() {
     if (!state.isAutoPlaying || state.currentAyah == null) return;
-
     final next = ayahSequenceService.getNextAyah(
       current: state.currentAyah!,
       endSurah: _endSurah,
       endAyah: _endAyah,
     );
-
     if (next == null) {
-      switch (_repeatMode) {
-        case RepeatMode.once:
-          stop();
-          return;
-
-        case RepeatMode.times:
-          _completedCycles++;
-          if (_completedCycles >= _repeatTimes) {
-            stop();
-            return;
-          }
-          break;
-
-        case RepeatMode.infinite:
-          _completedCycles = 0;
-          break;
-      }
-
-      _playAyah(_startAyah!);
+      stop();
       return;
     }
-
     _playAyah(next);
   }
 
   Future<void> _preloadNextAyahs(AyahIdentifier current) async {
-    if (_reciter == null) return;
-
     final nextAyahs = ayahSequenceService.getNextAyahs(
       current: current,
       count: 5,
       endSurah: _endSurah,
       endAyah: _endAyah,
     );
-
-    repository.preloadAyahs(ayahs: nextAyahs, reciter: _reciter!);
+    await repository.preloadAyahs(ayahs: nextAyahs, reciter: state.reciter);
   }
 
   Future<void> preloadFullSurah({
@@ -161,7 +120,6 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       surah.numberOfAyahs,
       (i) => AyahIdentifier(surah: surah.number, ayah: i + 1),
     );
-
     emit(state.copyWith(isLoading: true));
     await repository.preloadAyahs(ayahs: ayahs, reciter: reciter);
     emit(state.copyWith(isLoading: false));
@@ -173,38 +131,33 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     return pageService.getPageForAyah(ayah.surah, ayah.ayah);
   }
 
-  Future<void> playFromAyah(AyahIdentifier ayah) => startAutoPlay(
-        startSurah: ayah.surah,
-        startAyah: ayah.ayah,
-        reciter: _reciter ?? Reciter.alafasy,
-      );
+  Future<void> playFromAyah(AyahIdentifier ayah) => playSelected(ayah);
 
   void autoPlayPage(int pageNumber) {
     final startAyah = pageService.getFirstAyahOfPage(pageNumber);
     if (startAyah == null) return;
-
-    startAutoPlay(
-      startSurah: startAyah.surah,
-      startAyah: startAyah.ayah,
-      reciter: _reciter ?? Reciter.alafasy,
-    );
+    playSelected(startAyah);
   }
 
   Future<void> stop() async {
-    _completedCycles = 0;
-    _repeatMode = RepeatMode.once;
-
+    _inFlightAyah = null;
     await repository.stop();
-    emit(const PlaybackState());
+    emit(state.copyWith(
+      isPlaying: false,
+      isPaused: false,
+      isAutoPlaying: false,
+      isLoading: false,
+      clearCurrentAyah: true,
+    ));
   }
 
   Future<void> pause() async {
-    emit(state.copyWith(isPlaying: false));
+    emit(state.copyWith(isPlaying: false, isPaused: true));
     await repository.pause();
   }
 
   Future<void> resume() async {
-    emit(state.copyWith(isPlaying: true));
+    emit(state.copyWith(isPlaying: true, isPaused: false));
     await repository.resume();
   }
 
