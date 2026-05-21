@@ -574,6 +574,71 @@ class S {
   String get share_failed {
     return Intl.message("Couldn't open share sheet", name: 'share_failed', desc: '', args: []);
   }
+
+  /// `Pause`
+  String get playback_pause {
+    return Intl.message('Pause', name: 'playback_pause', desc: '', args: []);
+  }
+
+  /// `Next ayah`
+  String get playback_next {
+    return Intl.message('Next ayah', name: 'playback_next', desc: '', args: []);
+  }
+
+  /// `Previous ayah`
+  String get playback_previous {
+    return Intl.message('Previous ayah', name: 'playback_previous', desc: '', args: []);
+  }
+
+  /// `Restart`
+  String get playback_restart {
+    return Intl.message('Restart', name: 'playback_restart', desc: '', args: []);
+  }
+
+  /// `Close`
+  String get playback_close {
+    return Intl.message('Close', name: 'playback_close', desc: '', args: []);
+  }
+
+  /// `Speed`
+  String get playback_speed {
+    return Intl.message('Speed', name: 'playback_speed', desc: '', args: []);
+  }
+
+  /// `Reciter`
+  String get reciter_label {
+    return Intl.message('Reciter', name: 'reciter_label', desc: '', args: []);
+  }
+
+  /// `Continue reading`
+  String get continue_reading {
+    return Intl.message('Continue reading', name: 'continue_reading', desc: '', args: []);
+  }
+
+  /// `Surah {surah}, Ayah {ayah}`
+  String ayah_label(Object surah, Object ayah) {
+    return Intl.message(
+      'Surah $surah, Ayah $ayah',
+      name: 'ayah_label',
+      desc: '',
+      args: [surah, ayah],
+    );
+  }
+
+  /// `Page {page}`
+  String page_label(Object page) {
+    return Intl.message(
+      'Page $page',
+      name: 'page_label',
+      desc: '',
+      args: [page],
+    );
+  }
+
+  /// `Play surah`
+  String get play_surah {
+    return Intl.message('Play surah', name: 'play_surah', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
