@@ -91,7 +91,7 @@ class AyahLongPressSheet extends StatelessWidget {
                 builder: (context, state) => ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: Reciter.values.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
                   itemBuilder: (_, i) {
                     final r = Reciter.values[i];
                     return ChoiceChip(
