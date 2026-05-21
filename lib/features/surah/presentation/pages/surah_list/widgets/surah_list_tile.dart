@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/core/widgets/circular_bullet.dart';
@@ -7,6 +8,9 @@ import '../../../../../../config/theme/color_scheme.dart';
 import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../core/helper functions/locale_helpers.dart';
 import '../../../../../../core/widgets/prettier_tap.dart';
+import '../../../../../../generated/l10n.dart';
+import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../domain/entities/surah_entity.dart';
 import 'surah_number_star.dart';
 
@@ -34,19 +38,18 @@ class SurahListTile extends StatelessWidget {
         },
         child: AspectRatio(
           aspectRatio: 4.8,
-
           child: Container(
-            padding: .all(8),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: context.colorScheme.surfaceContainer,
-              borderRadius: .all(Radius.circular(12)),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
             ),
             child: Row(
-              mainAxisAlignment: .spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
-                  crossAxisAlignment: .start,
-                  textDirection: context.isArabic ? .rtl : .ltr,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  textDirection: context.isArabic ? TextDirection.rtl : TextDirection.ltr,
                   children: [
                     Text(surah.name, style: TS.bold20),
                     Row(
@@ -66,7 +69,6 @@ class SurahListTile extends StatelessWidget {
                           ),
                         ),
                         CircularBullet(),
-
                         Text(
                           "صفحة ${surah.pageNumber}",
                           style: TS.regular15.copyWith(
@@ -76,6 +78,19 @@ class SurahListTile extends StatelessWidget {
                       ],
                     ),
                   ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.play_circle_outline),
+                  tooltip: S.of(context).play_surah,
+                  onPressed: () {
+                    context.read<PlaybackCubit>().playFromAyah(
+                          AyahIdentifier(surah: surah.number, ayah: 1),
+                        );
+                    GoRouter.of(context).push(
+                      AppRouter.mushafPath,
+                      extra: surah.pageNumber,
+                    );
+                  },
                 ),
                 SurahNumberStar(surahNumber: surah.number),
               ],
