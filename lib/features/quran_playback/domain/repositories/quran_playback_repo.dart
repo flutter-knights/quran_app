@@ -20,4 +20,6 @@ abstract class QuranPlaybackRepo {
   Future<void> resume();
   void notifyAyahChanged(AyahIdentifier ayah);
   Future<void> stop();
+  Future<void> seek(Duration position);
+  Future<void> setSpeed(double speed);
 }

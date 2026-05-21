@@ -157,4 +157,10 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
     await _ayahController.close();
     await player.dispose();
   }
+
+  @override
+  Future<void> seek(Duration position) => player.seek(position);
+
+  @override
+  Future<void> setSpeed(double speed) => player.setSpeed(speed);
 }
