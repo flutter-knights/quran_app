@@ -3,6 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/quran_playback/domain/services/aya_sequence_service.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 import 'data/datasources/local/quran_playback_local_data_source.dart';
 import 'data/datasources/remote/quran_playback_remote_data_source.dart';
@@ -38,6 +39,7 @@ void initPlayback() async {
       ayahSequenceService: sl<AyahSequenceService>(),
       repository: sl<QuranPlaybackRepo>(),
       pageService: sl<QuranPageService>(),
+      settingsCubit: sl<SettingsCubit>(),
     ),
   );
 }
