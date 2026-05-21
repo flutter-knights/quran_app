@@ -151,4 +151,165 @@ void main() {
     act: (c) => c.playSelected(ayah25),
     verify: (_) => verify(() => repo.setSpeed(1.25)).called(1),
   );
+
+  // ── Task 7: skipNext / skipPrevious ──────────────────────────────────────
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'skipNext from (2,5) notifies (2,6)',
+    build: () {
+      when(() => seq.getNextAyah(current: any(named: 'current')))
+          .thenReturn(const AyahIdentifier(surah: 2, ayah: 6));
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((_) async => const Right('/p.mp3'));
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build()
+        ..emit(const PlaybackState(
+            currentAyah: AyahIdentifier(surah: 2, ayah: 5), isPlaying: true));
+    },
+    act: (c) => c.skipNext(),
+    verify: (_) => verify(() =>
+        repo.notifyAyahChanged(const AyahIdentifier(surah: 2, ayah: 6))).called(1),
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'skipNext when getNextAyah returns null is a no-op',
+    build: () {
+      when(() => seq.getNextAyah(current: any(named: 'current')))
+          .thenReturn(null);
+      return build()
+        ..emit(const PlaybackState(
+            currentAyah: AyahIdentifier(surah: 114, ayah: 6),
+            isPlaying: true));
+    },
+    act: (c) => c.skipNext(),
+    verify: (_) =>
+        verifyNever(() => repo.notifyAyahChanged(any())),
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'skipPrevious from (2,2) notifies (2,1)',
+    build: () {
+      when(() => seq.getPreviousAyah(current: any(named: 'current')))
+          .thenReturn(const AyahIdentifier(surah: 2, ayah: 1));
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((_) async => const Right('/p.mp3'));
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build()
+        ..emit(const PlaybackState(
+            currentAyah: AyahIdentifier(surah: 2, ayah: 2), isPlaying: true));
+    },
+    act: (c) => c.skipPrevious(),
+    verify: (_) => verify(() =>
+        repo.notifyAyahChanged(const AyahIdentifier(surah: 2, ayah: 1))).called(1),
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'skipPrevious at (1,1) is a no-op',
+    build: () {
+      when(() => seq.getPreviousAyah(current: any(named: 'current')))
+          .thenReturn(null);
+      return build()
+        ..emit(const PlaybackState(
+            currentAyah: AyahIdentifier(surah: 1, ayah: 1),
+            isPlaying: true));
+    },
+    act: (c) => c.skipPrevious(),
+    verify: (_) =>
+        verifyNever(() => repo.notifyAyahChanged(any())),
+  );
+
+  // ── Task 8: restartCurrent ───────────────────────────────────────────────
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'restartCurrent seeks to 0 and resumes',
+    build: () {
+      when(() => repo.seek(any())).thenAnswer((_) async {});
+      when(() => repo.resume()).thenAnswer((_) async {});
+      return build()..emit(const PlaybackState(currentAyah: ayah25));
+    },
+    act: (c) => c.restartCurrent(),
+    verify: (_) {
+      verify(() => repo.seek(Duration.zero)).called(1);
+      verify(() => repo.resume()).called(1);
+    },
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'restartCurrent is a no-op when currentAyah is null',
+    build: () => build(),
+    act: (c) => c.restartCurrent(),
+    verify: (_) {
+      verifyNever(() => repo.seek(any()));
+      verifyNever(() => repo.resume());
+    },
+  );
+
+  // ── Task 9: setSpeed ─────────────────────────────────────────────────────
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'setSpeed updates state, calls repo.setSpeed, persists via settings',
+    build: () => build(),
+    act: (c) => c.setSpeed(1.75),
+    expect: () => [
+      isA<PlaybackState>().having((s) => s.speed, 'speed', 1.75),
+    ],
+    verify: (_) {
+      verify(() => repo.setSpeed(1.75)).called(1);
+      expect(settings.speedUpdate, 1.75);
+    },
+  );
+
+  // ── Task 10: setReciter ──────────────────────────────────────────────────
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'setReciter while idle updates state + persists, does not stop/play',
+    build: () => build(),
+    act: (c) => c.setReciter(Reciter.sudais),
+    expect: () => [
+      isA<PlaybackState>().having((s) => s.reciter, 'reciter', Reciter.sudais),
+    ],
+    verify: (_) {
+      expect(settings.reciterUpdate, Reciter.sudais);
+      verifyNever(() => repo.stop());
+      verifyNever(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          ));
+    },
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'setReciter while playing stops and restarts current ayah with new reciter',
+    build: () {
+      when(() => repo.stop()).thenAnswer((_) async {});
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((_) async => const Right('/p.mp3'));
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build()
+        ..emit(const PlaybackState(
+          currentAyah: ayah25,
+          isPlaying: true,
+        ));
+    },
+    act: (c) => c.setReciter(Reciter.sudais),
+    verify: (_) {
+      verify(() => repo.stop()).called(1);
+      verify(() => repo.prepareAyahAudio(
+            ayah: ayah25,
+            reciter: Reciter.sudais,
+          )).called(1);
+    },
+  );
 }
