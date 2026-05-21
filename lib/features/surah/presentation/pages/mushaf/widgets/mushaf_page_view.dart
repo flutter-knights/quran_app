@@ -9,6 +9,7 @@ import '../../../../domain/usecases/get_mushaf_page.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 import 'ayah_highlight_painter.dart';
+import 'ayah_long_press_sheet.dart';
 
 class MushafPageView extends StatefulWidget {
   const MushafPageView({super.key, required this.pageNumber});
@@ -124,6 +125,12 @@ class _MushafPageViewState extends State<MushafPageView>
                           constraints,
                           entity.ayahs,
                         ),
+                        onLongPressStart: (details) => _handleLongPress(
+                          context,
+                          details.localPosition,
+                          constraints,
+                          entity.ayahs,
+                        ),
                       ),
                     ),
                 ],
@@ -147,6 +154,13 @@ class _MushafPageViewState extends State<MushafPageView>
       }
     }
     return null;
+  }
+
+  void _handleLongPress(BuildContext context, Offset local, BoxConstraints c,
+      List<AyahBoundEntity> ayahs) {
+    final hit = _hitTest(local, c, ayahs);
+    if (hit == null) return;
+    AyahLongPressSheet.show(context, hit);
   }
 
   void _handleTap(BuildContext context, Offset local, BoxConstraints c,
