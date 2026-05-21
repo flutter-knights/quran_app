@@ -3,10 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/di/dependency_injection.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
+import '../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
+import '../../../domain/entities/last_read.dart';
+import '../../cubit/last_read/last_read_cubit.dart';
 import '../../cubit/mushaf/mushaf_cubit.dart';
 import '../../cubit/mushaf/mushaf_state.dart';
 import 'auto_swap_helper.dart';
-import 'widgets/ayah_action_bar.dart';
+import 'widgets/ayah_playback_overlay.dart';
 import 'widgets/mushaf_page_number_text.dart';
 import 'widgets/mushaf_page_view.dart';
 
@@ -20,17 +23,39 @@ class MushafPage extends StatefulWidget {
 
 class _MushafPageState extends State<MushafPage> {
   late final PageController _controller;
+  late final MushafCubit _mushafCubit;
+  late final PlaybackCubit _playbackCubit;
+  late final LastReadCubit _lastReadCubit;
 
   @override
   void initState() {
     super.initState();
     _controller = PageController(initialPage: widget.initialPage - 1);
     _controller.addListener(_precacheNeighbours);
+
+    _mushafCubit = context.read<MushafCubit>();
+    _playbackCubit = context.read<PlaybackCubit>();
+    _lastReadCubit = context.read<LastReadCubit>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final last = _lastReadCubit.state;
+      if (last?.ayah == null) return;
+      if (last!.page != widget.initialPage) return;
+      _mushafCubit.toggleHighlight(last.ayah!);
+    });
   }
 
   @override
   void dispose() {
     _controller.removeListener(_precacheNeighbours);
+
+    final mushafState = _mushafCubit.state;
+    final ayah = mushafState.highlightedAyah ?? _playbackCubit.state.currentAyah;
+    _lastReadCubit
+        .save(LastRead(page: mushafState.currentPage, ayah: ayah))
+        .catchError((_) {});
+    _playbackCubit.stop();
+
     _controller.dispose();
     super.dispose();
   }
@@ -82,13 +107,13 @@ class _MushafPageState extends State<MushafPage> {
                     controller: _controller,
                     itemCount: 604,
                     onPageChanged: (i) =>
-                        context.read<MushafCubit>().setPage(_pageNumberFor(i)),
+                        _mushafCubit.setPage(_pageNumberFor(i)),
                     itemBuilder: (_, i) =>
                         MushafPageView(pageNumber: _pageNumberFor(i)),
                   ),
                 ),
               ),
-              const AyahActionBar(),
+              const AyahPlaybackOverlay(),
               BlocBuilder<MushafCubit, MushafState>(
                 buildWhen: (a, b) => a.currentPage != b.currentPage,
                 builder: (context, state) =>
