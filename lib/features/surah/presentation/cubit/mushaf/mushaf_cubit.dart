@@ -38,10 +38,17 @@ class MushafCubit extends Cubit<MushafState> {
 
   void _onPlayingAyahChanged() {
     final next = _notifier.value;
+    final prevPlaying = state.playingAyah;
     if (next == null) {
       if (state.playingAyah != null) emit(state.copyWith(clearPlaying: true));
-    } else {
-      if (state.playingAyah != next) emit(state.copyWith(playingAyah: next));
+      return;
+    }
+    final wasFollowing =
+        state.highlightedAyah != null && state.highlightedAyah == prevPlaying;
+    if (wasFollowing) {
+      emit(state.copyWith(playingAyah: next, highlightedAyah: next));
+    } else if (state.playingAyah != next) {
+      emit(state.copyWith(playingAyah: next));
     }
   }
 
