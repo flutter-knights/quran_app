@@ -11,6 +11,7 @@ import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -28,6 +29,7 @@ void main() async {
       providers: [
         BlocProvider(create: (_) => sl<SettingsCubit>()),
         BlocProvider(create: (_) => sl<BookmarkCubit>()),
+        BlocProvider(create: (_) => sl<LastReadCubit>()),
       ],
       child: const QuranApp(),
     ),
