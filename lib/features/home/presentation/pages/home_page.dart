@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/home/domain/usecases/pre_cache_prayer_times.dart';
-import 'package:quran_app/features/home/domain/usecases/schedule_prayer_notifications.dart';
+import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_view.dart';
@@ -53,8 +53,8 @@ class HomePage extends StatelessWidget {
             listener: (context, state) {
               final loaded = state as DailyPrayerContextLoaded;
               unawaited(
-                sl<SchedulePrayerNotifications>().call(
-                  SchedulePrayerNotificationsParams(
+                sl<SyncDailyAdhans>().call(
+                  SyncDailyAdhansParams(
                     prayerTimes: loaded.dailyPrayerContext.prayerTimes,
                   ),
                 ),
