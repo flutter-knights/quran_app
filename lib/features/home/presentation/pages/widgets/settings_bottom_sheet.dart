@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/constants/feature_flags.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/setting_switch.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
@@ -80,6 +81,19 @@ class SettingsBottomSheet extends StatelessWidget {
                   isArabic: !settings.isArabic,
                 ),
               ),
+              if (FeatureFlags.pinnedPrayerStripUi)
+                SettingSwitch(
+                  settings: settings,
+                  settingTitle: S.current.pinnedPrayerTimes,
+                  icons: const [
+                    HugeIcons.strokeRoundedNotification01,
+                    HugeIcons.strokeRoundedNotificationOff01,
+                  ],
+                  value: settings.isPrayerStripPinned,
+                  action: () => sl<SettingsCubit>().updatePrayerStripPinned(
+                    !settings.isPrayerStripPinned,
+                  ),
+                ),
               const Gap(48),
             ],
           ),
