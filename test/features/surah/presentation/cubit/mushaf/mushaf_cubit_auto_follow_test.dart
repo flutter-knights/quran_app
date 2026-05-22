@@ -1,6 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
@@ -22,8 +21,8 @@ void main() {
       n.value = a;
       return cubit;
     },
-    seed: () => const MushafState(
-        currentPage: 1, highlightedAyah: a, playingAyah: a),
+    seed: () =>
+        const MushafState(currentPage: 1, highlightedAyah: a, playingAyah: a),
     act: (cubit) => cubit.debugNotifier.value = b,
     expect: () => [
       const MushafState(currentPage: 1, highlightedAyah: b, playingAyah: b),
@@ -38,8 +37,8 @@ void main() {
       n.value = a;
       return cubit;
     },
-    seed: () => const MushafState(
-        currentPage: 1, highlightedAyah: c, playingAyah: a),
+    seed: () =>
+        const MushafState(currentPage: 1, highlightedAyah: c, playingAyah: a),
     act: (cubit) => cubit.debugNotifier.value = b,
     expect: () => [
       const MushafState(currentPage: 1, highlightedAyah: c, playingAyah: b),
@@ -51,8 +50,6 @@ void main() {
     build: () =>
         MushafCubit(initialPage: 1, currentAyahNotifier: _FakeNotifier()),
     act: (cubit) => cubit.debugNotifier.value = a,
-    expect: () => [
-      const MushafState(currentPage: 1, playingAyah: a),
-    ],
+    expect: () => [const MushafState(currentPage: 1, playingAyah: a)],
   );
 }

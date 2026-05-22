@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
