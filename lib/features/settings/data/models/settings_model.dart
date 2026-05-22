@@ -8,6 +8,7 @@ class SettingsModel extends Settings {
     required super.isArabic,
     super.playbackSpeed,
     super.defaultReciter,
+    super.isPrayerStripPinned,
   });
 
   @override
@@ -17,6 +18,7 @@ class SettingsModel extends Settings {
     bool? isArabic,
     double? playbackSpeed,
     Reciter? defaultReciter,
+    bool? isPrayerStripPinned,
   }) {
     return SettingsModel(
       isArabic: isArabic ?? this.isArabic,
@@ -24,6 +26,7 @@ class SettingsModel extends Settings {
       isFormat12Hours: isFormat12Hours ?? this.isFormat12Hours,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
+      isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
     );
   }
 
@@ -37,6 +40,7 @@ class SettingsModel extends Settings {
         (r) => r.name == (map['defaultReciter'] as String?),
         orElse: () => Reciter.alafasy,
       ),
+      isPrayerStripPinned: map['isPrayerStripPinned'] ?? false,
     );
   }
 
@@ -47,6 +51,7 @@ class SettingsModel extends Settings {
       'isFormat12Hours': isFormat12Hours,
       'playbackSpeed': playbackSpeed,
       'defaultReciter': defaultReciter.name,
+      'isPrayerStripPinned': isPrayerStripPinned,
     };
   }
 }
