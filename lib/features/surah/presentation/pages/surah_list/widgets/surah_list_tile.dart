@@ -45,40 +45,7 @@ class SurahListTile extends StatelessWidget {
               borderRadius: const BorderRadius.all(Radius.circular(12)),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  textDirection: context.isArabic ? TextDirection.rtl : TextDirection.ltr,
-                  children: [
-                    Text(surah.name, style: TS.bold20),
-                    Row(
-                      spacing: 6,
-                      children: [
-                        Text(
-                          "${surah.revelationType} ",
-                          style: TS.regular15.copyWith(
-                            color: context.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        CircularBullet(),
-                        Text(
-                          "${surah.numberOfAyahs} ${ayahLabel(surah.numberOfAyahs)}",
-                          style: TS.regular15.copyWith(
-                            color: context.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        CircularBullet(),
-                        Text(
-                          "صفحة ${surah.pageNumber}",
-                          style: TS.regular15.copyWith(
-                            color: context.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
                 IconButton(
                   icon: const Icon(Icons.play_circle_outline),
                   tooltip: S.of(context).play_surah,
@@ -91,6 +58,43 @@ class SurahListTile extends StatelessWidget {
                       extra: surah.pageNumber,
                     );
                   },
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    textDirection:
+                        context.isArabic ? TextDirection.rtl : TextDirection.ltr,
+                    children: [
+                      Text(surah.name, style: TS.bold20),
+                      Row(
+                        spacing: 6,
+                        children: [
+                          Text(
+                            "${surah.revelationType} ",
+                            style: TS.regular15.copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          CircularBullet(),
+                          Text(
+                            "${surah.numberOfAyahs} ${ayahLabel(surah.numberOfAyahs)}",
+                            style: TS.regular15.copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          CircularBullet(),
+                          Text(
+                            "صفحة ${surah.pageNumber}",
+                            style: TS.regular15.copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 SurahNumberStar(surahNumber: surah.number),
               ],

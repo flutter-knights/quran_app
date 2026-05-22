@@ -51,7 +51,10 @@ void main() {
     registerFallbackValue(ayah25);
     registerFallbackValue(Reciter.alafasy);
     registerFallbackValue(<AyahIdentifier>[]);
+    registerFallbackValue(<String>[]);
     registerFallbackValue(Duration.zero);
+    void noopCallback() {}
+    registerFallbackValue(noopCallback);
   });
 
   setUp(() {
@@ -201,6 +204,14 @@ void main() {
           )).thenAnswer((_) async => const Right('/p.mp3'));
       when(() => repo.playPreparedAudio(any()))
           .thenAnswer((_) async => const Right(null));
+      when(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          )).thenAnswer((inv) async {
+        (inv.namedArguments[#onAdvanceToFinalTrack] as void Function()?)
+            ?.call();
+        return const Right(null);
+      });
       when(() => repo.notifyAyahChanged(any())).thenReturn(null);
       return build()
         ..emit(const PlaybackState(
@@ -310,6 +321,231 @@ void main() {
             ayah: ayah25,
             reciter: Reciter.sudais,
           )).called(1);
+    },
+  );
+
+  // ── basmala prefix for ayah 1 of non-Fatiha / non-Tawbah surahs ─────────
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'playSelected((2,1)) raises then drops isPlayingBasmala around the intro',
+    build: () {
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((inv) async {
+        final a = inv.namedArguments[#ayah] as AyahIdentifier;
+        return Right('/p/${a.surah}-${a.ayah}.mp3');
+      });
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          )).thenAnswer((inv) async {
+        (inv.namedArguments[#onAdvanceToFinalTrack] as void Function()?)
+            ?.call();
+        return const Right(null);
+      });
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build();
+    },
+    act: (c) => c.playSelected(const AyahIdentifier(surah: 2, ayah: 1)),
+    verify: (c) {
+      // After onAdvanceToFinalTrack fires, the flag must be back to false.
+      expect(c.state.isPlayingBasmala, isFalse);
+      expect(c.state.currentAyah, const AyahIdentifier(surah: 2, ayah: 1));
+    },
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'playSelected((2,1)) prepares basmala then ayah and plays as a sequence',
+    build: () {
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((inv) async {
+        final a = inv.namedArguments[#ayah] as AyahIdentifier;
+        return Right('/p/${a.surah}-${a.ayah}.mp3');
+      });
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          )).thenAnswer((inv) async {
+        (inv.namedArguments[#onAdvanceToFinalTrack] as void Function()?)
+            ?.call();
+        return const Right(null);
+      });
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build();
+    },
+    act: (c) => c.playSelected(const AyahIdentifier(surah: 2, ayah: 1)),
+    verify: (_) {
+      verify(() => repo.prepareAyahAudio(
+            ayah: const AyahIdentifier(surah: 1, ayah: 1),
+            reciter: any(named: 'reciter'),
+          )).called(1);
+      verify(() => repo.prepareAyahAudio(
+            ayah: const AyahIdentifier(surah: 2, ayah: 1),
+            reciter: any(named: 'reciter'),
+          )).called(1);
+      verify(() => repo.playPreparedAudioSequence(
+            ['/p/1-1.mp3', '/p/2-1.mp3'],
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          )).called(1);
+      verifyNever(() => repo.playPreparedAudio(any()));
+      // notifyAyahChanged is fired only after basmala finishes (the stub
+      // invokes onAdvanceToFinalTrack synchronously above).
+      verify(() => repo
+          .notifyAyahChanged(const AyahIdentifier(surah: 2, ayah: 1))).called(1);
+      verifyNever(() => repo
+          .notifyAyahChanged(const AyahIdentifier(surah: 1, ayah: 1)));
+    },
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'playSelected((1,1)) does not prepend basmala (Al-Fatiha v1 IS basmala)',
+    build: () {
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((_) async => const Right('/p.mp3'));
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          )).thenAnswer((inv) async {
+        (inv.namedArguments[#onAdvanceToFinalTrack] as void Function()?)
+            ?.call();
+        return const Right(null);
+      });
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build();
+    },
+    act: (c) => c.playSelected(const AyahIdentifier(surah: 1, ayah: 1)),
+    verify: (_) {
+      verify(() => repo.prepareAyahAudio(
+            ayah: const AyahIdentifier(surah: 1, ayah: 1),
+            reciter: any(named: 'reciter'),
+          )).called(1);
+      verify(() => repo.playPreparedAudio('/p.mp3')).called(1);
+      verifyNever(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          ));
+    },
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'playSelected((9,1)) does not prepend basmala (At-Tawbah has none)',
+    build: () {
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((_) async => const Right('/p.mp3'));
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          )).thenAnswer((inv) async {
+        (inv.namedArguments[#onAdvanceToFinalTrack] as void Function()?)
+            ?.call();
+        return const Right(null);
+      });
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build();
+    },
+    act: (c) => c.playSelected(const AyahIdentifier(surah: 9, ayah: 1)),
+    verify: (_) {
+      verifyNever(() => repo.prepareAyahAudio(
+            ayah: const AyahIdentifier(surah: 1, ayah: 1),
+            reciter: any(named: 'reciter'),
+          ));
+      verify(() => repo.playPreparedAudio('/p.mp3')).called(1);
+      verifyNever(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          ));
+    },
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'playSelected((2,0)) is redirected to ayah 1 (basmala intro + ayah 1)',
+    build: () {
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((inv) async {
+        final a = inv.namedArguments[#ayah] as AyahIdentifier;
+        return Right('/p/${a.surah}-${a.ayah}.mp3');
+      });
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          )).thenAnswer((inv) async {
+        (inv.namedArguments[#onAdvanceToFinalTrack] as void Function()?)
+            ?.call();
+        return const Right(null);
+      });
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build();
+    },
+    act: (c) => c.playSelected(const AyahIdentifier(surah: 2, ayah: 0)),
+    verify: (c) {
+      // Should run the basmala-intro path for ayah 1, not attempt to fetch
+      // a non-existent (2, 0) audio file.
+      verifyNever(() => repo.prepareAyahAudio(
+            ayah: const AyahIdentifier(surah: 2, ayah: 0),
+            reciter: any(named: 'reciter'),
+          ));
+      verify(() => repo.prepareAyahAudio(
+            ayah: const AyahIdentifier(surah: 1, ayah: 1),
+            reciter: any(named: 'reciter'),
+          )).called(1);
+      verify(() => repo.prepareAyahAudio(
+            ayah: const AyahIdentifier(surah: 2, ayah: 1),
+            reciter: any(named: 'reciter'),
+          )).called(1);
+      expect(c.state.currentAyah, const AyahIdentifier(surah: 2, ayah: 1));
+    },
+  );
+
+  blocTest<PlaybackCubit, PlaybackState>(
+    'playSelected falls back to ayah-only when basmala prepare fails',
+    build: () {
+      when(() => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          )).thenAnswer((inv) async {
+        final a = inv.namedArguments[#ayah] as AyahIdentifier;
+        if (a.surah == 1) return left(UnknownFailure('boom'));
+        return const Right('/p/ayah.mp3');
+      });
+      when(() => repo.playPreparedAudio(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          )).thenAnswer((inv) async {
+        (inv.namedArguments[#onAdvanceToFinalTrack] as void Function()?)
+            ?.call();
+        return const Right(null);
+      });
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      return build();
+    },
+    act: (c) => c.playSelected(const AyahIdentifier(surah: 2, ayah: 1)),
+    verify: (_) {
+      verify(() => repo.playPreparedAudio('/p/ayah.mp3')).called(1);
+      verifyNever(() => repo.playPreparedAudioSequence(
+            any(),
+            onAdvanceToFinalTrack: any(named: 'onAdvanceToFinalTrack'),
+          ));
     },
   );
 }

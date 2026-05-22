@@ -100,7 +100,55 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   }
 
   @override
-  Future<void> stop() => player.stop();
+  Future<Either<Failure, void>> playPreparedAudioSequence(
+    List<String> localPaths, {
+    void Function()? onAdvanceToFinalTrack,
+  }) async {
+    if (localPaths.isEmpty) {
+      return left(UnknownFailure('empty audio sequence'));
+    }
+    if (localPaths.length == 1) {
+      return playPreparedAudio(localPaths.first);
+    }
+    try {
+      await _sequenceIndexSub?.cancel();
+      _sequenceIndexSub = null;
+
+      await player.setAudioSources(
+        [for (final p in localPaths) AudioSource.file(p)],
+      );
+
+      if (onAdvanceToFinalTrack != null) {
+        final lastIndex = localPaths.length - 1;
+        bool sawNonFinal = false;
+        _sequenceIndexSub = player.currentIndexStream.listen((i) {
+          if (i == null) return;
+          if (i != lastIndex) {
+            sawNonFinal = true;
+            return;
+          }
+          if (!sawNonFinal) return;
+          onAdvanceToFinalTrack();
+          _sequenceIndexSub?.cancel();
+          _sequenceIndexSub = null;
+        });
+      }
+
+      await player.play();
+      return const Right(null);
+    } catch (e) {
+      return left(UnknownFailure(e.toString()));
+    }
+  }
+
+  StreamSubscription<int?>? _sequenceIndexSub;
+
+  @override
+  Future<void> stop() async {
+    await _sequenceIndexSub?.cancel();
+    _sequenceIndexSub = null;
+    await player.stop();
+  }
 
   @override
   Future<void> pause() => player.pause();

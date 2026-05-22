@@ -17,7 +17,9 @@
       "WebFetch(domain:aladhanpy.readthedocs.io)",
       "Bash(flutter pub *)",
       "Skill(superpowers:systematic-debugging)",
-      "Skill(superpowers:brainstorming)"
+      "Skill(superpowers:brainstorming)",
+      "WebFetch(domain:mirrors.quranicaudio.com)",
+      "WebFetch(domain:www.everyayah.com)"
     ],
     "defaultMode": "auto"
   }

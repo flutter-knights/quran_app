@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
@@ -53,7 +52,7 @@ void main() {
     bookmark = _FakeBookmark();
   });
 
-  testWidgets('renders 4 action buttons + reciter chips', (tester) async {
+  testWidgets('renders 4 action buttons + reciter dropdown', (tester) async {
     await tester.pumpWidget(_wrap(MultiBlocProvider(
       providers: [
         BlocProvider<PlaybackCubit>.value(value: playback),
@@ -66,11 +65,13 @@ void main() {
     expect(find.text('Bookmark'), findsOneWidget);
     expect(find.text('Share'), findsOneWidget);
     expect(find.text('Reciter'), findsOneWidget);
-    // At least one reciter chip
-    expect(find.byType(ChoiceChip), findsWidgets);
+    expect(find.byType(DropdownButtonFormField<Reciter>), findsOneWidget);
+    // Selected reciter (Alafasy by default) is shown in the dropdown.
+    expect(find.text(Reciter.alafasy.arabicName), findsOneWidget);
   });
 
-  testWidgets('tapping a reciter chip calls setReciter', (tester) async {
+  testWidgets('invoking the dropdown onChanged calls setReciter',
+      (tester) async {
     await tester.pumpWidget(_wrap(MultiBlocProvider(
       providers: [
         BlocProvider<PlaybackCubit>.value(value: playback),
@@ -78,10 +79,10 @@ void main() {
       ],
       child: const AyahLongPressSheet(ayah: _ayah),
     )));
-    // Find a chip whose label matches Husary's Arabic name (always rendered)
-    final chip = find.widgetWithText(ChoiceChip, Reciter.husary.arabicName);
-    expect(chip, findsOneWidget);
-    await tester.tap(chip);
+    final dropdown = tester.widget<DropdownButtonFormField<Reciter>>(
+      find.byType(DropdownButtonFormField<Reciter>),
+    );
+    dropdown.onChanged!(Reciter.husary);
     await tester.pumpAndSettle();
     expect(playback.lastSetReciter, Reciter.husary);
   });

@@ -10,6 +10,7 @@ import 'package:quran_app/config/theme/light_theme.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
+import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -30,6 +31,7 @@ void main() async {
         BlocProvider(create: (_) => sl<SettingsCubit>()),
         BlocProvider(create: (_) => sl<BookmarkCubit>()),
         BlocProvider(create: (_) => sl<LastReadCubit>()),
+        BlocProvider(create: (_) => sl<PlaybackCubit>()),
       ],
       child: const QuranApp(),
     ),

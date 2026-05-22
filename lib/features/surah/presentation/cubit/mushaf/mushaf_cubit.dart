@@ -36,6 +36,32 @@ class MushafCubit extends Cubit<MushafState> {
     emit(state.copyWith(clearHighlighted: true));
   }
 
+  /// Publishes the normalized vertical center of the currently highlighted
+  /// ayah so the playback overlay can avoid covering it.
+  void setHighlightBounds(double centerY) {
+    if (state.highlightedAyah == null) return;
+    if (state.highlightedAyahCenterY == centerY) return;
+    emit(state.copyWith(highlightedAyahCenterY: centerY));
+  }
+
+  /// Opens the playback overlay without requiring a verse to be selected
+  /// (driven by the floating action button).
+  void pinOverlay() {
+    if (state.isOverlayPinned) return;
+    emit(state.copyWith(isOverlayPinned: true));
+  }
+
+  /// Shrinks the overlay back to its FAB state. Also clears any active
+  /// highlight so the overlay's visibility check (`highlightedAyah != null ||
+  /// isOverlayPinned`) goes false.
+  void unpinOverlay() {
+    if (!state.isOverlayPinned && state.highlightedAyah == null) return;
+    emit(state.copyWith(
+      isOverlayPinned: false,
+      clearHighlighted: true,
+    ));
+  }
+
   void _onPlayingAyahChanged() {
     final next = _notifier.value;
     final prevPlaying = state.playingAyah;

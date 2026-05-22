@@ -84,26 +84,30 @@ class AyahLongPressSheet extends StatelessWidget {
             const SizedBox(height: 20),
             Text(s.reciter_label, style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 40,
-              child: BlocBuilder<PlaybackCubit, PlaybackState>(
-                buildWhen: (a, b) => a.reciter != b.reciter,
-                builder: (context, state) => ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: Reciter.values.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) {
-                    final r = Reciter.values[i];
-                    return ChoiceChip(
-                      label: Text(r.arabicName),
-                      selected: state.reciter == r,
-                      onSelected: (_) {
-                        context.read<PlaybackCubit>().setReciter(r);
-                        Navigator.of(context).pop();
-                      },
-                    );
-                  },
+            BlocBuilder<PlaybackCubit, PlaybackState>(
+              buildWhen: (a, b) => a.reciter != b.reciter,
+              builder: (context, state) => DropdownButtonFormField<Reciter>(
+                initialValue: state.reciter,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
+                items: [
+                  for (final r in Reciter.values)
+                    DropdownMenuItem<Reciter>(
+                      value: r,
+                      child: Text(r.arabicName),
+                    ),
+                ],
+                onChanged: (r) {
+                  if (r == null) return;
+                  context.read<PlaybackCubit>().setReciter(r);
+                  Navigator.of(context).pop();
+                },
               ),
             ),
           ],
