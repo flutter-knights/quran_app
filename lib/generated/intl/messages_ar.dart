@@ -135,8 +135,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "coming_soon": MessageLookupByLibrary.simpleMessage("قريبًا"),
     "bookmark_added": MessageLookupByLibrary.simpleMessage("تم الحفظ"),
     "bookmark_removed": MessageLookupByLibrary.simpleMessage("تم إزالة الحفظ"),
-    "bookmark_save_failed": MessageLookupByLibrary.simpleMessage("تعذّر حفظ المرجعية"),
-    "share_failed": MessageLookupByLibrary.simpleMessage("تعذّر فتح نافذة المشاركة"),
+    "bookmark_save_failed": MessageLookupByLibrary.simpleMessage(
+      "تعذّر حفظ المرجعية",
+    ),
+    "share_failed": MessageLookupByLibrary.simpleMessage(
+      "تعذّر فتح نافذة المشاركة",
+    ),
     "playback_pause": MessageLookupByLibrary.simpleMessage("إيقاف مؤقت"),
     "playback_next": MessageLookupByLibrary.simpleMessage("الآية التالية"),
     "playback_previous": MessageLookupByLibrary.simpleMessage("الآية السابقة"),
@@ -148,5 +152,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ayah_label": m2,
     "page_label": m3,
     "play_surah": MessageLookupByLibrary.simpleMessage("تشغيل السورة"),
+    "pinnedPrayerTimes": MessageLookupByLibrary.simpleMessage("أوقات الصلاة المثبتة"),
+    "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
+      "اعرض صلوات اليوم في شريط الإشعارات",
+    ),
   };
 }

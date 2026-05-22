@@ -140,6 +140,26 @@ class S {
     );
   }
 
+  /// `Pinned prayer times`
+  String get pinnedPrayerTimes {
+    return Intl.message(
+      'Pinned prayer times',
+      name: 'pinnedPrayerTimes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show today's prayers in your notification shade.`
+  String get pinnedPrayerTimesSubtitle {
+    return Intl.message(
+      "Show today's prayers in your notification shade.",
+      name: 'pinnedPrayerTimesSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Hadith No.`
   String get hadith_number_label {
     return Intl.message(
