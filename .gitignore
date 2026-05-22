@@ -44,3 +44,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 hadith_details_design.html
+app_redesign.html
+home_screen_design.html
