@@ -65,4 +65,28 @@ void main() {
     expect(round.playbackSpeed, 1.25);
     expect(round.defaultReciter, Reciter.minshawyMurattal);
   });
+
+  test('toMap / fromMap round-trips isPrayerStripPinned', () {
+    final model = SettingsModel(
+      isDarkMode: true,
+      isFormat12Hours: false,
+      isArabic: true,
+      playbackSpeed: 1.0,
+      defaultReciter: Reciter.alafasy,
+      isPrayerStripPinned: true,
+    );
+    final round = SettingsModel.fromMap(model.toMap());
+    expect(round.isPrayerStripPinned, true);
+  });
+
+  test('fromMap defaults isPrayerStripPinned to false when missing', () {
+    final round = SettingsModel.fromMap({
+      'isArabic': true,
+      'isDarkMode': true,
+      'isFormat12Hours': true,
+      'playbackSpeed': 1.0,
+      'defaultReciter': 'alafasy',
+    });
+    expect(round.isPrayerStripPinned, false);
+  });
 }
