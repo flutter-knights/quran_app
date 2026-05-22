@@ -58,7 +58,6 @@ class LocationRemoteDataSource {
         'accept-language': 'en',
       },
     );
-    print(arResponse.data);
     return LocationModel.fromJson(
       arJson: arResponse.data,
       enJson: enResponse.data,
