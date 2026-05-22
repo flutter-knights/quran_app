@@ -46,6 +46,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     required PrayerTimes prayerTimes,
     required AdhanAudioSettings audio,
   }) =>
+      // Plan A: `audio` is dropped because the legacy scheduler has no audio
+      // concept. Plan B will route audio through `native.scheduleDailyAdhans`.
       _run(() => legacyScheduler.scheduleDailyPrayerNotifications(prayerTimes));
 
   @override
