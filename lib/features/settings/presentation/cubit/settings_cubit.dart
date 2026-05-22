@@ -40,6 +40,12 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
     emit(SettingsState(state.settingsModel.copyWith(defaultReciter: reciter)));
   }
 
+  void updatePrayerStripPinned(bool value) {
+    emit(
+      SettingsState(state.settingsModel.copyWith(isPrayerStripPinned: value)),
+    );
+  }
+
   @override
   SettingsState? fromJson(Map<String, dynamic> json) {
     return SettingsState(SettingsModel.fromMap(json));
