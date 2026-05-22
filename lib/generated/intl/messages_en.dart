@@ -138,9 +138,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "share": MessageLookupByLibrary.simpleMessage("Share"),
     "coming_soon": MessageLookupByLibrary.simpleMessage("Coming soon"),
     "bookmark_added": MessageLookupByLibrary.simpleMessage("Bookmarked"),
-    "bookmark_removed": MessageLookupByLibrary.simpleMessage("Bookmark removed"),
-    "bookmark_save_failed": MessageLookupByLibrary.simpleMessage("Couldn\'t save bookmark"),
-    "share_failed": MessageLookupByLibrary.simpleMessage("Couldn\'t open share sheet"),
+    "bookmark_removed": MessageLookupByLibrary.simpleMessage(
+      "Bookmark removed",
+    ),
+    "bookmark_save_failed": MessageLookupByLibrary.simpleMessage(
+      "Couldn\'t save bookmark",
+    ),
+    "share_failed": MessageLookupByLibrary.simpleMessage(
+      "Couldn\'t open share sheet",
+    ),
     "playback_pause": MessageLookupByLibrary.simpleMessage("Pause"),
     "playback_next": MessageLookupByLibrary.simpleMessage("Next ayah"),
     "playback_previous": MessageLookupByLibrary.simpleMessage("Previous ayah"),
@@ -148,9 +154,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "playback_close": MessageLookupByLibrary.simpleMessage("Close"),
     "playback_speed": MessageLookupByLibrary.simpleMessage("Speed"),
     "reciter_label": MessageLookupByLibrary.simpleMessage("Reciter"),
-    "continue_reading": MessageLookupByLibrary.simpleMessage("Continue reading"),
+    "continue_reading": MessageLookupByLibrary.simpleMessage(
+      "Continue reading",
+    ),
     "ayah_label": m2,
     "page_label": m3,
     "play_surah": MessageLookupByLibrary.simpleMessage("Play surah"),
+    "pinnedPrayerTimes": MessageLookupByLibrary.simpleMessage("Pinned prayer times"),
+    "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Show today\'s prayers in your notification shade.",
+    ),
   };
 }

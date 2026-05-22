@@ -13,6 +13,8 @@
 "darkMode": "الوضع الداكن" ,
 "twentyFourHourFormat": "تنسيق 24 ساعة" ,
 "arabicLanguage": "اللغة العربية",
+"pinnedPrayerTimes": "أوقات الصلاة المثبتة",
+"pinnedPrayerTimesSubtitle": "اعرض صلوات اليوم في شريط الإشعارات",
 
 "hadith_number_label": "حديث رقم",
 "hadith_total_label": "إجمالي الأحاديث",
