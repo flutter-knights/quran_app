@@ -8,6 +8,7 @@ class Settings extends Equatable {
   final bool isArabic;
   final double playbackSpeed;
   final Reciter defaultReciter;
+  final bool isPrayerStripPinned;
 
   const Settings({
     required this.isDarkMode,
@@ -15,6 +16,7 @@ class Settings extends Equatable {
     required this.isArabic,
     this.playbackSpeed = 1.0,
     this.defaultReciter = Reciter.alafasy,
+    this.isPrayerStripPinned = false,
   });
 
   Settings copyWith({
@@ -23,6 +25,7 @@ class Settings extends Equatable {
     bool? isArabic,
     double? playbackSpeed,
     Reciter? defaultReciter,
+    bool? isPrayerStripPinned,
   }) {
     return Settings(
       isArabic: isArabic ?? this.isArabic,
@@ -30,10 +33,17 @@ class Settings extends Equatable {
       isFormat12Hours: isFormat12Hours ?? this.isFormat12Hours,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
+      isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [isArabic, isDarkMode, isFormat12Hours, playbackSpeed, defaultReciter];
+  List<Object?> get props => [
+        isArabic,
+        isDarkMode,
+        isFormat12Hours,
+        playbackSpeed,
+        defaultReciter,
+        isPrayerStripPinned,
+      ];
 }
