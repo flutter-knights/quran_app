@@ -95,6 +95,8 @@ class _MushafPageViewState extends State<MushafPageView>
                               _prevPlayingAyah != null) {
                             _controller.forward(from: 0);
                           }
+                          _publishHighlightBounds(
+                              context, _shownHighlightedAyah, entity.ayahs);
                         }
                         return AnimatedBuilder(
                           animation: _controller,
@@ -140,6 +142,26 @@ class _MushafPageViewState extends State<MushafPageView>
         );
       },
     );
+  }
+
+  void _publishHighlightBounds(BuildContext context,
+      AyahIdentifier? ayah, List<AyahBoundEntity> ayahs) {
+    if (ayah == null) return;
+    AyahBoundEntity? bound;
+    for (final b in ayahs) {
+      if (b.ayah == ayah) {
+        bound = b;
+        break;
+      }
+    }
+    if (bound == null || bound.lines.isEmpty) return;
+    final first = bound.lines.first;
+    final centerY = first.y + first.h / 2;
+    final cubit = context.read<MushafCubit>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      cubit.setHighlightBounds(centerY);
+    });
   }
 
   AyahIdentifier? _hitTest(

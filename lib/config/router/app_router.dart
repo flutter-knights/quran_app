@@ -13,8 +13,6 @@ import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.d
 import 'package:quran_app/features/surah/presentation/pages/surah_list/surah_list_page.dart';
 
 import '../../core/di/dependency_injection.dart';
-import '../../features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
-import '../../features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 
 abstract class AppRouter {
   static const String homePath = "/home";
@@ -61,13 +59,8 @@ abstract class AppRouter {
         pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) {
             final int pageNo = (state.extra as int?) ?? 1;
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider.value(value: sl<PlaybackCubit>()),
-                BlocProvider.value(value: sl<LastReadCubit>()),
-                BlocProvider(
-                    create: (_) => sl<MushafCubit>(param1: pageNo)),
-              ],
+            return BlocProvider(
+              create: (_) => sl<MushafCubit>(param1: pageNo),
               child: MushafPage(initialPage: pageNo),
             );
           },
@@ -78,13 +71,8 @@ abstract class AppRouter {
         pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) {
             final int pageNo = (state.extra as int?) ?? 1;
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider.value(value: sl<PlaybackCubit>()),
-                BlocProvider.value(value: sl<LastReadCubit>()),
-                BlocProvider(
-                    create: (_) => sl<MushafCubit>(param1: pageNo)),
-              ],
+            return BlocProvider(
+              create: (_) => sl<MushafCubit>(param1: pageNo),
               child: MushafPage(initialPage: pageNo),
             );
           },

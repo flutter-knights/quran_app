@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/di/dependency_injection.dart';
+import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
 import '../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../domain/entities/last_read.dart';
@@ -101,19 +102,73 @@ class _MushafPageState extends State<MushafPage> {
           child: Column(
             children: [
               Expanded(
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: PageView.builder(
-                    controller: _controller,
-                    itemCount: 604,
-                    onPageChanged: (i) =>
-                        _mushafCubit.setPage(_pageNumberFor(i)),
-                    itemBuilder: (_, i) =>
-                        MushafPageView(pageNumber: _pageNumberFor(i)),
-                  ),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: PageView.builder(
+                          controller: _controller,
+                          itemCount: 604,
+                          onPageChanged: (i) =>
+                              _mushafCubit.setPage(_pageNumberFor(i)),
+                          itemBuilder: (_, i) =>
+                              MushafPageView(pageNumber: _pageNumberFor(i)),
+                        ),
+                      ),
+                    ),
+                    const AyahPlaybackOverlay(),
+                    BlocBuilder<MushafCubit, MushafState>(
+                      buildWhen: (a, b) =>
+                          a.highlightedAyah != b.highlightedAyah ||
+                          a.isOverlayPinned != b.isOverlayPinned,
+                      builder: (context, state) {
+                        final fabVisible =
+                            state.highlightedAyah == null &&
+                                !state.isOverlayPinned;
+                        return PositionedDirectional(
+                          bottom: 16,
+                          end: 16,
+                          child: IgnorePointer(
+                            ignoring: !fabVisible,
+                            child: AnimatedScale(
+                              scale: fabVisible ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOutCubic,
+                              child: AnimatedOpacity(
+                                opacity: fabVisible ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 180),
+                                child: FloatingActionButton(
+                                  onPressed: () {
+                                    final mushafCubit =
+                                        context.read<MushafCubit>();
+                                    var firstAyah =
+                                        sl<QuranPageService>()
+                                            .getFirstAyahOfPage(
+                                                mushafCubit.state.currentPage);
+                                    if (firstAyah != null) {
+                                      if (firstAyah.ayah == 1 &&
+                                          firstAyah.surah != 1 &&
+                                          firstAyah.surah != 9) {
+                                        firstAyah = AyahIdentifier(
+                                            surah: firstAyah.surah, ayah: 0);
+                                      }
+                                      mushafCubit.toggleHighlight(firstAyah);
+                                    } else {
+                                      mushafCubit.pinOverlay();
+                                    }
+                                  },
+                                  child: const Icon(Icons.headphones),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const AyahPlaybackOverlay(),
               BlocBuilder<MushafCubit, MushafState>(
                 buildWhen: (a, b) => a.currentPage != b.currentPage,
                 builder: (context, state) =>

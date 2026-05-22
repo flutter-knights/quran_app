@@ -54,6 +54,12 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> playSelected(AyahIdentifier ayah) async {
+    // (surah, 0) is the basmala header on the page — it has no per-ayah audio
+    // file in the API. Treat a tap on it as "play ayah 1 of this surah", which
+    // already prepends the basmala intro.
+    if (ayah.ayah == 0) {
+      ayah = AyahIdentifier(surah: ayah.surah, ayah: 1);
+    }
     _endSurah = null;
     _endAyah = null;
     emit(state.copyWith(isAutoPlaying: true, isLoading: true));
@@ -63,6 +69,22 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   Future<void> _playAyah(AyahIdentifier ayah) async {
     if (isClosed) return;
     _inFlightAyah = ayah;
+
+    // Prepare the basmala when starting any surah other than Al-Fatiha (1) or
+    // At-Tawbah (9), so the canonical opening verse plays before ayah 1. The
+    // reciter is captured once at the top of the call; a mid-flight
+    // `setReciter` cancels this run via `stop()` → `_inFlightAyah = null`, so
+    // the two prepare calls always use the same reciter.
+    String? basmalaPath;
+    if (ayah.ayah == 1 && ayah.surah != 1 && ayah.surah != 9) {
+      final basmalaResult = await repository.prepareAyahAudio(
+        ayah: const AyahIdentifier(surah: 1, ayah: 1),
+        reciter: state.reciter,
+      );
+      if (isClosed) return;
+      if (_inFlightAyah != ayah) return;
+      basmalaPath = basmalaResult.fold((_) => null, (p) => p);
+    }
 
     final result = await repository.prepareAyahAudio(
       ayah: ayah,
@@ -77,13 +99,38 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         emit(state.copyWith(
           isPlaying: false,
           isLoading: false,
+          isPlayingBasmala: false,
           error: failure.message,
         ));
       },
       (path) async {
-        repository.notifyAyahChanged(ayah);
         await repository.setSpeed(state.speed);
-        await repository.playPreparedAudio(path);
+        if (basmalaPath != null) {
+          // During basmala: set the target as currentAyah so the overlay
+          // shows pause/playing, but raise `isPlayingBasmala` so the page
+          // painter suppresses the highlight until basmala finishes. Once the
+          // player advances to the final track, drop the flag and notify so
+          // the verse lights up and preloads kick in.
+          emit(state.copyWith(
+            currentAyah: ayah,
+            isPlaying: true,
+            isPaused: false,
+            isLoading: false,
+            isPlayingBasmala: true,
+          ));
+          await repository.playPreparedAudioSequence(
+            [basmalaPath, path],
+            onAdvanceToFinalTrack: () {
+              if (isClosed) return;
+              if (_inFlightAyah != ayah) return;
+              emit(state.copyWith(isPlayingBasmala: false));
+              repository.notifyAyahChanged(ayah);
+            },
+          );
+        } else {
+          repository.notifyAyahChanged(ayah);
+          await repository.playPreparedAudio(path);
+        }
       },
     );
   }
@@ -188,6 +235,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       isPaused: false,
       isAutoPlaying: false,
       isLoading: false,
+      isPlayingBasmala: false,
       clearCurrentAyah: true,
     ));
   }

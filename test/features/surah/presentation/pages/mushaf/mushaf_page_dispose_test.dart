@@ -34,6 +34,12 @@ class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   @override
   void setPage(int p) {}
   @override
+  void setHighlightBounds(double centerY) {}
+  @override
+  void pinOverlay() {}
+  @override
+  void unpinOverlay() {}
+  @override
   ValueNotifier<AyahIdentifier?> get debugNotifier => throw UnimplementedError();
 }
 

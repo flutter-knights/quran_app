@@ -45,4 +45,29 @@ void main() {
     expect(seen.last, const AyahIdentifier(surah: 1, ayah: 2));
     n.dispose();
   });
+
+  test('translates to (surah, 0) while isPlayingBasmala is true', () async {
+    final controller = StreamController<PlaybackState>();
+    addTearDown(controller.close);
+    when(() => playback.stream).thenAnswer((_) => controller.stream);
+
+    final n = CurrentAyahNotifier(playbackCubit: playback);
+
+    // Basmala intro: bounds JSON indexes the header line as (surah, 0).
+    controller.add(const PlaybackState(
+      currentAyah: AyahIdentifier(surah: 2, ayah: 1),
+      isPlayingBasmala: true,
+    ));
+    await Future<void>.delayed(Duration.zero);
+    expect(n.value, const AyahIdentifier(surah: 2, ayah: 0));
+
+    // Basmala ends → surface the target verse.
+    controller.add(const PlaybackState(
+      currentAyah: AyahIdentifier(surah: 2, ayah: 1),
+    ));
+    await Future<void>.delayed(Duration.zero);
+    expect(n.value, const AyahIdentifier(surah: 2, ayah: 1));
+
+    n.dispose();
+  });
 }

@@ -1,9 +1,12 @@
+/// Folder names are verified against https://mirrors.quranicaudio.com/everyayah/
+/// (a mirror of everyayah.com). Removing or renaming an entry requires
+/// confirming with a fresh HEAD/GET against `<folder>/001001.mp3`.
 enum Reciter {
   husary('Husary_64kbps', 'محمود خليل الحصري'),
   husaryMuallim('Husary_Muallim_128kbps', 'الحصري (المعلم)'),
   husaryMujawwad('Husary_Mujawwad_128kbps', 'الحصري (مجود)'),
   minshawyMurattal('Minshawy_Murattal_128kbps', 'المنشاوي (مرتل)'),
-  // minshawyMujawwad('Minshawy_Mujawwad_64kbps', 'المنشاوي (مجود)'),
+  minshawyMujawwad('Minshawy_Mujawwad_192kbps', 'المنشاوي (مجود)'),
   abdulBasitMurattal('Abdul_Basit_Murattal_192kbps', 'عبد الباسط (مرتل)'),
   abdulBasitMujawwad('Abdul_Basit_Mujawwad_128kbps', 'عبد الباسط (مجود)'),
   alafasy('Alafasy_128kbps', 'مشاري راشد العفاسي'),
@@ -11,12 +14,11 @@ enum Reciter {
   shuraym('Saood_ash-Shuraym_128kbps', 'سعود الشريم'),
   maher('Maher_AlMuaiqly_64kbps', 'ماهر المعيقلي'),
   ghamadi('Ghamadi_40kbps', 'سعد الغامدي'),
-  // ajmy('Ahmed_ibn_Ali_al-Ajmy_128kbps', 'أحمد العجمي'),
   qatami('Nasser_Alqatami_128kbps', 'ناصر القطامي'),
   dosary('Yasser_Ad-Dussary_128kbps', 'ياسر الدوسري'),
-  shatree('Abu_Bakr_Ash-Shaatree_128kbps', 'أبو بكر الشاطري');
-  // faresAbbad('Fares_Abbad_64kbps', 'فارس عباد'),
-  // husaryWarsh('Husary_Warsh_64kbps', 'الحصري (ورش)');
+  shatree('Abu_Bakr_Ash-Shaatree_128kbps', 'أبو بكر الشاطري'),
+  tablaway('Mohammad_al_Tablaway_128kbps', 'محمد الطبلاوي'),
+  hudhaify('Hudhaify_128kbps', 'علي الحذيفي');
 
   final String folderName;
   final String arabicName;

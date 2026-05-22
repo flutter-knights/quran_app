@@ -17,20 +17,43 @@ class AyahPlaybackOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MushafCubit, MushafState>(
-      buildWhen: (a, b) => a.highlightedAyah != b.highlightedAyah,
+      buildWhen: (a, b) =>
+          a.highlightedAyah != b.highlightedAyah ||
+          a.highlightedAyahCenterY != b.highlightedAyahCenterY ||
+          a.isOverlayPinned != b.isOverlayPinned,
       builder: (context, mushafState) {
-        final target = mushafState.highlightedAyah;
-        final visible = target != null;
-        return IgnorePointer(
-          ignoring: !visible,
-          child: AnimatedSlide(
-            offset: visible ? Offset.zero : const Offset(0, 1),
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            child: AnimatedOpacity(
-              opacity: visible ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 180),
-              child: visible ? _Body(target: target) : const SizedBox.shrink(),
+        final highlightTarget = mushafState.highlightedAyah;
+        final isPinned = mushafState.isOverlayPinned;
+        final visible = highlightTarget != null || isPinned;
+        final centerY = mushafState.highlightedAyahCenterY;
+        final anchorTop = centerY != null && centerY > 0.5;
+        return Positioned(
+          left: 0,
+          right: 0,
+          top: anchorTop ? 0 : null,
+          bottom: anchorTop ? null : 0,
+          child: IgnorePointer(
+            ignoring: !visible,
+            child: AnimatedSlide(
+              offset: visible
+                  ? Offset.zero
+                  : Offset(0, anchorTop ? -1 : 1),
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              child: AnimatedOpacity(
+                opacity: visible ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 180),
+                child: visible
+                    ? BlocBuilder<PlaybackCubit, PlaybackState>(
+                        buildWhen: (a, b) => a.currentAyah != b.currentAyah,
+                        builder: (context, playbackState) {
+                          final effectiveTarget =
+                              highlightTarget ?? playbackState.currentAyah;
+                          return _Body(target: effectiveTarget);
+                        },
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ),
           ),
         );
@@ -41,89 +64,112 @@ class AyahPlaybackOverlay extends StatelessWidget {
 
 class _Body extends StatelessWidget {
   const _Body({required this.target});
-  final AyahIdentifier target;
+  final AyahIdentifier? target;
 
-  bool get _isFirst => target.surah == 1 && target.ayah == 1;
+  bool get _isFirst =>
+      target != null && target!.surah == 1 && target!.ayah == 1;
   bool get _isLast =>
-      target.surah == 114 && target.ayah == q.getVerseCount(114);
+      target != null &&
+      target!.surah == 114 &&
+      target!.ayah == q.getVerseCount(114);
+
+  bool _currentMatchesTarget(
+      AyahIdentifier? current, AyahIdentifier? target) {
+    if (current == null || target == null) return false;
+    if (current == target) return true;
+    if (target.ayah == 0 &&
+        current.surah == target.surah &&
+        current.ayah == 1) {
+      return true;
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final scheme = Theme.of(context).colorScheme;
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.surface,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: 8, vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    tooltip: s.playback_close,
-                    onPressed: () {
-                      context.read<PlaybackCubit>().stop();
-                      context.read<MushafCubit>().clearHighlight();
-                    },
+      color: scheme.surfaceContainerHighest,
+      borderRadius: const BorderRadius.all(Radius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: 8, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.expand_more),
+                  tooltip: s.playback_close,
+                  onPressed: () =>
+                      context.read<MushafCubit>().unpinOverlay(),
+                ),
+                Expanded(
+                  child: Text(
+                    target != null
+                        ? s.ayah_label(
+                            target!.surah.toString(),
+                            target!.ayah.toString())
+                        : '',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
-                  Expanded(
-                    child: Text(
-                      s.ayah_label(
-                          target.surah.toString(), target.ayah.toString()),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleSmall,
+                ),
+                _SpeedChip(),
+              ],
+            ),
+            BlocBuilder<PlaybackCubit, PlaybackState>(
+              buildWhen: (a, b) =>
+                  a.isPlaying != b.isPlaying ||
+                  a.isPaused != b.isPaused ||
+                  a.isLoading != b.isLoading ||
+                  a.currentAyah != b.currentAyah,
+              builder: (context, p) {
+                final matchesTarget =
+                    _currentMatchesTarget(p.currentAyah, target);
+                final isTargetPlaying = p.isPlaying && matchesTarget;
+                final isResumable = p.isPaused && matchesTarget;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.skip_previous),
+                      tooltip: s.playback_previous,
+                      onPressed: _isFirst
+                          ? null
+                          : () =>
+                              context.read<PlaybackCubit>().skipPrevious(),
                     ),
-                  ),
-                  _SpeedChip(),
-                ],
-              ),
-              BlocBuilder<PlaybackCubit, PlaybackState>(
-                buildWhen: (a, b) =>
-                    a.isPlaying != b.isPlaying ||
-                    a.isLoading != b.isLoading ||
-                    a.currentAyah != b.currentAyah,
-                builder: (context, p) {
-                  final isTargetPlaying = p.currentAyah == target && p.isPlaying;
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.skip_previous),
-                        tooltip: s.playback_previous,
-                        onPressed: _isFirst
-                            ? null
-                            : () => context.read<PlaybackCubit>().skipPrevious(),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.replay),
-                        tooltip: s.playback_restart,
-                        onPressed: p.currentAyah == null
-                            ? null
-                            : () => context.read<PlaybackCubit>().restartCurrent(),
-                      ),
-                      _PlayPauseButton(
-                        target: target,
-                        isPlaying: isTargetPlaying,
-                        isLoading: p.isLoading,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.skip_next),
-                        tooltip: s.playback_next,
-                        onPressed: _isLast
-                            ? null
-                            : () => context.read<PlaybackCubit>().skipNext(),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
+                    IconButton(
+                      icon: const Icon(Icons.replay),
+                      tooltip: s.playback_restart,
+                      onPressed: p.currentAyah == null
+                          ? null
+                          : () => context
+                              .read<PlaybackCubit>()
+                              .restartCurrent(),
+                    ),
+                    _PlayPauseButton(
+                      target: target,
+                      isPlaying: isTargetPlaying,
+                      isResumable: isResumable,
+                      isLoading: p.isLoading,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.skip_next),
+                      tooltip: s.playback_next,
+                      onPressed: _isLast
+                          ? null
+                          : () => context.read<PlaybackCubit>().skipNext(),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -134,10 +180,12 @@ class _PlayPauseButton extends StatelessWidget {
   const _PlayPauseButton({
     required this.target,
     required this.isPlaying,
+    required this.isResumable,
     required this.isLoading,
   });
-  final AyahIdentifier target;
+  final AyahIdentifier? target;
   final bool isPlaying;
+  final bool isResumable;
   final bool isLoading;
 
   @override
@@ -159,14 +207,18 @@ class _PlayPauseButton extends StatelessWidget {
       iconSize: 40,
       icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
       tooltip: isPlaying ? S.of(context).playback_pause : S.of(context).play,
-      onPressed: () {
-        final cubit = context.read<PlaybackCubit>();
-        if (isPlaying) {
-          cubit.pause();
-        } else {
-          cubit.playSelected(target);
-        }
-      },
+      onPressed: target == null
+          ? null
+          : () {
+              final cubit = context.read<PlaybackCubit>();
+              if (isPlaying) {
+                cubit.pause();
+              } else if (isResumable) {
+                cubit.resume();
+              } else {
+                cubit.playSelected(target!);
+              }
+            },
     );
   }
 }
