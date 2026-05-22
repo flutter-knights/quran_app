@@ -89,4 +89,30 @@ void main() {
     });
     expect(round.isPrayerStripPinned, false);
   });
+
+  blocTest<SettingsCubit, SettingsState>(
+    'updatePrayerStripPinned(true) emits new state with flag true',
+    build: () => SettingsCubit(),
+    act: (c) => c.updatePrayerStripPinned(true),
+    expect: () => [
+      isA<SettingsState>().having(
+        (s) => s.settingsModel.isPrayerStripPinned,
+        'isPrayerStripPinned',
+        true,
+      ),
+    ],
+  );
+
+  blocTest<SettingsCubit, SettingsState>(
+    'updatePrayerStripPinned(false) emits new state with flag false',
+    build: () => SettingsCubit()..updatePrayerStripPinned(true),
+    act: (c) => c.updatePrayerStripPinned(false),
+    expect: () => [
+      isA<SettingsState>().having(
+        (s) => s.settingsModel.isPrayerStripPinned,
+        'isPrayerStripPinned',
+        false,
+      ),
+    ],
+  );
 }
