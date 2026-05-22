@@ -61,3 +61,19 @@ class LocationPermissionDeniedForeverFailure extends Failure {
 class CacheFailure extends Failure {
   const CacheFailure(super.message);
 }
+
+class PermissionDeniedFailure extends Failure {
+  const PermissionDeniedFailure(super.message);
+}
+
+class NoPrayerDataFailure extends Failure {
+  const NoPrayerDataFailure(super.message);
+}
+
+class PlatformNotSupportedFailure extends Failure {
+  const PlatformNotSupportedFailure(super.message);
+}
+
+class UnknownNotificationFailure extends Failure {
+  const UnknownNotificationFailure(super.message);
+}
