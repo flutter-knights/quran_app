@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/usecases/usecase.dart';
 import 'package:quran_app/features/home/domain/usecases/pre_cache_prayer_times.dart';
@@ -50,11 +51,14 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               );
-              final locale = context.read<SettingsCubit>().state.settingsModel.isArabic ? 'ar' : 'en';
+              final settings = context.read<SettingsCubit>().state.settingsModel;
+              final locale = settings.isArabic ? 'ar' : 'en';
               unawaited(
                 sl<SyncDailyAdhans>().call(
                   SyncDailyAdhansParams(
                     prayerTimes: loaded.dailyPrayerContext.prayerTimes,
+                    enabledByPrayer: settings.adhanEnabledByPrayer,
+                    reminderMinutesByPrayer: settings.reminderMinutesByPrayer,
                     localeCode: locale,
                   ),
                 ),
@@ -63,10 +67,16 @@ class HomePage extends StatelessWidget {
             },
           ),
           BlocListener<SettingsCubit, SettingsState>(
-            listenWhen: (prev, curr) =>
-                prev.settingsModel.isPrayerStripPinned !=
-                    curr.settingsModel.isPrayerStripPinned ||
-                prev.settingsModel.isArabic != curr.settingsModel.isArabic,
+            listenWhen: (prev, curr) {
+              final p = prev.settingsModel;
+              final c = curr.settingsModel;
+              return p.isPrayerStripPinned != c.isPrayerStripPinned ||
+                  p.isArabic != c.isArabic ||
+                  !_mapBoolEq(p.adhanEnabledByPrayer, c.adhanEnabledByPrayer) ||
+                  !_mapIntEq(
+                    p.reminderMinutesByPrayer, c.reminderMinutesByPrayer,
+                  );
+            },
             listener: (context, settings) {
               final ctxState = context.read<DailyPrayerContextCubit>().state;
               if (settings.settingsModel.isPrayerStripPinned &&
@@ -74,6 +84,23 @@ class HomePage extends StatelessWidget {
                 _enableOrRefreshStrip(context, ctxState);
               } else if (!settings.settingsModel.isPrayerStripPinned) {
                 unawaited(sl<DisablePrayerStrip>().call(NoParams()));
+              }
+
+              // Re-sync adhans + reminders whenever the relevant settings change.
+              if (ctxState is DailyPrayerContextLoaded) {
+                final locale = settings.settingsModel.isArabic ? 'ar' : 'en';
+                unawaited(
+                  sl<SyncDailyAdhans>().call(
+                    SyncDailyAdhansParams(
+                      prayerTimes: ctxState.dailyPrayerContext.prayerTimes,
+                      enabledByPrayer:
+                          settings.settingsModel.adhanEnabledByPrayer,
+                      reminderMinutesByPrayer:
+                          settings.settingsModel.reminderMinutesByPrayer,
+                      localeCode: locale,
+                    ),
+                  ),
+                );
               }
             },
           ),
@@ -106,5 +133,21 @@ class HomePage extends StatelessWidget {
         EnablePrayerStripParams(state: stripState),
       ),
     );
+  }
+
+  static bool _mapBoolEq(Map<PrayerName, bool> a, Map<PrayerName, bool> b) {
+    if (a.length != b.length) return false;
+    for (final e in a.entries) {
+      if (b[e.key] != e.value) return false;
+    }
+    return true;
+  }
+
+  static bool _mapIntEq(Map<PrayerName, int> a, Map<PrayerName, int> b) {
+    if (a.length != b.length) return false;
+    for (final e in a.entries) {
+      if (b[e.key] != e.value) return false;
+    }
+    return true;
   }
 }
