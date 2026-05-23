@@ -68,10 +68,14 @@ class PrayerStripStateBuilder {
     final dayPart = prayerTimes.date.day.toIndicNumerals(localeCode);
     final hijriLabel = '$dayPart $monthName';
 
+    final weekdayLabel =
+        localeCode == 'ar' ? prayerTimes.date.weekDay : prayerTimes.date.enWeekDay;
+
     return PrayerStripState(
       cells: cells,
       nextPrayerIndex: nextIndex < 0 ? 0 : nextIndex,
       hijriDateLabel: hijriLabel,
+      weekdayLabel: weekdayLabel,
       localeCode: localeCode,
       isFriday: isFriday,
     );

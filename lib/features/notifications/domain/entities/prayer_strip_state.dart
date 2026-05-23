@@ -5,6 +5,7 @@ class PrayerStripState extends Equatable {
   final List<PrayerCell> cells;
   final int nextPrayerIndex;
   final String hijriDateLabel;
+  final String weekdayLabel;
   final String localeCode;
   final bool isFriday;
 
@@ -12,6 +13,7 @@ class PrayerStripState extends Equatable {
     required this.cells,
     required this.nextPrayerIndex,
     required this.hijriDateLabel,
+    required this.weekdayLabel,
     required this.localeCode,
     required this.isFriday,
   });
@@ -20,6 +22,7 @@ class PrayerStripState extends Equatable {
     List<PrayerCell>? cells,
     int? nextPrayerIndex,
     String? hijriDateLabel,
+    String? weekdayLabel,
     String? localeCode,
     bool? isFriday,
   }) {
@@ -27,6 +30,7 @@ class PrayerStripState extends Equatable {
       cells: cells ?? this.cells,
       nextPrayerIndex: nextPrayerIndex ?? this.nextPrayerIndex,
       hijriDateLabel: hijriDateLabel ?? this.hijriDateLabel,
+      weekdayLabel: weekdayLabel ?? this.weekdayLabel,
       localeCode: localeCode ?? this.localeCode,
       isFriday: isFriday ?? this.isFriday,
     );
@@ -38,6 +42,7 @@ class PrayerStripState extends Equatable {
             .toList(),
         'nextPrayerIndex': nextPrayerIndex,
         'hijriDateLabel': hijriDateLabel,
+        'weekdayLabel': weekdayLabel,
         'localeCode': localeCode,
         'isFriday': isFriday,
       };
@@ -53,6 +58,7 @@ class PrayerStripState extends Equatable {
           .toList(),
       nextPrayerIndex: json['nextPrayerIndex'] as int,
       hijriDateLabel: json['hijriDateLabel'] as String,
+      weekdayLabel: (json['weekdayLabel'] as String?) ?? '',
       localeCode: json['localeCode'] as String,
       isFriday: json['isFriday'] as bool,
     );
@@ -60,5 +66,5 @@ class PrayerStripState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [cells, nextPrayerIndex, hijriDateLabel, localeCode, isFriday];
+      [cells, nextPrayerIndex, hijriDateLabel, weekdayLabel, localeCode, isFriday];
 }

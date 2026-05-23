@@ -11,6 +11,7 @@ void main() {
       cells: [fajr, sunrise],
       nextPrayerIndex: 0,
       hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: 'Monday',
       localeCode: 'en',
       isFriday: false,
     );
@@ -18,6 +19,7 @@ void main() {
       cells: [fajr, sunrise],
       nextPrayerIndex: 0,
       hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: 'Monday',
       localeCode: 'en',
       isFriday: false,
     );
@@ -29,6 +31,7 @@ void main() {
       cells: [fajr, sunrise],
       nextPrayerIndex: 0,
       hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: 'Monday',
       localeCode: 'en',
       isFriday: false,
     );
@@ -41,6 +44,7 @@ void main() {
       cells: [fajr, sunrise],
       nextPrayerIndex: 1,
       hijriDateLabel: '5 ذو الحجة',
+      weekdayLabel: 'الجمعة',
       localeCode: 'ar',
       isFriday: true,
     );

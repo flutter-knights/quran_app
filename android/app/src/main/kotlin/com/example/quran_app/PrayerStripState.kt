@@ -8,6 +8,7 @@ data class PrayerStripState(
     val cells: List<PrayerCellNative>,
     val nextPrayerIndex: Int,
     val hijriDateLabel: String,
+    val weekdayLabel: String,
     val localeCode: String,
     val isFriday: Boolean
 ) {
@@ -24,6 +25,7 @@ data class PrayerStripState(
                 cells = cells,
                 nextPrayerIndex = obj.getInt("nextPrayerIndex"),
                 hijriDateLabel = obj.getString("hijriDateLabel"),
+                weekdayLabel = if (obj.has("weekdayLabel")) obj.getString("weekdayLabel") else "",
                 localeCode = obj.getString("localeCode"),
                 isFriday = obj.getBoolean("isFriday")
             )
@@ -39,6 +41,7 @@ data class PrayerStripState(
         obj.put("cells", arr)
         obj.put("nextPrayerIndex", nextPrayerIndex)
         obj.put("hijriDateLabel", hijriDateLabel)
+        obj.put("weekdayLabel", weekdayLabel)
         obj.put("localeCode", localeCode)
         obj.put("isFriday", isFriday)
         return obj.toString()
