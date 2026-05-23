@@ -112,8 +112,30 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
             timingsByPrayer: _lowercasePrayerKeys(prayerTimes.timings),
             localeCode: localeCode,
           );
+        } else {
+          await legacyScheduler.cancelAllStaticReminders();
+          final date = _parseGregorian(prayerTimes.date.gregorianDate);
+          if (date == null) return;
+          for (final e in reminderMinutesByPrayer.entries) {
+            if (e.value <= 0) continue;
+            final hhmm = prayerTimes.timings[e.key];
+            if (hhmm == null) continue;
+            final parts = hhmm.split(':');
+            if (parts.length != 2) continue;
+            final hour = int.tryParse(parts[0]);
+            final minute = int.tryParse(parts[1]);
+            if (hour == null || minute == null) continue;
+            final prayerAt =
+                DateTime(date.year, date.month, date.day, hour, minute);
+            final at = prayerAt.subtract(Duration(minutes: e.value));
+            await legacyScheduler.scheduleStaticReminder(
+              prayer: e.key,
+              at: at,
+              title: _prayerNameLocalized(e.key, localeCode),
+              body: _reminderBody(e.key, e.value, localeCode),
+            );
+          }
         }
-        // iOS path is added in Task 13.
       });
 
   @override
@@ -121,11 +143,45 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       _runOptional('cancelAllReminders', () async {
         if (defaultTargetPlatform == TargetPlatform.android) {
           await native.cancelAllReminders();
+        } else {
+          await legacyScheduler.cancelAllStaticReminders();
         }
-        // iOS: no-op for now; Task 13 wires legacy scheduler.
       });
 
   Map<String, String> _lowercasePrayerKeys(Map<PrayerName, String> source) {
     return {for (final e in source.entries) e.key.name.toLowerCase(): e.value};
+  }
+
+  DateTime? _parseGregorian(String s) {
+    // PrayerTimes.date.gregorianDate is "dd-MM-yyyy".
+    final parts = s.split('-');
+    if (parts.length != 3) return null;
+    final d = int.tryParse(parts[0]);
+    final m = int.tryParse(parts[1]);
+    final y = int.tryParse(parts[2]);
+    if (d == null || m == null || y == null) return null;
+    return DateTime(y, m, d);
+  }
+
+  String _prayerNameLocalized(PrayerName p, String locale) {
+    if (locale == 'ar') {
+      return const {
+        PrayerName.fajr: 'الفجر',
+        PrayerName.dhuhr: 'الظهر',
+        PrayerName.asr: 'العصر',
+        PrayerName.maghrib: 'المغرب',
+        PrayerName.isha: 'العشاء',
+        PrayerName.sunrise: 'الشروق',
+      }[p]!;
+    }
+    return p.name[0].toUpperCase() + p.name.substring(1);
+  }
+
+  String _reminderBody(PrayerName p, int minutes, String locale) {
+    final name = _prayerNameLocalized(p, locale);
+    if (locale == 'ar') {
+      return '$name خلال $minutes دقيقة';
+    }
+    return '$name in $minutes minutes';
   }
 }

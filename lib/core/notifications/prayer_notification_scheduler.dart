@@ -1,3 +1,4 @@
+import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 
 abstract class PrayerNotificationScheduler {
@@ -5,9 +6,18 @@ abstract class PrayerNotificationScheduler {
   Future<void> scheduleDailyPrayerNotifications(PrayerTimes prayerTimes);
   Future<void> cancelAllPrayerNotifications();
 
-  /// Debug-only: fires a one-off "Adhan test" notification [delay] from now,
-  /// going through the same channel/sound/scheduling path as real prayer
-  /// notifications. Used to verify background delivery without waiting for
-  /// an actual prayer time.
+  /// Schedules a single static pre-prayer reminder for [prayer] at [at].
+  /// Used on iOS only — Android has its own scheduler with live countdown.
+  Future<void> scheduleStaticReminder({
+    required PrayerName prayer,
+    required DateTime at,
+    required String title,
+    required String body,
+  });
+
+  /// Cancels all pre-prayer reminders that were posted via
+  /// [scheduleStaticReminder]. iOS-only callsite.
+  Future<void> cancelAllStaticReminders();
+
   Future<void> scheduleTestNotification({Duration delay});
 }

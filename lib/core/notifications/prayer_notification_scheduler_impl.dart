@@ -24,6 +24,14 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     PrayerName.isha: 15,
   };
 
+  static const Map<PrayerName, int> _reminderIds = {
+    PrayerName.fajr: 20,
+    PrayerName.dhuhr: 22,
+    PrayerName.asr: 23,
+    PrayerName.maghrib: 24,
+    PrayerName.isha: 25,
+  };
+
   static const Map<PrayerName, String> _prayerTitles = {
     PrayerName.fajr: 'Fajr',
     PrayerName.dhuhr: 'Dhuhr',
@@ -91,6 +99,23 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     iOS: DarwinNotificationDetails(
       sound: 'normal_adhan.caf',
       presentSound: true,
+      presentAlert: true,
+      presentBadge: false,
+    ),
+  );
+
+  static const NotificationDetails _reminderDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'prayer_reminder_channel',
+      'Pre-prayer reminders',
+      channelDescription: 'Notifies you a few minutes before each prayer',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+      playSound: false,
+      enableVibration: true,
+    ),
+    iOS: DarwinNotificationDetails(
+      presentSound: false,
       presentAlert: true,
       presentBadge: false,
     ),
@@ -224,5 +249,40 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
     debugPrint('[PrayerNotif] test scheduled at $fireAt');
+  }
+
+  @override
+  Future<void> scheduleStaticReminder({
+    required PrayerName prayer,
+    required DateTime at,
+    required String title,
+    required String body,
+  }) async {
+    if (!_initialized) {
+      debugPrint('[PrayerNotif] reminder before init — skipping');
+      return;
+    }
+    final id = _reminderIds[prayer];
+    if (id == null) return;
+    if (at.isBefore(DateTime.now())) {
+      debugPrint('[PrayerNotif] reminder for $prayer in the past — skipping');
+      return;
+    }
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(at, tz.local),
+      notificationDetails: _reminderDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+    debugPrint('[PrayerNotif] reminder scheduled for $prayer at $at');
+  }
+
+  @override
+  Future<void> cancelAllStaticReminders() async {
+    for (final id in _reminderIds.values) {
+      await _plugin.cancel(id: id);
+    }
   }
 }
