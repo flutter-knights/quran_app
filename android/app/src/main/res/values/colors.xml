@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Mirrors lib/config/theme/app_colors.dart (dark palette).
+    <!-- Mirrors lib/config/theme/app_colors.dart.
          RemoteViews can't read dynamic theme — these are the canonical strip colors. -->
     <color name="strip_onyx">#FF081815</color>
     <color name="strip_evergreen">#FF0C231F</color>
     <color name="strip_pine_teal">#FF134E3E</color>
+    <color name="strip_deep_teal">#FF4A7C6A</color>
     <color name="strip_bright_snow">#FFF8F9F8</color>
     <color name="strip_grey_olive">#FF8B9A94</color>
-    <color name="strip_pill_gold">#FFD4A857</color>
+
+    <!-- Strip semantic tokens (used by layouts + renderer) -->
+    <color name="strip_text_primary">#FFF8F9F8</color>   <!-- bright-snow -->
+    <color name="strip_text_muted">#FF8B9A94</color>     <!-- grey-olive -->
+    <color name="strip_text_dim">#66F8F9F8</color>       <!-- snow @ 40% — passed prayers -->
+    <color name="strip_accent">#FF4A7C6A</color>         <!-- deep-teal — pill + moon + Friday -->
 </resources>
