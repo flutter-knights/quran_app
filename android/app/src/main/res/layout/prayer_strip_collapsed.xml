@@ -1,120 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Collapsed pinned prayer-strip notification.
+    Layout: [next prayer label] [time pill] ......... [hijri date · weekday]
+    Mirrors the next-prayer pill treatment from prayer_strip_expanded.xml so
+    the collapsed view feels like a shrunken next-prayer cell.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
     android:background="@drawable/strip_notification_bg"
-    android:padding="14dp"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
     android:layoutDirection="locale">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/collapsed_next_label"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/strip_text_primary"
+        android:textSize="14sp"
+        android:fontFamily="@font/cairo_semibold"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <TextView
+        android:id="@+id/collapsed_next_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/strip_text_primary"
+        android:textSize="13sp"
+        android:fontFamily="@font/cairo_regular"
+        android:background="@drawable/strip_time_pill"
+        android:maxLines="1" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
         android:orientation="horizontal"
-        android:weightSum="6"
+        android:gravity="end|center_vertical"
         android:layoutDirection="locale">
 
-        <LinearLayout android:id="@+id/cell_0"
-            android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:paddingTop="8dp" android:paddingBottom="8dp"
-            android:paddingStart="4dp" android:paddingEnd="4dp">
-            <TextView android:id="@+id/cell_0_label"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="12sp"
-                android:fontFamily="@font/cairo_semibold"
-                android:maxLines="1" android:ellipsize="end" />
-            <TextView android:id="@+id/cell_0_time"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_muted" android:textSize="11sp"
-                android:fontFamily="@font/cairo_regular"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/collapsed_date_hijri"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/strip_text_muted"
+            android:textSize="12sp"
+            android:fontFamily="@font/cairo_regular"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
-        <LinearLayout android:id="@+id/cell_1"
-            android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:paddingTop="8dp" android:paddingBottom="8dp"
-            android:paddingStart="4dp" android:paddingEnd="4dp">
-            <TextView android:id="@+id/cell_1_label"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="12sp"
-                android:fontFamily="@font/cairo_semibold"
-                android:maxLines="1" android:ellipsize="end" />
-            <TextView android:id="@+id/cell_1_time"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_muted" android:textSize="11sp"
-                android:fontFamily="@font/cairo_regular"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:text="·"
+            android:textColor="@color/strip_text_dim"
+            android:textSize="12sp" />
 
-        <LinearLayout android:id="@+id/cell_2"
-            android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:paddingTop="8dp" android:paddingBottom="8dp"
-            android:paddingStart="4dp" android:paddingEnd="4dp">
-            <TextView android:id="@+id/cell_2_label"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="12sp"
-                android:fontFamily="@font/cairo_semibold"
-                android:maxLines="1" android:ellipsize="end" />
-            <TextView android:id="@+id/cell_2_time"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_muted" android:textSize="11sp"
-                android:fontFamily="@font/cairo_regular"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/cell_3"
-            android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:paddingTop="8dp" android:paddingBottom="8dp"
-            android:paddingStart="4dp" android:paddingEnd="4dp">
-            <TextView android:id="@+id/cell_3_label"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="12sp"
-                android:fontFamily="@font/cairo_semibold"
-                android:maxLines="1" android:ellipsize="end" />
-            <TextView android:id="@+id/cell_3_time"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_muted" android:textSize="11sp"
-                android:fontFamily="@font/cairo_regular"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/cell_4"
-            android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:paddingTop="8dp" android:paddingBottom="8dp"
-            android:paddingStart="4dp" android:paddingEnd="4dp">
-            <TextView android:id="@+id/cell_4_label"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="12sp"
-                android:fontFamily="@font/cairo_semibold"
-                android:maxLines="1" android:ellipsize="end" />
-            <TextView android:id="@+id/cell_4_time"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_muted" android:textSize="11sp"
-                android:fontFamily="@font/cairo_regular"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/cell_5"
-            android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:paddingTop="8dp" android:paddingBottom="8dp"
-            android:paddingStart="4dp" android:paddingEnd="4dp">
-            <TextView android:id="@+id/cell_5_label"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="12sp"
-                android:fontFamily="@font/cairo_semibold"
-                android:maxLines="1" android:ellipsize="end" />
-            <TextView android:id="@+id/cell_5_time"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_muted" android:textSize="11sp"
-                android:fontFamily="@font/cairo_regular"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
-
+        <TextView
+            android:id="@+id/collapsed_date_weekday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/strip_text_secondary"
+            android:textSize="12sp"
+            android:fontFamily="@font/cairo_regular"
+            android:maxLines="1"
+            android:ellipsize="end" />
     </LinearLayout>
 </LinearLayout>

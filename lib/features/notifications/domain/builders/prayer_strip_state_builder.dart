@@ -38,10 +38,11 @@ const _jumuahLabelEn = "Jum'ah";
 /// Builds a [PrayerStripState] snapshot from today's prayer times.
 ///
 /// Pure Dart — no Flutter dependency. Time strings come from the prayer-times
-/// service as `HH:mm` 24-hour strings; the builder applies Arabic-Indic
-/// numeral conversion for `localeCode == 'ar'` but does **not** apply the
-/// user's 12-hour preference. (The strip always shows 24-hour times, matching
-/// the reference design.)
+/// service as `HH:mm` 24-hour strings. The builder honors the user's hour-format
+/// preference via [use24Hour]: when `false`, times are rendered as 12-hour
+/// digits without an AM/PM (or ص/م) suffix to keep the notification compact.
+/// Arabic-Indic numeral conversion is applied for `localeCode == 'ar'` in
+/// either format.
 class PrayerStripStateBuilder {
   const PrayerStripStateBuilder._();
 
@@ -50,6 +51,7 @@ class PrayerStripStateBuilder {
     required PrayerName nextPrayer,
     required String localeCode,
     required bool isFriday,
+    required bool use24Hour,
   }) {
     final labels = localeCode == 'ar' ? _labelsAr : _labelsEn;
     final jumuah = localeCode == 'ar' ? _jumuahLabelAr : _jumuahLabelEn;
@@ -57,7 +59,10 @@ class PrayerStripStateBuilder {
     final cells = _renderOrder.map((p) {
       final rawLabel = labels[p]!;
       final label = (isFriday && p == PrayerName.dhuhr) ? jumuah : rawLabel;
-      final time = (prayerTimes.timings[p] ?? '').toIndicNumerals(localeCode);
+      final raw = prayerTimes.timings[p] ?? '';
+      final time = use24Hour
+          ? raw.toIndicNumerals(localeCode)
+          : _format12Hour(raw, localeCode);
       return PrayerCell(label: label, timeFormatted: time);
     }).toList();
 
@@ -79,5 +84,23 @@ class PrayerStripStateBuilder {
       localeCode: localeCode,
       isFriday: isFriday,
     );
+  }
+
+  /// Converts a `HH:mm` 24-hour string into a 12-hour string without an
+  /// AM/PM suffix (the strip is too tight to spare 3+ characters per cell).
+  /// Falls back to the input (with locale numerals applied) if the input
+  /// cannot be parsed.
+  static String _format12Hour(String hhmm24, String localeCode) {
+    final parts = hhmm24.split(':');
+    if (parts.length != 2) return hhmm24.toIndicNumerals(localeCode);
+    final h = int.tryParse(parts[0]);
+    final m = parts[1];
+    if (h == null || h < 0 || h > 23) {
+      return hhmm24.toIndicNumerals(localeCode);
+    }
+    var h12 = h % 12;
+    if (h12 == 0) h12 = 12;
+    final hStr = h12.toString().padLeft(2, '0');
+    return '$hStr:$m'.toIndicNumerals(localeCode);
   }
 }

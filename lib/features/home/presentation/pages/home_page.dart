@@ -72,6 +72,7 @@ class HomePage extends StatelessWidget {
               final c = curr.settingsModel;
               return p.isPrayerStripPinned != c.isPrayerStripPinned ||
                   p.isArabic != c.isArabic ||
+                  p.isFormat12Hours != c.isFormat12Hours ||
                   !_mapBoolEq(p.adhanEnabledByPrayer, c.adhanEnabledByPrayer) ||
                   !_mapIntEq(
                     p.reminderMinutesByPrayer, c.reminderMinutesByPrayer,
@@ -127,6 +128,9 @@ class HomePage extends StatelessWidget {
       nextPrayer: nextPrayer,
       localeCode: settings.isArabic ? 'ar' : 'en',
       isFriday: now.weekday == DateTime.friday,
+      // `isFormat12Hours` is named opposite to its meaning — `true` means
+      // the user enabled the "24-hour format" toggle in settings.
+      use24Hour: settings.isFormat12Hours,
     );
     unawaited(
       sl<EnablePrayerStrip>().call(

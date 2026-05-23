@@ -33,12 +33,14 @@ class PrayerStripRenderer(private val context: Context) {
     fun build(state: PrayerStripState): Notification {
         val expanded = RemoteViews(context.packageName, R.layout.prayer_strip_expanded)
 
-        // Header: hijri date + weekday. App name is shown by the system notification frame.
-        expanded.setTextViewText(R.id.strip_hijri, state.hijriDateLabel)
-        expanded.setTextViewText(R.id.strip_weekday, state.weekdayLabel)
+        // Friday weekday accent is reused by both expanded header and collapsed date row.
         val weekdayColor =
             if (state.isFriday) context.resources.getColor(R.color.strip_accent, null)
             else context.resources.getColor(R.color.strip_text_secondary, null)
+
+        // Header: hijri date + weekday. App name is shown by the system notification frame.
+        expanded.setTextViewText(R.id.strip_hijri, state.hijriDateLabel)
+        expanded.setTextViewText(R.id.strip_weekday, state.weekdayLabel)
         expanded.setTextColor(R.id.strip_weekday, weekdayColor)
 
         val labelIds = intArrayOf(
@@ -79,6 +81,19 @@ class PrayerStripRenderer(private val context: Context) {
             }
         }
 
+        // Collapsed view: next-prayer name + time pill on the start side, hijri · weekday
+        // on the end side. nextPrayerIndex is clamped by PrayerStripStateBuilder, but
+        // getOrNull keeps the renderer safe if the upstream contract ever changes.
+        val collapsed = RemoteViews(context.packageName, R.layout.prayer_strip_collapsed)
+        val nextCell = state.cells.getOrNull(state.nextPrayerIndex)
+        if (nextCell != null) {
+            collapsed.setTextViewText(R.id.collapsed_next_label, nextCell.label)
+            collapsed.setTextViewText(R.id.collapsed_next_time, nextCell.time)
+        }
+        collapsed.setTextViewText(R.id.collapsed_date_hijri, state.hijriDateLabel)
+        collapsed.setTextViewText(R.id.collapsed_date_weekday, state.weekdayLabel)
+        collapsed.setTextColor(R.id.collapsed_date_weekday, weekdayColor)
+
         val launchPI = PendingIntent.getActivity(
             context, 0,
             Intent(context, MainActivity::class.java).apply {
@@ -92,6 +107,7 @@ class PrayerStripRenderer(private val context: Context) {
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setCustomContentView(collapsed)
             .setCustomBigContentView(expanded)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setContentIntent(launchPI)
