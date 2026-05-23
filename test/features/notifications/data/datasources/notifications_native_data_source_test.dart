@@ -86,4 +86,29 @@ void main() {
       throwsA(isA<PlatformNotImplementedException>()),
     );
   });
+
+  test('schedulePrayerReminders invokes the channel with the reminder map',
+      () async {
+    await ds.schedulePrayerReminders(
+      remindersByPrayer: const {'fajr': 15, 'maghrib': 5},
+      timingsByPrayer: const {
+        'fajr': '04:15',
+        'dhuhr': '12:52',
+        'maghrib': '19:46',
+      },
+      localeCode: 'ar',
+    );
+    expect(calls.single.method, 'schedulePrayerReminders');
+    final args = calls.single.arguments as Map;
+    expect(args['remindersByPrayer'], {'fajr': 15, 'maghrib': 5});
+    expect(args['timings'], {
+      'fajr': '04:15', 'dhuhr': '12:52', 'maghrib': '19:46',
+    });
+    expect(args['localeCode'], 'ar');
+  });
+
+  test('cancelAllReminders invokes the channel', () async {
+    await ds.cancelAllReminders();
+    expect(calls.single.method, 'cancelAllReminders');
+  });
 }

@@ -22,6 +22,12 @@ abstract class NotificationsNativeDataSource {
     required String localeCode,
   });
   Future<void> cancelAllAdhans();
+  Future<void> schedulePrayerReminders({
+    required Map<String, int> remindersByPrayer,
+    required Map<String, String> timingsByPrayer,
+    required String localeCode,
+  });
+  Future<void> cancelAllReminders();
 
   /// Debug-only. Fires a one-off adhan `delay` from now via the native pipeline.
   Future<void> scheduleTestAdhan({
@@ -70,6 +76,21 @@ class NotificationsNativeDataSourceImpl
 
   @override
   Future<void> cancelAllAdhans() => _invoke('cancelAllAdhans');
+
+  @override
+  Future<void> schedulePrayerReminders({
+    required Map<String, int> remindersByPrayer,
+    required Map<String, String> timingsByPrayer,
+    required String localeCode,
+  }) =>
+      _invoke('schedulePrayerReminders', {
+        'remindersByPrayer': remindersByPrayer,
+        'timings': timingsByPrayer,
+        'localeCode': localeCode,
+      });
+
+  @override
+  Future<void> cancelAllReminders() => _invoke('cancelAllReminders');
 
   @override
   Future<void> scheduleTestAdhan({
