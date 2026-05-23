@@ -1,4 +1,6 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
+import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
@@ -46,11 +48,31 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     required PrayerTimes prayerTimes,
     required AdhanAudioSettings audio,
   }) =>
-      // Plan A: `audio` is dropped because the legacy scheduler has no audio
-      // concept. Plan B will route audio through `native.scheduleDailyAdhans`.
-      _run(() => legacyScheduler.scheduleDailyPrayerNotifications(prayerTimes));
+      _run(() async {
+        if (defaultTargetPlatform == TargetPlatform.android) {
+          await native.scheduleDailyAdhans(
+            timingsByPrayer: _lowercasePrayerKeys(prayerTimes.timings),
+            clipAssetByPrayer: _lowercasePrayerKeys(audio.clipAssetByPrayer),
+            volume: audio.volume,
+          );
+        } else {
+          // iOS (or any non-Android target) keeps the legacy path.
+          await legacyScheduler.scheduleDailyPrayerNotifications(prayerTimes);
+        }
+      });
 
   @override
   Future<Either<Failure, Unit>> cancelAllAdhans() =>
-      _run(() => legacyScheduler.cancelAllPrayerNotifications());
+      _run(() async {
+        if (defaultTargetPlatform == TargetPlatform.android) {
+          await native.cancelAllAdhans();
+        } else {
+          await legacyScheduler.cancelAllPrayerNotifications();
+        }
+      });
+
+  /// Maps PrayerName enum to lowercase string key ("fajr", "sunrise", "dhuhr"…).
+  Map<String, String> _lowercasePrayerKeys(Map<PrayerName, String> source) {
+    return {for (final e in source.entries) e.key.name.toLowerCase(): e.value};
+  }
 }
