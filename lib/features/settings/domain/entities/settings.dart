@@ -10,9 +10,17 @@ class Settings extends Equatable {
   final double playbackSpeed;
   final Reciter defaultReciter;
   final bool isPrayerStripPinned;
+
+  /// Keyed by the five obligatory prayers. [PrayerName.sunrise] is intentionally
+  /// excluded — sunrise has no adhan in this app.
   final Map<PrayerName, bool> adhanEnabledByPrayer;
+
+  /// Keyed by the five obligatory prayers. [PrayerName.sunrise] is intentionally
+  /// excluded — sunrise has no adhan in this app.
   final Map<PrayerName, int> reminderMinutesByPrayer;
 
+  /// Keyed by the five obligatory prayers. [PrayerName.sunrise] is intentionally
+  /// excluded — sunrise has no adhan in this app.
   static const Map<PrayerName, bool> defaultAdhanEnabled = {
     PrayerName.fajr: true,
     PrayerName.dhuhr: true,
@@ -21,6 +29,8 @@ class Settings extends Equatable {
     PrayerName.isha: true,
   };
 
+  /// Keyed by the five obligatory prayers. [PrayerName.sunrise] is intentionally
+  /// excluded — sunrise has no adhan in this app.
   static const Map<PrayerName, int> defaultReminderMinutes = {
     PrayerName.fajr: 0,
     PrayerName.dhuhr: 0,

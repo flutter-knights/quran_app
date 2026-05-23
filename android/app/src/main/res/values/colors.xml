@@ -9,6 +9,9 @@
     <color name="strip_bright_snow">#FFF8F9F8</color>
     <color name="strip_grey_olive">#FF8B9A94</color>
 
+    <!-- Splash screen background — matches Flutter app's onyx dark background -->
+    <color name="splashBackground">#FF081815</color>
+
     <!-- Strip semantic tokens (used by layouts + renderer) -->
     <color name="strip_text_primary">#FFF8F9F8</color>   <!-- bright-snow -->
     <color name="strip_text_secondary">#FFCCD6D0</color> <!-- lighter grey-green — weekday label -->

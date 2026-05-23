@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
@@ -75,10 +76,8 @@ class SettingsModel extends Settings {
     if (raw is! Map) return Settings.defaultAdhanEnabled;
     final result = <PrayerName, bool>{...Settings.defaultAdhanEnabled};
     for (final e in raw.entries) {
-      final p = PrayerName.values
-          .where((x) => x.name == e.key as String)
-          .cast<PrayerName?>()
-          .firstWhere((_) => true, orElse: () => null);
+      if (e.key is! String) continue;
+      final p = PrayerName.values.firstWhereOrNull((x) => x.name == e.key);
       final v = e.value;
       if (p != null && v is bool) result[p] = v;
     }
@@ -89,10 +88,8 @@ class SettingsModel extends Settings {
     if (raw is! Map) return Settings.defaultReminderMinutes;
     final result = <PrayerName, int>{...Settings.defaultReminderMinutes};
     for (final e in raw.entries) {
-      final p = PrayerName.values
-          .where((x) => x.name == e.key as String)
-          .cast<PrayerName?>()
-          .firstWhere((_) => true, orElse: () => null);
+      if (e.key is! String) continue;
+      final p = PrayerName.values.firstWhereOrNull((x) => x.name == e.key);
       final v = e.value;
       if (p != null && v is int && Settings.validReminderMinutes.contains(v)) {
         result[p] = v;
