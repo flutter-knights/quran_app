@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">تطبيق القرآن</string>
+
+    <string name="adhan_stop">إيقاف</string>
+    <string name="adhan_body_fajr">حان موعد صلاة الفجر</string>
+    <string name="adhan_body_dhuhr">حان موعد صلاة الظهر</string>
+    <string name="adhan_body_asr">حان موعد صلاة العصر</string>
+    <string name="adhan_body_maghrib">حان موعد صلاة المغرب</string>
+    <string name="adhan_body_isha">حان موعد صلاة العشاء</string>
+
+    <string name="adhan_title_fajr">الفجر</string>
+    <string name="adhan_title_dhuhr">الظهر</string>
+    <string name="adhan_title_asr">العصر</string>
+    <string name="adhan_title_maghrib">المغرب</string>
+    <string name="adhan_title_isha">العشاء</string>
+</resources>
