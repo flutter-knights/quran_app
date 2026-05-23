@@ -6,6 +6,7 @@ import 'package:quran_app/features/ahadith/presentation/pages/ahadith_list_page.
 import 'package:quran_app/features/ahadith/presentation/pages/books_list_page.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/hadith_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
+import 'package:quran_app/features/home/presentation/pages/notifications_settings_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
@@ -16,6 +17,7 @@ import '../../core/di/dependency_injection.dart';
 
 abstract class AppRouter {
   static const String homePath = "/home";
+  static const String notificationsPath = "/notifications";
   static const String splashPath = "/splash";
   static const String mushafPath = "/mushaf";
   static const String mushafImagePath = "/mushafImage";
@@ -37,6 +39,12 @@ abstract class AppRouter {
         path: splashPath,
         pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) => SplashPage(),
+        ),
+      ),
+      GoRoute(
+        path: notificationsPath,
+        pageBuilder: GoTransitions.fade.withFade.build(
+          builder: (context, state) => const NotificationsSettingsPage(),
         ),
       ),
       GoRoute(
