@@ -21,6 +21,12 @@ abstract class NotificationsNativeDataSource {
     required double volume,
   });
   Future<void> cancelAllAdhans();
+
+  /// Debug-only. Fires a one-off adhan `delay` from now via the native pipeline.
+  Future<void> scheduleTestAdhan({
+    Duration delay = const Duration(seconds: 30),
+    String localeCode = 'en',
+  });
 }
 
 class NotificationsNativeDataSourceImpl
@@ -61,4 +67,14 @@ class NotificationsNativeDataSourceImpl
 
   @override
   Future<void> cancelAllAdhans() => _invoke('cancelAllAdhans');
+
+  @override
+  Future<void> scheduleTestAdhan({
+    Duration delay = const Duration(seconds: 30),
+    String localeCode = 'en',
+  }) =>
+      _invoke('scheduleTestAdhan', {
+        'delaySeconds': delay.inSeconds,
+        'localeCode': localeCode,
+      });
 }
