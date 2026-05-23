@@ -40,7 +40,7 @@ class PrayerStripRenderer(private val context: Context) {
         expanded.setTextViewText(R.id.strip_weekday, weekdayText)
         val weekdayColor =
             if (state.isFriday) context.resources.getColor(R.color.strip_accent, null)
-            else context.resources.getColor(R.color.strip_text_muted, null)
+            else context.resources.getColor(R.color.strip_text_secondary, null)
         expanded.setTextColor(R.id.strip_weekday, weekdayColor)
 
         val labelIds = intArrayOf(
