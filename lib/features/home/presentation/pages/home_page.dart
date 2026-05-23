@@ -50,10 +50,12 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               );
+              final locale = context.read<SettingsCubit>().state.settingsModel.isArabic ? 'ar' : 'en';
               unawaited(
                 sl<SyncDailyAdhans>().call(
                   SyncDailyAdhansParams(
                     prayerTimes: loaded.dailyPrayerContext.prayerTimes,
+                    localeCode: locale,
                   ),
                 ),
               );

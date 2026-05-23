@@ -91,11 +91,13 @@ void main() {
             timingsByPrayer: any(named: 'timingsByPrayer'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
+            localeCode: any(named: 'localeCode'),
           )).thenAnswer((_) async {});
 
       final r = await repo.scheduleDailyAdhans(
         prayerTimes: pt,
         audio: AdhanAudioSettings.defaults(),
+        localeCode: 'en',
       );
 
       expect(r, const Right(unit));
@@ -103,6 +105,7 @@ void main() {
             timingsByPrayer: any(named: 'timingsByPrayer'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
+            localeCode: any(named: 'localeCode'),
           )).called(1);
       verifyNever(() => scheduler.scheduleDailyPrayerNotifications(any()));
       debugDefaultTargetPlatformOverride = null;
@@ -116,6 +119,7 @@ void main() {
       final r = await repo.scheduleDailyAdhans(
         prayerTimes: pt,
         audio: AdhanAudioSettings.defaults(),
+        localeCode: 'en',
       );
 
       expect(r, const Right(unit));
@@ -124,6 +128,7 @@ void main() {
             timingsByPrayer: any(named: 'timingsByPrayer'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
+            localeCode: any(named: 'localeCode'),
           ));
       debugDefaultTargetPlatformOverride = null;
     });
@@ -135,11 +140,13 @@ void main() {
             timingsByPrayer: any(named: 'timingsByPrayer'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
+            localeCode: any(named: 'localeCode'),
           )).thenThrow(Exception('boom'));
 
       final r = await repo.scheduleDailyAdhans(
         prayerTimes: pt,
         audio: AdhanAudioSettings.defaults(),
+        localeCode: 'en',
       );
       r.fold((f) => expect(f, isA<UnknownNotificationFailure>()), (_) {});
       debugDefaultTargetPlatformOverride = null;

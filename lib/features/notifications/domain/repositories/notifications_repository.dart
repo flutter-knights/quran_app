@@ -28,6 +28,7 @@ abstract class NotificationsRepository {
   Future<Either<Failure, Unit>> scheduleDailyAdhans({
     required PrayerTimes prayerTimes,
     required AdhanAudioSettings audio,
+    required String localeCode,
   });
 
   /// Cancels all scheduled adhan notifications.
