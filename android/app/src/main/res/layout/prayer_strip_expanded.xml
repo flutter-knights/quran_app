@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/strip_onyx"
+    android:padding="12dp"
+    android:layoutDirection="locale">
+
+    <TextView
+        android:id="@+id/strip_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/strip_bright_snow"
+        android:textSize="14sp"
+        android:paddingBottom="8dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="6"
+        android:layoutDirection="locale">
+
+        <LinearLayout android:id="@+id/cell_0"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+            android:padding="6dp">
+            <TextView android:id="@+id/cell_0_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+            <TextView android:id="@+id/cell_0_time"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/cell_1"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+            android:padding="6dp">
+            <TextView android:id="@+id/cell_1_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+            <TextView android:id="@+id/cell_1_time"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/cell_2"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+            android:padding="6dp">
+            <TextView android:id="@+id/cell_2_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+            <TextView android:id="@+id/cell_2_time"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/cell_3"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+            android:padding="6dp">
+            <TextView android:id="@+id/cell_3_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+            <TextView android:id="@+id/cell_3_time"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/cell_4"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+            android:padding="6dp">
+            <TextView android:id="@+id/cell_4_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+            <TextView android:id="@+id/cell_4_time"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/cell_5"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+            android:padding="6dp">
+            <TextView android:id="@+id/cell_5_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+            <TextView android:id="@+id/cell_5_time"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
