@@ -11,6 +11,7 @@
 
     <!-- Strip semantic tokens (used by layouts + renderer) -->
     <color name="strip_text_primary">#FFF8F9F8</color>   <!-- bright-snow -->
+    <color name="strip_text_secondary">#FFCCD6D0</color> <!-- lighter grey-green — weekday label -->
     <color name="strip_text_muted">#FF8B9A94</color>     <!-- grey-olive -->
     <color name="strip_text_dim">#66F8F9F8</color>       <!-- snow @ 40% — passed prayers -->
     <color name="strip_accent">#FF4A7C6A</color>         <!-- deep-teal — pill + moon + Friday -->
