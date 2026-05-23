@@ -160,6 +160,21 @@ class S {
     );
   }
 
+  /// `Notifications`
+  String get notifications {
+    return Intl.message('Notifications', name: 'notifications', desc: '', args: []);
+  }
+
+  /// `Manage prayer-time notifications.`
+  String get notificationsScreenSubtitle {
+    return Intl.message(
+      'Manage prayer-time notifications.',
+      name: 'notificationsScreenSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Hadith No.`
   String get hadith_number_label {
     return Intl.message(
