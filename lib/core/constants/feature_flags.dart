@@ -7,5 +7,5 @@ class FeatureFlags {
 
   /// Shows the "Pinned prayer times" toggle in the Settings sheet.
   /// Flip to `true` when Plan B (Android native pinned strip) lands.
-  static const bool pinnedPrayerStripUi = false;
+  static const bool pinnedPrayerStripUi = true;
 }
