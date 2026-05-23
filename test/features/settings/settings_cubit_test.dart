@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
@@ -115,4 +116,76 @@ void main() {
       ),
     ],
   );
+
+  test('toMap / fromMap round-trips adhanEnabledByPrayer', () {
+    final model = SettingsModel(
+      isDarkMode: true,
+      isFormat12Hours: false,
+      isArabic: true,
+      adhanEnabledByPrayer: const {
+        PrayerName.fajr: false,
+        PrayerName.dhuhr: true,
+        PrayerName.asr: true,
+        PrayerName.maghrib: true,
+        PrayerName.isha: false,
+      },
+    );
+    final round = SettingsModel.fromMap(model.toMap());
+    expect(round.adhanEnabledByPrayer[PrayerName.fajr], false);
+    expect(round.adhanEnabledByPrayer[PrayerName.dhuhr], true);
+    expect(round.adhanEnabledByPrayer[PrayerName.isha], false);
+  });
+
+  test('toMap / fromMap round-trips reminderMinutesByPrayer', () {
+    final model = SettingsModel(
+      isDarkMode: true,
+      isFormat12Hours: false,
+      isArabic: true,
+      reminderMinutesByPrayer: const {
+        PrayerName.fajr: 15,
+        PrayerName.dhuhr: 0,
+        PrayerName.asr: 10,
+        PrayerName.maghrib: 5,
+        PrayerName.isha: 0,
+      },
+    );
+    final round = SettingsModel.fromMap(model.toMap());
+    expect(round.reminderMinutesByPrayer[PrayerName.fajr], 15);
+    expect(round.reminderMinutesByPrayer[PrayerName.asr], 10);
+    expect(round.reminderMinutesByPrayer[PrayerName.maghrib], 5);
+  });
+
+  test('fromMap applies default adhan-enabled map (all true) when missing', () {
+    final round = SettingsModel.fromMap({
+      'isArabic': true,
+      'isDarkMode': true,
+      'isFormat12Hours': true,
+      'playbackSpeed': 1.0,
+      'defaultReciter': 'alafasy',
+      'isPrayerStripPinned': false,
+    });
+    for (final p in [
+      PrayerName.fajr, PrayerName.dhuhr, PrayerName.asr,
+      PrayerName.maghrib, PrayerName.isha,
+    ]) {
+      expect(round.adhanEnabledByPrayer[p], true, reason: '$p should default to true');
+    }
+  });
+
+  test('fromMap applies default reminder map (all zero) when missing', () {
+    final round = SettingsModel.fromMap({
+      'isArabic': true,
+      'isDarkMode': true,
+      'isFormat12Hours': true,
+      'playbackSpeed': 1.0,
+      'defaultReciter': 'alafasy',
+      'isPrayerStripPinned': false,
+    });
+    for (final p in [
+      PrayerName.fajr, PrayerName.dhuhr, PrayerName.asr,
+      PrayerName.maghrib, PrayerName.isha,
+    ]) {
+      expect(round.reminderMinutesByPrayer[p], 0, reason: '$p should default to 0');
+    }
+  });
 }

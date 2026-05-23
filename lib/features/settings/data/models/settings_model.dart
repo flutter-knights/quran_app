@@ -1,3 +1,4 @@
+import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
 
@@ -9,6 +10,8 @@ class SettingsModel extends Settings {
     super.playbackSpeed,
     super.defaultReciter,
     super.isPrayerStripPinned,
+    super.adhanEnabledByPrayer,
+    super.reminderMinutesByPrayer,
   });
 
   @override
@@ -19,6 +22,8 @@ class SettingsModel extends Settings {
     double? playbackSpeed,
     Reciter? defaultReciter,
     bool? isPrayerStripPinned,
+    Map<PrayerName, bool>? adhanEnabledByPrayer,
+    Map<PrayerName, int>? reminderMinutesByPrayer,
   }) {
     return SettingsModel(
       isArabic: isArabic ?? this.isArabic,
@@ -27,6 +32,9 @@ class SettingsModel extends Settings {
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
       isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
+      adhanEnabledByPrayer: adhanEnabledByPrayer ?? this.adhanEnabledByPrayer,
+      reminderMinutesByPrayer:
+          reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
     );
   }
 
@@ -41,6 +49,8 @@ class SettingsModel extends Settings {
         orElse: () => Reciter.alafasy,
       ),
       isPrayerStripPinned: map['isPrayerStripPinned'] ?? false,
+      adhanEnabledByPrayer: _readEnabledMap(map['adhanEnabledByPrayer']),
+      reminderMinutesByPrayer: _readReminderMap(map['reminderMinutesByPrayer']),
     );
   }
 
@@ -52,6 +62,42 @@ class SettingsModel extends Settings {
       'playbackSpeed': playbackSpeed,
       'defaultReciter': defaultReciter.name,
       'isPrayerStripPinned': isPrayerStripPinned,
+      'adhanEnabledByPrayer': {
+        for (final e in adhanEnabledByPrayer.entries) e.key.name: e.value,
+      },
+      'reminderMinutesByPrayer': {
+        for (final e in reminderMinutesByPrayer.entries) e.key.name: e.value,
+      },
     };
+  }
+
+  static Map<PrayerName, bool> _readEnabledMap(dynamic raw) {
+    if (raw is! Map) return Settings.defaultAdhanEnabled;
+    final result = <PrayerName, bool>{...Settings.defaultAdhanEnabled};
+    for (final e in raw.entries) {
+      final p = PrayerName.values
+          .where((x) => x.name == e.key as String)
+          .cast<PrayerName?>()
+          .firstWhere((_) => true, orElse: () => null);
+      final v = e.value;
+      if (p != null && v is bool) result[p] = v;
+    }
+    return result;
+  }
+
+  static Map<PrayerName, int> _readReminderMap(dynamic raw) {
+    if (raw is! Map) return Settings.defaultReminderMinutes;
+    final result = <PrayerName, int>{...Settings.defaultReminderMinutes};
+    for (final e in raw.entries) {
+      final p = PrayerName.values
+          .where((x) => x.name == e.key as String)
+          .cast<PrayerName?>()
+          .firstWhere((_) => true, orElse: () => null);
+      final v = e.value;
+      if (p != null && v is int && Settings.validReminderMinutes.contains(v)) {
+        result[p] = v;
+      }
+    }
+    return result;
   }
 }
