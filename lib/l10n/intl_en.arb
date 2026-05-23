@@ -97,6 +97,16 @@
 "continue_reading": "Continue reading",
 "ayah_label": "Surah {surah}, Ayah {ayah}",
 "page_label": "Page {page}",
-"play_surah": "Play surah"
+"play_surah": "Play surah",
+
+"adhanPerPrayerSection": "Adhan per prayer",
+"reminderLabel": "Remind me",
+"reminderOff": "Off",
+"reminderMinutesBefore": "{minutes} min before",
+"@reminderMinutesBefore": {
+  "placeholders": { "minutes": { "type": "int" } }
+},
+"playTestAdhan": "Play test adhan",
+"testAdhanScheduledSnack": "Test adhan in 5 seconds"
 
 }

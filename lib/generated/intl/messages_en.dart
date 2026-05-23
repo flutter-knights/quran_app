@@ -29,6 +29,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m3(page) => "Page ${page}";
 
+  static String m4(minutes) => "${minutes} min before";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "abu_dawood": MessageLookupByLibrary.simpleMessage("Sunan Abi Dawood"),
@@ -38,6 +40,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "al_tirmidhi": MessageLookupByLibrary.simpleMessage("Jami\' al-Tirmidhi"),
     "arabicLanguage": MessageLookupByLibrary.simpleMessage("Arabic Language"),
     "arabic_label": MessageLookupByLibrary.simpleMessage("Arabic"),
+    "adhanPerPrayerSection": MessageLookupByLibrary.simpleMessage("Adhan per prayer"),
     "asr": MessageLookupByLibrary.simpleMessage("Asr"),
     "author_abu_dawood": MessageLookupByLibrary.simpleMessage(
       "Imam Abu Dawood al-Sijistani",
@@ -160,11 +163,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "ayah_label": m2,
     "page_label": m3,
     "play_surah": MessageLookupByLibrary.simpleMessage("Play surah"),
+    "playTestAdhan": MessageLookupByLibrary.simpleMessage("Play test adhan"),
     "pinnedPrayerTimes": MessageLookupByLibrary.simpleMessage("Pinned prayer times"),
     "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
       "Show today\'s prayers in your notification shade.",
     ),
     "notifications": MessageLookupByLibrary.simpleMessage("Notifications"),
     "notificationsScreenSubtitle": MessageLookupByLibrary.simpleMessage("Manage prayer-time notifications."),
+    "reminderLabel": MessageLookupByLibrary.simpleMessage("Remind me"),
+    "reminderOff": MessageLookupByLibrary.simpleMessage("Off"),
+    "reminderMinutesBefore": m4,
+    "testAdhanScheduledSnack": MessageLookupByLibrary.simpleMessage("Test adhan in 5 seconds"),
   };
 }
