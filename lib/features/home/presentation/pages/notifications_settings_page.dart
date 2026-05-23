@@ -23,29 +23,58 @@ class NotificationsSettingsPage extends StatelessWidget {
           builder: (context, state) {
             final settings = state.settingsModel;
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 24, 16, 16),
               children: [
-                SettingSwitch(
-                  settings: settings,
-                  settingTitle: S.current.pinnedPrayerTimes,
-                  icons: const [
-                    HugeIcons.strokeRoundedNotification01,
-                    HugeIcons.strokeRoundedNotificationOff01,
-                  ],
-                  value: settings.isPrayerStripPinned,
-                  action: () => sl<SettingsCubit>().updatePrayerStripPinned(
-                    !settings.isPrayerStripPinned,
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(bottom: 20),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(
+                          child: HugeIcon(
+                            icon: HugeIcons.strokeRoundedNotification01,
+                            color: context.colorScheme.primary,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            S.current.notificationsScreenSubtitle,
+                            style: TS.regular14.cairo.copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                Container(
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Text(
-                    S.current.pinnedPrayerTimesSubtitle,
-                    style: TS.regular14.cairo.copyWith(
-                      color: context.colorScheme.onSurfaceVariant,
+                  child: SettingSwitch(
+                    settings: settings,
+                    settingTitle: S.current.pinnedPrayerTimes,
+                    icons: const [
+                      HugeIcons.strokeRoundedNotification01,
+                      HugeIcons.strokeRoundedNotificationOff01,
+                    ],
+                    value: settings.isPrayerStripPinned,
+                    action: () => sl<SettingsCubit>().updatePrayerStripPinned(
+                      !settings.isPrayerStripPinned,
                     ),
                   ),
                 ),
