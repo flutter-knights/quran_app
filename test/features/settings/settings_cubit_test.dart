@@ -188,4 +188,43 @@ void main() {
       expect(round.reminderMinutesByPrayer[p], 0, reason: '$p should default to 0');
     }
   });
+
+  test('fromMap merges partial adhanEnabledByPrayer with defaults', () {
+    final round = SettingsModel.fromMap({
+      'isArabic': true,
+      'isDarkMode': true,
+      'isFormat12Hours': true,
+      'playbackSpeed': 1.0,
+      'defaultReciter': 'alafasy',
+      'isPrayerStripPinned': false,
+      'adhanEnabledByPrayer': {
+        'fajr': false,
+        'dhuhr': false,
+      },
+    });
+    // Provided keys win:
+    expect(round.adhanEnabledByPrayer[PrayerName.fajr], false);
+    expect(round.adhanEnabledByPrayer[PrayerName.dhuhr], false);
+    // Missing keys take the default (true):
+    expect(round.adhanEnabledByPrayer[PrayerName.asr], true);
+    expect(round.adhanEnabledByPrayer[PrayerName.maghrib], true);
+    expect(round.adhanEnabledByPrayer[PrayerName.isha], true);
+  });
+
+  test('fromMap drops out-of-range reminder minutes', () {
+    final round = SettingsModel.fromMap({
+      'isArabic': true,
+      'isDarkMode': true,
+      'isFormat12Hours': true,
+      'playbackSpeed': 1.0,
+      'defaultReciter': 'alafasy',
+      'isPrayerStripPinned': false,
+      'reminderMinutesByPrayer': {
+        'fajr': 7,    // invalid — should be dropped, default 0 wins
+        'dhuhr': 10,  // valid
+      },
+    });
+    expect(round.reminderMinutesByPrayer[PrayerName.fajr], 0);
+    expect(round.reminderMinutesByPrayer[PrayerName.dhuhr], 10);
+  });
 }

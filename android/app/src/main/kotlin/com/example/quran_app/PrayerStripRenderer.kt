@@ -32,12 +32,10 @@ class PrayerStripRenderer(private val context: Context) {
 
     fun build(state: PrayerStripState): Notification {
         val expanded = RemoteViews(context.packageName, R.layout.prayer_strip_expanded)
-        val collapsed = RemoteViews(context.packageName, R.layout.prayer_strip_collapsed)
 
         // Header: hijri date + weekday. App name is shown by the system notification frame.
         expanded.setTextViewText(R.id.strip_hijri, state.hijriDateLabel)
-        val weekdayText = state.weekdayLabel
-        expanded.setTextViewText(R.id.strip_weekday, weekdayText)
+        expanded.setTextViewText(R.id.strip_weekday, state.weekdayLabel)
         val weekdayColor =
             if (state.isFriday) context.resources.getColor(R.color.strip_accent, null)
             else context.resources.getColor(R.color.strip_text_secondary, null)
@@ -56,30 +54,27 @@ class PrayerStripRenderer(private val context: Context) {
         val primary = context.resources.getColor(R.color.strip_text_primary, null)
         val muted = context.resources.getColor(R.color.strip_text_muted, null)
         val dim = context.resources.getColor(R.color.strip_text_dim, null)
-        val accentTextOnPill = context.resources.getColor(R.color.strip_text_primary, null)
 
-        for (views in listOf(expanded, collapsed)) {
-            for (i in 0 until 6) {
-                val cell = state.cells.getOrNull(i) ?: continue
-                views.setTextViewText(labelIds[i], cell.label)
-                views.setTextViewText(timeIds[i], cell.time)
+        for (i in 0 until 6) {
+            val cell = state.cells.getOrNull(i) ?: continue
+            expanded.setTextViewText(labelIds[i], cell.label)
+            expanded.setTextViewText(timeIds[i], cell.time)
 
-                when {
-                    i == state.nextPrayerIndex -> {
-                        views.setTextColor(labelIds[i], primary)
-                        views.setTextColor(timeIds[i], accentTextOnPill)
-                        views.setInt(timeIds[i], "setBackgroundResource", R.drawable.strip_time_pill)
-                    }
-                    i < state.nextPrayerIndex -> {
-                        views.setTextColor(labelIds[i], dim)
-                        views.setTextColor(timeIds[i], dim)
-                        views.setInt(timeIds[i], "setBackgroundResource", 0)
-                    }
-                    else -> {
-                        views.setTextColor(labelIds[i], primary)
-                        views.setTextColor(timeIds[i], muted)
-                        views.setInt(timeIds[i], "setBackgroundResource", 0)
-                    }
+            when {
+                i == state.nextPrayerIndex -> {
+                    expanded.setTextColor(labelIds[i], primary)
+                    expanded.setTextColor(timeIds[i], primary)
+                    expanded.setInt(timeIds[i], "setBackgroundResource", R.drawable.strip_time_pill)
+                }
+                i < state.nextPrayerIndex -> {
+                    expanded.setTextColor(labelIds[i], dim)
+                    expanded.setTextColor(timeIds[i], dim)
+                    expanded.setInt(timeIds[i], "setBackgroundResource", 0)
+                }
+                else -> {
+                    expanded.setTextColor(labelIds[i], primary)
+                    expanded.setTextColor(timeIds[i], muted)
+                    expanded.setInt(timeIds[i], "setBackgroundResource", 0)
                 }
             }
         }
@@ -97,7 +92,6 @@ class PrayerStripRenderer(private val context: Context) {
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setCustomContentView(collapsed)
             .setCustomBigContentView(expanded)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setContentIntent(launchPI)

@@ -16,17 +16,61 @@ import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_
 import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
-  await initHydratedCubit();
-  await initHive();
-  await initGetIt();
+  runApp(const AppLoader());
+}
 
-  runApp(
-    MultiBlocProvider(
+/// Runs storage/DI init in the background while Flutter shows a branded dark
+/// screen. Once ready, swaps in the real app tree.
+class AppLoader extends StatefulWidget {
+  const AppLoader({super.key});
+
+  @override
+  State<AppLoader> createState() => _AppLoaderState();
+}
+
+class _AppLoaderState extends State<AppLoader> {
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAll();
+  }
+
+  Future<void> _initAll() async {
+    await initHydratedCubit();
+    await initHive();
+    await initGetIt();
+    if (!mounted) return;
+    setState(() => _ready = true);
+
+    // Sequence permissions after the first real app frame so dialogs never race.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      while (await Geolocator.checkPermission() == LocationPermission.denied) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+      try {
+        await sl<PrayerNotificationScheduler>().init();
+      } catch (e, st) {
+        debugPrint('PrayerNotificationScheduler.init failed: $e\n$st');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_ready) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(backgroundColor: Color(0xFF081815)),
+      );
+    }
+    return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<SettingsCubit>()),
         BlocProvider(create: (_) => sl<BookmarkCubit>()),
@@ -34,23 +78,8 @@ void main() async {
         BlocProvider(create: (_) => sl<PlaybackCubit>()),
       ],
       child: const QuranApp(),
-    ),
-  );
-
-  // Sequence all startup permissions so dialogs never race each other.
-  // Order: location (home cubit handles dialog) → exact alarms → notification.
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    // Poll until the home cubit's location dialog is resolved; don't request
-    // ourselves to avoid PermissionRequestInProgressException.
-    while (await Geolocator.checkPermission() == LocationPermission.denied) {
-      await Future.delayed(const Duration(milliseconds: 300));
-    }
-    try {
-      await sl<PrayerNotificationScheduler>().init();
-    } catch (e, st) {
-      debugPrint('PrayerNotificationScheduler.init failed: $e\n$st');
-    }
-  });
+    );
+  }
 }
 
 class QuranApp extends StatelessWidget {
