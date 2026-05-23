@@ -58,37 +58,31 @@ class PrayerStripRenderer(private val context: Context) {
         val dim = context.resources.getColor(R.color.strip_text_dim, null)
         val accentTextOnPill = context.resources.getColor(R.color.strip_text_primary, null)
 
-        for (i in 0 until 6) {
-            val cell = state.cells.getOrNull(i) ?: continue
-            expanded.setTextViewText(labelIds[i], cell.label)
-            expanded.setTextViewText(timeIds[i], cell.time)
+        for (views in listOf(expanded, collapsed)) {
+            for (i in 0 until 6) {
+                val cell = state.cells.getOrNull(i) ?: continue
+                views.setTextViewText(labelIds[i], cell.label)
+                views.setTextViewText(timeIds[i], cell.time)
 
-            when {
-                // Active prayer (next): label snow-bold, time wrapped in deep-teal pill.
-                i == state.nextPrayerIndex -> {
-                    expanded.setTextColor(labelIds[i], primary)
-                    expanded.setTextColor(timeIds[i], accentTextOnPill)
-                    expanded.setInt(
-                        timeIds[i], "setBackgroundResource", R.drawable.strip_time_pill
-                    )
-                }
-                // Passed prayer: dim everything.
-                i < state.nextPrayerIndex -> {
-                    expanded.setTextColor(labelIds[i], dim)
-                    expanded.setTextColor(timeIds[i], dim)
-                    expanded.setInt(timeIds[i], "setBackgroundResource", 0)
-                }
-                // Future prayer: primary label, muted time, no pill.
-                else -> {
-                    expanded.setTextColor(labelIds[i], primary)
-                    expanded.setTextColor(timeIds[i], muted)
-                    expanded.setInt(timeIds[i], "setBackgroundResource", 0)
+                when {
+                    i == state.nextPrayerIndex -> {
+                        views.setTextColor(labelIds[i], primary)
+                        views.setTextColor(timeIds[i], accentTextOnPill)
+                        views.setInt(timeIds[i], "setBackgroundResource", R.drawable.strip_time_pill)
+                    }
+                    i < state.nextPrayerIndex -> {
+                        views.setTextColor(labelIds[i], dim)
+                        views.setTextColor(timeIds[i], dim)
+                        views.setInt(timeIds[i], "setBackgroundResource", 0)
+                    }
+                    else -> {
+                        views.setTextColor(labelIds[i], primary)
+                        views.setTextColor(timeIds[i], muted)
+                        views.setInt(timeIds[i], "setBackgroundResource", 0)
+                    }
                 }
             }
         }
-
-        // Collapsed view: just the hijri date with crescent moon.
-        collapsed.setTextViewText(R.id.collapsed_hijri, state.hijriDateLabel)
 
         val launchPI = PendingIntent.getActivity(
             context, 0,
