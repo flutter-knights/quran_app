@@ -3,18 +3,48 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@color/strip_onyx"
-    android:padding="12dp"
+    android:background="@android:color/transparent"
+    android:padding="14dp"
     android:layoutDirection="locale">
 
-    <TextView
-        android:id="@+id/strip_header"
+    <!-- Header: [moon] hijri-date ........ weekday -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/strip_bright_snow"
-        android:textSize="14sp"
-        android:paddingBottom="8dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="10dp"
+        android:layoutDirection="locale">
 
+        <ImageView
+            android:id="@+id/strip_moon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:src="@drawable/moon_crescent"
+            android:contentDescription="@null"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/strip_hijri"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/strip_text_muted"
+            android:textSize="12sp"
+            android:fontFamily="@font/cairo"
+            android:textFontWeight="400" />
+
+        <TextView
+            android:id="@+id/strip_weekday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/strip_text_muted"
+            android:textSize="12sp"
+            android:fontFamily="@font/cairo"
+            android:textFontWeight="400" />
+    </LinearLayout>
+
+    <!-- 6-cell strip -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,73 +55,97 @@
         <LinearLayout android:id="@+id/cell_0"
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:padding="6dp">
+            android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:paddingStart="4dp" android:paddingEnd="4dp">
             <TextView android:id="@+id/cell_0_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="600" />
             <TextView android:id="@+id/cell_0_time"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+                android:textColor="@color/strip_text_muted" android:textSize="11sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="400"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/cell_1"
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:padding="6dp">
+            android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:paddingStart="4dp" android:paddingEnd="4dp">
             <TextView android:id="@+id/cell_1_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="600" />
             <TextView android:id="@+id/cell_1_time"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+                android:textColor="@color/strip_text_muted" android:textSize="11sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="400"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/cell_2"
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:padding="6dp">
+            android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:paddingStart="4dp" android:paddingEnd="4dp">
             <TextView android:id="@+id/cell_2_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="600" />
             <TextView android:id="@+id/cell_2_time"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+                android:textColor="@color/strip_text_muted" android:textSize="11sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="400"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/cell_3"
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:padding="6dp">
+            android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:paddingStart="4dp" android:paddingEnd="4dp">
             <TextView android:id="@+id/cell_3_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="600" />
             <TextView android:id="@+id/cell_3_time"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+                android:textColor="@color/strip_text_muted" android:textSize="11sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="400"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/cell_4"
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:padding="6dp">
+            android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:paddingStart="4dp" android:paddingEnd="4dp">
             <TextView android:id="@+id/cell_4_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="600" />
             <TextView android:id="@+id/cell_4_time"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+                android:textColor="@color/strip_text_muted" android:textSize="11sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="400"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout android:id="@+id/cell_5"
             android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:padding="6dp">
+            android:paddingTop="8dp" android:paddingBottom="8dp"
+            android:paddingStart="4dp" android:paddingEnd="4dp">
             <TextView android:id="@+id/cell_5_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_bright_snow" android:textSize="12sp" />
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="600" />
             <TextView android:id="@+id/cell_5_time"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_grey_olive" android:textSize="11sp" />
+                android:textColor="@color/strip_text_muted" android:textSize="11sp"
+                android:fontFamily="@font/cairo" android:textFontWeight="400"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
