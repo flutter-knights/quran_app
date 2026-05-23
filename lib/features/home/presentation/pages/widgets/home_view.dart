@@ -9,6 +9,8 @@ import 'package:quran_app/features/home/presentation/pages/widgets/home_action_b
 import 'package:quran_app/features/home/presentation/pages/widgets/home_app_bar.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/prayers_list.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/upcoming_prayer.dart';
+import 'package:quran_app/features/notifications/data/datasources/notifications_native_data_source.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -19,8 +21,19 @@ class HomeView extends StatelessWidget {
       floatingActionButton: kDebugMode
           ? FloatingActionButton.extended(
               onPressed: () async {
-                await sl<PrayerNotificationScheduler>()
-                    .scheduleTestNotification();
+                final isAndroid =
+                    defaultTargetPlatform == TargetPlatform.android;
+                final localeCode =
+                    context.read<SettingsCubit>().state.settingsModel.isArabic
+                        ? 'ar'
+                        : 'en';
+                if (isAndroid) {
+                  await sl<NotificationsNativeDataSource>()
+                      .scheduleTestAdhan(localeCode: localeCode);
+                } else {
+                  await sl<PrayerNotificationScheduler>()
+                      .scheduleTestNotification();
+                }
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
