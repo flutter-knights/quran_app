@@ -8,35 +8,19 @@
     android:gravity="center_vertical"
     android:layoutDirection="locale">
 
-    <TextView
-        android:id="@+id/collapsed_label"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="@color/strip_text_primary"
-        android:textSize="14sp"
-        android:fontFamily="@font/cairo"
-        android:textFontWeight="700" />
-
-    <TextView
-        android:id="@+id/collapsed_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/strip_text_primary"
-        android:textSize="14sp"
-        android:fontFamily="@font/cairo"
-        android:textFontWeight="700"
-        android:background="@drawable/strip_time_pill"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp" />
+    <ImageView
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:src="@drawable/moon_crescent"
+        android:contentDescription="@null"
+        android:layout_marginEnd="8dp" />
 
     <TextView
         android:id="@+id/collapsed_hijri"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/strip_text_muted"
-        android:textSize="12sp"
+        android:textSize="13sp"
         android:fontFamily="@font/cairo"
-        android:textFontWeight="400"
-        android:layout_marginStart="12dp" />
+        android:textFontWeight="400" />
 </LinearLayout>
