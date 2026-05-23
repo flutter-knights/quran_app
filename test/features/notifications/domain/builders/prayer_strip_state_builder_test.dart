@@ -116,5 +116,25 @@ void main() {
       );
       expect(s.hijriDateLabel, '5 Dhul-Hijjah');
     });
+
+    test('weekdayLabel uses Arabic weekday for ar locale', () {
+      final s = PrayerStripStateBuilder.build(
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'ar',
+        isFriday: true,
+      );
+      expect(s.weekdayLabel, 'الجمعة');
+    });
+
+    test('weekdayLabel uses English weekday for en locale', () {
+      final s = PrayerStripStateBuilder.build(
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'en',
+        isFriday: true,
+      );
+      expect(s.weekdayLabel, 'Friday');
+    });
   });
 }

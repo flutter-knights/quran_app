@@ -15,6 +15,7 @@ void main() {
     cells: const [PrayerCell(label: 'Fajr', timeFormatted: '4:15')],
     nextPrayerIndex: 0,
     hijriDateLabel: '5 Dhul-Hijjah',
+    weekdayLabel: '',
     localeCode: 'en',
     isFriday: false,
   );
