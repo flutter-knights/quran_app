@@ -7,10 +7,10 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 /**
- * Handles the `quran_app/notifications` MethodChannel for the strip.
- * Adhan methods (`scheduleDailyAdhans`, `cancelAllAdhans`) are intentionally
- * left unimplemented — Plan A routes them through the legacy scheduler,
- * not this channel.
+ * Handles the `quran_app/notifications` MethodChannel.
+ *
+ * Strip routes (unchanged): enableStrip / refreshStrip / disableStrip → PrayerStripService.
+ * Adhan routes (NEW):       scheduleDailyAdhans / cancelAllAdhans / scheduleTestAdhan → AdhanScheduler.
  */
 class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
@@ -36,33 +36,73 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             return
         }
         when (call.method) {
-            "enableStrip", "refreshStrip" -> {
-                val json = serializeArgs(call.arguments)
-                if (json == null) {
-                    result.error("BAD_ARGS", "Expected Map state, got ${call.arguments}", null)
-                    return
-                }
-                val intent = Intent(ctx, PrayerStripService::class.java).apply {
-                    action = PrayerStripService.ACTION_SHOW_STRIP
-                    putExtra(PrayerStripService.EXTRA_STATE_JSON, json)
-                }
-                ctx.startForegroundService(intent)
-                result.success(null)
-            }
-            "disableStrip" -> {
-                val intent = Intent(ctx, PrayerStripService::class.java).apply {
-                    action = PrayerStripService.ACTION_HIDE_STRIP
-                }
-                ctx.startForegroundService(intent)
-                result.success(null)
-            }
+            "enableStrip", "refreshStrip" -> handleEnableOrRefreshStrip(ctx, call, result)
+            "disableStrip" -> handleDisableStrip(ctx, result)
+            "scheduleDailyAdhans" -> handleScheduleDailyAdhans(ctx, call, result)
+            "cancelAllAdhans" -> handleCancelAllAdhans(ctx, result)
+            "scheduleTestAdhan" -> handleScheduleTestAdhan(ctx, call, result)
             else -> result.notImplemented()
         }
     }
 
-    /** Re-serializes a Map<String,Object?> (as Flutter sends it) back to a JSON string
-     *  using PrayerStripState's structure. */
-    private fun serializeArgs(args: Any?): String? {
+    private fun handleEnableOrRefreshStrip(
+        ctx: Context, call: MethodCall, result: MethodChannel.Result
+    ) {
+        val json = serializeStripArgs(call.arguments)
+        if (json == null) {
+            result.error("BAD_ARGS", "Expected Map state, got ${call.arguments}", null)
+            return
+        }
+        val intent = Intent(ctx, PrayerStripService::class.java).apply {
+            action = PrayerStripService.ACTION_SHOW_STRIP
+            putExtra(PrayerStripService.EXTRA_STATE_JSON, json)
+        }
+        ctx.startForegroundService(intent)
+        result.success(null)
+    }
+
+    private fun handleDisableStrip(ctx: Context, result: MethodChannel.Result) {
+        val intent = Intent(ctx, PrayerStripService::class.java).apply {
+            action = PrayerStripService.ACTION_HIDE_STRIP
+        }
+        ctx.startForegroundService(intent)
+        result.success(null)
+    }
+
+    private fun handleScheduleDailyAdhans(
+        ctx: Context, call: MethodCall, result: MethodChannel.Result
+    ) {
+        val args = call.arguments as? Map<*, *>
+        if (args == null) {
+            result.error("BAD_ARGS", "Expected Map", null)
+            return
+        }
+        @Suppress("UNCHECKED_CAST")
+        val timings = (args["timings"] as? Map<String, String>) ?: emptyMap()
+        @Suppress("UNCHECKED_CAST")
+        val clips = (args["clips"] as? Map<String, String>) ?: emptyMap()
+        val localeCode = (args["localeCode"] as? String) ?: "en"
+
+        AdhanScheduler.armToday(ctx, timings, clips, localeCode)
+        result.success(null)
+    }
+
+    private fun handleCancelAllAdhans(ctx: Context, result: MethodChannel.Result) {
+        AdhanScheduler.cancelAll(ctx)
+        result.success(null)
+    }
+
+    private fun handleScheduleTestAdhan(
+        ctx: Context, call: MethodCall, result: MethodChannel.Result
+    ) {
+        val args = call.arguments as? Map<*, *>
+        val delay = (args?.get("delaySeconds") as? Int) ?: 30
+        val localeCode = (args?.get("localeCode") as? String) ?: "en"
+        AdhanScheduler.armTest(ctx, delay, localeCode)
+        result.success(null)
+    }
+
+    private fun serializeStripArgs(args: Any?): String? {
         if (args !is Map<*, *>) return null
         val obj = org.json.JSONObject()
         val cellsRaw = args["cells"] as? List<*> ?: return null
@@ -78,6 +118,7 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         obj.put("cells", arr)
         obj.put("nextPrayerIndex", (args["nextPrayerIndex"] as? Int) ?: return null)
         obj.put("hijriDateLabel", (args["hijriDateLabel"] as? String) ?: return null)
+        obj.put("weekdayLabel", (args["weekdayLabel"] as? String) ?: return null)
         obj.put("localeCode", (args["localeCode"] as? String) ?: return null)
         obj.put("isFriday", (args["isFriday"] as? Boolean) ?: return null)
         return obj.toString()
