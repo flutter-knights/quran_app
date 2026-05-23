@@ -47,6 +47,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   Future<Either<Failure, Unit>> scheduleDailyAdhans({
     required PrayerTimes prayerTimes,
     required AdhanAudioSettings audio,
+    required String localeCode,
   }) =>
       _run(() async {
         if (defaultTargetPlatform == TargetPlatform.android) {
@@ -54,6 +55,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
             timingsByPrayer: _lowercasePrayerKeys(prayerTimes.timings),
             clipAssetByPrayer: _lowercasePrayerKeys(audio.clipAssetByPrayer),
             volume: audio.volume,
+            localeCode: localeCode,
           );
         } else {
           // iOS (or any non-Android target) keeps the legacy path.

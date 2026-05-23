@@ -46,15 +46,18 @@ void main() {
     when(() => repo.scheduleDailyAdhans(
           prayerTimes: any(named: 'prayerTimes'),
           audio: any(named: 'audio'),
+          localeCode: any(named: 'localeCode'),
         )).thenAnswer((_) async => const Right(unit));
 
-    final result =
-        await useCase.call(SyncDailyAdhansParams(prayerTimes: pt));
+    final result = await useCase.call(
+      SyncDailyAdhansParams(prayerTimes: pt, localeCode: 'en'),
+    );
 
     expect(result.isRight(), true);
     verify(() => repo.scheduleDailyAdhans(
           prayerTimes: pt,
           audio: AdhanAudioSettings.defaults(),
+          localeCode: 'en',
         )).called(1);
   });
 }

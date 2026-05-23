@@ -19,6 +19,7 @@ abstract class NotificationsNativeDataSource {
     required Map<String, String> timingsByPrayer,
     required Map<String, String> clipAssetByPrayer,
     required double volume,
+    required String localeCode,
   });
   Future<void> cancelAllAdhans();
 
@@ -58,11 +59,13 @@ class NotificationsNativeDataSourceImpl
     required Map<String, String> timingsByPrayer,
     required Map<String, String> clipAssetByPrayer,
     required double volume,
+    required String localeCode,
   }) =>
       _invoke('scheduleDailyAdhans', {
         'timings': timingsByPrayer,
         'clips': clipAssetByPrayer,
         'volume': volume,
+        'localeCode': localeCode,
       });
 
   @override

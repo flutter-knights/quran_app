@@ -61,11 +61,13 @@ void main() {
       timingsByPrayer: const {'fajr': '04:15', 'isha': '21:16'},
       clipAssetByPrayer: const {'fajr': 'fajr_adhan', 'isha': 'normal_adhan'},
       volume: 1.0,
+      localeCode: 'en',
     );
     expect(calls.single.method, 'scheduleDailyAdhans');
     final args = calls.single.arguments as Map;
     expect(args['timings'], {'fajr': '04:15', 'isha': '21:16'});
     expect(args['volume'], 1.0);
+    expect(args['localeCode'], 'en');
   });
 
   test('cancelAllAdhans invokes the channel', () async {

@@ -8,7 +8,12 @@ import 'package:quran_app/features/notifications/domain/repositories/notificatio
 class SyncDailyAdhansParams {
   final PrayerTimes prayerTimes;
   final AdhanAudioSettings? audio;
-  const SyncDailyAdhansParams({required this.prayerTimes, this.audio});
+  final String localeCode;
+  const SyncDailyAdhansParams({
+    required this.prayerTimes,
+    required this.localeCode,
+    this.audio,
+  });
 }
 
 class SyncDailyAdhans
@@ -21,5 +26,6 @@ class SyncDailyAdhans
       repository.scheduleDailyAdhans(
         prayerTimes: params.prayerTimes,
         audio: params.audio ?? AdhanAudioSettings.defaults(),
+        localeCode: params.localeCode,
       );
 }
