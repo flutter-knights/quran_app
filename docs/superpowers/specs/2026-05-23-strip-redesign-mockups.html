@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<title>Prayer Strip Redesign — Variants</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --onyx: #081815;
+    --evergreen: #0C231F;
+    --pine-teal: #134E3E;
+    --deep-teal: #4A7C6A;
+    --grey-olive: #8B9A94;
+    --bright-snow: #F8F9F8;
+    --light-mist: #E9E9E9;
+    --gold: #D4A857;
+    --bronze: #8B7355;
+    --light-coral: #E67E7E;
+    --system-wallpaper: #2a2a2a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: 'Cairo', sans-serif; background: #1a1a1a; color: var(--bright-snow); }
+
+  .page { padding: 32px; max-width: 1400px; margin: 0 auto; }
+  h1 { font-weight: 800; font-size: 28px; margin: 0 0 8px; }
+  h2 { font-weight: 700; font-size: 18px; margin: 32px 0 12px; color: var(--grey-olive); }
+  .legend { font-size: 13px; color: var(--grey-olive); margin-bottom: 24px; line-height: 1.6; }
+  .legend code { background: #333; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+
+  /* ── android notification frame mock ── */
+  .phone {
+    background: var(--system-wallpaper);
+    border-radius: 24px;
+    padding: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .system-shade {
+    background: #1c1c1e;
+    border-radius: 16px;
+    padding: 10px 14px;
+    color: #b0b0b0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .notif-frame {
+    background: #2c2c2e;
+    border-radius: 16px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .notif-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px 4px;
+    font-size: 11px;
+    color: #999;
+  }
+  .notif-header .app-name { font-weight: 600; }
+  .notif-header .dot { opacity: 0.5; }
+  .notif-icon { width: 14px; height: 14px; background: var(--pine-teal); border-radius: 3px; display: inline-block; }
+
+  /* ── strip body (this is the part we're designing) ── */
+  .strip { padding: 14px; font-family: 'Cairo', sans-serif; }
+  .strip.bg-onyx    { background: var(--onyx); }
+  .strip.bg-evergreen { background: var(--evergreen); }
+  .strip.bg-transparent { background: transparent; }
+  .strip.bg-translucent { background: rgba(8, 24, 21, 0.65); backdrop-filter: blur(8px); }
+
+  .strip-header {
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--grey-olive); font-size: 12px; font-weight: 400;
+    margin-bottom: 10px;
+  }
+  .strip-header .moon { margin-inline-end: 6px; }
+  .strip-header .friday-bold { font-weight: 700; color: var(--bright-snow); }
+
+  .cells { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .cell {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 4px;
+    border-radius: 10px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .cell .label { font-size: 11px; font-weight: 600; }
+  .cell .time  { font-size: 11px; font-weight: 400; opacity: 0.85; }
+
+  /* cell states */
+  .cell.passed { opacity: 0.45; }
+  .cell.future { color: var(--bright-snow); }
+  .cell.future .time { color: var(--grey-olive); }
+  .cell.passed { color: var(--grey-olive); }
+  .cell.next { font-weight: 700; }
+
+  /* === ACCENT VARIANTS for the "next" cell === */
+  .next-gold        { background: var(--gold); color: var(--onyx); }
+  .next-gold .time  { color: var(--onyx); opacity: 0.75; }
+
+  .next-pineteal       { background: var(--pine-teal); color: var(--bright-snow); }
+  .next-pineteal .time { color: var(--bright-snow); opacity: 0.8; }
+
+  .next-deepteal       { background: var(--deep-teal); color: var(--onyx); }
+  .next-deepteal .time { color: var(--onyx); opacity: 0.75; }
+
+  .next-snow        { background: var(--bright-snow); color: var(--onyx); }
+  .next-snow .time  { color: var(--onyx); opacity: 0.7; }
+
+  .next-bronze        { background: var(--bronze); color: var(--bright-snow); }
+  .next-bronze .time  { color: var(--bright-snow); opacity: 0.8; }
+
+  .next-text-only-gold  { color: var(--gold); }
+  .next-text-only-gold .time { color: var(--gold); opacity: 0.85; }
+
+  .next-text-only-snow  { color: var(--bright-snow); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--gold); text-decoration-thickness: 2px; }
+  .next-text-only-snow .time { color: var(--bright-snow); }
+
+  .next-ring        { background: transparent; color: var(--gold); border: 1.5px solid var(--gold); }
+  .next-ring .time  { color: var(--gold); opacity: 0.85; }
+
+  /* RECOMMENDED treatment (hybrid: typography-led, deep-teal accent) */
+  .next-recommended { background: transparent; }
+  .next-recommended .label { color: var(--bright-snow); font-weight: 700; }
+  .next-recommended .time  { color: var(--deep-teal); font-weight: 700; opacity: 1;
+                              text-decoration: underline; text-underline-offset: 4px;
+                              text-decoration-color: var(--deep-teal); text-decoration-thickness: 2px; }
+
+  /* hijri moon vector mockup — SVG inline */
+  .moon-svg {
+    display: inline-block; vertical-align: middle;
+    margin-inline-end: 6px;
+  }
+
+  /* refined "active time bigger" variant */
+  .next-recommended-v2 { background: transparent; }
+  .next-recommended-v2 .label {
+    color: var(--bright-snow); font-weight: 700; font-size: 12px;
+  }
+  .next-recommended-v2 .time  {
+    color: var(--deep-teal); font-weight: 700; opacity: 1;
+    font-size: 15px;  /* larger than other cells (11px) for visual hierarchy */
+    text-decoration: underline; text-underline-offset: 4px;
+    text-decoration-color: var(--deep-teal); text-decoration-thickness: 2px;
+  }
+  .next-recommended-v2 { transform: translateY(-2px); }  /* slight lift */
+
+  /* variant with snow time + deep-teal underline (alternative if deep-teal not visible enough) */
+  .next-recommended-v3 { background: transparent; }
+  .next-recommended-v3 .label {
+    color: var(--bright-snow); font-weight: 700; font-size: 12px;
+  }
+  .next-recommended-v3 .time  {
+    color: var(--bright-snow); font-weight: 800; opacity: 1;
+    font-size: 15px;
+    text-decoration: underline; text-underline-offset: 4px;
+    text-decoration-color: var(--deep-teal); text-decoration-thickness: 2px;
+  }
+
+  /* variant with bright-snow time bigger, no underline, just bold size hierarchy */
+  .next-recommended-v4 { background: transparent; }
+  .next-recommended-v4 .label {
+    color: var(--deep-teal); font-weight: 700; font-size: 12px;
+  }
+  .next-recommended-v4 .time  {
+    color: var(--bright-snow); font-weight: 800; opacity: 1;
+    font-size: 16px;
+  }
+
+  /* TIME-V5: bright-snow time inside a deep-teal "highlight" mini-pill (no whole-cell pill) */
+  .next-recommended-v5 { background: transparent; }
+  .next-recommended-v5 .label {
+    color: var(--bright-snow); font-weight: 700; font-size: 12px;
+  }
+  .next-recommended-v5 .time-wrap {
+    margin-top: 2px;
+  }
+  .next-recommended-v5 .time {
+    color: var(--bright-snow); font-weight: 700; opacity: 1;
+    font-size: 14px;
+    background: var(--deep-teal);
+    padding: 2px 8px;
+    border-radius: 8px;
+    display: inline-block;
+  }
+
+  /* TIME-V6: bright-snow time in a soft deep-teal tint highlight (transparency softer than V5) */
+  .next-recommended-v6 { background: transparent; }
+  .next-recommended-v6 .label {
+    color: var(--bright-snow); font-weight: 700; font-size: 12px;
+  }
+  .next-recommended-v6 .time {
+    color: var(--bright-snow); font-weight: 700; opacity: 1;
+    font-size: 14px;
+    background: rgba(74, 124, 106, 0.35);  /* deep-teal at 35% */
+    padding: 2px 8px;
+    border-radius: 8px;
+    display: inline-block;
+  }
+
+  .recommended-banner {
+    background: linear-gradient(135deg, var(--deep-teal) 0%, var(--pine-teal) 100%);
+    color: var(--bright-snow);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 32px 0 16px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── collapsed row mock ── */
+  .collapsed { display: flex; justify-content: space-between; align-items: center; padding: 14px; font-family: 'Cairo', sans-serif; }
+  .collapsed .next-tag { font-size: 11px; color: var(--grey-olive); font-weight: 600; letter-spacing: 0.8px; }
+  .collapsed .next-name { font-size: 14px; color: var(--bright-snow); font-weight: 600; }
+  .collapsed .next-time-gold { font-size: 14px; color: var(--gold); font-weight: 700; padding: 0 12px; }
+  .collapsed .next-time-snow { font-size: 14px; color: var(--bright-snow); font-weight: 700; padding: 0 12px; }
+  .collapsed .hijri { font-size: 11px; color: var(--grey-olive); }
+
+  /* ── grid for variants ── */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+  .variant {
+    background: #1f1f1f;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .variant h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--bright-snow); }
+  .variant .desc { font-size: 12px; color: var(--grey-olive); margin: 0 0 12px; line-height: 1.5; }
+  .pick { display: inline-block; margin-top: 8px; padding: 4px 10px; border-radius: 6px; background: #333; font-size: 11px; font-family: monospace; color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Prayer Strip — Redesign variants</h1>
+
+  <div class="recommended-banner">★ TUNING — pick a moon style + a time-emphasis style (refined per your feedback)</div>
+
+  <h2 style="margin-top:0;">Moon icon — 4 options (vector drawables, not OS emoji)</h2>
+  <p class="legend">All four render identically on every Android device. Pick one.</p>
+
+  <div class="grid">
+
+    <!-- Moon A: hairline crescent -->
+    <div class="variant">
+      <h3>MOON-A · Hairline crescent (thin)</h3>
+      <p class="desc">1dp stroke, deep-teal. Minimal, modern.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M11 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" stroke="#4A7C6A" stroke-width="1" fill="none"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v2"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Moon B: solid filled crescent -->
+    <div class="variant">
+      <h3>MOON-B · Solid filled crescent</h3>
+      <p class="desc">Filled shape, deep-teal. More substantial, traditional.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="14" height="14" viewBox="0 0 14 14">
+                  <path d="M11 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" fill="#4A7C6A"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v2"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Moon C: crescent + star -->
+    <div class="variant">
+      <h3>MOON-C · Crescent + small star (Islamic motif)</h3>
+      <p class="desc">Traditional Islamic symbol, deep-teal. Most culturally specific.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="16" height="14" viewBox="0 0 16 14">
+                  <path d="M10 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" fill="#4A7C6A"/>
+                  <path d="M12 6 l0.6 1.2 1.4 0.2 -1 1 0.2 1.4 -1.2 -0.6 -1.2 0.6 0.2 -1.4 -1 -1 1.4 -0.2 z" fill="#4A7C6A"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v2"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Moon D: no moon at all -->
+    <div class="variant">
+      <h3>MOON-D · No icon — just hijri text</h3>
+      <p class="desc">Cleanest. Arabic + hijri date carries all the meaning, no extra glyph needed.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>5 ذو الحجة 1446 هـ</span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v2"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Time emphasis — 3 options to make the next-prayer time pop</h2>
+  <p class="legend">All use transparent BG + MOON-B (solid crescent) so you can compare just the time treatment.</p>
+
+  <div class="grid">
+
+    <!-- Time V2: bigger deep-teal time with underline -->
+    <div class="variant">
+      <h3>TIME-V2 · Bigger deep-teal time + underline</h3>
+      <p class="desc">Active time is 15sp (vs 11sp others), deep-teal, bold, 2dp underline. Hierarchy via size + color + decoration.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="14" height="14" viewBox="0 0 14 14">
+                  <path d="M11 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" fill="#4A7C6A"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v2"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time V3: bright snow time + deep-teal underline -->
+    <div class="variant">
+      <h3>TIME-V3 · Bright snow time + deep-teal underline</h3>
+      <p class="desc">Active time is 15sp bright-snow extra-bold + deep-teal underline. Maximum legibility (snow on dark) while keeping brand color in the underline.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="14" height="14" viewBox="0 0 14 14">
+                  <path d="M11 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" fill="#4A7C6A"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v3"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time V4: inverted hierarchy -->
+    <div class="variant">
+      <h3>TIME-V4 · Inverted — teal label + huge snow time</h3>
+      <p class="desc">Active cell flips the color logic: label is deep-teal (12sp), time is bright-snow extra-bold 16sp. No underline. Maximum size contrast.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="14" height="14" viewBox="0 0 14 14">
+                  <path d="M11 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" fill="#4A7C6A"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v4"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Time-highlight A/B — underline (V3) vs mini-pill (V5/V6)</h2>
+  <p class="legend">All use MOON-B (solid crescent). Compare how the active time is emphasized: a thin underline beneath snow text, vs wrapping just the time in a deep-teal background "highlight."</p>
+
+  <div class="grid">
+
+    <!-- V3 underline (same as before, for direct comparison) -->
+    <div class="variant">
+      <h3>V3 · Underline (your favorite)</h3>
+      <p class="desc">Snow extra-bold 15sp + 2dp deep-teal underline. Restrained, magazine-style.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="14" height="14" viewBox="0 0 14 14">
+                  <path d="M11 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" fill="#4A7C6A"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v3"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V5 solid pill -->
+    <div class="variant">
+      <h3>V5 · Solid teal pill (highlight ONLY the time)</h3>
+      <p class="desc">Time wrapped in a small solid deep-teal background, snow text inside. Label stays snow above. The pill hugs just the time, not the whole cell.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="14" height="14" viewBox="0 0 14 14">
+                  <path d="M11 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" fill="#4A7C6A"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v5"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V6 soft pill -->
+    <div class="variant">
+      <h3>V6 · Soft teal tint (translucent highlight)</h3>
+      <p class="desc">Same shape as V5 but the pill background is deep-teal at 35% opacity — softer, less "button-y." Quietest of the three.</p>
+      <div class="phone">
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span>
+                <svg class="moon-svg" width="14" height="14" viewBox="0 0 14 14">
+                  <path d="M11 7 a4 4 0 1 1 -4 -4 a3 3 0 1 0 4 4 z" fill="#4A7C6A"/>
+                </svg>5 ذو الحجة 1446
+              </span>
+              <span style="color: var(--deep-teal); font-weight: 700;">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-recommended-v6"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr style="border: none; border-top: 1px solid #333; margin: 40px 0 24px;">
+
+  <h2 style="margin-top:32px;">All variants (for comparison)</h2>
+
+  <p class="legend">
+    Each card mocks the Android notification (system frame in gray, then the strip body we control).<br>
+    Background and accent are independent — mix any background with any accent style.<br>
+    Cells from left to right (in Arabic locale, RTL): Fajr · Sunrise · Dhuhr · Asr · Maghrib · Isha.<br>
+    Cells before <code>next</code> are <code>passed</code> (dim); the <code>next</code> cell gets the accent; the rest are <code>future</code>.<br>
+    Sample state: today is Friday, next prayer is <strong>Asr at 16:28</strong>.
+  </p>
+
+  <h2>Backgrounds</h2>
+
+  <div class="grid">
+
+    <!-- BG-A: Solid onyx -->
+    <div class="variant">
+      <h3>BG-A · Solid onyx <span class="pick">CURRENT</span></h3>
+      <p class="desc">Opaque dark surface. Best contrast, but visually heavy in the notification shade.</p>
+      <div class="phone">
+        <div class="system-shade">notifications</div>
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-onyx">
+            <div class="strip-header">
+              <span><span class="moon">🌙</span>5 ذو الحجة 1446</span>
+              <span class="friday-bold">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-gold"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BG-B: Transparent -->
+    <div class="variant">
+      <h3>BG-B · Transparent</h3>
+      <p class="desc">Strip blends with the system notification surface — feels lighter, but contrast depends on user's device theme.</p>
+      <div class="phone">
+        <div class="system-shade">notifications</div>
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span><span class="moon">🌙</span>5 ذو الحجة 1446</span>
+              <span class="friday-bold">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-gold"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BG-C: Evergreen surface -->
+    <div class="variant">
+      <h3>BG-C · Evergreen surface</h3>
+      <p class="desc">Slightly lighter than onyx — uses the card token. Reads as a "panel" rather than a deep void.</p>
+      <div class="phone">
+        <div class="system-shade">notifications</div>
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-evergreen">
+            <div class="strip-header">
+              <span><span class="moon">🌙</span>5 ذو الحجة 1446</span>
+              <span class="friday-bold">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-gold"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BG-D: Translucent onyx -->
+    <div class="variant">
+      <h3>BG-D · Translucent onyx (65%)</h3>
+      <p class="desc">Semi-transparent overlay. Compromise between solid and transparent. <em>Note: RemoteViews can't do real blur — would degrade to flat 65%-alpha onyx.</em></p>
+      <div class="phone">
+        <div class="system-shade">notifications</div>
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-translucent">
+            <div class="strip-header">
+              <span><span class="moon">🌙</span>5 ذو الحجة 1446</span>
+              <span class="friday-bold">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-gold"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Accent treatments (all on transparent background — easier to compare)</h2>
+
+  <div class="grid">
+
+    <!-- ACC-1: Gold pill -->
+    <div class="variant">
+      <h3>ACC-1 · Gold pill, dark text <span class="pick">CURRENT</span></h3>
+      <p class="desc">Solid gold (#D4A857) background, onyx text. High-contrast, classic prayer-app accent.</p>
+      <div class="strip bg-transparent">
+        <div class="cells">
+          <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+          <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+          <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+          <div class="cell next next-gold"><div class="label">Asr</div><div class="time">16:28</div></div>
+          <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+          <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACC-2: Pine teal pill -->
+    <div class="variant">
+      <h3>ACC-2 · Pine teal pill, snow text</h3>
+      <p class="desc">Brand primary color. Feels native to the app's identity — but contrast with onyx background is lower (both dark).</p>
+      <div class="strip bg-transparent">
+        <div class="cells">
+          <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+          <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+          <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+          <div class="cell next next-pineteal"><div class="label">Asr</div><div class="time">16:28</div></div>
+          <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+          <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACC-3: Deep teal pill -->
+    <div class="variant">
+      <h3>ACC-3 · Deep teal pill, dark text</h3>
+      <p class="desc">Lighter brand teal (#4A7C6A). Better contrast with onyx than pine, still on-brand.</p>
+      <div class="strip bg-transparent">
+        <div class="cells">
+          <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+          <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+          <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+          <div class="cell next next-deepteal"><div class="label">Asr</div><div class="time">16:28</div></div>
+          <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+          <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACC-4: Snow pill -->
+    <div class="variant">
+      <h3>ACC-4 · Snow pill, onyx text</h3>
+      <p class="desc">Inverted: bright snow background, dark text. Maximum contrast, neutral (no color choice imposed).</p>
+      <div class="strip bg-transparent">
+        <div class="cells">
+          <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+          <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+          <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+          <div class="cell next next-snow"><div class="label">Asr</div><div class="time">16:28</div></div>
+          <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+          <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACC-5: Bronze -->
+    <div class="variant">
+      <h3>ACC-5 · Bronze pill, snow text</h3>
+      <p class="desc">Muted earthen tone (#8B7355). Less "shouty" than gold, retains warmth.</p>
+      <div class="strip bg-transparent">
+        <div class="cells">
+          <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+          <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+          <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+          <div class="cell next next-bronze"><div class="label">Asr</div><div class="time">16:28</div></div>
+          <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+          <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACC-6: Gold ring outline -->
+    <div class="variant">
+      <h3>ACC-6 · Gold outlined ring, gold text</h3>
+      <p class="desc">Just a thin gold border around the cell + gold text — no fill. Lightest possible accent.</p>
+      <div class="strip bg-transparent">
+        <div class="cells">
+          <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+          <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+          <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+          <div class="cell next next-ring"><div class="label">Asr</div><div class="time">16:28</div></div>
+          <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+          <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACC-7: No pill, gold text -->
+    <div class="variant">
+      <h3>ACC-7 · No pill, gold bold text</h3>
+      <p class="desc">No background shape at all — next prayer is just colored bolder text. Quietest treatment.</p>
+      <div class="strip bg-transparent">
+        <div class="cells">
+          <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+          <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+          <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+          <div class="cell next next-text-only-gold"><div class="label">Asr</div><div class="time">16:28</div></div>
+          <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+          <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACC-8: No pill, snow underline -->
+    <div class="variant">
+      <h3>ACC-8 · No pill, snow text + gold underline</h3>
+      <p class="desc">Snow text with a small gold underline tick. Subtle, typography-led.</p>
+      <div class="strip bg-transparent">
+        <div class="cells">
+          <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+          <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+          <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+          <div class="cell next next-text-only-snow"><div class="label">Asr</div><div class="time">16:28</div></div>
+          <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+          <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Two strongest combinations (full preview, system frame)</h2>
+
+  <div class="grid">
+
+    <!-- combo X -->
+    <div class="variant">
+      <h3>COMBO-X · Transparent BG + Snow pill + Gold time accent</h3>
+      <p class="desc">No background fill at all (strip inherits the system notification surface). Active prayer pill is bright snow with onyx text — maximum legibility. Gold only appears in the collapsed/header tagline.</p>
+      <div class="phone">
+        <div class="system-shade">notifications</div>
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-transparent">
+            <div class="strip-header">
+              <span><span class="moon">🌙</span>5 ذو الحجة 1446</span>
+              <span class="friday-bold">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-snow"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- combo Y -->
+    <div class="variant">
+      <h3>COMBO-Y · Evergreen BG + Deep-teal pill</h3>
+      <p class="desc">Brand-true: card surface (evergreen) with a slightly lighter teal pill on the active prayer. Feels native to the app's identity, no foreign gold tone.</p>
+      <div class="phone">
+        <div class="system-shade">notifications</div>
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="strip bg-evergreen">
+            <div class="strip-header">
+              <span><span class="moon">🌙</span>5 ذو الحجة 1446</span>
+              <span class="friday-bold">الجمعة</span>
+            </div>
+            <div class="cells">
+              <div class="cell passed"><div class="label">Fajr</div><div class="time">04:15</div></div>
+              <div class="cell passed"><div class="label">Sun</div><div class="time">05:07</div></div>
+              <div class="cell passed"><div class="label">Dhuhr</div><div class="time">12:52</div></div>
+              <div class="cell next next-deepteal"><div class="label">Asr</div><div class="time">16:28</div></div>
+              <div class="cell future"><div class="label">Magh</div><div class="time">19:46</div></div>
+              <div class="cell future"><div class="label">Isha</div><div class="time">21:16</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Collapsed-view options (one-line shade preview)</h2>
+
+  <div class="grid">
+
+    <div class="variant">
+      <h3>COL-A · Gold time</h3>
+      <div class="phone">
+        <div class="system-shade">notifications</div>
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="collapsed" style="background: var(--onyx);">
+            <span><span class="next-tag">NEXT</span> &nbsp; <span class="next-name">Asr</span></span>
+            <span class="next-time-gold">16:28</span>
+            <span class="hijri">5 ذو الحجة</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="variant">
+      <h3>COL-B · Snow time (no gold)</h3>
+      <div class="phone">
+        <div class="system-shade">notifications</div>
+        <div class="notif-frame">
+          <div class="notif-header"><span class="notif-icon"></span><span class="app-name">Quran App</span><span class="dot">·</span><span>now</span></div>
+          <div class="collapsed" style="background: var(--onyx);">
+            <span><span class="next-tag">NEXT</span> &nbsp; <span class="next-name">Asr</span></span>
+            <span class="next-time-snow">16:28</span>
+            <span class="hijri">5 ذو الحجة</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="legend" style="margin-top:32px;">
+    Open this file in a browser to see live (Cairo loads from Google Fonts on first view).<br>
+    These are <em>approximations</em> — Android RemoteViews can't do <code>backdrop-filter</code>, real Cairo will render slightly differently, and the system notification frame is owned by Android (we only control the strip body).
+  </p>
+</div>
+</body>
+</html>
