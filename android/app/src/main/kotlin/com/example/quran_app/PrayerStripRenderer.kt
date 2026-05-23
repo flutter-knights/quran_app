@@ -87,10 +87,7 @@ class PrayerStripRenderer(private val context: Context) {
             }
         }
 
-        // Collapsed view: "Asr   [16:28 pill]   5 ذو الحجة"
-        val next = state.cells.getOrNull(state.nextPrayerIndex)
-        collapsed.setTextViewText(R.id.collapsed_label, next?.label ?: "")
-        collapsed.setTextViewText(R.id.collapsed_time, next?.time ?: "")
+        // Collapsed view: just the hijri date with crescent moon.
         collapsed.setTextViewText(R.id.collapsed_hijri, state.hijriDateLabel)
 
         val launchPI = PendingIntent.getActivity(
