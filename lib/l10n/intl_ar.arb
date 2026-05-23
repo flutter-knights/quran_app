@@ -85,5 +85,15 @@
 "continue_reading": "متابعة التلاوة",
 "ayah_label": "سورة {surah}، الآية {ayah}",
 "page_label": "الصفحة {page}",
-"play_surah": "تشغيل السورة"
+"play_surah": "تشغيل السورة",
+
+"adhanPerPrayerSection": "الأذان لكل صلاة",
+"reminderLabel": "ذكرني",
+"reminderOff": "لا",
+"reminderMinutesBefore": "قبل {minutes} د",
+"@reminderMinutesBefore": {
+  "placeholders": { "minutes": { "type": "int" } }
+},
+"playTestAdhan": "تشغيل أذان تجريبي",
+"testAdhanScheduledSnack": "أذان تجريبي خلال ٥ ثوانٍ"
 }

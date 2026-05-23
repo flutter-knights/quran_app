@@ -29,6 +29,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m3(page) => "الصفحة ${page}";
 
+  static String m4(minutes) => "قبل ${minutes} د";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "abu_dawood": MessageLookupByLibrary.simpleMessage("سنن أبي داود"),
@@ -38,6 +40,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "al_tirmidhi": MessageLookupByLibrary.simpleMessage("جامع الترمذي"),
     "arabicLanguage": MessageLookupByLibrary.simpleMessage("اللغة العربية"),
     "arabic_label": MessageLookupByLibrary.simpleMessage("العربية"),
+    "adhanPerPrayerSection": MessageLookupByLibrary.simpleMessage("الأذان لكل صلاة"),
     "asr": MessageLookupByLibrary.simpleMessage("العصر"),
     "author_abu_dawood": MessageLookupByLibrary.simpleMessage(
       "الإمام أبو داود السجستاني",
@@ -152,11 +155,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "ayah_label": m2,
     "page_label": m3,
     "play_surah": MessageLookupByLibrary.simpleMessage("تشغيل السورة"),
+    "playTestAdhan": MessageLookupByLibrary.simpleMessage("تشغيل أذان تجريبي"),
     "pinnedPrayerTimes": MessageLookupByLibrary.simpleMessage("أوقات الصلاة المثبتة"),
     "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
       "اعرض صلوات اليوم في شريط الإشعارات",
     ),
     "notifications": MessageLookupByLibrary.simpleMessage("الإشعارات"),
     "notificationsScreenSubtitle": MessageLookupByLibrary.simpleMessage("إدارة إشعارات أوقات الصلاة."),
+    "reminderLabel": MessageLookupByLibrary.simpleMessage("ذكرني"),
+    "reminderOff": MessageLookupByLibrary.simpleMessage("لا"),
+    "reminderMinutesBefore": m4,
+    "testAdhanScheduledSnack": MessageLookupByLibrary.simpleMessage("أذان تجريبي خلال ٥ ثوانٍ"),
   };
 }

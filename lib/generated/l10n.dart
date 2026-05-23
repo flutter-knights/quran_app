@@ -674,6 +674,41 @@ class S {
   String get play_surah {
     return Intl.message('Play surah', name: 'play_surah', desc: '', args: []);
   }
+
+  /// `Adhan per prayer`
+  String get adhanPerPrayerSection {
+    return Intl.message('Adhan per prayer', name: 'adhanPerPrayerSection', desc: '', args: []);
+  }
+
+  /// `Remind me`
+  String get reminderLabel {
+    return Intl.message('Remind me', name: 'reminderLabel', desc: '', args: []);
+  }
+
+  /// `Off`
+  String get reminderOff {
+    return Intl.message('Off', name: 'reminderOff', desc: '', args: []);
+  }
+
+  /// `{minutes} min before`
+  String reminderMinutesBefore(Object minutes) {
+    return Intl.message(
+      '$minutes min before',
+      name: 'reminderMinutesBefore',
+      desc: '',
+      args: [minutes],
+    );
+  }
+
+  /// `Play test adhan`
+  String get playTestAdhan {
+    return Intl.message('Play test adhan', name: 'playTestAdhan', desc: '', args: []);
+  }
+
+  /// `Test adhan in 5 seconds`
+  String get testAdhanScheduledSnack {
+    return Intl.message('Test adhan in 5 seconds', name: 'testAdhanScheduledSnack', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
