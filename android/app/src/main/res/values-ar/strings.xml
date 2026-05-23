@@ -14,4 +14,18 @@
     <string name="adhan_title_asr">العصر</string>
     <string name="adhan_title_maghrib">المغرب</string>
     <string name="adhan_title_isha">العشاء</string>
+
+    <!-- Pre-prayer reminder -->
+    <string name="reminder_channel_name">تذكيرات قبل الصلاة</string>
+    <string name="reminder_channel_description">تنبيه قبل الصلاة بدقائق</string>
+    <string name="reminder_title_fajr">تذكير الفجر</string>
+    <string name="reminder_title_dhuhr">تذكير الظهر</string>
+    <string name="reminder_title_asr">تذكير العصر</string>
+    <string name="reminder_title_maghrib">تذكير المغرب</string>
+    <string name="reminder_title_isha">تذكير العشاء</string>
+    <string name="reminder_body_fajr">اقتربت صلاة الفجر</string>
+    <string name="reminder_body_dhuhr">اقتربت صلاة الظهر</string>
+    <string name="reminder_body_asr">اقتربت صلاة العصر</string>
+    <string name="reminder_body_maghrib">اقتربت صلاة المغرب</string>
+    <string name="reminder_body_isha">اقتربت صلاة العشاء</string>
 </resources>

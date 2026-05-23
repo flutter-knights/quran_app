@@ -41,6 +41,8 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "scheduleDailyAdhans" -> handleScheduleDailyAdhans(ctx, call, result)
             "cancelAllAdhans" -> handleCancelAllAdhans(ctx, result)
             "scheduleTestAdhan" -> handleScheduleTestAdhan(ctx, call, result)
+            "schedulePrayerReminders" -> handleSchedulePrayerReminders(ctx, call, result)
+            "cancelAllReminders" -> handleCancelAllReminders(ctx, result)
             else -> result.notImplemented()
         }
     }
@@ -99,6 +101,34 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val delay = (args?.get("delaySeconds") as? Int) ?: 30
         val localeCode = (args?.get("localeCode") as? String) ?: "en"
         AdhanScheduler.armTest(ctx, delay, localeCode)
+        result.success(null)
+    }
+
+    private fun handleSchedulePrayerReminders(
+        ctx: Context, call: MethodCall, result: MethodChannel.Result
+    ) {
+        val args = call.arguments as? Map<*, *>
+        if (args == null) {
+            result.error("BAD_ARGS", "Expected Map", null)
+            return
+        }
+        @Suppress("UNCHECKED_CAST")
+        val remindersByPrayer = (args["remindersByPrayer"] as? Map<String, Int>)
+            ?: emptyMap()
+        @Suppress("UNCHECKED_CAST")
+        val timings = (args["timings"] as? Map<String, String>) ?: emptyMap()
+        val localeCode = (args["localeCode"] as? String) ?: "en"
+
+        PrayerReminderScheduler.armToday(
+            ctx, remindersByPrayer, timings, localeCode,
+        )
+        result.success(null)
+    }
+
+    private fun handleCancelAllReminders(
+        ctx: Context, result: MethodChannel.Result,
+    ) {
+        PrayerReminderScheduler.cancelAll(ctx)
         result.success(null)
     }
 
