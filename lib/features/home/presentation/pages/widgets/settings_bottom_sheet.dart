@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/feature_flags.dart';
@@ -82,17 +84,14 @@ class SettingsBottomSheet extends StatelessWidget {
                 ),
               ),
               if (FeatureFlags.pinnedPrayerStripUi)
-                SettingSwitch(
-                  settings: settings,
-                  settingTitle: S.current.pinnedPrayerTimes,
-                  icons: const [
-                    HugeIcons.strokeRoundedNotification01,
-                    HugeIcons.strokeRoundedNotificationOff01,
-                  ],
-                  value: settings.isPrayerStripPinned,
-                  action: () => sl<SettingsCubit>().updatePrayerStripPinned(
-                    !settings.isPrayerStripPinned,
-                  ),
+                ListTile(
+                  leading: HugeIcon(icon: HugeIcons.strokeRoundedNotification01),
+                  title: Text(S.current.notifications, style: TS.regular16.cairo),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    GoRouter.of(context).push(AppRouter.notificationsPath);
+                  },
                 ),
               const Gap(48),
             ],
