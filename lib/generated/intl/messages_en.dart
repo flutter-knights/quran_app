@@ -164,5 +164,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
       "Show today\'s prayers in your notification shade.",
     ),
+    "notifications": MessageLookupByLibrary.simpleMessage("Notifications"),
+    "notificationsScreenSubtitle": MessageLookupByLibrary.simpleMessage("Manage prayer-time notifications."),
   };
 }

@@ -15,6 +15,8 @@
 "arabicLanguage": "Arabic Language",
 "pinnedPrayerTimes": "Pinned prayer times",
 "pinnedPrayerTimesSubtitle": "Show today's prayers in your notification shade.",
+"notifications": "Notifications",
+"notificationsScreenSubtitle": "Manage prayer-time notifications.",
 
 
 "hadith_number_label": "Hadith No.",

@@ -156,5 +156,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
       "اعرض صلوات اليوم في شريط الإشعارات",
     ),
+    "notifications": MessageLookupByLibrary.simpleMessage("الإشعارات"),
+    "notificationsScreenSubtitle": MessageLookupByLibrary.simpleMessage("إدارة إشعارات أوقات الصلاة."),
   };
 }

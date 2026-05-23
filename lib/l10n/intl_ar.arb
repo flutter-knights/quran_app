@@ -15,6 +15,8 @@
 "arabicLanguage": "اللغة العربية",
 "pinnedPrayerTimes": "أوقات الصلاة المثبتة",
 "pinnedPrayerTimesSubtitle": "اعرض صلوات اليوم في شريط الإشعارات",
+"notifications": "الإشعارات",
+"notificationsScreenSubtitle": "إدارة إشعارات أوقات الصلاة.",
 
 "hadith_number_label": "حديث رقم",
 "hadith_total_label": "إجمالي الأحاديث",
@@ -35,22 +37,6 @@
 "mishkat": "مشكاة المصابيح",
 "musnad_ahmad": "مسند أحمد",
 "al_silsila_sahiha": "السلسلة الصحيحة",
-
-  "status_sahih": "صحيح",
-  "status_hasan": "حسن",
-  "status_daeef": "ضعيف",
-  "status_mudu": "موضوع",
-
-  "sahih_bukhari": "صحيح البخاري",
-  "sahih_muslim": "صحيح مسلم",
-  "al_tirmidhi": "جامع الترمذي",
-  "abu_dawood": "سنن أبي داود",
-  "ibn_e_majah": "سنن ابن ماجه",
-  "sunan_nasai": "سنن النسائي",
-  "mishkat": "مشكاة المصابيح",
-  "musnad_ahmad": "مسند أحمد",
-  "al_silsila_sahiha": "السلسلة الصحيحة",
-
   "author_bukhari": "الإمام محمد بن إسماعيل البخاري",
   "death_bukhari": "٢٥٦ هـ",
   "full_title_bukhari": "الجامع المسند الصحيح المختصر",
