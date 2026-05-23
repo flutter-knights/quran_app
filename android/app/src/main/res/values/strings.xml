@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Quran App</string>
+
+    <!-- Adhan notification -->
+    <string name="adhan_stop">Stop</string>
+    <string name="adhan_body_fajr">It\'s time for Fajr prayer</string>
+    <string name="adhan_body_dhuhr">It\'s time for Dhuhr prayer</string>
+    <string name="adhan_body_asr">It\'s time for Asr prayer</string>
+    <string name="adhan_body_maghrib">It\'s time for Maghrib prayer</string>
+    <string name="adhan_body_isha">It\'s time for Isha prayer</string>
+
+    <string name="adhan_title_fajr">Fajr</string>
+    <string name="adhan_title_dhuhr">Dhuhr</string>
+    <string name="adhan_title_asr">Asr</string>
+    <string name="adhan_title_maghrib">Maghrib</string>
+    <string name="adhan_title_isha">Isha</string>
+</resources>
