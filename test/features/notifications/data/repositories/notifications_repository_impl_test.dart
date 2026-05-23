@@ -303,11 +303,14 @@ void main() {
     debugDefaultTargetPlatformOverride = null;
   });
 
-  test('cancelAllReminders iOS: no-op (returns Right(unit))', () async {
+  test('cancelAllReminders iOS: delegates to legacyScheduler.cancelAllStaticReminders',
+      () async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    when(() => scheduler.cancelAllStaticReminders()).thenAnswer((_) async {});
     final r = await repo.cancelAllReminders();
     expect(r, const Right(unit));
     verifyZeroInteractions(native);
+    verify(() => scheduler.cancelAllStaticReminders()).called(1);
     debugDefaultTargetPlatformOverride = null;
   });
 }
