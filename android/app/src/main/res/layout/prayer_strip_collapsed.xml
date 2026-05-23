@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/strip_onyx"
+    android:padding="12dp"
+    android:gravity="center_vertical"
+    android:layoutDirection="locale">
+
+    <TextView
+        android:id="@+id/collapsed_label"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/strip_bright_snow"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/collapsed_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/strip_pill_gold"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
+
+    <TextView
+        android:id="@+id/collapsed_hijri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/strip_grey_olive"
+        android:textSize="12sp" />
+</LinearLayout>
