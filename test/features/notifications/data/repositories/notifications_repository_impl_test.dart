@@ -84,7 +84,15 @@ void main() {
   });
 
   group('scheduleDailyAdhans', () {
-    test('Android: routes to native.scheduleDailyAdhans, ignores legacy scheduler',
+    const allEnabled = {
+      PrayerName.fajr: true,
+      PrayerName.dhuhr: true,
+      PrayerName.asr: true,
+      PrayerName.maghrib: true,
+      PrayerName.isha: true,
+    };
+
+    test('Android: routes to native with filtered timings; ignores legacy',
         () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       when(() => native.scheduleDailyAdhans(
@@ -97,6 +105,7 @@ void main() {
       final r = await repo.scheduleDailyAdhans(
         prayerTimes: pt,
         audio: AdhanAudioSettings.defaults(),
+        enabledByPrayer: allEnabled,
         localeCode: 'en',
       );
 
@@ -111,6 +120,39 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
+    test('Android: omits prayers whose enabled=false from the timings map',
+        () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      Map<String, String>? capturedTimings;
+      when(() => native.scheduleDailyAdhans(
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
+            volume: any(named: 'volume'),
+            localeCode: any(named: 'localeCode'),
+          )).thenAnswer((invocation) async {
+        capturedTimings = invocation.namedArguments[#timingsByPrayer]
+            as Map<String, String>;
+      });
+
+      await repo.scheduleDailyAdhans(
+        prayerTimes: pt,
+        audio: AdhanAudioSettings.defaults(),
+        enabledByPrayer: const {
+          PrayerName.fajr: false,
+          PrayerName.dhuhr: true,
+          PrayerName.asr: true,
+          PrayerName.maghrib: true,
+          PrayerName.isha: false,
+        },
+        localeCode: 'en',
+      );
+
+      expect(capturedTimings!.containsKey('fajr'), false);
+      expect(capturedTimings!.containsKey('isha'), false);
+      expect(capturedTimings!.containsKey('dhuhr'), true);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
     test('iOS: routes to legacy scheduler, ignores native', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       when(() => scheduler.scheduleDailyPrayerNotifications(any()))
@@ -119,6 +161,7 @@ void main() {
       final r = await repo.scheduleDailyAdhans(
         prayerTimes: pt,
         audio: AdhanAudioSettings.defaults(),
+        enabledByPrayer: allEnabled,
         localeCode: 'en',
       );
 
@@ -146,6 +189,7 @@ void main() {
       final r = await repo.scheduleDailyAdhans(
         prayerTimes: pt,
         audio: AdhanAudioSettings.defaults(),
+        enabledByPrayer: allEnabled,
         localeCode: 'en',
       );
       r.fold((f) => expect(f, isA<UnknownNotificationFailure>()), (_) {});
@@ -170,6 +214,100 @@ void main() {
     expect(r, const Right(unit));
     verify(() => native.cancelAllAdhans()).called(1);
     verifyNever(() => scheduler.cancelAllPrayerNotifications());
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  group('schedulePrayerReminders', () {
+    test('Android: routes to native.schedulePrayerReminders with reminder map',
+        () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(() => native.schedulePrayerReminders(
+            remindersByPrayer: any(named: 'remindersByPrayer'),
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            localeCode: any(named: 'localeCode'),
+          )).thenAnswer((_) async {});
+
+      final r = await repo.schedulePrayerReminders(
+        prayerTimes: pt,
+        reminderMinutesByPrayer: const {
+          PrayerName.fajr: 15,
+          PrayerName.asr: 10,
+          PrayerName.maghrib: 0,
+        },
+        localeCode: 'en',
+      );
+
+      expect(r, const Right(unit));
+      verify(() => native.schedulePrayerReminders(
+            remindersByPrayer: {'fajr': 15, 'asr': 10},
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            localeCode: 'en',
+          )).called(1);
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    test('Android: swallows MissingPluginException as Right(unit)', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(() => native.schedulePrayerReminders(
+            remindersByPrayer: any(named: 'remindersByPrayer'),
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            localeCode: any(named: 'localeCode'),
+          )).thenThrow(
+        const PlatformNotImplementedException('schedulePrayerReminders'),
+      );
+
+      final r = await repo.schedulePrayerReminders(
+        prayerTimes: pt,
+        reminderMinutesByPrayer: const {PrayerName.fajr: 15},
+        localeCode: 'en',
+      );
+
+      // Partial-rollback safety: treat as "feature unavailable", not an error.
+      expect(r, const Right(unit));
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    test('Android: drops entries where minutes == 0', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      Map<String, int>? captured;
+      when(() => native.schedulePrayerReminders(
+            remindersByPrayer: any(named: 'remindersByPrayer'),
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            localeCode: any(named: 'localeCode'),
+          )).thenAnswer((invocation) async {
+        captured = invocation.namedArguments[#remindersByPrayer]
+            as Map<String, int>;
+      });
+
+      await repo.schedulePrayerReminders(
+        prayerTimes: pt,
+        reminderMinutesByPrayer: const {
+          PrayerName.fajr: 0,
+          PrayerName.dhuhr: 10,
+          PrayerName.asr: 0,
+        },
+        localeCode: 'en',
+      );
+
+      expect(captured, {'dhuhr': 10});
+      debugDefaultTargetPlatformOverride = null;
+    });
+  });
+
+  test('cancelAllReminders Android: delegates to native', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    when(() => native.cancelAllReminders()).thenAnswer((_) async {});
+    final r = await repo.cancelAllReminders();
+    expect(r, const Right(unit));
+    verify(() => native.cancelAllReminders()).called(1);
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  test('cancelAllReminders iOS: no-op (returns Right(unit))', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    final r = await repo.cancelAllReminders();
+    expect(r, const Right(unit));
+    verifyZeroInteractions(native);
     debugDefaultTargetPlatformOverride = null;
   });
 }
