@@ -229,28 +229,50 @@ void main() {
   });
 
   blocTest<SettingsCubit, SettingsState>(
-    'updateAdhanEnabled(Fajr, false) emits state with Fajr disabled',
+    'updateAdhanEnabled(Fajr, false) emits state with Fajr disabled, others unchanged',
     build: () => SettingsCubit(),
     act: (c) => c.updateAdhanEnabled(PrayerName.fajr, false),
     expect: () => [
-      isA<SettingsState>().having(
-        (s) => s.settingsModel.adhanEnabledByPrayer[PrayerName.fajr],
-        'fajr enabled',
-        false,
-      ),
+      isA<SettingsState>()
+          .having(
+            (s) => s.settingsModel.adhanEnabledByPrayer[PrayerName.fajr],
+            'fajr enabled',
+            false,
+          )
+          .having(
+            (s) => s.settingsModel.adhanEnabledByPrayer[PrayerName.dhuhr],
+            'dhuhr preserved',
+            true,
+          )
+          .having(
+            (s) => s.settingsModel.adhanEnabledByPrayer[PrayerName.isha],
+            'isha preserved',
+            true,
+          ),
     ],
   );
 
   blocTest<SettingsCubit, SettingsState>(
-    'updateReminderMinutes(Maghrib, 10) emits state with reminder=10',
+    'updateReminderMinutes(Maghrib, 10) emits state with Maghrib reminder=10, others unchanged',
     build: () => SettingsCubit(),
     act: (c) => c.updateReminderMinutes(PrayerName.maghrib, 10),
     expect: () => [
-      isA<SettingsState>().having(
-        (s) => s.settingsModel.reminderMinutesByPrayer[PrayerName.maghrib],
-        'maghrib reminder',
-        10,
-      ),
+      isA<SettingsState>()
+          .having(
+            (s) => s.settingsModel.reminderMinutesByPrayer[PrayerName.maghrib],
+            'maghrib reminder',
+            10,
+          )
+          .having(
+            (s) => s.settingsModel.reminderMinutesByPrayer[PrayerName.fajr],
+            'fajr reminder preserved',
+            0,
+          )
+          .having(
+            (s) => s.settingsModel.reminderMinutesByPrayer[PrayerName.isha],
+            'isha reminder preserved',
+            0,
+          ),
     ],
   );
 
