@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
@@ -83,35 +84,85 @@ void main() {
   });
 
   group('scheduleDailyAdhans', () {
-    test('delegates to legacy scheduler and returns Right(unit) on success',
+    test('Android: routes to native.scheduleDailyAdhans, ignores legacy scheduler',
         () async {
-      when(() => scheduler.scheduleDailyPrayerNotifications(any()))
-          .thenAnswer((_) async {});
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(() => native.scheduleDailyAdhans(
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
+            volume: any(named: 'volume'),
+          )).thenAnswer((_) async {});
+
       final r = await repo.scheduleDailyAdhans(
         prayerTimes: pt,
         audio: AdhanAudioSettings.defaults(),
       );
+
       expect(r, const Right(unit));
-      verify(() => scheduler.scheduleDailyPrayerNotifications(pt)).called(1);
+      verify(() => native.scheduleDailyAdhans(
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
+            volume: any(named: 'volume'),
+          )).called(1);
+      verifyNever(() => scheduler.scheduleDailyPrayerNotifications(any()));
+      debugDefaultTargetPlatformOverride = null;
     });
 
-    test('returns Left(UnknownNotificationFailure) when scheduler throws',
-        () async {
+    test('iOS: routes to legacy scheduler, ignores native', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       when(() => scheduler.scheduleDailyPrayerNotifications(any()))
-          .thenThrow(Exception('boom'));
+          .thenAnswer((_) async {});
+
+      final r = await repo.scheduleDailyAdhans(
+        prayerTimes: pt,
+        audio: AdhanAudioSettings.defaults(),
+      );
+
+      expect(r, const Right(unit));
+      verify(() => scheduler.scheduleDailyPrayerNotifications(pt)).called(1);
+      verifyNever(() => native.scheduleDailyAdhans(
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
+            volume: any(named: 'volume'),
+          ));
+      debugDefaultTargetPlatformOverride = null;
+    });
+
+    test('returns Left(UnknownNotificationFailure) when native throws on Android',
+        () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(() => native.scheduleDailyAdhans(
+            timingsByPrayer: any(named: 'timingsByPrayer'),
+            clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
+            volume: any(named: 'volume'),
+          )).thenThrow(Exception('boom'));
+
       final r = await repo.scheduleDailyAdhans(
         prayerTimes: pt,
         audio: AdhanAudioSettings.defaults(),
       );
       r.fold((f) => expect(f, isA<UnknownNotificationFailure>()), (_) {});
+      debugDefaultTargetPlatformOverride = null;
     });
   });
 
-  test('cancelAllAdhans delegates to legacy scheduler', () async {
+  test('cancelAllAdhans iOS: delegates to legacy scheduler', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     when(() => scheduler.cancelAllPrayerNotifications())
         .thenAnswer((_) async {});
     final r = await repo.cancelAllAdhans();
     expect(r, const Right(unit));
     verify(() => scheduler.cancelAllPrayerNotifications()).called(1);
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  test('cancelAllAdhans Android: delegates to native', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    when(() => native.cancelAllAdhans()).thenAnswer((_) async {});
+    final r = await repo.cancelAllAdhans();
+    expect(r, const Right(unit));
+    verify(() => native.cancelAllAdhans()).called(1);
+    verifyNever(() => scheduler.cancelAllPrayerNotifications());
+    debugDefaultTargetPlatformOverride = null;
   });
 }
