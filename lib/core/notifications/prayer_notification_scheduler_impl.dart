@@ -133,6 +133,13 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
 
   @override
   Future<void> scheduleDailyPrayerNotifications(PrayerTimes prayerTimes) async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      debugPrint(
+        '[PrayerNotif] Android: legacy path is intentionally inert (handled '
+        'natively via AdhanScheduler). Call site should branch by platform.',
+      );
+      return;
+    }
     if (!_initialized) {
       debugPrint('[PrayerNotif] schedule called before init — skipping');
       return;
