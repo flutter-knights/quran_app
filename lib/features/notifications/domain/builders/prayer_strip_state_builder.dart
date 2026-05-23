@@ -33,7 +33,7 @@ const _labelsEn = <PrayerName, String>{
 };
 
 const _jumuahLabelAr = 'الجمعة';
-const _jumuahLabelEn = "Jumu'ah";
+const _jumuahLabelEn = "Jum'ah";
 
 /// Builds a [PrayerStripState] snapshot from today's prayer times.
 ///
