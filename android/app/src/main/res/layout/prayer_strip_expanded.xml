@@ -69,7 +69,8 @@
             <TextView android:id="@+id/cell_0_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:textColor="@color/strip_text_primary" android:textSize="12sp"
-                android:fontFamily="@font/cairo" android:textFontWeight="600" />
+                android:fontFamily="@font/cairo" android:textFontWeight="600"
+                android:maxLines="1" android:ellipsize="end" />
             <TextView android:id="@+id/cell_0_time"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:textColor="@color/strip_text_muted" android:textSize="11sp"
