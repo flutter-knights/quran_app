@@ -227,4 +227,38 @@ void main() {
     expect(round.reminderMinutesByPrayer[PrayerName.fajr], 0);
     expect(round.reminderMinutesByPrayer[PrayerName.dhuhr], 10);
   });
+
+  blocTest<SettingsCubit, SettingsState>(
+    'updateAdhanEnabled(Fajr, false) emits state with Fajr disabled',
+    build: () => SettingsCubit(),
+    act: (c) => c.updateAdhanEnabled(PrayerName.fajr, false),
+    expect: () => [
+      isA<SettingsState>().having(
+        (s) => s.settingsModel.adhanEnabledByPrayer[PrayerName.fajr],
+        'fajr enabled',
+        false,
+      ),
+    ],
+  );
+
+  blocTest<SettingsCubit, SettingsState>(
+    'updateReminderMinutes(Maghrib, 10) emits state with reminder=10',
+    build: () => SettingsCubit(),
+    act: (c) => c.updateReminderMinutes(PrayerName.maghrib, 10),
+    expect: () => [
+      isA<SettingsState>().having(
+        (s) => s.settingsModel.reminderMinutesByPrayer[PrayerName.maghrib],
+        'maghrib reminder',
+        10,
+      ),
+    ],
+  );
+
+  test('updateReminderMinutes rejects invalid step (7) with an assertion', () {
+    final cubit = SettingsCubit();
+    expect(
+      () => cubit.updateReminderMinutes(PrayerName.fajr, 7),
+      throwsA(isA<AssertionError>()),
+    );
+  });
 }
