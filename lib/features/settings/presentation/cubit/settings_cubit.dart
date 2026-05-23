@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
+import 'package:quran_app/features/settings/domain/entities/settings.dart';
 
 part 'settings_state.dart';
 
@@ -44,6 +46,29 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
     emit(
       SettingsState(state.settingsModel.copyWith(isPrayerStripPinned: value)),
     );
+  }
+
+  void updateAdhanEnabled(PrayerName prayer, bool enabled) {
+    final next = Map<PrayerName, bool>.from(
+      state.settingsModel.adhanEnabledByPrayer,
+    )..[prayer] = enabled;
+    emit(SettingsState(
+      state.settingsModel.copyWith(adhanEnabledByPrayer: next),
+    ));
+  }
+
+  void updateReminderMinutes(PrayerName prayer, int minutes) {
+    assert(
+      Settings.validReminderMinutes.contains(minutes),
+      'reminder minutes must be one of ${Settings.validReminderMinutes}, '
+      'got $minutes',
+    );
+    final next = Map<PrayerName, int>.from(
+      state.settingsModel.reminderMinutesByPrayer,
+    )..[prayer] = minutes;
+    emit(SettingsState(
+      state.settingsModel.copyWith(reminderMinutesByPrayer: next),
+    ));
   }
 
   @override
