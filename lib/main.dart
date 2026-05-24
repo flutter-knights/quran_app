@@ -5,8 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:quran_app/config/hive_config.dart';
 import 'package:quran_app/config/hydrated_bloc_config.dart';
 import 'package:quran_app/config/router/app_router.dart';
-import 'package:quran_app/config/theme/dark_theme.dart';
-import 'package:quran_app/config/theme/light_theme.dart';
+import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
@@ -24,8 +23,6 @@ void main() {
   runApp(const AppLoader());
 }
 
-/// Runs storage/DI init in the background while Flutter shows a branded dark
-/// screen. Once ready, swaps in the real app tree.
 class AppLoader extends StatefulWidget {
   const AppLoader({super.key});
 
@@ -49,7 +46,6 @@ class _AppLoaderState extends State<AppLoader> {
     if (!mounted) return;
     setState(() => _ready = true);
 
-    // Sequence permissions after the first real app frame so dialogs never race.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       while (await Geolocator.checkPermission() == LocationPermission.denied) {
         await Future.delayed(const Duration(milliseconds: 300));
@@ -67,7 +63,7 @@ class _AppLoaderState extends State<AppLoader> {
     if (!_ready) {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(backgroundColor: Color(0xFF081815)),
+        home: Scaffold(backgroundColor: Color(0xFF0D0D0D)),
       );
     }
     return MultiBlocProvider(
@@ -90,12 +86,10 @@ class QuranApp extends StatelessWidget {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
         final settings = state.settingsModel;
-
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: 'Quran',
-          theme: settings.isDarkMode ? darkTheme : lightTheme,
-          themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          theme: settings.palette.toThemeData(),
           locale: settings.isArabic ? const Locale('ar') : const Locale('en'),
           supportedLocales: S.delegate.supportedLocales,
           localizationsDelegates: const [
