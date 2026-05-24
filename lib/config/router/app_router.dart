@@ -7,6 +7,7 @@ import 'package:quran_app/features/ahadith/presentation/pages/books_list_page.da
 import 'package:quran_app/features/ahadith/presentation/pages/hadith_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
 import 'package:quran_app/features/home/presentation/pages/notifications_settings_page.dart';
+import 'package:quran_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
@@ -46,6 +47,12 @@ abstract class AppRouter {
         path: notificationsPath,
         pageBuilder: GoTransitions.fade.withFade.build(
           builder: (context, state) => const NotificationsSettingsPage(),
+        ),
+      ),
+      GoRoute(
+        path: settingsPath,
+        pageBuilder: GoTransitions.fade.withFade.build(
+          builder: (context, state) => const SettingsPage(),
         ),
       ),
       GoRoute(
