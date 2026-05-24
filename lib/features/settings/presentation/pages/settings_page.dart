@@ -29,14 +29,14 @@ class SettingsPage extends StatelessWidget {
           return ListView(
             padding: const EdgeInsetsDirectional.fromSTEB(16, 24, 16, 24),
             children: [
-              _SectionLabel('APPEARANCE'),
+              const _SectionLabel('APPEARANCE'),
               const SizedBox(height: 8),
               PalettePickerWidget(
                 currentPalette: settings.palette,
                 onSelect: (p) => sl<SettingsCubit>().updatePalette(p),
               ),
               const SizedBox(height: 24),
-              _SectionLabel('GENERAL'),
+              const _SectionLabel('GENERAL'),
               const SizedBox(height: 8),
               SettingSwitch(
                 settings: settings,
@@ -64,7 +64,7 @@ class SettingsPage extends StatelessWidget {
               ),
               if (FeatureFlags.pinnedPrayerStripUi) ...[
                 const SizedBox(height: 24),
-                _SectionLabel('NOTIFICATIONS'),
+                const _SectionLabel('NOTIFICATIONS'),
                 const SizedBox(height: 8),
                 ListTile(
                   leading: const HugeIcon(
