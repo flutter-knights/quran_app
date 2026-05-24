@@ -56,7 +56,6 @@ void main() {
 
   test('toMap / fromMap round-trips new fields', () {
     final model = SettingsModel(
-      isDarkMode: true,
       isFormat12Hours: false,
       isArabic: true,
       playbackSpeed: 1.25,
@@ -69,7 +68,6 @@ void main() {
 
   test('toMap / fromMap round-trips isPrayerStripPinned', () {
     final model = SettingsModel(
-      isDarkMode: true,
       isFormat12Hours: false,
       isArabic: true,
       playbackSpeed: 1.0,
@@ -83,7 +81,6 @@ void main() {
   test('fromMap defaults isPrayerStripPinned to false when missing', () {
     final round = SettingsModel.fromMap({
       'isArabic': true,
-      'isDarkMode': true,
       'isFormat12Hours': true,
       'playbackSpeed': 1.0,
       'defaultReciter': 'alafasy',
@@ -119,7 +116,6 @@ void main() {
 
   test('toMap / fromMap round-trips adhanEnabledByPrayer', () {
     final model = SettingsModel(
-      isDarkMode: true,
       isFormat12Hours: false,
       isArabic: true,
       adhanEnabledByPrayer: const {
@@ -138,7 +134,6 @@ void main() {
 
   test('toMap / fromMap round-trips reminderMinutesByPrayer', () {
     final model = SettingsModel(
-      isDarkMode: true,
       isFormat12Hours: false,
       isArabic: true,
       reminderMinutesByPrayer: const {
@@ -158,7 +153,6 @@ void main() {
   test('fromMap applies default adhan-enabled map (all true) when missing', () {
     final round = SettingsModel.fromMap({
       'isArabic': true,
-      'isDarkMode': true,
       'isFormat12Hours': true,
       'playbackSpeed': 1.0,
       'defaultReciter': 'alafasy',
@@ -175,7 +169,6 @@ void main() {
   test('fromMap applies default reminder map (all zero) when missing', () {
     final round = SettingsModel.fromMap({
       'isArabic': true,
-      'isDarkMode': true,
       'isFormat12Hours': true,
       'playbackSpeed': 1.0,
       'defaultReciter': 'alafasy',
@@ -192,7 +185,6 @@ void main() {
   test('fromMap merges partial adhanEnabledByPrayer with defaults', () {
     final round = SettingsModel.fromMap({
       'isArabic': true,
-      'isDarkMode': true,
       'isFormat12Hours': true,
       'playbackSpeed': 1.0,
       'defaultReciter': 'alafasy',
@@ -214,7 +206,6 @@ void main() {
   test('fromMap drops out-of-range reminder minutes', () {
     final round = SettingsModel.fromMap({
       'isArabic': true,
-      'isDarkMode': true,
       'isFormat12Hours': true,
       'playbackSpeed': 1.0,
       'defaultReciter': 'alafasy',

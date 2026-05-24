@@ -74,7 +74,7 @@ extension AppPaletteX on ColorPalette {
         onPrimary: const Color(0xFFF5F5F5),
         secondary: secondary,
         onSecondary: const Color(0xFFF5F5F5),
-        error: AppColors.lightCoral,
+        error: AppColors.error,
         onError: isDark ? const Color(0xFF0D0D0D) : const Color(0xFFF5F5F5),
         surface: bg,
         onSurface: onSurface,

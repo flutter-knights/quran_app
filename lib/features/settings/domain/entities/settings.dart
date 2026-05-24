@@ -1,26 +1,18 @@
 import 'package:equatable/equatable.dart';
-
+import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import '../../../quran_playback/domain/entities/reciter.dart';
 
 class Settings extends Equatable {
-  final bool isDarkMode;
   final bool isFormat12Hours;
   final bool isArabic;
+  final ColorPalette palette;
   final double playbackSpeed;
   final Reciter defaultReciter;
   final bool isPrayerStripPinned;
-
-  /// Keyed by the five obligatory prayers. [PrayerName.sunrise] is intentionally
-  /// excluded — sunrise has no adhan in this app.
   final Map<PrayerName, bool> adhanEnabledByPrayer;
-
-  /// Keyed by the five obligatory prayers. [PrayerName.sunrise] is intentionally
-  /// excluded — sunrise has no adhan in this app.
   final Map<PrayerName, int> reminderMinutesByPrayer;
 
-  /// Keyed by the five obligatory prayers. [PrayerName.sunrise] is intentionally
-  /// excluded — sunrise has no adhan in this app.
   static const Map<PrayerName, bool> defaultAdhanEnabled = {
     PrayerName.fajr: true,
     PrayerName.dhuhr: true,
@@ -29,8 +21,6 @@ class Settings extends Equatable {
     PrayerName.isha: true,
   };
 
-  /// Keyed by the five obligatory prayers. [PrayerName.sunrise] is intentionally
-  /// excluded — sunrise has no adhan in this app.
   static const Map<PrayerName, int> defaultReminderMinutes = {
     PrayerName.fajr: 0,
     PrayerName.dhuhr: 0,
@@ -42,9 +32,9 @@ class Settings extends Equatable {
   static const List<int> validReminderMinutes = [0, 5, 10, 15];
 
   const Settings({
-    required this.isDarkMode,
     required this.isFormat12Hours,
     required this.isArabic,
+    this.palette = ColorPalette.neutralDark,
     this.playbackSpeed = 1.0,
     this.defaultReciter = Reciter.alafasy,
     this.isPrayerStripPinned = false,
@@ -53,9 +43,9 @@ class Settings extends Equatable {
   });
 
   Settings copyWith({
-    bool? isDarkMode,
     bool? isFormat12Hours,
     bool? isArabic,
+    ColorPalette? palette,
     double? playbackSpeed,
     Reciter? defaultReciter,
     bool? isPrayerStripPinned,
@@ -64,22 +54,21 @@ class Settings extends Equatable {
   }) {
     return Settings(
       isArabic: isArabic ?? this.isArabic,
-      isDarkMode: isDarkMode ?? this.isDarkMode,
       isFormat12Hours: isFormat12Hours ?? this.isFormat12Hours,
+      palette: palette ?? this.palette,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
       isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
       adhanEnabledByPrayer: adhanEnabledByPrayer ?? this.adhanEnabledByPrayer,
-      reminderMinutesByPrayer:
-          reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
+      reminderMinutesByPrayer: reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
     );
   }
 
   @override
   List<Object?> get props => [
         isArabic,
-        isDarkMode,
         isFormat12Hours,
+        palette,
         playbackSpeed,
         defaultReciter,
         isPrayerStripPinned,

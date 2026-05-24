@@ -14,6 +14,7 @@ import 'package:quran_app/features/quran_playback/domain/services/quran_page_ser
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
+import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 class _MockRepo extends Mock implements QuranPlaybackRepo {}
@@ -29,7 +30,9 @@ class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
   void updateDefaultReciter(Reciter r) => reciterUpdate = r;
   // unused overrides
   @override
-  void updateSettings({bool? isDarkMode, bool? isFormat12Hours, bool? isArabic}) {}
+  void updateSettings({bool? isFormat12Hours, bool? isArabic}) {}
+  @override
+  void updatePalette(ColorPalette palette) {}
   @override
   SettingsState? fromJson(Map<String, dynamic> json) => null;
   @override
@@ -62,7 +65,6 @@ void main() {
     seq = _MockSeq();
     page = _MockPage();
     settings = _FakeSettings(SettingsState(SettingsModel(
-      isDarkMode: true,
       isFormat12Hours: true,
       isArabic: true,
       playbackSpeed: 1.25,

@@ -25,6 +25,7 @@ abstract class AppRouter {
   static const String booksPath = "/books";
   static const String ahadithPath = "/ahadith";
   static const String hadithPath = "/hadith";
+  static const String settingsPath = "/settings";
 
   static final router = GoRouter(
     initialLocation: homePath,

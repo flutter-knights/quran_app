@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
-import 'package:quran_app/features/home/presentation/pages/widgets/settings_bottom_sheet.dart';
-
 import '../../../../../../config/theme/color_scheme.dart';
 
 class SurahListPageAppBar extends StatelessWidget {
@@ -12,13 +12,10 @@ class SurahListPageAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
       child: Row(
-        textDirection: context.isArabic ? .ltr : .rtl,
+        textDirection: context.isArabic ? TextDirection.ltr : TextDirection.rtl,
         children: [
           IconButton(
-            onPressed: () {
-              // GoRouter.of(context).pop();
-              showSettings(context);
-            },
+            onPressed: () => context.push(AppRouter.settingsPath),
             icon: HugeIcon(
               icon: context.isArabic
                   ? HugeIcons.strokeRoundedArrowLeft02

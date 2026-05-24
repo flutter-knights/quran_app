@@ -1,13 +1,14 @@
 import 'package:collection/collection.dart';
+import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
 
 class SettingsModel extends Settings {
   const SettingsModel({
-    required super.isDarkMode,
     required super.isFormat12Hours,
     required super.isArabic,
+    super.palette,
     super.playbackSpeed,
     super.defaultReciter,
     super.isPrayerStripPinned,
@@ -17,9 +18,9 @@ class SettingsModel extends Settings {
 
   @override
   SettingsModel copyWith({
-    bool? isDarkMode,
     bool? isFormat12Hours,
     bool? isArabic,
+    ColorPalette? palette,
     double? playbackSpeed,
     Reciter? defaultReciter,
     bool? isPrayerStripPinned,
@@ -28,22 +29,24 @@ class SettingsModel extends Settings {
   }) {
     return SettingsModel(
       isArabic: isArabic ?? this.isArabic,
-      isDarkMode: isDarkMode ?? this.isDarkMode,
       isFormat12Hours: isFormat12Hours ?? this.isFormat12Hours,
+      palette: palette ?? this.palette,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
       isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
       adhanEnabledByPrayer: adhanEnabledByPrayer ?? this.adhanEnabledByPrayer,
-      reminderMinutesByPrayer:
-          reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
+      reminderMinutesByPrayer: reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
     );
   }
 
   factory SettingsModel.fromMap(Map<String, dynamic> map) {
     return SettingsModel(
       isArabic: map['isArabic'] ?? true,
-      isDarkMode: map['isDarkMode'] ?? true,
       isFormat12Hours: map['isFormat12Hours'] ?? true,
+      palette: ColorPalette.values.firstWhere(
+        (p) => p.name == (map['palette'] as String?),
+        orElse: () => ColorPalette.neutralDark,
+      ),
       playbackSpeed: (map['playbackSpeed'] as num?)?.toDouble() ?? 1.0,
       defaultReciter: Reciter.values.firstWhere(
         (r) => r.name == (map['defaultReciter'] as String?),
@@ -58,8 +61,8 @@ class SettingsModel extends Settings {
   Map<String, dynamic> toMap() {
     return {
       'isArabic': isArabic,
-      'isDarkMode': isDarkMode,
       'isFormat12Hours': isFormat12Hours,
+      'palette': palette.name,
       'playbackSpeed': playbackSpeed,
       'defaultReciter': defaultReciter.name,
       'isPrayerStripPinned': isPrayerStripPinned,
