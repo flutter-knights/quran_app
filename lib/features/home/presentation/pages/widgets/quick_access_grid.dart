@@ -73,9 +73,13 @@ class _QuickTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: scheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: scheme.onSurface.withValues(alpha: 0.06),
-                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: scheme.primary.withValues(alpha: 0.12),
+                        blurRadius: 14,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
                   alignment: Alignment.center,
                   child: HugeIcon(icon: icon, size: 24, color: scheme.onSurface),
