@@ -7,6 +7,7 @@ import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/icon_chip.dart';
+import 'package:quran_app/core/widgets/design/app_list_skeleton.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/last_read_card.dart';
 import 'package:quran_app/features/surah/domain/entities/surah_entity.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
@@ -72,6 +73,9 @@ class _SurahListPageBodyState extends State<SurahListPageBody> {
               child: BlocBuilder<SurahCubit, List<SurahEntity>>(
                 builder: (context, surahs) {
                   final filtered = _filter(surahs);
+                  if (surahs.isEmpty && _query.isEmpty) {
+                    return const AppListSkeleton();
+                  }
                   final lastRead = LastReadCard.maybeBuild(context);
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
