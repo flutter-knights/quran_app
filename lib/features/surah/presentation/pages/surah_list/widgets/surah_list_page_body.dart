@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/icon_chip.dart';
@@ -90,7 +91,9 @@ class _SurahListPageBodyState extends State<SurahListPageBody> {
                         AppSectionHeader(
                           label: S.of(context).all_surahs,
                           trailing: Text(
-                            S.of(context).surahs_count(filtered.length),
+                            S.of(context).surahs_count(
+                                  filtered.length.toLocalized(context),
+                                ),
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,

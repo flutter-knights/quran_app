@@ -106,9 +106,6 @@
 "settings_screen_title": "الإعدادات",
 "all_surahs": "جميع السور",
 "surahs_count": "{count} سورة",
-"@surahs_count": {
-  "placeholders": { "count": { "type": "int" } }
-},
 "search_surah_hint": "ابحث عن سورة...",
 "the_noble_quran": "القرآن الكريم",
 "surahs_appbar_title": "السور",
@@ -116,20 +113,11 @@
 "hadith_books_appbar_title": "الحديث الشريف",
 "books_section": "الكتب",
 "books_count": "{count} كتب",
-"@books_count": {
-  "placeholders": { "count": { "type": "int" } }
-},
 "ahadith_section": "الأحاديث",
 "ahadith_count": "{count} حديث",
-"@ahadith_count": {
-  "placeholders": { "count": { "type": "int" } }
-},
 "narrator_label": "الراوي",
 "next_hadith": "التالي",
 "progress_complete": "{percent}% مكتمل",
-"@progress_complete": {
-  "placeholders": { "percent": { "type": "int" } }
-},
 "makkiyya": "مكية",
 "madaniyya": "مدنية",
 "appearance_section": "المظهر",

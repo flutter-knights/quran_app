@@ -58,7 +58,7 @@ class LastReadCard extends StatelessWidget {
                 ),
               ),
               Text(
-                S.of(context).progress_complete(percent),
+                S.of(context).progress_complete(percent.toLocalized(context)),
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w600,
