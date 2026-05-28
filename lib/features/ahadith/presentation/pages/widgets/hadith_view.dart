@@ -11,6 +11,7 @@ import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/action_buttons_row.dart';
 import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
+import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/app_status_badge.dart';
 import 'package:quran_app/core/widgets/design/arabic_quote_block.dart';
 import 'package:quran_app/core/widgets/design/icon_chip.dart';
@@ -104,10 +105,7 @@ class HadithView extends StatelessWidget {
               child: Row(
                 children: [
                   IconChip(
-                    icon: const HugeIcon(
-                      icon: HugeIcons.strokeRoundedArrowLeft02,
-                      color: Colors.white,
-                    ),
+                    icon: HugeIcon(icon: backArrowIcon(context)),
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
                   const Spacer(),
@@ -118,10 +116,7 @@ class HadithView extends StatelessWidget {
                   ),
                   const Spacer(),
                   IconChip(
-                    icon: const HugeIcon(
-                      icon: HugeIcons.strokeRoundedShare08,
-                      color: Colors.white,
-                    ),
+                    icon: const HugeIcon(icon: HugeIcons.strokeRoundedShare08),
                     onPressed: () => _onShare(context),
                   ),
                 ],
@@ -164,7 +159,7 @@ class HadithView extends StatelessWidget {
                             const SizedBox(height: 12),
                             Text(
                               hadith.chapter!.chapterArabic,
-                              style: TS.bold16.amiri.copyWith(
+                              style: TS.bold16.copyWith(
                                 fontSize: 18,
                                 color: scheme.secondary,
                                 height: 1.6,
@@ -218,7 +213,6 @@ class HadithView extends StatelessWidget {
                                 icon: marked
                                     ? HugeIcons.strokeRoundedBookmark01
                                     : HugeIcons.strokeRoundedBookmark02,
-                                color: Colors.white,
                               ),
                               label: S.of(context).bookmark,
                               onPressed: () => context
@@ -228,14 +222,13 @@ class HadithView extends StatelessWidget {
                             ActionBtn(
                               icon: const HugeIcon(
                                 icon: HugeIcons.strokeRoundedShare08,
-                                color: Colors.white,
                               ),
                               label: S.of(context).share,
                               onPressed: () => _onShare(context),
                             ),
                             ActionBtn.primary(
-                              icon: const HugeIcon(
-                                icon: HugeIcons.strokeRoundedArrowRight02,
+                              icon: HugeIcon(
+                                icon: forwardArrowIcon(context),
                                 color: Colors.white,
                               ),
                               label: S.of(context).next_hadith,
