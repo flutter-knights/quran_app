@@ -5,6 +5,7 @@ extension TypographyStylesExtension on TextStyle {
   TextStyle get amiriQuran => GoogleFonts.amiriQuran(textStyle: this);
   TextStyle get cairo => GoogleFonts.cairo(textStyle: this);
   TextStyle get amiri => GoogleFonts.amiri(textStyle: this);
+  TextStyle get scheherazade => GoogleFonts.scheherazadeNew(textStyle: this);
 }
 
 typedef TS = TypographyStyles;
