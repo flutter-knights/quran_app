@@ -1,57 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/core/widgets/design/app_section_header.dart';
+import 'package:quran_app/core/widgets/design/ornament_divider.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
-import 'package:quran_app/features/home/presentation/pages/widgets/home_action_buttons.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_app_bar.dart';
+import 'package:quran_app/features/home/presentation/pages/widgets/last_read_card.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/prayers_list.dart';
+import 'package:quran_app/features/home/presentation/pages/widgets/quick_access_grid.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/upcoming_prayer.dart';
+import 'package:quran_app/generated/l10n.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
     return Scaffold(
+      backgroundColor: scheme.surface,
       body: SafeArea(
         child: BlocListener<DailyPrayerContextCubit, DailyPrayerContextState>(
           listener: (context, state) {
             if (state is DailyPrayerContextLoaded) {
               context.read<PrayerCountdownCubit>().startTimer(
-                state.dailyPrayerContext,
-              );
+                    state.dailyPrayerContext,
+                  );
             }
           },
-          child: Column(
-            children: [
-              BlocBuilder<DailyPrayerContextCubit, DailyPrayerContextState>(
-                builder: (context, state) {
-                  if (state is DailyPrayerContextLoading) {
-                    return const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (state is DailyPrayerContextFailed) {
-                    return Expanded(child: Center(child: Text(state.error)));
-                  }
-                  if (state is DailyPrayerContextLoaded) {
-                    return Column(
-                      children: [
-                        HomeAppBar(
-                          dailyPrayerContext: state.dailyPrayerContext,
+          child: BlocBuilder<DailyPrayerContextCubit, DailyPrayerContextState>(
+            builder: (context, state) {
+              if (state is DailyPrayerContextLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state is DailyPrayerContextFailed) {
+                return Center(child: Text(state.error));
+              }
+              if (state is DailyPrayerContextLoaded) {
+                final ctx = state.dailyPrayerContext;
+                final last = LastReadCard.maybeBuild(context);
+                return Column(
+                  children: [
+                    HomeAppBar(dailyPrayerContext: ctx),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const UpcomingPrayer(),
+                            const SizedBox(height: 14),
+                            const OrnamentDivider(),
+                            const SizedBox(height: 14),
+                            AppSectionHeader(label: S.of(context).prayers),
+                            const SizedBox(height: 10),
+                            PrayersList(prayerTimes: ctx.prayerTimes),
+                            if (last != null) ...[
+                              const SizedBox(height: 14),
+                              AppSectionHeader(label: S.of(context).lastRead),
+                              const SizedBox(height: 10),
+                              last,
+                            ],
+                            const SizedBox(height: 14),
+                            AppSectionHeader(label: S.of(context).quickAccess),
+                            const SizedBox(height: 10),
+                            const QuickAccessGrid(),
+                          ],
                         ),
-                        UpcomingPrayer(),
-                        PrayersList(
-                          prayerTimes: state.dailyPrayerContext.prayerTimes,
-                        ),
-                      ],
-                    );
-                  }
-                  return const SizedBox();
-                },
-              ),
-              const HomeActionButtons(),
-            ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox();
+            },
           ),
         ),
       ),

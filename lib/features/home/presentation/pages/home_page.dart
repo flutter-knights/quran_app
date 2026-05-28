@@ -15,6 +15,7 @@ import 'package:quran_app/features/notifications/domain/usecases/disable_prayer_
 import 'package:quran_app/features/notifications/domain/usecases/enable_prayer_strip.dart';
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -28,6 +29,7 @@ class HomePage extends StatelessWidget {
               sl<DailyPrayerContextCubit>()..fetchDailyPrayerContext(),
         ),
         BlocProvider(create: (_) => PrayerCountdownCubit()),
+        BlocProvider(create: (_) => sl<LastReadCubit>()),
       ],
       child: MultiBlocListener(
         listeners: [
