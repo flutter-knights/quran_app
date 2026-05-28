@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 
-/// `[10sp uppercase label]` over `[15sp Amiri title]`, vertically centred.
+/// `[10sp uppercase label]` over `[15sp Cairo title]`, vertically centred.
 class AppBarCenterTitle extends StatelessWidget {
   const AppBarCenterTitle({super.key, this.label, required this.title});
 
