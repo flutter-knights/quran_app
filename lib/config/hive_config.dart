@@ -17,6 +17,7 @@ Future<void> initHive() async {
   await Hive.openBox<HadithHiveModel>('ahadithCache');
 
   await Hive.openBox<List>('ayah_bookmarks');
+  await Hive.openBox<List>('hadith_bookmarks');
   Hive.registerAdapter(LastReadHiveModelAdapter());
   await Hive.openBox<LastReadHiveModel>('last_read');
 }
