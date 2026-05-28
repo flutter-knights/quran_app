@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/ornament_divider.dart';
+import 'package:quran_app/core/widgets/design/home_skeleton.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_app_bar.dart';
@@ -32,7 +33,7 @@ class HomeView extends StatelessWidget {
           child: BlocBuilder<DailyPrayerContextCubit, DailyPrayerContextState>(
             builder: (context, state) {
               if (state is DailyPrayerContextLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return const HomeSkeleton();
               }
               if (state is DailyPrayerContextFailed) {
                 return Center(child: Text(state.error));
