@@ -18,6 +18,8 @@
 ```
 lib/core/widgets/design/app_segmented_selector.dart   # generic 2+-option segmented control
 lib/core/widgets/design/directional_icons.dart         # backArrowIcon / forwardArrowIcon helpers
+lib/core/widgets/design/app_list_skeleton.dart         # shimmer placeholder list (lists)
+lib/core/widgets/design/home_skeleton.dart             # shimmer placeholder home layout
 test/core/widgets/design/app_segmented_selector_test.dart
 ```
 
@@ -40,7 +42,10 @@ lib/features/ahadith/presentation/pages/widgets/books_list_view.dart     # back 
 lib/features/ahadith/presentation/pages/widgets/hadith_book_list_item.dart # cairo title
 lib/features/ahadith/presentation/pages/widgets/hadith_view.dart         # cairo/scheherazade, icon colors, arrows
 lib/features/settings/presentation/pages/settings_page.dart             # switches -> selectors
+pubspec.yaml                                                            # +skeletonizer
+lib/features/home/presentation/pages/widgets/home_view.dart             # loading -> HomeSkeleton
 ```
+(`ahadith_list_view.dart` and `surah_list_page_body.dart`, already listed above, also get their loading branches swapped to skeletons in Phase 4.)
 
 ---
 
@@ -1182,9 +1187,285 @@ git commit -m "feat(settings): segmented selectors for language and time format"
 
 ---
 
-## Phase 4 — Validation
+## Phase 4 — Skeleton loading
 
-### Task 18: Full validation pass
+Low-edit approach: the `skeletonizer` package renders any widget subtree as a shimmer skeleton when `enabled: true`. We build two small placeholder widgets and swap them into the existing loading branches — no per-field skeleton markup.
+
+---
+
+### Task 18: Add the `skeletonizer` dependency
+
+**Files:**
+- Modify: `pubspec.yaml`
+
+- [ ] **Step 1: Add the dependency**
+
+Under `dependencies:` (alphabetical-ish, near `share_plus`), add:
+```yaml
+  skeletonizer: ^1.4.3
+```
+
+- [ ] **Step 2: Resolve**
+
+Run: `flutter pub get`
+Expected: `Got dependencies!` (if `^1.4.3` fails to resolve against the current SDK, use the latest `flutter pub add skeletonizer` resolves to and note the version.)
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add pubspec.yaml pubspec.lock
+git commit -m "build: add skeletonizer for loading placeholders"
+```
+
+---
+
+### Task 19: `AppListSkeleton` + wire the list screens
+
+**Files:**
+- Create: `lib/core/widgets/design/app_list_skeleton.dart`
+- Modify: `lib/features/ahadith/presentation/pages/widgets/ahadith_list_view.dart`
+- Modify: `lib/features/surah/presentation/pages/surah_list/widgets/surah_list_page_body.dart`
+
+- [ ] **Step 1: Write `app_list_skeleton.dart`**
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/core/widgets/design/surface_card.dart';
+
+/// Shimmer placeholder list for screens that load asynchronously. Drop it
+/// straight into a loading branch — no per-field skeleton markup needed.
+class AppListSkeleton extends StatelessWidget {
+  const AppListSkeleton({super.key, this.count = 7});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+        itemCount: count,
+        physics: const NeverScrollableScrollPhysics(),
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemBuilder: (_, __) => SurfaceCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'عنوان تجريبي للعنصر قيد التحميل',
+                style: TextStyle(fontSize: 16, color: scheme.onSurface),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'سطر فرعي يوضح حالة التحميل',
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+- [ ] **Step 2: Wire the hadith list loading branch**
+
+In `ahadith_list_view.dart`, add the import:
+```dart
+import 'package:quran_app/core/widgets/design/app_list_skeleton.dart';
+```
+Then change:
+```dart
+                  if (state is AhadithLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+```
+to:
+```dart
+                  if (state is AhadithLoading) {
+                    return const AppListSkeleton();
+                  }
+```
+
+- [ ] **Step 3: Wire the surah list initial-load**
+
+In `surah_list_page_body.dart`, add the import:
+```dart
+import 'package:quran_app/core/widgets/design/app_list_skeleton.dart';
+```
+Then inside the `BlocBuilder<SurahCubit, List<SurahEntity>>` builder, immediately after `final filtered = _filter(surahs);`, add:
+```dart
+                  if (surahs.isEmpty && _query.isEmpty) {
+                    return const AppListSkeleton();
+                  }
+```
+(Initial load is an empty list with no query; a search that returns nothing still shows the normal empty list, not the skeleton.)
+
+- [ ] **Step 4: Verify analysis**
+
+Run: `flutter analyze lib/core/widgets/design/app_list_skeleton.dart lib/features/ahadith/presentation/pages/widgets/ahadith_list_view.dart lib/features/surah/presentation/pages/surah_list/widgets/surah_list_page_body.dart`
+Expected: `No issues found!`
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/core/widgets/design/app_list_skeleton.dart lib/features/ahadith/presentation/pages/widgets/ahadith_list_view.dart lib/features/surah/presentation/pages/surah_list/widgets/surah_list_page_body.dart
+git commit -m "feat(loading): skeleton placeholders for hadith and surah lists"
+```
+
+---
+
+### Task 20: `HomeSkeleton` + wire the home loading branch
+
+**Files:**
+- Create: `lib/core/widgets/design/home_skeleton.dart`
+- Modify: `lib/features/home/presentation/pages/widgets/home_view.dart`
+
+- [ ] **Step 1: Write `home_skeleton.dart`**
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/core/widgets/design/surface_card.dart';
+
+/// Shimmer placeholder mirroring the home layout (app-bar row, time hero,
+/// prayers row, last-read card) while the daily prayer context loads.
+class HomeSkeleton extends StatelessWidget {
+  const HomeSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    final boxText = TextStyle(fontSize: 14, color: scheme.onSurface);
+    final subText = TextStyle(fontSize: 11, color: scheme.onSurfaceVariant);
+    return Skeletonizer(
+      enabled: true,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('1447 هـ الموافق', style: boxText),
+                    const SizedBox(height: 4),
+                    Text('المدينة، الدولة', style: subText),
+                  ],
+                ),
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 28),
+            Center(
+              child: Text(
+                '12:00',
+                style: TextStyle(
+                  fontSize: 58,
+                  fontWeight: FontWeight.w800,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(child: Text('متبقٍ على الصلاة القادمة', style: subText)),
+            const SizedBox(height: 28),
+            Row(
+              children: [
+                for (int i = 0; i < 5; i++)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: Column(
+                        children: [
+                          Text('صلاة', style: TextStyle(fontSize: 10, color: scheme.onSurface)),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              color: scheme.surfaceContainer,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text('00:00', style: TextStyle(fontSize: 10, color: scheme.onSurfaceVariant)),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            SurfaceCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('آخر قراءة — الصفحة', style: boxText),
+                  const SizedBox(height: 10),
+                  Text('متابعة القراءة من حيث توقفت', style: subText),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+- [ ] **Step 2: Wire the home loading branch**
+
+In `home_view.dart`, add the import:
+```dart
+import 'package:quran_app/core/widgets/design/home_skeleton.dart';
+```
+Then change:
+```dart
+              if (state is DailyPrayerContextLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+```
+to:
+```dart
+              if (state is DailyPrayerContextLoading) {
+                return const HomeSkeleton();
+              }
+```
+
+- [ ] **Step 3: Verify analysis**
+
+Run: `flutter analyze lib/core/widgets/design/home_skeleton.dart lib/features/home/presentation/pages/widgets/home_view.dart`
+Expected: `No issues found!`
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add lib/core/widgets/design/home_skeleton.dart lib/features/home/presentation/pages/widgets/home_view.dart
+git commit -m "feat(loading): skeleton placeholder for home while prayer context loads"
+```
+
+---
+
+## Phase 5 — Validation
+
+### Task 21: Full validation pass
 
 - [ ] **Step 1: Static analysis**
 
@@ -1209,6 +1490,7 @@ In light + dark across the 4 palettes:
 - Hadith Arabic (detail body + list preview) renders in Scheherazade New; everything else (surah names, book/chapter titles, app-bar titles) in Cairo.
 - Settings → General shows two inline segmented selectors; toggling time format and language updates the app and persists.
 - Back arrow points right in Arabic / left in English; the continue-reading and next-hadith arrows point left in Arabic / right in English.
+- Loading states show a shimmer skeleton (not a spinner): home while prayer context loads, hadith list while the first page loads, surah list on initial load.
 
 - [ ] **Step 5: Final commit (only if fixes were needed)**
 
@@ -1225,4 +1507,5 @@ git commit -m "fix: resolve validation findings from UI refinement pass"
 - **Placeholders:** none — every step has concrete code/commands. ✓
 - **Type consistency:** `SurfaceCard.accentColor` (Task 2) used by ArabicQuoteBlock/LabelledAccentCard; `AppSegmentedSelector<T>` + `SegmentOption<T>` (Task 3) used in Task 17; `backArrowIcon`/`forwardArrowIcon` (Task 4) used in Tasks 9,11,12,14,16; icon type `List<List<dynamic>>` matches `HugeIcon.icon`. ✓
 - **New l10n keys** (`time_format_12h/24h`, `language_arabic/english`) are introduced and generated in Task 17 before use. ✓
+- **Skeleton loading** (added requirement): `skeletonizer` dep (Task 18) → `AppListSkeleton` for hadith + surah lists (Task 19) → `HomeSkeleton` for home (Task 20). Low-edit: only the existing loading branches change. ✓
 ```
