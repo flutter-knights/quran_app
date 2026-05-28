@@ -10,6 +10,7 @@ import 'package:quran_app/core/widgets/design/icon_chip.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/ahadith_cubit.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/ahadith_list_item.dart';
+import 'package:quran_app/core/widgets/design/app_list_skeleton.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/books_list_view.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -91,7 +92,7 @@ class _AhadithListViewState extends State<AhadithListView> {
                     return const Center(child: Text('error'));
                   }
                   if (state is AhadithLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const AppListSkeleton();
                   }
                   if (state is AhadithLoaded || state is AhadithLoadingMore) {
                     final List<Hadith> ahadith = (state is AhadithLoaded)
