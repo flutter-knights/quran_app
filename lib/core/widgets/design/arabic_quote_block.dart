@@ -16,12 +16,12 @@ class ArabicQuoteBlock extends StatelessWidget {
     final scheme = context.colorScheme;
     return SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
-      leadingAccentColor: scheme.primary,
+      accentColor: scheme.primary,
       child: Text(
         text,
         textAlign: TextAlign.right,
         textDirection: TextDirection.rtl,
-        style: TS.regular16.amiriQuran.copyWith(
+        style: TS.regular16.scheherazade.copyWith(
           fontSize: fontSize,
           height: 2.1,
           color: scheme.onSurface,
