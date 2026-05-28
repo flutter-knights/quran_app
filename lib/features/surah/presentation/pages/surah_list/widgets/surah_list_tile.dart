@@ -39,7 +39,13 @@ class SurahListTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: scheme.surfaceContainer,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: scheme.onSurface.withValues(alpha: 0.06)),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.primary.withValues(alpha: 0.12),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -74,7 +80,7 @@ class SurahListTile extends StatelessWidget {
                   children: [
                     Text(
                       surah.name,
-                      style: TS.bold16.amiri.copyWith(
+                      style: TS.bold16.copyWith(
                         fontSize: 18,
                         color: scheme.onSurface,
                         height: 1.3,
