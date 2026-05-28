@@ -77,7 +77,6 @@ class HomeAppBar extends StatelessWidget {
           IconChip(
             icon: const HugeIcon(
               icon: HugeIcons.strokeRoundedSettings01,
-              color: Colors.white,
               size: 16,
             ),
             onPressed: () => context.push(AppRouter.settingsPath),
