@@ -50,7 +50,7 @@ class AhadithListItem extends StatelessWidget {
             hadith.arabicHadith,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TS.bold16.amiri.copyWith(
+            style: TS.bold16.scheherazade.copyWith(
               fontSize: 15,
               color: scheme.onSurface,
               height: 1.7,
