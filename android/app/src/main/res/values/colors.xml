@@ -12,10 +12,13 @@
     <!-- Splash screen background — matches Flutter app's onyx dark background -->
     <color name="splashBackground">#FF081815</color>
 
-    <!-- Strip semantic tokens (used by layouts + renderer) -->
-    <color name="strip_text_primary">#FFF8F9F8</color>   <!-- bright-snow -->
-    <color name="strip_text_secondary">#FFCCD6D0</color> <!-- lighter grey-green — weekday label -->
-    <color name="strip_text_muted">#FF8B9A94</color>     <!-- grey-olive -->
-    <color name="strip_text_dim">#66F8F9F8</color>       <!-- snow @ 40% — passed prayers -->
-    <color name="strip_accent">#FF4A7C6A</color>         <!-- deep-teal — pill + moon + Friday -->
+    <!-- Strip semantic tokens (used by layouts + renderer).
+         Light-mode defaults (Material on-surface). values-night/colors.xml
+         overrides these with the dark-mode palette. -->
+    <color name="strip_text_primary">#DE000000</color>   <!-- 87% black -->
+    <color name="strip_text_secondary">#8A000000</color> <!-- 54% black -->
+    <color name="strip_text_muted">#8A000000</color>     <!-- 54% black -->
+    <color name="strip_text_dim">#42000000</color>       <!-- 26% black — passed prayers -->
+    <color name="strip_accent">#FF4A7C6A</color>         <!-- deep-teal — pill background (both modes) -->
+    <color name="strip_pill_text">#FFF8F9F8</color>      <!-- always-light text on the teal pill -->
 </resources>

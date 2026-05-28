@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark-mode strip palette. Mirrors the original light-on-dark tokens
+         designed against the strip_evergreen background. -->
+    <color name="strip_text_primary">#FFF8F9F8</color>   <!-- bright-snow -->
+    <color name="strip_text_secondary">#FFCCD6D0</color> <!-- lighter grey-green -->
+    <color name="strip_text_muted">#FF8B9A94</color>     <!-- grey-olive -->
+    <color name="strip_text_dim">#66F8F9F8</color>       <!-- snow @ 40% — passed prayers -->
+    <color name="strip_accent">#FF4A7C6A</color>         <!-- deep-teal — pill background -->
+    <color name="strip_pill_text">#FFF8F9F8</color>      <!-- always-light text on the teal pill -->
+</resources>
