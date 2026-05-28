@@ -113,8 +113,8 @@ abstract class AppRouter {
         path: hadithPath,
         pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) {
-            final hadith = state.extra as Hadith;
-            return HadithPage(hadith: hadith);
+            final extra = state.extra as ({Hadith hadith, String bookSlug});
+            return HadithPage(hadith: extra.hadith, bookSlug: extra.bookSlug);
           },
         ),
       ),
