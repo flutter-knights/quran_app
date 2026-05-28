@@ -51,7 +51,7 @@ class HadithBookListItem extends StatelessWidget {
                       children: [
                         Text(
                           bookInfo.title,
-                          style: TS.bold16.amiri.copyWith(
+                          style: TS.bold16.copyWith(
                             fontSize: 17,
                             color: scheme.onSurface,
                             height: 1.25,
