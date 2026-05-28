@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/usecases/usecase.dart';
@@ -74,6 +75,7 @@ class HomePage extends StatelessWidget {
               final c = curr.settingsModel;
               return p.isPrayerStripPinned != c.isPrayerStripPinned ||
                   p.isArabic != c.isArabic ||
+                  p.palette != c.palette ||
                   p.isFormat12Hours != c.isFormat12Hours ||
                   !_mapBoolEq(p.adhanEnabledByPrayer, c.adhanEnabledByPrayer) ||
                   !_mapIntEq(
@@ -133,6 +135,9 @@ class HomePage extends StatelessWidget {
       // `isFormat12Hours` is named opposite to its meaning — `true` means
       // the user enabled the "24-hour format" toggle in settings.
       use24Hour: settings.isFormat12Hours,
+      // Drive the next-prayer pill from the live palette accent so the
+      // notification tracks the in-app theme (single source of truth).
+      accentColor: settings.palette.primary.toARGB32(),
     );
     unawaited(
       sl<EnablePrayerStrip>().call(

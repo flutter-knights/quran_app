@@ -52,6 +52,7 @@ class PrayerStripStateBuilder {
     required String localeCode,
     required bool isFriday,
     required bool use24Hour,
+    int? accentColor,
   }) {
     final labels = localeCode == 'ar' ? _labelsAr : _labelsEn;
     final jumuah = localeCode == 'ar' ? _jumuahLabelAr : _jumuahLabelEn;
@@ -83,6 +84,7 @@ class PrayerStripStateBuilder {
       weekdayLabel: weekdayLabel,
       localeCode: localeCode,
       isFriday: isFriday,
+      accentColor: accentColor,
     );
   }
 
