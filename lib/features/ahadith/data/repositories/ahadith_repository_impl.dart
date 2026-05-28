@@ -6,6 +6,7 @@ import 'package:quran_app/features/ahadith/data/datasources/local/ahadith_local_
 import 'package:quran_app/features/ahadith/data/datasources/remote/ahadith_remote_data_source.dart';
 import 'package:quran_app/features/ahadith/domain/entities/chapter.dart';
 import 'package:quran_app/features/ahadith/domain/entities/download_progress.dart';
+import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_page.dart';
 import 'package:quran_app/features/ahadith/domain/repositories/ahadith_repository.dart';
 
@@ -94,6 +95,38 @@ class AhadithRepositoryImpl implements AhadithRepository {
         throw Exception('can\'n download book');
       }
     }
+  }
+
+  @override
+  Future<Either<Failure, Hadith?>> getNextHadith({
+    required String bookSlug,
+    required int currentHadithNumber,
+  }) async {
+    final totalPages = HadithPagination.getTotalPages(bookSlug);
+    int page = 1;
+    while (page <= totalPages) {
+      final pageResult = await getAhadithPage(page, bookSlug);
+      final hadithList =
+          pageResult.fold((_) => <Hadith>[], (p) => p.ahadithList);
+      if (hadithList.isEmpty) return const Right(null);
+      final idx = hadithList.indexWhere(
+        (h) => h.hadithNumber == currentHadithNumber,
+      );
+      if (idx >= 0) {
+        if (idx + 1 < hadithList.length) {
+          return Right(hadithList[idx + 1]);
+        }
+        // Current is the last on this page — look at the next page.
+        if (page + 1 > totalPages) return const Right(null);
+        final nextPage = await getAhadithPage(page + 1, bookSlug);
+        return nextPage.fold(
+          (f) => Left(f),
+          (p) => Right(p.ahadithList.isEmpty ? null : p.ahadithList.first),
+        );
+      }
+      page++;
+    }
+    return const Right(null);
   }
 
   static Map<String, Map<int, Chapter>> _generateLookups(
