@@ -133,6 +133,10 @@
 "makkiyya": "Makkiyya",
 "madaniyya": "Madaniyya",
 "appearance_section": "Appearance",
-"general_section": "General"
+"general_section": "General",
+"time_format_12h": "12h",
+"time_format_24h": "24h",
+"language_arabic": "العربية",
+"language_english": "English"
 
 }
