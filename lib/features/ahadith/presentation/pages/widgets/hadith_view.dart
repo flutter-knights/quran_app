@@ -1,212 +1,256 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
-import 'package:quran_app/core/widgets/custom_app_bar.dart';
+import 'package:quran_app/core/widgets/design/action_buttons_row.dart';
+import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
+import 'package:quran_app/core/widgets/design/app_section_header.dart';
+import 'package:quran_app/core/widgets/design/app_status_badge.dart';
+import 'package:quran_app/core/widgets/design/arabic_quote_block.dart';
+import 'package:quran_app/core/widgets/design/icon_chip.dart';
+import 'package:quran_app/core/widgets/design/labelled_accent_card.dart';
+import 'package:quran_app/core/widgets/design/ornament_divider.dart';
+import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
+import 'package:quran_app/features/ahadith/domain/entities/hadith_bookmark.dart';
+import 'package:quran_app/features/ahadith/domain/usecases/get_next_hadith.dart';
+import 'package:quran_app/features/ahadith/presentation/cubit/hadith_bookmark_cubit.dart';
+import 'package:quran_app/features/ahadith/presentation/cubit/hadith_bookmark_state.dart';
+import 'package:quran_app/features/ahadith/presentation/pages/widgets/ahadith_list_item.dart';
+import 'package:quran_app/features/ahadith/presentation/pages/widgets/books_list_view.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class HadithView extends StatelessWidget {
+  const HadithView({super.key, required this.hadith, required this.bookSlug});
   final Hadith hadith;
-  const HadithView({super.key, required this.hadith});
+  final String bookSlug;
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: Text(
-          '${S.current.hadith_number_label} ${hadith.hadithNumber.toLocalized(context)}',
+  HadithBookmark get _bookmark =>
+      HadithBookmark(bookSlug: bookSlug, hadithNumber: hadith.hadithNumber);
+
+  String _bookTitle(BuildContext context) {
+    for (final b in getHadithBooks(context)) {
+      if (b.slug == bookSlug) return b.title;
+    }
+    return bookSlug;
+  }
+
+  Future<void> _onShare(BuildContext context) async {
+    final title = _bookTitle(context);
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: '${hadith.arabicHadith}\n\n— $title, #${hadith.hadithNumber}',
         ),
+      );
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.of(context).share_failed)),
+        );
+      }
+    }
+  }
+
+  Future<void> _onNext(BuildContext context) async {
+    final result = await sl<GetNextHadith>().call(
+      bookSlug: bookSlug,
+      currentHadithNumber: hadith.hadithNumber,
+    );
+    if (!context.mounted) return;
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(failure.message)),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _ChapterCard(hadith: hadith),
-              const SizedBox(height: 24),
-              _HadithSection(
-                title: S.current.arabic_label,
-                content: hadith.arabicHadith,
-                textStyle: TS.bold24.amiriQuran.copyWith(
-                  height: 1.6,
-                  color: context.colorScheme.primary,
-                ),
-                textAlign: TextAlign.right,
-              ),
-              const Divider(height: 48),
-              _HadithSection(
-                title: S.current.translation_label,
-                content: hadith.englishHadith,
-                textStyle: TS.medium16.copyWith(
-                  height: 1.5,
-                  color: context.colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.left,
-              ),
-              if (hadith.englishNarrator.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                _NarratorInfo(narrator: hadith.englishNarrator),
-              ],
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
+      (next) {
+        if (next == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).coming_soon)),
+          );
+        } else {
+          context.replace(
+            AppRouter.hadithPath,
+            extra: (hadith: next, bookSlug: bookSlug),
+          );
+        }
+      },
     );
   }
-}
-
-class _ChapterCard extends StatelessWidget {
-  final Hadith hadith;
-  const _ChapterCard({required this.hadith});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.colorScheme.outlineVariant.withAlpha(50),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _StatusBadge(status: hadith.status),
-              Text(
-                '${S.current.chapter_label} ${hadith.chapter?.chapterNumber.toLocalized(context) ?? ""}',
-                style: TS.bold14.copyWith(
-                  color: context.colorScheme.onSurfaceVariant,
+    final scheme = context.colorScheme;
+    return Scaffold(
+      backgroundColor: scheme.surface,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              height: 60,
+              padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: scheme.onSurface.withValues(alpha: 0.06),
+                  ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (hadith.chapter != null) ...[
-            Text(
-              hadith.chapter!.chapterArabic,
-              style: TS.bold16.amiri.copyWith(
-                color: context.colorScheme.primary,
+              child: Row(
+                children: [
+                  IconChip(
+                    icon: const HugeIcon(
+                      icon: HugeIcons.strokeRoundedArrowLeft02,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                  const Spacer(),
+                  AppBarCenterTitle(
+                    label: _bookTitle(context),
+                    title:
+                        '${S.of(context).hadith_number_label} ${hadith.hadithNumber.toLocalized(context)}',
+                  ),
+                  const Spacer(),
+                  IconChip(
+                    icon: const HugeIcon(
+                      icon: HugeIcons.strokeRoundedShare08,
+                      color: Colors.white,
+                    ),
+                    onPressed: () => _onShare(context),
+                  ),
+                ],
               ),
-              textAlign: TextAlign.right,
             ),
-            const SizedBox(height: 4),
-            Text(
-              hadith.chapter!.chapterEnglish,
-              style: TS.medium14.copyWith(
-                color: context.colorScheme.onSurfaceVariant,
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SurfaceCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              AppStatusBadge(
+                                color: statusColor(hadith.status),
+                                label: statusLabel(context, hadith.status),
+                              ),
+                              if (hadith.chapter != null)
+                                Text(
+                                  '${S.of(context).chapter_label} ${hadith.chapter!.chapterNumber.toLocalized(context)}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (hadith.chapter != null) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              height: 1,
+                              color: scheme.onSurface.withValues(alpha: 0.06),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              hadith.chapter!.chapterArabic,
+                              style: TS.bold16.amiri.copyWith(
+                                fontSize: 18,
+                                color: scheme.secondary,
+                                height: 1.6,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              hadith.chapter!.chapterEnglish,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    AppSectionHeader(label: S.of(context).arabic_label),
+                    const SizedBox(height: 10),
+                    ArabicQuoteBlock(hadith.arabicHadith),
+                    const SizedBox(height: 14),
+                    const OrnamentDivider(),
+                    const SizedBox(height: 14),
+                    AppSectionHeader(label: S.of(context).translation_label),
+                    const SizedBox(height: 10),
+                    Text(
+                      hadith.englishHadith,
+                      style: TS.regular15.copyWith(
+                        color: scheme.onSurface,
+                        height: 1.78,
+                      ),
+                    ),
+                    if (hadith.englishNarrator.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      LabelledAccentCard(
+                        label: S.of(context).narrator_label,
+                        body: hadith.englishNarrator,
+                        accentColor: scheme.secondary,
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    BlocBuilder<HadithBookmarkCubit, HadithBookmarkState>(
+                      builder: (context, state) {
+                        final marked = state.contains(_bookmark);
+                        return ActionButtonsRow(
+                          children: [
+                            ActionBtn(
+                              icon: HugeIcon(
+                                icon: marked
+                                    ? HugeIcons.strokeRoundedBookmark01
+                                    : HugeIcons.strokeRoundedBookmark02,
+                                color: Colors.white,
+                              ),
+                              label: S.of(context).bookmark,
+                              onPressed: () => context
+                                  .read<HadithBookmarkCubit>()
+                                  .toggle(_bookmark),
+                            ),
+                            ActionBtn(
+                              icon: const HugeIcon(
+                                icon: HugeIcons.strokeRoundedShare08,
+                                color: Colors.white,
+                              ),
+                              label: S.of(context).share,
+                              onPressed: () => _onShare(context),
+                            ),
+                            ActionBtn.primary(
+                              icon: const HugeIcon(
+                                icon: HugeIcons.strokeRoundedArrowRight02,
+                                color: Colors.white,
+                              ),
+                              label: S.of(context).next_hadith,
+                              onPressed: () => _onNext(context),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  final HadithStatus status;
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    Color color;
-    String label;
-
-    switch (status) {
-      case HadithStatus.sahih:
-        color = Colors.green;
-        label = S.current.status_sahih;
-      case HadithStatus.hasan:
-        color = Colors.orange;
-        label = S.current.status_hasan;
-      case HadithStatus.daeef:
-        color = Colors.red;
-        label = S.current.status_daeef;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withAlpha(30),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withAlpha(100)),
-      ),
-      child: Text(label, style: TS.bold12.copyWith(color: color)),
-    );
-  }
-}
-
-class _HadithSection extends StatelessWidget {
-  final String title;
-  final String content;
-  final TextStyle textStyle;
-  final TextAlign textAlign;
-
-  const _HadithSection({
-    required this.title,
-    required this.content,
-    required this.textStyle,
-    required this.textAlign,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TS.bold14.copyWith(
-            color: context.colorScheme.onSurfaceVariant,
-            letterSpacing: 1.2,
-          ),
         ),
-        const SizedBox(height: 12),
-        Text(content, style: textStyle, textAlign: textAlign),
-      ],
-    );
-  }
-}
-
-class _NarratorInfo extends StatelessWidget {
-  final String narrator;
-  const _NarratorInfo({required this.narrator});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: context.colorScheme.primaryContainer.withAlpha(30),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.colorScheme.primary.withAlpha(50)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: 18,
-            color: context.colorScheme.primary,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              narrator,
-              style: TS.medium14.copyWith(
-                color: context.colorScheme.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
