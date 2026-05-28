@@ -23,7 +23,7 @@ class LabelledAccentCard extends StatelessWidget {
     return SurfaceCard(
       padding: const EdgeInsets.all(14),
       radius: 12,
-      leadingAccentColor: accentColor,
+      accentColor: accentColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
