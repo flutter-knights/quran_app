@@ -1022,7 +1022,7 @@ class S {
   }
 
   /// `{count} surahs`
-  String surahs_count(int count) {
+  String surahs_count(Object count) {
     return Intl.message(
       '$count surahs',
       name: 'surahs_count',
@@ -1092,7 +1092,7 @@ class S {
   }
 
   /// `{count} books`
-  String books_count(int count) {
+  String books_count(Object count) {
     return Intl.message(
       '$count books',
       name: 'books_count',
@@ -1112,7 +1112,7 @@ class S {
   }
 
   /// `{count} ahadith`
-  String ahadith_count(int count) {
+  String ahadith_count(Object count) {
     return Intl.message(
       '$count ahadith',
       name: 'ahadith_count',
@@ -1142,7 +1142,7 @@ class S {
   }
 
   /// `{percent}% complete`
-  String progress_complete(int percent) {
+  String progress_complete(Object percent) {
     return Intl.message(
       '$percent% complete',
       name: 'progress_complete',

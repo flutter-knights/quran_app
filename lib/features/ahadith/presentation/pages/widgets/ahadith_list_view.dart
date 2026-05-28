@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/icon_chip.dart';
@@ -108,7 +109,9 @@ class _AhadithListViewState extends State<AhadithListView> {
                           child: AppSectionHeader(
                             label: S.of(context).ahadith_section,
                             trailing: Text(
-                              S.of(context).ahadith_count(ahadith.length),
+                              S.of(context).ahadith_count(
+                                    ahadith.length.toLocalized(context),
+                                  ),
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,

@@ -118,9 +118,6 @@
 "settings_screen_title": "Settings",
 "all_surahs": "All Surahs",
 "surahs_count": "{count} surahs",
-"@surahs_count": {
-  "placeholders": { "count": { "type": "int" } }
-},
 "search_surah_hint": "Search for a surah...",
 "the_noble_quran": "The Noble Qur'an",
 "surahs_appbar_title": "Surahs",
@@ -128,20 +125,11 @@
 "hadith_books_appbar_title": "Hadith Books",
 "books_section": "Books",
 "books_count": "{count} books",
-"@books_count": {
-  "placeholders": { "count": { "type": "int" } }
-},
 "ahadith_section": "Ahadith",
 "ahadith_count": "{count} ahadith",
-"@ahadith_count": {
-  "placeholders": { "count": { "type": "int" } }
-},
 "narrator_label": "Narrator",
 "next_hadith": "Next",
 "progress_complete": "{percent}% complete",
-"@progress_complete": {
-  "placeholders": { "percent": { "type": "int" } }
-},
 "makkiyya": "Makkiyya",
 "madaniyya": "Madaniyya",
 "appearance_section": "Appearance",

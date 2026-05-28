@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/icon_chip.dart';
@@ -67,7 +68,9 @@ class BooksListView extends StatelessWidget {
                     AppSectionHeader(
                       label: S.of(context).books_section,
                       trailing: Text(
-                        S.of(context).books_count(books.length),
+                        S.of(context).books_count(
+                              books.length.toLocalized(context),
+                            ),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
