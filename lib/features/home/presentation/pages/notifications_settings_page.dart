@@ -5,6 +5,8 @@ import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/widgets/design/app_section_header.dart';
+import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/per_prayer_adhan_tile.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/setting_switch.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/test_adhan_button.dart';
@@ -24,25 +26,24 @@ class NotificationsSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
     return Scaffold(
+      backgroundColor: scheme.surface,
       appBar: AppBar(
         title: Text(S.current.notifications, style: TS.bold20.cairo),
-        backgroundColor: context.colorScheme.surface,
+        backgroundColor: scheme.surface,
       ),
       body: SafeArea(
         child: BlocBuilder<SettingsCubit, SettingsState>(
           builder: (context, state) {
             final settings = state.settingsModel;
             return ListView(
-              padding: const EdgeInsetsDirectional.fromSTEB(16, 24, 16, 24),
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
               children: [
-                _Header(),
-                const SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                const _Header(),
+                const SizedBox(height: 14),
+                SurfaceCard(
+                  padding: EdgeInsets.zero,
                   child: SettingSwitch(
                     settings: settings,
                     settingTitle: S.current.pinnedPrayerTimes,
@@ -55,22 +56,11 @@ class NotificationsSettingsPage extends StatelessWidget {
                         .updatePrayerStripPinned(!settings.isPrayerStripPinned),
                   ),
                 ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 4, bottom: 8),
-                  child: Text(
-                    S.of(context).adhanPerPrayerSection.toUpperCase(),
-                    style: TS.bold12.cairo.copyWith(
-                      color: context.colorScheme.onSurfaceVariant,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                const SizedBox(height: 18),
+                AppSectionHeader(label: S.of(context).adhanPerPrayerSection),
+                const SizedBox(height: 10),
+                SurfaceCard(
+                  padding: EdgeInsets.zero,
                   child: Column(
                     children: [
                       for (var i = 0; i < _orderedPrayers.length; i++)
@@ -81,7 +71,7 @@ class NotificationsSettingsPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 18),
                 const TestAdhanButton(),
               ],
             );
@@ -93,39 +83,45 @@ class NotificationsSettingsPage extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
+  const _Header();
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: context.colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Center(
+    final scheme = context.colorScheme;
+    return SurfaceCard(
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: scheme.onSurface.withValues(alpha: 0.06)),
+            ),
+            alignment: Alignment.center,
             child: HugeIcon(
               icon: HugeIcons.strokeRoundedNotification01,
-              color: context.colorScheme.primary,
+              color: scheme.primary,
               size: 26,
             ),
           ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              S.current.notificationsScreenSubtitle,
-              style: TS.regular14.cairo.copyWith(
-                color: context.colorScheme.onSurfaceVariant,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                S.current.notificationsScreenSubtitle,
+                style: TS.regular14.cairo.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
