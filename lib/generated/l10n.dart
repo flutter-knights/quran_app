@@ -1190,6 +1190,46 @@ class S {
       args: [],
     );
   }
+
+  /// `12h`
+  String get time_format_12h {
+    return Intl.message(
+      '12h',
+      name: 'time_format_12h',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `24h`
+  String get time_format_24h {
+    return Intl.message(
+      '24h',
+      name: 'time_format_24h',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `العربية`
+  String get language_arabic {
+    return Intl.message(
+      'العربية',
+      name: 'language_arabic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `English`
+  String get language_english {
+    return Intl.message(
+      'English',
+      name: 'language_english',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

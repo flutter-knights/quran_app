@@ -135,6 +135,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "hijriDateWithDay": m3,
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn Majah"),
         "isha": MessageLookupByLibrary.simpleMessage("Isha"),
+        "language_arabic": MessageLookupByLibrary.simpleMessage("العربية"),
+        "language_english": MessageLookupByLibrary.simpleMessage("English"),
         "lastRead": MessageLookupByLibrary.simpleMessage("Last Read"),
         "madaniyya": MessageLookupByLibrary.simpleMessage("Madaniyya"),
         "maghrib": MessageLookupByLibrary.simpleMessage("Maghrib"),
@@ -195,6 +197,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Test adhan in 5 seconds"),
         "the_noble_quran":
             MessageLookupByLibrary.simpleMessage("The Noble Qur\'an"),
+        "time_format_12h": MessageLookupByLibrary.simpleMessage("12h"),
+        "time_format_24h": MessageLookupByLibrary.simpleMessage("24h"),
         "translation": MessageLookupByLibrary.simpleMessage("Translation"),
         "translation_label":
             MessageLookupByLibrary.simpleMessage("Translation"),

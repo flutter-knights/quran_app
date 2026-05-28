@@ -121,5 +121,9 @@
 "makkiyya": "مكية",
 "madaniyya": "مدنية",
 "appearance_section": "المظهر",
-"general_section": "عام"
+"general_section": "عام",
+"time_format_12h": "١٢",
+"time_format_24h": "٢٤",
+"language_arabic": "العربية",
+"language_english": "English"
 }
