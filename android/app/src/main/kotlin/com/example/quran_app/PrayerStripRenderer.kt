@@ -31,68 +31,12 @@ class PrayerStripRenderer(private val context: Context) {
     }
 
     fun build(state: PrayerStripState): Notification {
-        val expanded = RemoteViews(context.packageName, R.layout.prayer_strip_expanded)
-
-        // Friday weekday accent is reused by both expanded header and collapsed date row.
-        val weekdayColor =
-            if (state.isFriday) context.resources.getColor(R.color.strip_accent, null)
-            else context.resources.getColor(R.color.strip_text_secondary, null)
-
-        // Header: hijri date + weekday. App name is shown by the system notification frame.
-        expanded.setTextViewText(R.id.strip_hijri, state.hijriDateLabel)
-        expanded.setTextViewText(R.id.strip_weekday, state.weekdayLabel)
-        expanded.setTextColor(R.id.strip_weekday, weekdayColor)
-
-        val labelIds = intArrayOf(
-            R.id.cell_0_label, R.id.cell_1_label, R.id.cell_2_label,
-            R.id.cell_3_label, R.id.cell_4_label, R.id.cell_5_label
-        )
-        val timeIds = intArrayOf(
-            R.id.cell_0_time, R.id.cell_1_time, R.id.cell_2_time,
-            R.id.cell_3_time, R.id.cell_4_time, R.id.cell_5_time
-        )
-
-        // Color tokens, resolved once.
-        val primary = context.resources.getColor(R.color.strip_text_primary, null)
-        val muted = context.resources.getColor(R.color.strip_text_muted, null)
-        val dim = context.resources.getColor(R.color.strip_text_dim, null)
-
-        for (i in 0 until 6) {
-            val cell = state.cells.getOrNull(i) ?: continue
-            expanded.setTextViewText(labelIds[i], cell.label)
-            expanded.setTextViewText(timeIds[i], cell.time)
-
-            when {
-                i == state.nextPrayerIndex -> {
-                    expanded.setTextColor(labelIds[i], primary)
-                    expanded.setTextColor(timeIds[i], primary)
-                    expanded.setInt(timeIds[i], "setBackgroundResource", R.drawable.strip_time_pill)
-                }
-                i < state.nextPrayerIndex -> {
-                    expanded.setTextColor(labelIds[i], dim)
-                    expanded.setTextColor(timeIds[i], dim)
-                    expanded.setInt(timeIds[i], "setBackgroundResource", 0)
-                }
-                else -> {
-                    expanded.setTextColor(labelIds[i], primary)
-                    expanded.setTextColor(timeIds[i], muted)
-                    expanded.setInt(timeIds[i], "setBackgroundResource", 0)
-                }
-            }
-        }
-
-        // Collapsed view: next-prayer name + time pill on the start side, hijri · weekday
-        // on the end side. nextPrayerIndex is clamped by PrayerStripStateBuilder, but
-        // getOrNull keeps the renderer safe if the upstream contract ever changes.
+        // Collapsed and expanded layouts are identical (6-cell strip).
+        // Bind both with the same cell data.
         val collapsed = RemoteViews(context.packageName, R.layout.prayer_strip_collapsed)
-        val nextCell = state.cells.getOrNull(state.nextPrayerIndex)
-        if (nextCell != null) {
-            collapsed.setTextViewText(R.id.collapsed_next_label, nextCell.label)
-            collapsed.setTextViewText(R.id.collapsed_next_time, nextCell.time)
-        }
-        collapsed.setTextViewText(R.id.collapsed_date_hijri, state.hijriDateLabel)
-        collapsed.setTextViewText(R.id.collapsed_date_weekday, state.weekdayLabel)
-        collapsed.setTextColor(R.id.collapsed_date_weekday, weekdayColor)
+        val expanded = RemoteViews(context.packageName, R.layout.prayer_strip_expanded)
+        bindCells(collapsed, state)
+        bindCells(expanded, state)
 
         val launchPI = PendingIntent.getActivity(
             context, 0,
@@ -112,6 +56,49 @@ class PrayerStripRenderer(private val context: Context) {
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setContentIntent(launchPI)
             .build()
+    }
+
+    private fun bindCells(views: RemoteViews, state: PrayerStripState) {
+        val labelIds = intArrayOf(
+            R.id.cell_0_label, R.id.cell_1_label, R.id.cell_2_label,
+            R.id.cell_3_label, R.id.cell_4_label, R.id.cell_5_label
+        )
+        val timeIds = intArrayOf(
+            R.id.cell_0_time, R.id.cell_1_time, R.id.cell_2_time,
+            R.id.cell_3_time, R.id.cell_4_time, R.id.cell_5_time
+        )
+
+        // Color tokens resolved through the app's resources — values/colors.xml +
+        // values-night/colors.xml provide light/dark variants automatically.
+        val primary = context.resources.getColor(R.color.strip_text_primary, null)
+        val muted = context.resources.getColor(R.color.strip_text_muted, null)
+        val dim = context.resources.getColor(R.color.strip_text_dim, null)
+        // Pill is always teal; its text is always light for contrast on both themes.
+        val pillText = context.resources.getColor(R.color.strip_pill_text, null)
+
+        for (i in 0 until 6) {
+            val cell = state.cells.getOrNull(i) ?: continue
+            views.setTextViewText(labelIds[i], cell.label)
+            views.setTextViewText(timeIds[i], cell.time)
+
+            when {
+                i == state.nextPrayerIndex -> {
+                    views.setTextColor(labelIds[i], primary)
+                    views.setTextColor(timeIds[i], pillText)
+                    views.setInt(timeIds[i], "setBackgroundResource", R.drawable.strip_time_pill)
+                }
+                i < state.nextPrayerIndex -> {
+                    views.setTextColor(labelIds[i], dim)
+                    views.setTextColor(timeIds[i], dim)
+                    views.setInt(timeIds[i], "setBackgroundResource", 0)
+                }
+                else -> {
+                    views.setTextColor(labelIds[i], primary)
+                    views.setTextColor(timeIds[i], muted)
+                    views.setInt(timeIds[i], "setBackgroundResource", 0)
+                }
+            }
+        }
     }
 
     companion object {
