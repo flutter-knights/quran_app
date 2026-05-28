@@ -1,0 +1,55 @@
+<style>
+.panel { background:#F4F4F4; border-radius:16px; padding:20px; margin-top:10px; }
+.s-card { background:#EAEAEA; border-radius:14px; padding:16px; color:#141414; box-shadow:0 4px 14px rgba(46,82,68,0.16); }
+.row-inline { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.row-label { font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
+.dot { width:18px; height:18px; border-radius:5px; background:rgba(0,0,0,.12); display:inline-block; }
+.divider { height:1px; background:rgba(0,0,0,0.06); margin:14px 0; }
+/* segmented control */
+.seg { display:inline-flex; background:rgba(0,0,0,0.06); border-radius:10px; padding:3px; }
+.seg.full { display:flex; }
+.seg .opt { padding:7px 16px; font-size:13px; font-weight:600; border-radius:8px; color:#686868; text-align:center; flex:1; white-space:nowrap; }
+.seg .opt.sel { background:#2E5244; color:#fff; }
+.stack-label { font-size:12px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:#686868; margin-bottom:8px; }
+</style>
+
+<h2>Language &amp; time-format: switch → selector</h2>
+<p class="subtitle">Two ways to lay out the new segmented selectors inside the General card (now shadowed, no border). Click the layout you prefer.</p>
+
+<div class="cards" style="grid-template-columns:1fr;">
+  <div class="card" data-choice="A-inline" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <div class="label">A · Inline — label left, segmented control right (compact)</div>
+      <div class="panel">
+        <div class="s-card">
+          <div class="row-inline">
+            <span class="row-label"><span class="dot"></span>Time format</span>
+            <span class="seg"><span class="opt sel">12h</span><span class="opt">24h</span></span>
+          </div>
+          <div class="divider"></div>
+          <div class="row-inline">
+            <span class="row-label"><span class="dot"></span>Language</span>
+            <span class="seg"><span class="opt sel">العربية</span><span class="opt">English</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B-stacked" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <div class="label">B · Stacked — label above a full-width segmented control (more tappable)</div>
+      <div class="panel">
+        <div class="s-card">
+          <div class="stack-label">Time format</div>
+          <div class="seg full"><span class="opt sel">12-hour</span><span class="opt">24-hour</span></div>
+          <div class="divider"></div>
+          <div class="stack-label">Language</div>
+          <div class="seg full"><span class="opt sel">العربية</span><span class="opt">English</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">The selected segment fills with the theme accent. This replaces the toggle-switch rows entirely.</p>
