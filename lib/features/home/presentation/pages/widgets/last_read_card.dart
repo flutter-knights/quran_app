@@ -6,6 +6,7 @@ import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
+import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/surah/domain/entities/last_read.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
@@ -110,8 +111,8 @@ class LastReadCard extends StatelessWidget {
                 ),
                 onPressed: () =>
                     context.push(AppRouter.mushafPath, extra: last.page),
-                icon: const HugeIcon(
-                  icon: HugeIcons.strokeRoundedArrowRight02,
+                icon: HugeIcon(
+                  icon: forwardArrowIcon(context),
                   color: Colors.white,
                   size: 11,
                 ),
