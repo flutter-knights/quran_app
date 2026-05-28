@@ -86,6 +86,14 @@ No API change needed; this is removing the override at call sites. (Optionally h
 - **Forward / continue arrows:** "Continue reading" button (`last_read_card.dart`) and "Next hadith" button (`hadith_view.dart`): RTL → left-pointing; LTR → right-pointing. Alignment follows reading direction (Row already flips via `Directionality`).
 - Small shared helper (e.g. in `core/widgets/design/` or a tiny util) to avoid repeating the ternary.
 
+## 6. Skeleton loading states (added requirement)
+
+Async-loading widgets should show a shimmer **skeleton** instead of a spinner. Chosen approach: the **`skeletonizer`** package — wrap an existing widget subtree with `Skeletonizer(enabled: true, child: ...)` and it renders as bones, so no per-field skeleton markup and minimal edits (only the loading branches change).
+
+- `AppListSkeleton` (shared) → hadith list (`AhadithLoading`) and surah list (initial empty load).
+- `HomeSkeleton` → home while `DailyPrayerContextLoading` (covers the time hero + prayer-timings row).
+- Books list is synchronous (no async load) — no skeleton needed.
+
 ## Files Touched (summary)
 
 ```
