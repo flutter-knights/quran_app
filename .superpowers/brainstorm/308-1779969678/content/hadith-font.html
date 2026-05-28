@@ -1,0 +1,46 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Lateef&display=swap');
+.fontspec { direction: rtl; text-align: right; font-size: 30px; line-height: 2.2; margin: 10px 0 4px; }
+.f-amiri   { font-family: 'Amiri Quran', serif; }
+.f-scheher { font-family: 'Scheherazade New', serif; }
+.f-noto    { font-family: 'Noto Naskh Arabic', serif; }
+.f-lateef  { font-family: 'Lateef', serif; }
+.fname { font-size: 13px; opacity: .65; letter-spacing: .4px; text-transform: uppercase; }
+.basmala { direction: rtl; text-align: right; font-size: 26px; opacity: .85; margin-top: 6px; }
+</style>
+
+<h2>Which Arabic font for the hadith body text?</h2>
+<p class="subtitle">Same hadith, four options. The app currently uses Amiri Quran (A). Headings/UI everywhere else move to Cairo — this choice is only for the hadith Arabic text. Click the one that reads best, or tell me in the terminal.</p>
+
+<div class="cards" style="grid-template-columns:1fr;">
+  <div class="card" data-choice="amiri-quran" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <div class="fname">A · Amiri Quran — current</div>
+      <div class="fontspec f-amiri">إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى</div>
+      <div class="basmala f-amiri">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    </div>
+  </div>
+  <div class="card" data-choice="scheherazade-new" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <div class="fname">B · Scheherazade New</div>
+      <div class="fontspec f-scheher">إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى</div>
+      <div class="basmala f-scheher">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    </div>
+  </div>
+  <div class="card" data-choice="noto-naskh" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <div class="fname">C · Noto Naskh Arabic</div>
+      <div class="fontspec f-noto">إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى</div>
+      <div class="basmala f-noto">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    </div>
+  </div>
+  <div class="card" data-choice="lateef" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <div class="fname">D · Lateef</div>
+      <div class="fontspec f-lateef">إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى</div>
+      <div class="basmala f-lateef">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:18px">Note: all four are Google Fonts (no app-bundling needed). A true "KFGQPC Uthmanic Hafs" font isn't on Google Fonts — if you specifically want that exact mushaf script, you'd hand me the .ttf to bundle. Otherwise B (Scheherazade New) is my recommendation: classic Uthmani-style Naskh, single-color, very readable.</p>

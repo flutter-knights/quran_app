@@ -19,7 +19,9 @@
       "Skill(superpowers:systematic-debugging)",
       "Skill(superpowers:brainstorming)",
       "WebFetch(domain:mirrors.quranicaudio.com)",
-      "WebFetch(domain:www.everyayah.com)"
+      "WebFetch(domain:www.everyayah.com)",
+      "Bash(dart run *)",
+      "Bash(echo \"=== EXIT $? ===\")"
     ],
     "defaultMode": "auto"
   }

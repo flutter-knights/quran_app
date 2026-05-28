@@ -1,0 +1,197 @@
+<h2>Settings Page Layout</h2>
+<p class="subtitle">Which structure fits best? (The theme picker widget goes inside whichever layout you pick.)</p>
+
+<style>
+  .phone-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .phone-label { font-size: 13px; font-weight: 700; color: #ccc; letter-spacing: 0.5px; }
+  .phone-mock {
+    width: 200px; background: #111; border-radius: 28px;
+    border: 4px solid #222; overflow: hidden;
+    font-family: 'Cairo', 'Segoe UI', sans-serif;
+    cursor: pointer; transition: box-shadow 0.2s;
+    box-shadow: 0 0 0 0px #4A7C6A;
+  }
+  .phone-mock.selected { box-shadow: 0 0 0 3px #4A7C6A; }
+  .app-bar-m {
+    height: 46px; background: #111; border-bottom: 1px solid #222;
+    display: flex; align-items: center; padding: 0 12px; gap: 10px;
+  }
+  .back-btn { width: 28px; height: 28px; border-radius: 8px; background: #1e1e1e; border: 1px solid #333; display:flex; align-items:center; justify-content:center; font-size:12px; color:#aaa; }
+  .page-title { font-size: 14px; font-weight: 700; color: #f5f5f5; }
+  .body-m { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+  /* Shared row styles */
+  .s-row { background: #1a1a1a; border-radius: 10px; padding: 10px 12px; border: 1px solid #2a2a2a; }
+  .s-section-label { font-size: 9px; font-weight: 700; color: #5C8070; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; padding: 0 2px; }
+  .s-item { display:flex; align-items:center; justify-content:space-between; padding: 8px 0; border-bottom: 1px solid #2a2a2a; }
+  .s-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .s-item-label { font-size: 11px; color: #ddd; }
+  .s-toggle { width: 28px; height: 16px; border-radius: 8px; background: #5C8070; }
+  .s-chevron { font-size: 12px; color: #555; }
+
+  /* Theme picker mini */
+  .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .theme-swatch { border-radius: 8px; height: 32px; display:flex; align-items:center; justify-content:center; font-size: 9px; font-weight: 700; border: 1.5px solid transparent; }
+  .theme-swatch.active { border-color: #5C8070; }
+  .th-nd { background: #1A1A1A; color: #5C8070; }
+  .th-nl { background: #EAEAEA; color: #2E5244; }
+  .th-sd { background: #141820; color: #4878A0; }
+  .th-sl { background: #E2E8F2; color: #1C4558; }
+
+  /* Notification row */
+  .s-nav-row { display:flex; align-items:center; justify-content:space-between; }
+  .s-nav-icon { width:22px; height:22px; border-radius:6px; background:#2a2a2a; display:flex; align-items:center; justify-content:center; font-size:12px; margin-right:8px; }
+  .s-nav-left { display:flex; align-items:center; }
+
+  .choice-label { font-size: 12px; text-align: center; color: #888; max-width: 200px; line-height: 1.4; }
+</style>
+
+<div class="phone-row">
+
+  <!-- Option A: Sectioned -->
+  <div class="phone-wrap">
+    <div class="phone-mock" id="opt-a" data-choice="a" onclick="toggleSelect(this); document.querySelectorAll('.phone-mock').forEach(p => p.classList.remove('selected')); this.classList.add('selected');">
+      <div class="app-bar-m">
+        <div class="back-btn">‹</div>
+        <div class="page-title">الإعدادات</div>
+      </div>
+      <div class="body-m">
+        <!-- Appearance section -->
+        <div class="s-section-label">APPEARANCE</div>
+        <div class="s-row">
+          <div class="theme-grid">
+            <div class="theme-swatch th-nd active">Neutral Dark</div>
+            <div class="theme-swatch th-nl">Neutral Light</div>
+            <div class="theme-swatch th-sd">Slate Dark</div>
+            <div class="theme-swatch th-sl">Slate Light</div>
+          </div>
+        </div>
+        <!-- General section -->
+        <div class="s-section-label">GENERAL</div>
+        <div class="s-row">
+          <div class="s-item">
+            <div class="s-item-label">توقيت ١٢ ساعة</div>
+            <div class="s-toggle"></div>
+          </div>
+          <div class="s-item">
+            <div class="s-item-label">اللغة العربية</div>
+            <div class="s-toggle"></div>
+          </div>
+        </div>
+        <!-- Notifications section -->
+        <div class="s-section-label">NOTIFICATIONS</div>
+        <div class="s-row">
+          <div class="s-nav-row">
+            <div class="s-nav-left">
+              <div class="s-nav-icon">🔔</div>
+              <div class="s-item-label">إعدادات الأذان</div>
+            </div>
+            <div class="s-chevron">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label">A — Sectioned</div>
+    <div class="choice-label">Appearance / General / Notifications sections with uppercase labels</div>
+  </div>
+
+  <!-- Option B: Flat list, big theme card -->
+  <div class="phone-wrap">
+    <div class="phone-mock" id="opt-b" data-choice="b" onclick="toggleSelect(this); document.querySelectorAll('.phone-mock').forEach(p => p.classList.remove('selected')); this.classList.add('selected');">
+      <div class="app-bar-m">
+        <div class="back-btn">‹</div>
+        <div class="page-title">الإعدادات</div>
+      </div>
+      <div class="body-m">
+        <!-- Big theme card -->
+        <div class="s-row" style="background:#161616;">
+          <div style="font-size:10px;color:#888;margin-bottom:6px;">المظهر</div>
+          <div class="theme-grid">
+            <div class="theme-swatch th-nd active">Neutral Dark</div>
+            <div class="theme-swatch th-nl">Neutral Light</div>
+            <div class="theme-swatch th-sd">Slate Dark</div>
+            <div class="theme-swatch th-sl">Slate Light</div>
+          </div>
+        </div>
+        <!-- Flat items -->
+        <div class="s-row">
+          <div class="s-item">
+            <div class="s-item-label">توقيت ١٢ ساعة</div>
+            <div class="s-toggle"></div>
+          </div>
+          <div class="s-item">
+            <div class="s-item-label">اللغة العربية</div>
+            <div class="s-toggle"></div>
+          </div>
+          <div class="s-item">
+            <div class="s-nav-left">
+              <div class="s-nav-icon">🔔</div>
+              <div class="s-item-label">إعدادات الأذان</div>
+            </div>
+            <div class="s-chevron">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label">B — Flat List</div>
+    <div class="choice-label">Big theme card on top, all other items in one flat card below</div>
+  </div>
+
+  <!-- Option C: Card-per-section -->
+  <div class="phone-wrap">
+    <div class="phone-mock" id="opt-c" data-choice="c" onclick="toggleSelect(this); document.querySelectorAll('.phone-mock').forEach(p => p.classList.remove('selected')); this.classList.add('selected');">
+      <div class="app-bar-m">
+        <div class="back-btn">‹</div>
+        <div class="page-title">الإعدادات</div>
+      </div>
+      <div class="body-m">
+        <!-- Each section is a titled card -->
+        <div class="s-row" style="background:#161616;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+            <div style="width:3px;height:12px;border-radius:2px;background:#5C8070;"></div>
+            <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:1px;">المظهر</div>
+          </div>
+          <div class="theme-grid">
+            <div class="theme-swatch th-nd active">Neutral Dark</div>
+            <div class="theme-swatch th-nl">Neutral Light</div>
+            <div class="theme-swatch th-sd">Slate Dark</div>
+            <div class="theme-swatch th-sl">Slate Light</div>
+          </div>
+        </div>
+        <div class="s-row" style="background:#161616;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+            <div style="width:3px;height:12px;border-radius:2px;background:#5C8070;"></div>
+            <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:1px;">عام</div>
+          </div>
+          <div class="s-item">
+            <div class="s-item-label">توقيت ١٢ ساعة</div>
+            <div class="s-toggle"></div>
+          </div>
+          <div class="s-item">
+            <div class="s-item-label">اللغة العربية</div>
+            <div class="s-toggle"></div>
+          </div>
+        </div>
+        <div class="s-row" style="background:#161616;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+            <div style="width:3px;height:12px;border-radius:2px;background:#5C8070;"></div>
+            <div style="font-size:10px;font-weight:700;color:#aaa;letter-spacing:1px;">الإشعارات</div>
+          </div>
+          <div class="s-nav-row">
+            <div class="s-nav-left">
+              <div class="s-nav-icon">🔔</div>
+              <div class="s-item-label">إعدادات الأذان</div>
+            </div>
+            <div class="s-chevron">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label">C — Sectioned Cards</div>
+    <div class="choice-label">Each section is its own card with a colored bar label (matches app's existing section header style)</div>
+  </div>
+
+</div>
+
+<p style="text-align:center;color:#555;font-size:12px;margin-top:20px;">Click a layout to select, then tell me in the terminal.</p>

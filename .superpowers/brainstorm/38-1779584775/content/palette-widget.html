@@ -1,0 +1,239 @@
+<h2>Theme Palette Widget</h2>
+<p class="subtitle">How should the 4-palette selector look inside the Appearance section?</p>
+
+<style>
+  .widget-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .widget-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; }
+  .widget-box {
+    width: 260px; background: #161616; border-radius: 14px; padding: 14px;
+    border: 2px solid transparent; transition: border-color 0.2s;
+  }
+  .widget-box.selected { border-color: #5C8070; }
+  .widget-label { font-size: 13px; font-weight: 700; color: #ccc; }
+  .widget-sub { font-size: 12px; color: #666; text-align: center; max-width: 260px; line-height: 1.4; }
+
+  /* Option A: 2×2 color card grid */
+  .grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .palette-card {
+    border-radius: 10px; padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 6px;
+    border: 1.5px solid transparent; position: relative; cursor: pointer;
+  }
+  .palette-card.active { border-color: #5C8070; }
+  .palette-card.active::after {
+    content: '✓'; position: absolute; top: 6px; right: 8px;
+    font-size: 10px; font-weight: 700;
+  }
+  .pc-name { font-size: 10px; font-weight: 700; }
+  .pc-accents { display: flex; gap: 4px; }
+  .pc-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .pc-bar { height: 3px; border-radius: 2px; margin-top: 2px; }
+
+  /* Neutral Dark */
+  .nd { background: #1A1A1A; }
+  .nd .pc-name { color: #F5F5F5; }
+  .nd .pc-bar { background: #2E5244; }
+  .nd.active::after { color: #5C8070; }
+
+  /* Neutral Light */
+  .nl { background: #EAEAEA; }
+  .nl .pc-name { color: #141414; }
+  .nl .pc-bar { background: #2E5244; }
+  .nl.active::after { color: #2E5244; }
+
+  /* Slate Dark */
+  .sd { background: #141820; }
+  .sd .pc-name { color: #F0F4F8; }
+  .sd .pc-bar { background: #1C4558; }
+  .sd.active::after { color: #4878A0; }
+
+  /* Slate Light */
+  .sl { background: #E2E8F2; }
+  .sl .pc-name { color: #0A0C12; }
+  .sl .pc-bar { background: #1C4558; }
+  .sl.active::after { color: #1C4558; }
+
+  /* Option B: Horizontal chips row */
+  .chips-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .palette-chip {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 12px; border-radius: 20px;
+    border: 1.5px solid #2a2a2a; cursor: pointer; font-size: 11px; font-weight: 600;
+  }
+  .palette-chip.active { border-color: #5C8070; }
+  .chip-swatch { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+  .chip-nd { background: #1A1A1A; border: 1.5px solid #5C8070; color: #ccc; }
+  .chip-nl { background: #EAEAEA; border: 1.5px solid #5C8070; color: #444; }
+  .chip-sd { background: #141820; border: 1.5px solid #4878A0; color: #ccc; }
+  .chip-sl { background: #E2E8F2; border: 1.5px solid #4878A0; color: #444; }
+
+  /* Option C: Large preview cards (2×2 with mini mockup strip) */
+  .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .preview-card {
+    border-radius: 12px; overflow: hidden;
+    border: 2px solid transparent; cursor: pointer;
+  }
+  .preview-card.active { border-color: #5C8070; }
+  .preview-header { padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; }
+  .preview-name { font-size: 9px; font-weight: 700; }
+  .preview-check { font-size: 9px; font-weight: 700; }
+  .preview-strip { height: 28px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .ps-circle { width: 10px; height: 10px; border-radius: 50%; }
+  .ps-rect { height: 6px; border-radius: 3px; flex: 1; max-width: 50px; }
+  .ps-bar { height: 3px; width: 100%; }
+
+  /* ND preview */
+  .pnd .preview-header { background: #0D0D0D; }
+  .pnd .preview-name { color: #F5F5F5; }
+  .pnd .preview-strip { background: #1A1A1A; }
+  .pnd .ps-circle { background: #2E5244; }
+  .pnd .ps-rect { background: #5C8070; opacity: 0.5; }
+  .pnd .ps-bar { background: #2E5244; }
+  .pnd .preview-check { color: #5C8070; }
+
+  /* NL preview */
+  .pnl .preview-header { background: #F4F4F4; }
+  .pnl .preview-name { color: #141414; }
+  .pnl .preview-strip { background: #EAEAEA; }
+  .pnl .ps-circle { background: #2E5244; }
+  .pnl .ps-rect { background: #5C8070; opacity: 0.5; }
+  .pnl .ps-bar { background: #2E5244; }
+  .pnl .preview-check { color: #2E5244; }
+
+  /* SD preview */
+  .psd .preview-header { background: #0A0C10; }
+  .psd .preview-name { color: #F0F4F8; }
+  .psd .preview-strip { background: #141820; }
+  .psd .ps-circle { background: #1C4558; }
+  .psd .ps-rect { background: #4878A0; opacity: 0.5; }
+  .psd .ps-bar { background: #1C4558; }
+  .psd .preview-check { color: #4878A0; }
+
+  /* SL preview */
+  .psl .preview-header { background: #F0F3F8; }
+  .psl .preview-name { color: #0A0C12; }
+  .psl .preview-strip { background: #E2E8F2; }
+  .psl .ps-circle { background: #1C4558; }
+  .psl .ps-rect { background: #4878A0; opacity: 0.5; }
+  .psl .ps-bar { background: #1C4558; }
+  .psl .preview-check { color: #1C4558; }
+</style>
+
+<div class="widget-row">
+
+  <!-- Option A: 2×2 color cards -->
+  <div class="widget-wrap" onclick="selectWidget('a')">
+    <div class="widget-box" id="w-a">
+      <div class="grid-2x2">
+        <div class="palette-card nd active">
+          <div class="pc-name">Neutral Dark</div>
+          <div class="pc-bar"></div>
+        </div>
+        <div class="palette-card nl">
+          <div class="pc-name">Neutral Light</div>
+          <div class="pc-bar"></div>
+        </div>
+        <div class="palette-card sd">
+          <div class="pc-name">Slate Dark</div>
+          <div class="pc-bar"></div>
+        </div>
+        <div class="palette-card sl">
+          <div class="pc-name">Slate Light</div>
+          <div class="pc-bar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="widget-label">A — Color swatches</div>
+    <div class="widget-sub">2×2 grid, each tile is its own bg+accent color. Selected tile gets a border.</div>
+  </div>
+
+  <!-- Option B: Horizontal chips -->
+  <div class="widget-wrap" onclick="selectWidget('b')">
+    <div class="widget-box" id="w-b">
+      <div class="chips-row">
+        <div class="palette-chip chip-nd active">
+          <div class="chip-swatch" style="background:#1A1A1A;border:1.5px solid #5C8070;"></div>
+          Neutral Dark
+        </div>
+        <div class="palette-chip chip-nl">
+          <div class="chip-swatch" style="background:#EAEAEA;border:1.5px solid #2E5244;"></div>
+          <span style="color:#bbb">Neutral Light</span>
+        </div>
+        <div class="palette-chip chip-sd">
+          <div class="chip-swatch" style="background:#141820;border:1.5px solid #4878A0;"></div>
+          <span style="color:#bbb">Slate Dark</span>
+        </div>
+        <div class="palette-chip chip-sl">
+          <div class="chip-swatch" style="background:#E2E8F2;border:1.5px solid #1C4558;"></div>
+          <span style="color:#bbb">Slate Light</span>
+        </div>
+      </div>
+    </div>
+    <div class="widget-label">B — Chips row</div>
+    <div class="widget-sub">Pill-shaped chips in a wrapping row. Compact but text-heavy.</div>
+  </div>
+
+  <!-- Option C: Mini preview cards -->
+  <div class="widget-wrap" onclick="selectWidget('c')">
+    <div class="widget-box" id="w-c">
+      <div class="preview-grid">
+        <div class="preview-card pnd active">
+          <div class="preview-header">
+            <div class="preview-name">Neutral Dark</div>
+            <div class="preview-check">✓</div>
+          </div>
+          <div class="preview-strip">
+            <div class="ps-circle"></div>
+            <div class="ps-rect"></div>
+          </div>
+          <div class="ps-bar pnd" style="background:#2E5244;height:4px;"></div>
+        </div>
+        <div class="preview-card pnl">
+          <div class="preview-header">
+            <div class="preview-name">Neutral Light</div>
+          </div>
+          <div class="preview-strip">
+            <div class="ps-circle" style="background:#2E5244;"></div>
+            <div class="ps-rect" style="background:#5C8070;opacity:0.5;"></div>
+          </div>
+          <div class="ps-bar" style="background:#2E5244;height:4px;"></div>
+        </div>
+        <div class="preview-card psd">
+          <div class="preview-header">
+            <div class="preview-name">Slate Dark</div>
+          </div>
+          <div class="preview-strip">
+            <div class="ps-circle" style="background:#1C4558;"></div>
+            <div class="ps-rect" style="background:#4878A0;opacity:0.5;"></div>
+          </div>
+          <div class="ps-bar" style="background:#1C4558;height:4px;"></div>
+        </div>
+        <div class="preview-card psl">
+          <div class="preview-header">
+            <div class="preview-name">Slate Light</div>
+          </div>
+          <div class="preview-strip">
+            <div class="ps-circle" style="background:#1C4558;"></div>
+            <div class="ps-rect" style="background:#4878A0;opacity:0.5;"></div>
+          </div>
+          <div class="ps-bar" style="background:#1C4558;height:4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="widget-label">C — Mini preview cards</div>
+    <div class="widget-sub">Each card shows actual bg, accent strip & primary bar — a tiny preview of the palette.</div>
+  </div>
+
+</div>
+
+<script>
+function selectWidget(choice) {
+  ['a','b','c'].forEach(id => document.getElementById('w-'+id).classList.remove('selected'));
+  document.getElementById('w-'+choice).classList.add('selected');
+  if (window.toggleSelect) {
+    document.querySelectorAll('.option').forEach(o => o.dataset.choice === choice && toggleSelect(o));
+  }
+}
+</script>
+
+<p style="text-align:center;color:#555;font-size:12px;margin-top:20px;">Click a widget style, then tell me in the terminal.</p>
