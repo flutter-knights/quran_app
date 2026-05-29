@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran_app/config/theme/app_palette.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 
 import '../../../../../../core/di/dependency_injection.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
@@ -56,8 +59,17 @@ class _MushafPageViewState extends State<MushafPageView>
   String get _imagePath =>
       'assets/mushaf/pages/page_${widget.pageNumber.toString().padLeft(3, '0')}.png';
 
+  // Accent layer: header frame + ayah-number rosettes, tinted separately.
+  String get _accentPath =>
+      'assets/mushaf/pages/page_${widget.pageNumber.toString().padLeft(3, '0')}_accent.png';
+
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsCubit>().state.settingsModel;
+    final paperColors = settings.mushafPaper.colors(
+      Theme.of(context).colorScheme,
+      mushafBg: settings.palette.mushafBg,
+    );
     return FutureBuilder<MushafPageEntity>(
       future: _entityFuture,
       builder: (context, snapshot) {
@@ -69,9 +81,18 @@ class _MushafPageViewState extends State<MushafPageView>
               return Stack(
                 fit: StackFit.expand,
                 children: [
+                  Positioned.fill(child: ColoredBox(color: paperColors.background)),
                   Image.asset(
                     _imagePath,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: paperColors.ink,
+                    colorBlendMode: BlendMode.srcIn,
+                    gaplessPlayback: true,
+                    filterQuality: FilterQuality.medium,
+                    fit: BoxFit.fill,
+                  ),
+                  Image.asset(
+                    _accentPath,
+                    color: paperColors.accent,
                     colorBlendMode: BlendMode.srcIn,
                     gaplessPlayback: true,
                     filterQuality: FilterQuality.medium,
@@ -107,10 +128,8 @@ class _MushafPageViewState extends State<MushafPageView>
                               prevHighlightedAyah: _prevHighlightedAyah,
                               playingAyah: _shownPlayingAyah,
                               prevPlayingAyah: _prevPlayingAyah,
-                              highlightColor:
-                                  Theme.of(context).colorScheme.secondary,
-                              playingColor:
-                                  Theme.of(context).colorScheme.primary,
+                              highlightColor: paperColors.accent,
+                              playingColor: paperColors.ink,
                               animationValue: _controller.value,
                             ),
                           ),
@@ -187,12 +206,16 @@ class _MushafPageViewState extends State<MushafPageView>
 
   void _handleTap(BuildContext context, Offset local, BoxConstraints c,
       List<AyahBoundEntity> ayahs) {
-    final hit = _hitTest(local, c, ayahs);
     final cubit = context.read<MushafCubit>();
+    if (!cubit.state.chromeVisible) {
+      cubit.setChrome(true);
+      return;
+    }
+    final hit = _hitTest(local, c, ayahs);
     if (hit != null) {
-      cubit.toggleHighlight(hit);
-    } else if (cubit.state.highlightedAyah != null) {
-      cubit.clearHighlight();
+      cubit.toggleHighlight(hit); // opens the playback overlay via existing plumbing
+    } else {
+      cubit.setChrome(false);
     }
   }
 }
