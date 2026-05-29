@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
@@ -14,7 +15,9 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
           SettingsState(
             SettingsModel(
               palette: ColorPalette.neutralDark,
-              isFormat12Hours: true,
+              // NOTE: this flag is inverted — `false` selects the 12-hour
+              // format, `true` selects 24-hour. Default first run to 12-hour.
+              isFormat12Hours: false,
               isArabic: true,
             ),
           ),
@@ -35,6 +38,10 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
     emit(SettingsState(state.settingsModel.copyWith(palette: palette)));
   }
 
+  void updateMushafPaper(MushafPaper paper) {
+    emit(SettingsState(state.settingsModel.copyWith(mushafPaper: paper)));
+  }
+
   void updatePlaybackSpeed(double speed) {
     emit(SettingsState(state.settingsModel.copyWith(playbackSpeed: speed)));
   }
@@ -46,6 +53,23 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
   void updatePrayerStripPinned(bool value) {
     emit(
       SettingsState(state.settingsModel.copyWith(isPrayerStripPinned: value)),
+    );
+  }
+
+  /// Marks first-run onboarding (the landing page) as completed, so the landing
+  /// is never shown again on subsequent launches.
+  void completeOnboarding() {
+    if (state.settingsModel.hasCompletedOnboarding) return;
+    emit(
+      SettingsState(
+        state.settingsModel.copyWith(hasCompletedOnboarding: true),
+      ),
+    );
+  }
+
+  void updateShowSplashOnLaunch(bool value) {
+    emit(
+      SettingsState(state.settingsModel.copyWith(showSplashOnLaunch: value)),
     );
   }
 
@@ -69,7 +93,13 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
 
   @override
   SettingsState? fromJson(Map<String, dynamic> json) {
-    return SettingsState(SettingsModel.fromMap(json));
+    // Never throw — a malformed persisted entry must not brick app launch.
+    // Returning null falls back to the default settings instead.
+    try {
+      return SettingsState(SettingsModel.fromMap(json));
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
