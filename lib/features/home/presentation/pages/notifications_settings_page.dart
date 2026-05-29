@@ -5,6 +5,7 @@ import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/per_prayer_adhan_tile.dart';
@@ -29,53 +30,65 @@ class NotificationsSettingsPage extends StatelessWidget {
     final scheme = context.colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        title: Text(S.current.notifications, style: TS.bold20.cairo),
-        backgroundColor: scheme.surface,
-      ),
       body: SafeArea(
-        child: BlocBuilder<SettingsCubit, SettingsState>(
-          builder: (context, state) {
-            final settings = state.settingsModel;
-            return ListView(
-              padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
-              children: [
-                const _Header(),
-                const SizedBox(height: 14),
-                SurfaceCard(
-                  padding: EdgeInsets.zero,
-                  child: SettingSwitch(
-                    settings: settings,
-                    settingTitle: S.current.pinnedPrayerTimes,
-                    icons: const [
-                      HugeIcons.strokeRoundedNotification01,
-                      HugeIcons.strokeRoundedNotificationOff01,
-                    ],
-                    value: settings.isPrayerStripPinned,
-                    action: () => sl<SettingsCubit>()
-                        .updatePrayerStripPinned(!settings.isPrayerStripPinned),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                AppSectionHeader(label: S.of(context).adhanPerPrayerSection),
-                const SizedBox(height: 10),
-                SurfaceCard(
-                  padding: EdgeInsets.zero,
-                  child: Column(
+        child: Column(
+          children: [
+            AppScreenAppBar(title: S.current.notifications),
+            Expanded(
+              child: BlocBuilder<SettingsCubit, SettingsState>(
+                builder: (context, state) {
+                  final settings = state.settingsModel;
+                  return ListView(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      16,
+                      16,
+                      16,
+                      32,
+                    ),
                     children: [
-                      for (var i = 0; i < _orderedPrayers.length; i++)
-                        PerPrayerAdhanTile(
-                          prayer: _orderedPrayers[i],
-                          showTopDivider: i > 0,
+                      const _Header(),
+                      const SizedBox(height: 14),
+                      SurfaceCard(
+                        padding: EdgeInsets.zero,
+                        child: SettingSwitch(
+                          settings: settings,
+                          settingTitle: S.current.pinnedPrayerTimes,
+                          icons: const [
+                            HugeIcons.strokeRoundedNotification01,
+                            HugeIcons.strokeRoundedNotificationOff01,
+                          ],
+                          value: settings.isPrayerStripPinned,
+                          action: () =>
+                              sl<SettingsCubit>().updatePrayerStripPinned(
+                                !settings.isPrayerStripPinned,
+                              ),
                         ),
+                      ),
+                      const SizedBox(height: 18),
+                      AppSectionHeader(
+                        label: S.of(context).adhanPerPrayerSection,
+                      ),
+                      const SizedBox(height: 10),
+                      SurfaceCard(
+                        padding: EdgeInsets.zero,
+                        child: Column(
+                          children: [
+                            for (var i = 0; i < _orderedPrayers.length; i++)
+                              PerPrayerAdhanTile(
+                                prayer: _orderedPrayers[i],
+                                showTopDivider: i > 0,
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      const TestAdhanButton(),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const TestAdhanButton(),
-              ],
-            );
-          },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -99,7 +112,9 @@ class _Header extends StatelessWidget {
             decoration: BoxDecoration(
               color: scheme.surfaceContainer,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: scheme.onSurface.withValues(alpha: 0.06)),
+              border: Border.all(
+                color: scheme.onSurface.withValues(alpha: 0.06),
+              ),
             ),
             alignment: Alignment.center,
             child: HugeIcon(

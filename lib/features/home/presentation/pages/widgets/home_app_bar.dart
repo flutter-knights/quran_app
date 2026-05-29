@@ -45,7 +45,7 @@ class HomeAppBar extends StatelessWidget {
                     date.month,
                     date.year.toLocalized(context),
                   ),
-                  style: TS.bold14.cairo,
+                  style: TS.bold16.cairo,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),

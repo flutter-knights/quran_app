@@ -4,9 +4,8 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
-import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
+import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
-import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/icon_chip.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_book_info.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/hadith_book_list_item.dart';
@@ -25,35 +24,12 @@ class BooksListView extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              height: 60,
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: scheme.onSurface.withValues(alpha: 0.06),
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconChip(
-                    icon: HugeIcon(icon: backArrowIcon(context)),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                  const Spacer(),
-                  AppBarCenterTitle(
-                    label: S.of(context).collections_label,
-                    title: S.of(context).hadith_books_appbar_title,
-                  ),
-                  const Spacer(),
-                  IconChip(
-                    icon: const HugeIcon(
-                      icon: HugeIcons.strokeRoundedSettings01,
-                    ),
-                    onPressed: () => context.push(AppRouter.settingsPath),
-                  ),
-                ],
+            AppScreenAppBar(
+              label: S.of(context).collections_label,
+              title: S.of(context).hadith_books_appbar_title,
+              trailing: IconChip(
+                icon: const HugeIcon(icon: HugeIcons.strokeRoundedSettings01),
+                onPressed: () => context.push(AppRouter.settingsPath),
               ),
             ),
             Expanded(
@@ -65,9 +41,9 @@ class BooksListView extends StatelessWidget {
                     AppSectionHeader(
                       label: S.of(context).books_section,
                       trailing: Text(
-                        S.of(context).books_count(
-                              books.length.toLocalized(context),
-                            ),
+                        S
+                            .of(context)
+                            .books_count(books.length.toLocalized(context)),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
