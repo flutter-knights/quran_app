@@ -11,8 +11,8 @@ import '../../../../domain/entities/mushaf_page_entity.dart';
 import '../../../../domain/usecases/get_mushaf_page.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
+import 'ayah_action_popover.dart';
 import 'ayah_highlight_painter.dart';
-import 'ayah_long_press_sheet.dart';
 
 class MushafPageView extends StatefulWidget {
   const MushafPageView({super.key, required this.pageNumber});
@@ -201,7 +201,39 @@ class _MushafPageViewState extends State<MushafPageView>
       List<AyahBoundEntity> ayahs) {
     final hit = _hitTest(local, c, ayahs);
     if (hit == null) return;
-    AyahLongPressSheet.show(context, hit);
+
+    // Find the ayah's bound entity to compute an anchor rect.
+    AyahBoundEntity? bound;
+    for (final b in ayahs) {
+      if (b.ayah == hit) {
+        bound = b;
+        break;
+      }
+    }
+    if (bound == null || bound.lines.isEmpty) return;
+
+    final line = bound.lines.first;
+
+    // Convert the normalized first-line rect to global coordinates.
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final localTopLeft = Offset(line.x * c.maxWidth, line.y * c.maxHeight);
+    final localBottomRight = Offset(
+      (line.x + line.w) * c.maxWidth,
+      (line.y + line.h) * c.maxHeight,
+    );
+    final globalTopLeft = box.localToGlobal(localTopLeft);
+    final globalBottomRight = box.localToGlobal(localBottomRight);
+    final anchorGlobal = Rect.fromPoints(globalTopLeft, globalBottomRight);
+
+    final placement = popoverPlacement(verseCenterY: line.y + line.h / 2);
+
+    AyahActionPopover.show(
+      context,
+      hit,
+      anchorGlobal: anchorGlobal,
+      placement: placement,
+    );
   }
 
   void _handleTap(BuildContext context, Offset local, BoxConstraints c,
