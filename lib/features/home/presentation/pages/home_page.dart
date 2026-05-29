@@ -110,38 +110,10 @@ class HomePage extends StatelessWidget {
             },
           ),
         ],
-        child: HomeView(),
-      ),
-    );
-  }
-
-  void _enableOrRefreshStrip(
-    BuildContext context,
-    DailyPrayerContextLoaded loaded,
-  ) {
-    final settings = context.read<SettingsCubit>().state.settingsModel;
-    if (!settings.isPrayerStripPinned) return;
-
-    final now = DateTime.now();
-    final nextPrayer = NextPrayerResolver.resolve(
-      timings: loaded.dailyPrayerContext.prayerTimes.timings,
-      now: now,
-    );
-    final stripState = PrayerStripStateBuilder.build(
-      prayerTimes: loaded.dailyPrayerContext.prayerTimes,
-      nextPrayer: nextPrayer,
-      localeCode: settings.isArabic ? 'ar' : 'en',
-      isFriday: now.weekday == DateTime.friday,
-      // `isFormat12Hours` is named opposite to its meaning — `true` means
-      // the user enabled the "24-hour format" toggle in settings.
-      use24Hour: settings.isFormat12Hours,
-      // Drive the next-prayer pill from the live palette accent so the
-      // notification tracks the in-app theme (single source of truth).
-      accentColor: settings.palette.primary.toARGB32(),
-    );
-    unawaited(
-      sl<EnablePrayerStrip>().call(
-        EnablePrayerStripParams(state: stripState),
+        // Re-assert the strip when the app returns to the foreground: the OS
+        // can kill the hosting foreground service while we're backgrounded, and
+        // a warm resume (no cold start) wouldn't otherwise re-fire the loaders.
+        child: _StripResumeGuard(child: HomeView()),
       ),
     );
   }
@@ -161,4 +133,76 @@ class HomePage extends StatelessWidget {
     }
     return true;
   }
+}
+
+/// (Re)builds and pushes the strip from the loaded prayer context, honouring
+/// the user's pin toggle. Top-level so both the bloc listeners and the
+/// lifecycle guard can share it.
+void _enableOrRefreshStrip(
+  BuildContext context,
+  DailyPrayerContextLoaded loaded,
+) {
+  final settings = context.read<SettingsCubit>().state.settingsModel;
+  if (!settings.isPrayerStripPinned) return;
+
+  final now = DateTime.now();
+  final nextPrayer = NextPrayerResolver.resolve(
+    timings: loaded.dailyPrayerContext.prayerTimes.timings,
+    now: now,
+  );
+  final stripState = PrayerStripStateBuilder.build(
+    prayerTimes: loaded.dailyPrayerContext.prayerTimes,
+    nextPrayer: nextPrayer,
+    localeCode: settings.isArabic ? 'ar' : 'en',
+    isFriday: now.weekday == DateTime.friday,
+    // `isFormat12Hours` is named opposite to its meaning — `true` means
+    // the user enabled the "24-hour format" toggle in settings.
+    use24Hour: settings.isFormat12Hours,
+    // Drive the next-prayer pill from the live palette accent so the
+    // notification tracks the in-app theme (single source of truth).
+    accentColor: settings.palette.primary.toARGB32(),
+  );
+  unawaited(
+    sl<EnablePrayerStrip>().call(
+      EnablePrayerStripParams(state: stripState),
+    ),
+  );
+}
+
+/// Watches the app lifecycle and re-asserts the pinned strip on resume, so it
+/// survives the hosting foreground service being reclaimed while backgrounded.
+class _StripResumeGuard extends StatefulWidget {
+  const _StripResumeGuard({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_StripResumeGuard> createState() => _StripResumeGuardState();
+}
+
+class _StripResumeGuardState extends State<_StripResumeGuard>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    final ctxState = context.read<DailyPrayerContextCubit>().state;
+    if (ctxState is DailyPrayerContextLoaded) {
+      _enableOrRefreshStrip(context, ctxState);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
