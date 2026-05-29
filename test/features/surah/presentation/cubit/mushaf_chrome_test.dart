@@ -23,4 +23,22 @@ void main() {
     cubit.close();
     notifier.dispose();
   });
+
+  test('clearing chrome keeps the highlighted ayah', () {
+    final notifier = ValueNotifier<AyahIdentifier?>(null);
+    final cubit = MushafCubit(
+      initialPage: 1,
+      currentAyahNotifier: notifier,
+    );
+
+    const ayah = AyahIdentifier(surah: 2, ayah: 255);
+    cubit.toggleHighlight(ayah);
+    cubit.setChrome(false);
+
+    expect(cubit.state.highlightedAyah, equals(ayah));
+    expect(cubit.state.chromeVisible, isFalse);
+
+    cubit.close();
+    notifier.dispose();
+  });
 }
