@@ -1,9 +1,10 @@
 {
-    "cSpell.words": [
-        "Basmala",
-        "hugeicons",
-        "mushaf",
-        "Surahs",
-        "Uthmanic"
-    ]
+  "cSpell.words": [
+    "Basmala",
+    "hugeicons",
+    "mushaf",
+    "Surahs",
+    "Uthmanic"
+  ],
+  "dart.flutterSdkPath": ".fvm/versions/3.38.1"
 }
