@@ -5,7 +5,7 @@ part 'hadith_hive_model.g.dart';
 @HiveType(typeId: 4)
 class HadithHiveModel extends HiveObject {
   @HiveField(0)
-  final int hadithNumber;
+  final String hadithNumber;
   @HiveField(1)
   final String englishHadith;
   @HiveField(2)

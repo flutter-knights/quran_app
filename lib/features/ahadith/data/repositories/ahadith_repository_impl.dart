@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:quran_app/core/constants/hadith_constants.dart';
 import 'package:quran_app/core/errors/failure.dart';
+import 'package:quran_app/core/helper%20functions/ahadith_helpers.dart';
 import 'package:quran_app/features/ahadith/data/datasources/local/ahadith_local_data_source.dart';
 import 'package:quran_app/features/ahadith/data/datasources/remote/ahadith_remote_data_source.dart';
 import 'package:quran_app/features/ahadith/domain/entities/chapter.dart';
@@ -46,7 +47,10 @@ class AhadithRepositoryImpl implements AhadithRepository {
     }
 
     final decoratedHadiths = page.ahadithList.map((hadith) {
-      return hadith.copyWith(chapter: chapterLookup[hadith.chapterId]);
+      return hadith.copyWith(
+        chapter: chapterLookup[hadith.chapterId],
+        arabicNormalized: AhadithHelpers.cleanArabicQuery(hadith.arabicHadith),
+      );
     }).toList();
 
     return Right(page.copyWith(ahadithList: decoratedHadiths));
@@ -89,7 +93,7 @@ class AhadithRepositoryImpl implements AhadithRepository {
       } catch (e) {
         trials--;
         if (trials > 0) {
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(milliseconds: 500));
           continue;
         }
         throw Exception('can\'n download book');
