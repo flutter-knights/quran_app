@@ -20,6 +20,20 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
 
         Log.i(TAG, "onReceive prayer=$prayer clip=$clip locale=$localeCode")
 
+        // Staleness guard: AlarmManager delivers every past-due RTC alarm the
+        // instant the clock jumps forward. Moving the device clock past several
+        // prayers would otherwise fire a burst of adhans at once. If this alarm
+        // is firing far later than its intended minute, it's a clock jump (or a
+        // long Doze deferral) rather than a real prayer time — skip it.
+        val triggerAt = intent?.getLongExtra(EXTRA_TRIGGER_AT, 0L) ?: 0L
+        if (triggerAt > 0L) {
+            val lateBy = System.currentTimeMillis() - triggerAt
+            if (lateBy > STALE_THRESHOLD_MS) {
+                Log.w(TAG, "onReceive: dropping stale $prayer (late by ${lateBy / 60000}m)")
+                return
+            }
+        }
+
         // Dismiss the corresponding reminder notification if it's still visible —
         // otherwise the countdown sits at 00:00:00 next to the live adhan UI.
         PrayerReminderIds.notificationIdByPrayer[prayer]?.let { reminderId ->
@@ -41,5 +55,13 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         const val EXTRA_PRAYER = "prayer"
         const val EXTRA_CLIP = "clip"
         const val EXTRA_LOCALE = "locale"
+        const val EXTRA_TRIGGER_AT = "triggerAt"
+
+        /**
+         * How late an alarm may fire and still be honoured. Generous enough to
+         * tolerate Doze deferral of the inexact fallback, far below the smallest
+         * inter-prayer gap (~1h), so any real clock jump is caught.
+         */
+        private const val STALE_THRESHOLD_MS = 30L * 60L * 1000L
     }
 }
