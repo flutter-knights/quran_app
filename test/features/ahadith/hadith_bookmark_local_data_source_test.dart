@@ -28,17 +28,25 @@ void main() {
       final result = sut.getAll();
 
       expect(result, {
-        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: 42),
-        const HadithBookmark(bookSlug: 'muslim', hadithNumber: 1),
+        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: '42'),
+        const HadithBookmark(bookSlug: 'muslim', hadithNumber: '1'),
       });
     });
 
     test('skips malformed entries', () {
       when(() => box.get('all'))
-          .thenReturn(['bukhari:42', 'garbage', 'muslim:abc', 42]);
+          .thenReturn(['bukhari:42', 'garbage', 'muslim:', 42]);
 
       expect(sut.getAll(), {
-        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: 42),
+        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: '42'),
+      });
+    });
+
+    test('accepts non-numeric hadith numbers (e.g. ranges)', () {
+      when(() => box.get('all')).thenReturn(['bukhari:1,2']);
+
+      expect(sut.getAll(), {
+        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: '1,2'),
       });
     });
   });
@@ -49,7 +57,7 @@ void main() {
       when(() => box.put('all', any<List<String>>())).thenAnswer((_) async {});
 
       final added = await sut.toggle(
-        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: 42),
+        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: '42'),
       );
 
       expect(added, isTrue);
@@ -61,7 +69,7 @@ void main() {
       when(() => box.put('all', any<List<String>>())).thenAnswer((_) async {});
 
       final removed = await sut.toggle(
-        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: 42),
+        const HadithBookmark(bookSlug: 'bukhari', hadithNumber: '42'),
       );
 
       expect(removed, isFalse);

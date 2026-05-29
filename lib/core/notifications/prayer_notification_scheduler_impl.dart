@@ -125,6 +125,20 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
       p == PrayerName.fajr ? _fajrDetails : _standardDetails;
 
   @override
+  Future<bool?> requestNotificationsPermission() async {
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    if (androidPlugin != null) {
+      return androidPlugin.requestNotificationsPermission();
+    }
+    final iosPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>();
+    return iosPlugin?.requestPermissions(alert: true, badge: false, sound: true);
+  }
+
+  @override
   Future<void> init() async {
     tz.initializeTimeZones();
     final timezoneInfo = await FlutterTimezone.getLocalTimezone();

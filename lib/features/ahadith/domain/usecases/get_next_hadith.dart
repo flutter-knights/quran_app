@@ -10,7 +10,7 @@ class GetNextHadith {
 
   Future<Either<Failure, Hadith?>> call({
     required String bookSlug,
-    required int currentHadithNumber,
+    required String currentHadithNumber,
   }) =>
       _repo.getNextHadith(
         bookSlug: bookSlug,

@@ -27,7 +27,7 @@ class SearchHadithCubit extends Cubit<SearchHadithState> {
       return;
     }
 
-    _debounce = Timer(const Duration(milliseconds: 500), () async {
+    _debounce = Timer(const Duration(milliseconds: 300), () async {
       emit(SearchHadithLoading());
 
       final isDownloaded = downloadBookCubit.state.downloadedBooks.contains(

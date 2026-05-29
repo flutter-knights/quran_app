@@ -93,6 +93,21 @@ class SettingsPage extends StatelessWidget {
                                 ],
                               ),
                             ),
+                            Container(
+                              height: 1,
+                              color: scheme.onSurface.withValues(alpha: 0.06),
+                            ),
+                            _SelectorRow(
+                              icon: HugeIcons.strokeRoundedImage02,
+                              label: S.current.show_splash_screen,
+                              selector: Switch(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                value: settings.showSplashOnLaunch,
+                                onChanged: (v) => sl<SettingsCubit>()
+                                    .updateShowSplashOnLaunch(v),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -101,20 +116,31 @@ class SettingsPage extends StatelessWidget {
                         AppSectionHeader(label: S.current.notifications),
                         const SizedBox(height: 10),
                         SurfaceCard(
-                          padding: EdgeInsets.zero,
-                          child: ListTile(
-                            leading: HugeIcon(
-                              icon: HugeIcons.strokeRoundedNotification01,
-                              color: scheme.secondary,
-                              size: 22,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _NotificationRow(
+                            label: S.current.pinnedPrayerTimes,
+                            trailing: Switch(
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              value: settings.isPrayerStripPinned,
+                              onChanged: (_) =>
+                                  sl<SettingsCubit>().updatePrayerStripPinned(
+                                    !settings.isPrayerStripPinned,
+                                  ),
                             ),
-                            title: Text(
-                              S.current.notifications,
-                              style: TS.regular16.cairo,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SurfaceCard(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          onTap: () =>
+                              context.push(AppRouter.notificationsPath),
+                          child: _NotificationRow(
+                            label: S.current.adhan_and_reminders,
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: scheme.onSurfaceVariant,
                             ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () =>
-                                context.push(AppRouter.notificationsPath),
                           ),
                         ),
                       ],
@@ -152,6 +178,35 @@ class _SelectorRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(child: Text(label, style: TS.regular16.cairo)),
           selector,
+        ],
+      ),
+    );
+  }
+}
+
+/// Fixed-height notification row so the section's cards are all the same height
+/// regardless of their trailing control (switch vs chevron).
+class _NotificationRow extends StatelessWidget {
+  const _NotificationRow({required this.label, required this.trailing});
+
+  final String label;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    return SizedBox(
+      height: 52,
+      child: Row(
+        children: [
+          HugeIcon(
+            icon: HugeIcons.strokeRoundedNotification01,
+            color: scheme.onSurface,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Text(label, style: TS.regular16.cairo)),
+          trailing,
         ],
       ),
     );

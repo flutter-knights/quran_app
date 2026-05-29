@@ -101,30 +101,50 @@ class HomePage extends StatelessWidget {
                   );
             },
             listener: (context, settings) {
-              final ctxState = context.read<DailyPrayerContextCubit>().state;
-              if (settings.settingsModel.isPrayerStripPinned &&
-                  ctxState is DailyPrayerContextLoaded) {
-                _enableOrRefreshStrip(context, ctxState);
-              } else if (!settings.settingsModel.isPrayerStripPinned) {
-                unawaited(sl<DisablePrayerStrip>().call(NoParams()));
-              }
+              // Settings changes (theme/language/format) re-sync the prayer
+              // strip + adhans. None of that notification/foreground-service
+              // work should ever be able to crash the app on a setting change.
+              try {
+                final ctxState =
+                    context.read<DailyPrayerContextCubit>().state;
+                // Only refresh the strip while it's pinned; disabling is
+                // handled by a dedicated listener on the pin transition, so we
+                // don't spin up the service on every unrelated settings change.
+                if (settings.settingsModel.isPrayerStripPinned &&
+                    ctxState is DailyPrayerContextLoaded) {
+                  _enableOrRefreshStrip(context, ctxState);
+                }
 
-              // Re-sync adhans + reminders whenever the relevant settings change.
-              if (ctxState is DailyPrayerContextLoaded) {
-                final locale = settings.settingsModel.isArabic ? 'ar' : 'en';
-                unawaited(
-                  sl<SyncDailyAdhans>().call(
-                    SyncDailyAdhansParams(
-                      prayerTimes: ctxState.dailyPrayerContext.prayerTimes,
-                      enabledByPrayer:
-                          settings.settingsModel.adhanEnabledByPrayer,
-                      reminderMinutesByPrayer:
-                          settings.settingsModel.reminderMinutesByPrayer,
-                      localeCode: locale,
+                // Re-sync adhans + reminders when relevant settings change.
+                if (ctxState is DailyPrayerContextLoaded) {
+                  final locale =
+                      settings.settingsModel.isArabic ? 'ar' : 'en';
+                  unawaited(
+                    sl<SyncDailyAdhans>().call(
+                      SyncDailyAdhansParams(
+                        prayerTimes: ctxState.dailyPrayerContext.prayerTimes,
+                        enabledByPrayer:
+                            settings.settingsModel.adhanEnabledByPrayer,
+                        reminderMinutesByPrayer:
+                            settings.settingsModel.reminderMinutesByPrayer,
+                        localeCode: locale,
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
+              } catch (e, st) {
+                debugPrint('settings-change strip/adhan sync failed: $e\n$st');
               }
+            },
+          ),
+          // Disable the strip only when the user actually turns the pin OFF —
+          // not on every theme/language/format change while it's already off.
+          BlocListener<SettingsCubit, SettingsState>(
+            listenWhen: (prev, curr) =>
+                prev.settingsModel.isPrayerStripPinned &&
+                !curr.settingsModel.isPrayerStripPinned,
+            listener: (context, _) {
+              unawaited(sl<DisablePrayerStrip>().call(NoParams()));
             },
           ),
         ],
@@ -163,28 +183,40 @@ void _enableOrRefreshStrip(
   final settings = context.read<SettingsCubit>().state.settingsModel;
   if (!settings.isPrayerStripPinned) return;
 
-  final now = DateTime.now();
-  final nextPrayer = NextPrayerResolver.resolve(
-    timings: loaded.dailyPrayerContext.prayerTimes.timings,
-    now: now,
-  );
-  final stripState = PrayerStripStateBuilder.build(
-    prayerTimes: loaded.dailyPrayerContext.prayerTimes,
-    nextPrayer: nextPrayer,
-    localeCode: settings.isArabic ? 'ar' : 'en',
-    isFriday: now.weekday == DateTime.friday,
-    // `isFormat12Hours` is named opposite to its meaning — `true` means
-    // the user enabled the "24-hour format" toggle in settings.
-    use24Hour: settings.isFormat12Hours,
-    // Drive the next-prayer pill from the live palette accent so the
-    // notification tracks the in-app theme (single source of truth).
-    accentColor: settings.palette.primary.toARGB32(),
-  );
-  unawaited(
-    sl<EnablePrayerStrip>().call(
-      EnablePrayerStripParams(state: stripState),
-    ),
-  );
+  // Posting the prayer-strip notification can throw (notification/foreground-
+  // service/exact-alarm failures). A failure here must never crash the app —
+  // it's a best-effort side effect of (re)building the strip.
+  try {
+    final now = DateTime.now();
+    final nextPrayer = NextPrayerResolver.resolve(
+      timings: loaded.dailyPrayerContext.prayerTimes.timings,
+      now: now,
+    );
+    final stripState = PrayerStripStateBuilder.build(
+      prayerTimes: loaded.dailyPrayerContext.prayerTimes,
+      nextPrayer: nextPrayer,
+      localeCode: settings.isArabic ? 'ar' : 'en',
+      isFriday: now.weekday == DateTime.friday,
+      // `isFormat12Hours` is named opposite to its meaning — `true` means
+      // the user enabled the "24-hour format" toggle in settings.
+      use24Hour: settings.isFormat12Hours,
+      // Drive the next-prayer pill from the live palette accent so the
+      // notification tracks the in-app theme (single source of truth).
+      accentColor: settings.palette.primary.toARGB32(),
+    );
+    unawaited(
+      sl<EnablePrayerStrip>()
+          .call(EnablePrayerStripParams(state: stripState))
+          .then(
+            (r) => r.fold(
+              (f) => debugPrint('[prayer-strip] enable failed: ${f.message}'),
+              (_) {},
+            ),
+          ),
+    );
+  } catch (e, st) {
+    debugPrint('refresh prayer strip failed: $e\n$st');
+  }
 }
 
 /// Watches the app lifecycle and re-asserts the pinned strip on resume, so it

@@ -5,6 +5,7 @@ import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/app_list_skeleton.dart';
+import 'package:quran_app/core/widgets/design/scroll_to_top_fab.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/last_read_card.dart';
 import 'package:quran_app/features/surah/domain/entities/surah_entity.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
@@ -21,6 +22,19 @@ class SurahListPageBody extends StatefulWidget {
 
 class _SurahListPageBodyState extends State<SurahListPageBody> {
   String _query = '';
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   List<SurahEntity> _filter(List<SurahEntity> surahs) {
     final q = _query.trim().toLowerCase();
@@ -54,8 +68,11 @@ class _SurahListPageBodyState extends State<SurahListPageBody> {
                     return const AppListSkeleton();
                   }
                   final lastRead = LastReadCard.maybeBuild(context);
-                  return CustomScrollView(
-                    slivers: [
+                  return ScrollToTopFab(
+                    controller: _scrollController,
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                         sliver: SliverToBoxAdapter(
@@ -94,13 +111,14 @@ class _SurahListPageBodyState extends State<SurahListPageBody> {
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                         sliver: SliverList.separated(
                           itemCount: filtered.length,
-                          separatorBuilder: (_, __) =>
+                          separatorBuilder: (_, _) =>
                               const SizedBox(height: 8),
                           itemBuilder: (_, i) =>
                               SurahListTile(surah: filtered[i]),
                         ),
                       ),
-                    ],
+                      ],
+                    ),
                   );
                 },
               ),

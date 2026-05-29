@@ -32,7 +32,7 @@ class QuickAccessGrid extends StatelessWidget {
         _QuickTile(
           icon: HugeIcons.strokeRoundedFavourite,
           label: S.of(context).bookmarks_screen_title,
-          enabled: false,
+          onTap: () => context.push(AppRouter.bookmarksPath),
         ),
         _QuickTile(
           icon: HugeIcons.strokeRoundedSettings01,
@@ -49,13 +49,11 @@ class _QuickTile extends StatelessWidget {
     required this.icon,
     required this.label,
     this.onTap,
-    this.enabled = true,
   });
 
   final List<List<dynamic>> icon;
   final String label;
   final VoidCallback? onTap;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -70,12 +68,10 @@ class _QuickTile extends StatelessWidget {
       alignment: Alignment.center,
       child: HugeIcon(icon: icon, size: 24, color: scheme.onSurface),
     );
-    return Opacity(
-      opacity: enabled ? 1 : 0.4,
-      child: Column(
+    return Column(
         children: [
           Expanded(
-            child: enabled ? PrettierTap(onTap: onTap, child: tile) : tile,
+            child: PrettierTap(onTap: onTap, child: tile),
           ),
           const SizedBox(height: 6),
           Text(
@@ -91,7 +87,6 @@ class _QuickTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
-      ),
     );
   }
 }

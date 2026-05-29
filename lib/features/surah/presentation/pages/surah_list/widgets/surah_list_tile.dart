@@ -83,7 +83,7 @@ class SurahListTile extends StatelessWidget {
                   Text(
                     meta,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: scheme.onSurfaceVariant,
                     ),
@@ -106,9 +106,9 @@ class SurahListTile extends StatelessWidget {
               child: Text(
                 surah.number.toLocalized(context),
                 style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurfaceVariant,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: scheme.onSurface,
                 ),
               ),
             ),

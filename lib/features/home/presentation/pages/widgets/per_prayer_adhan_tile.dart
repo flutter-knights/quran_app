@@ -42,10 +42,9 @@ class PerPrayerAdhanTile extends StatelessWidget {
         return Column(
           children: [
             if (showTopDivider)
-              Divider(
-                color: context.colorScheme.outlineVariant,
+              Container(
                 height: 1,
-                thickness: 0.5,
+                color: context.colorScheme.onSurface.withValues(alpha: 0.06),
               ),
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 12, 12),

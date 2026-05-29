@@ -39,31 +39,56 @@ class AhadithLocalDataSource {
     final List<Hadith> results = [];
     final List<String> missing = [];
 
+    // Lazily built only if the page-estimate fast path misses, so the common
+    // case never pays for a full key scan.
+    Map<String, HadithHiveModel>? scanIndex;
+
     for (final number in ahadithNumbers) {
-      bool foundInHive = false;
       final int num = int.tryParse(number.split(',').first) ?? 0;
       final int estimatedPage = (num / kPageLimit).ceil();
 
+      HadithHiveModel? model;
+
+      // Fast path: hadith numbers are roughly sequential, so the cached page
+      // is almost always estimatedPage ± 1.
       for (int p = estimatedPage - 1; p <= estimatedPage + 1; p++) {
         if (p < 1) continue;
-
         final String normalKey = "${bookSlug}_${p}_$number";
         final String lastKey = "${bookSlug}_${p}_${number}_last";
-
-        final model = hadithBox.get(normalKey) ?? hadithBox.get(lastKey);
-
-        if (model != null) {
-          results.add(model.toEntity());
-          foundInHive = true;
-          break;
-        }
+        model = hadithBox.get(normalKey) ?? hadithBox.get(lastKey);
+        if (model != null) break;
       }
-      if (!foundInHive) {
+
+      // Fallback: the estimate can miss when numbering isn't densely
+      // sequential (gaps, ranges). Scan the book's keys before giving up so a
+      // cached hadith is never wrongly reported missing.
+      if (model == null) {
+        scanIndex ??= _buildBookIndex(bookSlug);
+        model = scanIndex[number];
+      }
+
+      if (model != null) {
+        results.add(model.toEntity());
+      } else {
         missing.add(number);
       }
     }
 
     return (found: AhadithHelpers.sortHadiths(results), missing: missing);
+  }
+
+  /// Maps every cached hadith number in [bookSlug] to its model, regardless of
+  /// which page it landed on. Built once per call only when needed.
+  Map<String, HadithHiveModel> _buildBookIndex(String bookSlug) {
+    final String prefix = "${bookSlug}_";
+    final Map<String, HadithHiveModel> index = {};
+    for (final key in hadithBox.keys) {
+      final keyStr = key.toString();
+      if (!keyStr.startsWith(prefix)) continue;
+      final model = hadithBox.get(key);
+      if (model != null) index[model.hadithNumber] = model;
+    }
+    return index;
   }
 
   List<Hadith> getSearchedHadiths(String query, String bookSlug) {
