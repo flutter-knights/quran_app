@@ -4,6 +4,7 @@ import 'package:quran/quran.dart' as q;
 
 import '../../../../../../generated/l10n.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../../../quran_playback/domain/entities/reciter.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
@@ -118,6 +119,7 @@ class _Body extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
+                _ReciterChip(),
                 _SpeedChip(),
               ],
             ),
@@ -238,6 +240,42 @@ class _SpeedChip extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Text('${state.speed}x'),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ReciterChip extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<PlaybackCubit, PlaybackState>(
+      buildWhen: (a, b) => a.reciter != b.reciter,
+      builder: (context, state) {
+        return PopupMenuButton<Reciter>(
+          tooltip: S.of(context).reciter_label,
+          onSelected: (r) => context.read<PlaybackCubit>().setReciter(r),
+          itemBuilder: (_) => [
+            for (final r in Reciter.values)
+              PopupMenuItem(value: r, child: Text(r.arabicName)),
+          ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.record_voice_over, size: 16),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    state.reciter.arabicName,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
