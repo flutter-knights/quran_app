@@ -43,6 +43,24 @@ class HomePage extends StatelessWidget {
                   .fetchDailyPrayerContext(silent: s.silent);
             },
           ),
+          // Advance the strip's highlighted pill as prayers pass through the
+          // day. Without this the strip is only re-pushed on context load or a
+          // settings change, so the pill goes stale — which looked like a
+          // "12h format doesn't track the current prayer" bug (toggling the
+          // format merely forced a refresh that happened to correct it).
+          BlocListener<PrayerCountdownCubit, PrayerCountdownState>(
+            listenWhen: (prev, curr) =>
+                prev is PrayerCountdownTick &&
+                curr is PrayerCountdownTick &&
+                prev.prayerCountdown.nextPrayer !=
+                    curr.prayerCountdown.nextPrayer,
+            listener: (context, _) {
+              final ctxState = context.read<DailyPrayerContextCubit>().state;
+              if (ctxState is DailyPrayerContextLoaded) {
+                _enableOrRefreshStrip(context, ctxState);
+              }
+            },
+          ),
           BlocListener<DailyPrayerContextCubit, DailyPrayerContextState>(
             listenWhen: (_, s) => s is DailyPrayerContextLoaded,
             listener: (context, state) {
