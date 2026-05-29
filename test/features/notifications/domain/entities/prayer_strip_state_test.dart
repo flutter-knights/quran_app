@@ -51,4 +51,44 @@ void main() {
     final round = PrayerStripState.fromJson(s.toJson());
     expect(round, s);
   });
+
+  test('accentColor is emitted as an #AARRGGBB hex string and round-trips', () {
+    final s = PrayerStripState(
+      cells: [fajr, sunrise],
+      nextPrayerIndex: 0,
+      hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: 'Monday',
+      localeCode: 'en',
+      isFriday: false,
+      accentColor: 0xFF2E5244,
+    );
+    expect(s.toJson()['accentColor'], '#FF2E5244');
+    expect(PrayerStripState.fromJson(s.toJson()), s);
+  });
+
+  test('accentColor is omitted from toJson when null', () {
+    final s = PrayerStripState(
+      cells: [fajr, sunrise],
+      nextPrayerIndex: 0,
+      hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: 'Monday',
+      localeCode: 'en',
+      isFriday: false,
+    );
+    expect(s.toJson().containsKey('accentColor'), false);
+    expect(PrayerStripState.fromJson(s.toJson()).accentColor, isNull);
+  });
+
+  test('different accentColor breaks equality', () {
+    final a = PrayerStripState(
+      cells: [fajr, sunrise],
+      nextPrayerIndex: 0,
+      hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: 'Monday',
+      localeCode: 'en',
+      isFriday: false,
+      accentColor: 0xFF2E5244,
+    );
+    expect(a == a.copyWith(accentColor: 0xFF1C4558), false);
+  });
 }

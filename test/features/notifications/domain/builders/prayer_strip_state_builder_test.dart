@@ -93,6 +93,29 @@ void main() {
       expect(ar.cells[2].label, 'الظهر');
     });
 
+    test('accentColor is passed through to the built state', () {
+      final s = PrayerStripStateBuilder.build(
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'en',
+        isFriday: false,
+        use24Hour: true,
+        accentColor: 0xFF2E5244,
+      );
+      expect(s.accentColor, 0xFF2E5244);
+    });
+
+    test('accentColor defaults to null when not supplied', () {
+      final s = PrayerStripStateBuilder.build(
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'en',
+        isFriday: false,
+        use24Hour: true,
+      );
+      expect(s.accentColor, isNull);
+    });
+
     test('nextPrayerIndex matches nextPrayer position in fixed order', () {
       final s = PrayerStripStateBuilder.build(
         prayerTimes: pt,

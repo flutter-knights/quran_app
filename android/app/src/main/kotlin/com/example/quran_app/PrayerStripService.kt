@@ -1,11 +1,13 @@
 package com.example.quran_app
 
 import android.app.AlarmManager
+import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import java.util.Calendar
 
@@ -46,20 +48,35 @@ class PrayerStripService : Service() {
         store.save(stateJson)
         val state = PrayerStripState.fromJsonString(stateJson)
         val withRecomputedNext = state.copy(nextPrayerIndex = computeNextIndex(state))
-        startForeground(
-            PrayerStripRenderer.NOTIFICATION_ID,
-            renderer.build(withRecomputedNext)
-        )
-        scheduleAlarms(withRecomputedNext)
+        if (startStripForeground(renderer.build(withRecomputedNext))) {
+            scheduleAlarms(withRecomputedNext)
+        }
     }
 
     private fun handleRefresh() {
         val state = store.load() ?: run { stopSelf(); return }
         val withRecomputedNext = state.copy(nextPrayerIndex = computeNextIndex(state))
-        startForeground(
-            PrayerStripRenderer.NOTIFICATION_ID,
-            renderer.build(withRecomputedNext)
-        )
+        startStripForeground(renderer.build(withRecomputedNext))
+    }
+
+    /**
+     * Promotes the service to foreground with [notification].
+     *
+     * Android 14/15 forbid starting a `dataSync` foreground service from a
+     * BOOT_COMPLETED receiver; the call then throws
+     * `ForegroundServiceStartNotAllowedException`. We catch it so a denied
+     * boot-time start degrades gracefully (the strip is restored on next app
+     * launch via DailyPrayerContextLoaded) instead of crashing the service.
+     *
+     * @return true when the service is now in the foreground.
+     */
+    private fun startStripForeground(notification: Notification): Boolean = try {
+        startForeground(PrayerStripRenderer.NOTIFICATION_ID, notification)
+        true
+    } catch (e: Exception) {
+        Log.w(TAG, "startForeground denied (likely boot FGS restriction): $e")
+        stopSelf()
+        false
     }
 
     private fun handleHide() {
@@ -159,6 +176,7 @@ class PrayerStripService : Service() {
     }
 
     companion object {
+        private const val TAG = "PrayerStrip"
         const val ACTION_SHOW_STRIP = "com.example.quran_app.ACTION_SHOW_STRIP"
         const val ACTION_REFRESH_STRIP = "com.example.quran_app.ACTION_REFRESH_STRIP"
         const val ACTION_HIDE_STRIP = "com.example.quran_app.ACTION_HIDE_STRIP"
