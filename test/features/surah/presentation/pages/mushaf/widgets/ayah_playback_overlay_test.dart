@@ -31,6 +31,10 @@ class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   }
 
   @override
+  void toggleChrome() {}
+  @override
+  void setChrome(bool visible) {}
+  @override
   ValueNotifier<AyahIdentifier?> get debugNotifier => throw UnimplementedError();
 }
 
