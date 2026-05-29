@@ -15,7 +15,7 @@ class HadithModel extends Hadith {
 
   factory HadithModel.fromJson(Map<String, dynamic> json) {
     return HadithModel(
-      hadithNumber: int.parse(json['hadithNumber'].toString().split(',')[0]),
+      hadithNumber: json['hadithNumber'] ?? '',
       englishHadith: json['hadithEnglish'] ?? '',
       arabicHadith: json['hadithArabic'] ?? '',
       englishHeader: json['headingEnglish'] ?? '',

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/features/ahadith/domain/usecases/download_ahadith_book_use_case.dart';
@@ -6,11 +8,13 @@ part 'download_book_state.dart';
 
 class DownloadBookCubit extends HydratedCubit<DownloadBookState> {
   final DownloadAhadithBookUseCase downloadAhadithBookUseCase;
+  final Map<String, StreamSubscription> _subscriptions = {};
   DownloadBookCubit({required this.downloadAhadithBookUseCase})
     : super(DownloadBookInitial(downloadedBooks: []));
 
   Future<void> downloadBook({required String bookSlug}) async {
     if (state.downloadedBooks.contains(bookSlug)) return;
+    if (_subscriptions.containsKey(bookSlug)) return;
     final result = downloadAhadithBookUseCase.call(bookSlug);
     emit(
       DownloadingBook(
@@ -18,7 +22,7 @@ class DownloadBookCubit extends HydratedCubit<DownloadBookState> {
         downloadingProgress: {},
       ),
     );
-    result.listen(
+    _subscriptions[bookSlug] = result.listen(
       (downloadProgress) {
         final Map<String, int> currentProgress = state is DownloadingBook
             ? Map<String, int>.from(
@@ -59,5 +63,11 @@ class DownloadBookCubit extends HydratedCubit<DownloadBookState> {
   @override
   Map<String, dynamic>? toJson(DownloadBookState state) {
     return {'downloadedBooks': state.downloadedBooks};
+  }
+
+  @override
+  Future<void> close() {
+    _subscriptions.forEach((key, value) => value.cancel());
+    return super.close();
   }
 }
