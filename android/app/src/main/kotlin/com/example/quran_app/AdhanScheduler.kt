@@ -104,6 +104,9 @@ object AdhanScheduler {
                 putExtra(AdhanAlarmReceiver.EXTRA_PRAYER, prayer)
                 putExtra(AdhanAlarmReceiver.EXTRA_CLIP, clip)
                 putExtra(AdhanAlarmReceiver.EXTRA_LOCALE, localeCode)
+                // Lets the receiver drop this alarm if a clock jump fires it
+                // long after its intended minute (see AdhanAlarmReceiver).
+                putExtra(AdhanAlarmReceiver.EXTRA_TRIGGER_AT, trigger.timeInMillis)
             }
             val pi = PendingIntent.getBroadcast(
                 context, rc, intent,
@@ -155,6 +158,7 @@ object AdhanScheduler {
             putExtra(AdhanAlarmReceiver.EXTRA_PRAYER, "dhuhr")
             putExtra(AdhanAlarmReceiver.EXTRA_CLIP, "normal_adhan")
             putExtra(AdhanAlarmReceiver.EXTRA_LOCALE, localeCode)
+            putExtra(AdhanAlarmReceiver.EXTRA_TRIGGER_AT, trigger)
         }
         val pi = PendingIntent.getBroadcast(
             context, 299, intent,

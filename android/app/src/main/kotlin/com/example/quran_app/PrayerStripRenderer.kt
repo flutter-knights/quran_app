@@ -6,7 +6,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.os.Build
+import android.text.SpannableString
+import android.text.Spannable
+import android.text.style.StyleSpan
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 
@@ -73,8 +78,12 @@ class PrayerStripRenderer(private val context: Context) {
         val primary = context.resources.getColor(R.color.strip_text_primary, null)
         val muted = context.resources.getColor(R.color.strip_text_muted, null)
         val dim = context.resources.getColor(R.color.strip_text_dim, null)
-        // Pill is always teal; its text is always light for contrast on both themes.
+        // Pill text is always light for contrast on both themes.
         val pillText = context.resources.getColor(R.color.strip_pill_text, null)
+        // Accent comes from the app's palette; fall back to the static resource
+        // for older payloads that don't carry one.
+        val accent = state.accentColor
+            ?: context.resources.getColor(R.color.strip_accent, null)
 
         for (i in 0 until 6) {
             val cell = state.cells.getOrNull(i) ?: continue
@@ -83,9 +92,13 @@ class PrayerStripRenderer(private val context: Context) {
 
             when {
                 i == state.nextPrayerIndex -> {
+                    // Heavier weight on the active prayer's label so it stands
+                    // out from the semibold neighbours (synthetic bold over the
+                    // Cairo font — RemoteViews can't swap fontFamily per-state).
+                    views.setTextViewText(labelIds[i], boldLabel(cell.label))
                     views.setTextColor(labelIds[i], primary)
                     views.setTextColor(timeIds[i], pillText)
-                    views.setInt(timeIds[i], "setBackgroundResource", R.drawable.strip_time_pill)
+                    applyAccentPill(views, timeIds[i], accent)
                 }
                 i < state.nextPrayerIndex -> {
                     views.setTextColor(labelIds[i], dim)
@@ -98,6 +111,37 @@ class PrayerStripRenderer(private val context: Context) {
                     views.setInt(timeIds[i], "setBackgroundResource", 0)
                 }
             }
+        }
+    }
+
+    /** Renders [text] in bold via a parcelable [StyleSpan] (survives RemoteViews). */
+    private fun boldLabel(text: String): SpannableString =
+        SpannableString(text).apply {
+            setSpan(StyleSpan(Typeface.BOLD), 0, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+    /**
+     * Paints the next-prayer pill with the live [accent] color.
+     *
+     * RemoteViews can't carry a tinted [android.graphics.drawable.Drawable], and
+     * the only remotable way to tint a *rounded* background — `setBackgroundTintList`
+     * via [RemoteViews.setColorStateList] — exists on API 31+ only. So:
+     *  - API 31+ : keep the rounded `strip_time_pill` drawable and tint it.
+     *  - API < 31: flat `setBackgroundColor` (square) + re-apply the drawable's
+     *              padding manually, since a flat ColorDrawable carries none.
+     */
+    private fun applyAccentPill(views: RemoteViews, timeId: Int, accent: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            views.setInt(timeId, "setBackgroundResource", R.drawable.strip_time_pill)
+            views.setColorStateList(
+                timeId, "setBackgroundTintList", ColorStateList.valueOf(accent)
+            )
+        } else {
+            views.setInt(timeId, "setBackgroundColor", accent)
+            val density = context.resources.displayMetrics.density
+            val padH = (8 * density).toInt()
+            val padV = (2 * density).toInt()
+            views.setViewPadding(timeId, padH, padV, padH, padV)
         }
     }
 

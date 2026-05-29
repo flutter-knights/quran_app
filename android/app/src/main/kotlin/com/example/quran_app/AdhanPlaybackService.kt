@@ -52,11 +52,22 @@ class AdhanPlaybackService : Service() {
         val prayer = intent.getStringExtra(EXTRA_PRAYER) ?: "fajr"
         val clipName = intent.getStringExtra(EXTRA_CLIP) ?: "normal_adhan"
         val localeCode = intent.getStringExtra(EXTRA_LOCALE) ?: "en"
-        currentPrayer = prayer
-
-        Log.i(TAG, "onStartCommand action=ACTION_PLAY prayer=$prayer clip=$clipName")
 
         ensureChannel()
+
+        // Re-entry guard: if an adhan is already playing, don't spin up a second
+        // overlapping MediaPlayer (could otherwise happen if several alarms fire
+        // back-to-back). We still call startForeground to honour the
+        // startForegroundService contract for this delivery, re-posting the
+        // notification for the prayer that's actually playing.
+        if (mediaPlayer != null) {
+            Log.w(TAG, "handlePlay: adhan already playing ($currentPrayer); ignoring $prayer")
+            startForeground(NOTIFICATION_ID, buildNotification(currentPrayer ?: prayer, localeCode))
+            return
+        }
+
+        currentPrayer = prayer
+        Log.i(TAG, "onStartCommand action=ACTION_PLAY prayer=$prayer clip=$clipName")
 
         val notif = buildNotification(prayer, localeCode)
         startForeground(NOTIFICATION_ID, notif)

@@ -151,6 +151,9 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         obj.put("weekdayLabel", (args["weekdayLabel"] as? String) ?: return null)
         obj.put("localeCode", (args["localeCode"] as? String) ?: return null)
         obj.put("isFriday", (args["isFriday"] as? Boolean) ?: return null)
+        // Optional: a `#AARRGGBB` accent for the next-prayer pill. Older callers
+        // may omit it, in which case the renderer uses its resource fallback.
+        (args["accentColor"] as? String)?.let { obj.put("accentColor", it) }
         return obj.toString()
     }
 
