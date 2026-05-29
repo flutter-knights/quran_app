@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as quran;
@@ -7,6 +9,8 @@ import '../../../../../../generated/l10n.dart';
 import '../../../../../bookmarks/presentation/cubit/bookmark_cubit.dart';
 import '../../../../../bookmarks/presentation/cubit/bookmark_state.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../cubit/mushaf/mushaf_cubit.dart';
+import '../../../cubit/mushaf/mushaf_state.dart';
 
 // ---------------------------------------------------------------------------
 // Placement logic — pure function, easy to unit-test.
@@ -33,15 +37,24 @@ class AyahActionPopover {
     // Capture everything from the triggering context BEFORE inserting the
     // overlay so the entry is not dependent on a potentially-gone context.
     final bookmarkCubit = context.read<BookmarkCubit>();
+    final mushafCubit = context.read<MushafCubit>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final overlay = Overlay.of(context);
     final s = S.of(context);
+    final startPage = mushafCubit.state.currentPage;
 
     late OverlayEntry entry;
+    StreamSubscription<MushafState>? subscription;
 
     void dismiss() {
+      subscription?.cancel();
+      subscription = null;
       if (entry.mounted) entry.remove();
     }
+
+    subscription = mushafCubit.stream.listen((state) {
+      if (state.currentPage != startPage) dismiss();
+    });
 
     entry = OverlayEntry(
       builder: (_) => _AyahActionPopoverOverlay(

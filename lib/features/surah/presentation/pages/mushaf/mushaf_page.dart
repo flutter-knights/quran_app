@@ -114,7 +114,6 @@ class _MushafPageState extends State<MushafPage> {
                   ),
                 ),
               ),
-              const AyahPlaybackOverlay(),
               // TOP chrome
               BlocBuilder<MushafCubit, MushafState>(
                 buildWhen: (a, b) =>
@@ -161,6 +160,7 @@ class _MushafPageState extends State<MushafPage> {
                   ),
                 ),
               ),
+              const AyahPlaybackOverlay(),
             ],
           ),
         ),

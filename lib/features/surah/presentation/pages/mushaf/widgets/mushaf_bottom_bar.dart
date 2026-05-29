@@ -5,6 +5,7 @@ import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
+import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
@@ -151,6 +152,7 @@ class _PlayFab extends StatelessWidget {
         firstAyah = AyahIdentifier(surah: firstAyah.surah, ayah: 0);
       }
       mushafCubit.toggleHighlight(firstAyah);
+      context.read<PlaybackCubit>().playSelected(firstAyah);
     } else {
       mushafCubit.pinOverlay();
     }
