@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/quran_playback/domain/services/quran_meta_service.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
@@ -104,6 +105,9 @@ void main() {
   setUp(() {
     if (sl.isRegistered<QuranPageService>()) sl.unregister<QuranPageService>();
     sl.registerSingleton<QuranPageService>(_StubPageService());
+    if (sl.isRegistered<QuranMetaService>()) sl.unregister<QuranMetaService>();
+    sl.registerSingleton<QuranMetaService>(
+        QuranMetaServiceImpl(pageService: sl<QuranPageService>()));
     if (sl.isRegistered<GetMushafPage>()) sl.unregister<GetMushafPage>();
     sl.registerSingleton<GetMushafPage>(GetMushafPage(_StubMushafRepo()));
   });
