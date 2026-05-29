@@ -34,7 +34,7 @@ abstract class AppRouter {
     routes: [
       GoRoute(
         path: homePath,
-        pageBuilder: GoTransitions.slide.toTop.build(
+        pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) => HomePage(),
         ),
       ),
@@ -46,13 +46,13 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: notificationsPath,
-        pageBuilder: GoTransitions.fade.withFade.build(
+        pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) => const NotificationsSettingsPage(),
         ),
       ),
       GoRoute(
         path: settingsPath,
-        pageBuilder: GoTransitions.fade.withFade.build(
+        pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) => const SettingsPage(),
         ),
       ),
@@ -64,7 +64,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: surahListPath,
-        pageBuilder: GoTransitions.fade.withFade.build(
+        pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) => MultiBlocProvider(
             providers: [
               BlocProvider(create: (_) => sl<SurahCubit>()..fetchSurahs()),
@@ -76,7 +76,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: mushafPath,
-        pageBuilder: GoTransitions.fade.withFade.build(
+        pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) {
             final int pageNo = (state.extra as int?) ?? 1;
             return BlocProvider(
@@ -88,7 +88,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: mushafImagePath,
-        pageBuilder: GoTransitions.fade.withFade.build(
+        pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) {
             final int pageNo = (state.extra as int?) ?? 1;
             return BlocProvider(

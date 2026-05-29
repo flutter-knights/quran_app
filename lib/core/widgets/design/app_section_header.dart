@@ -26,9 +26,9 @@ class AppSectionHeader extends StatelessWidget {
           child: Text(
             label.toUpperCase(),
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: scheme.onSurfaceVariant,
+              color: scheme.onSurface,
               letterSpacing: 1.2,
             ),
           ),

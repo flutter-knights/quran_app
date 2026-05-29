@@ -46,7 +46,6 @@ class _PrettierTapState extends State<PrettierTap> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapDown: (_) {
-        SystemSound.play(SystemSoundType.click);
         HapticFeedback.selectionClick();
         setState(() => _isPressed = true);
       },
@@ -54,7 +53,10 @@ class _PrettierTapState extends State<PrettierTap> {
         Future.delayed(80.ms, () {
           if (mounted) setState(() => _isPressed = false);
         });
-        widget.onTap?.call();
+        // Let the shrink register before the action fires — feels deliberate.
+        Future.delayed(120.ms, () {
+          if (mounted) widget.onTap?.call();
+        });
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: Container(

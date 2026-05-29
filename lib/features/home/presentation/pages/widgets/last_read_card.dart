@@ -96,6 +96,7 @@ class LastReadCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               ElevatedButton.icon(
+                iconAlignment: IconAlignment.end,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: scheme.primary,
                   foregroundColor: Colors.white,

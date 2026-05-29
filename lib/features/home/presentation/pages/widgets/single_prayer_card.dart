@@ -35,15 +35,8 @@ class SinglePrayerCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: isCurrent ? scheme.surfaceContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: isCurrent
-              ? [
-                  BoxShadow(
-                    color: scheme.secondary.withValues(alpha: 0.20),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
-                  ),
-                ]
-              : null,
+          border: isCurrent ? context.cardBorder() : null,
+          boxShadow: isCurrent ? context.cardShadow(alpha: 0.14) : null,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

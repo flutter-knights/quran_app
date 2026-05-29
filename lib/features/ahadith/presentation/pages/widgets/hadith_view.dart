@@ -9,7 +9,7 @@ import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/action_buttons_row.dart';
-import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
+import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/app_status_badge.dart';
@@ -52,9 +52,9 @@ class HadithView extends StatelessWidget {
       );
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).share_failed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(S.of(context).share_failed)));
       }
     }
   }
@@ -66,14 +66,14 @@ class HadithView extends StatelessWidget {
     );
     if (!context.mounted) return;
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
-      ),
+      (failure) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failure.message))),
       (next) {
         if (next == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(S.of(context).coming_soon)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(S.of(context).coming_soon)));
         } else {
           context.replace(
             AppRouter.hadithPath,
@@ -92,34 +92,13 @@ class HadithView extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              height: 60,
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: scheme.onSurface.withValues(alpha: 0.06),
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconChip(
-                    icon: HugeIcon(icon: backArrowIcon(context)),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                  const Spacer(),
-                  AppBarCenterTitle(
-                    label: _bookTitle(context),
-                    title:
-                        '${S.of(context).hadith_number_label} ${hadith.hadithNumber.toLocalized(context)}',
-                  ),
-                  const Spacer(),
-                  IconChip(
-                    icon: const HugeIcon(icon: HugeIcons.strokeRoundedShare08),
-                    onPressed: () => _onShare(context),
-                  ),
-                ],
+            AppScreenAppBar(
+              label: _bookTitle(context),
+              title:
+                  '${S.of(context).hadith_number_label} ${hadith.hadithNumber.toLocalized(context)}',
+              trailing: IconChip(
+                icon: const HugeIcon(icon: HugeIcons.strokeRoundedShare08),
+                onPressed: () => _onShare(context),
               ),
             ),
             Expanded(

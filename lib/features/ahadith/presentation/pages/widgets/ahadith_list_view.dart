@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
-import 'package:quran_app/core/widgets/design/app_bar_center_title.dart';
+import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
-import 'package:quran_app/core/widgets/design/directional_icons.dart';
-import 'package:quran_app/core/widgets/design/icon_chip.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/ahadith_cubit.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/ahadith_list_item.dart';
@@ -51,6 +48,13 @@ class _AhadithListViewState extends State<AhadithListView> {
     return widget.bookSlug;
   }
 
+  int? _bookHadithCount(BuildContext context) {
+    for (final b in getHadithBooks(context)) {
+      if (b.slug == widget.bookSlug) return b.hadithCount;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
@@ -59,31 +63,9 @@ class _AhadithListViewState extends State<AhadithListView> {
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              height: 60,
-              padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: scheme.onSurface.withValues(alpha: 0.06),
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconChip(
-                    icon: HugeIcon(icon: backArrowIcon(context)),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                  const Spacer(),
-                  AppBarCenterTitle(
-                    label: S.of(context).hadith_screen_title,
-                    title: _bookTitle(context),
-                  ),
-                  const Spacer(),
-                  const SizedBox(width: 38),
-                ],
-              ),
+            AppScreenAppBar(
+              label: S.of(context).hadith_screen_title,
+              title: _bookTitle(context),
             ),
             Expanded(
               child: BlocBuilder<AhadithCubit, AhadithState>(
@@ -98,8 +80,9 @@ class _AhadithListViewState extends State<AhadithListView> {
                     final List<Hadith> ahadith = (state is AhadithLoaded)
                         ? state.ahadith
                         : (state as AhadithLoadingMore).oldAhadith;
-                    final bool lastPage =
-                        (state is AhadithLoaded) ? state.lastPage : false;
+                    final bool lastPage = (state is AhadithLoaded)
+                        ? state.lastPage
+                        : false;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -108,8 +91,12 @@ class _AhadithListViewState extends State<AhadithListView> {
                           child: AppSectionHeader(
                             label: S.of(context).ahadith_section,
                             trailing: Text(
-                              S.of(context).ahadith_count(
-                                    ahadith.length.toLocalized(context),
+                              S
+                                  .of(context)
+                                  .ahadith_count(
+                                    (_bookHadithCount(context) ??
+                                            ahadith.length)
+                                        .toLocalized(context),
                                   ),
                               style: TextStyle(
                                 fontSize: 11,
@@ -123,8 +110,9 @@ class _AhadithListViewState extends State<AhadithListView> {
                           child: ListView.separated(
                             controller: _scrollController,
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                            itemCount:
-                                lastPage ? ahadith.length : ahadith.length + 1,
+                            itemCount: lastPage
+                                ? ahadith.length
+                                : ahadith.length + 1,
                             cacheExtent: 400,
                             separatorBuilder: (_, __) =>
                                 const SizedBox(height: 10),
