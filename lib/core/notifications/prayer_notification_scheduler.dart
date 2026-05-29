@@ -3,6 +3,12 @@ import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 
 abstract class PrayerNotificationScheduler {
   Future<void> init();
+
+  /// Requests the OS notification permission (Android 13+ POST_NOTIFICATIONS /
+  /// iOS alert+sound). Used by first-run onboarding to prompt up front; returns
+  /// the grant result (null if unknown/unsupported). Channels and exact-alarm
+  /// setup remain in [init], which runs later in the launch pipeline.
+  Future<bool?> requestNotificationsPermission();
   Future<void> scheduleDailyPrayerNotifications(PrayerTimes prayerTimes);
   Future<void> cancelAllPrayerNotifications();
 

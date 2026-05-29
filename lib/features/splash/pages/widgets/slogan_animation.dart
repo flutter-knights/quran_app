@@ -7,9 +7,14 @@ class SloganAnimation extends StatelessWidget {
     super.key,
     required this.slogan,
     required this.onLoaded,
+    this.color,
   });
   final String slogan;
   final VoidCallback onLoaded;
+
+  /// Overrides the slogan text colour. Defaults to the theme's text colour
+  /// when null; the splash passes white so it reads on the primary backdrop.
+  final Color? color;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -21,7 +26,9 @@ class SloganAnimation extends StatelessWidget {
           .map(
             (word) => Text(
               word,
-              style: TS.medium16.copyWith(letterSpacing: 0.4).cairo,
+              style: TS.medium16
+                  .copyWith(letterSpacing: 0.4, color: color)
+                  .cairo,
             ),
           )
           .toList()

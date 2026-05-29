@@ -17,9 +17,11 @@ class HomeAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
     final date = dailyPrayerContext.prayerTimes.date;
+    final isAr = context.isArabic;
+    final location = dailyPrayerContext.location;
     final place = [
-      dailyPrayerContext.location.city,
-      dailyPrayerContext.location.country,
+      isAr ? location.city : location.enCity,
+      isAr ? location.country : location.enCountry,
     ].where((s) => s != null && s.isNotEmpty).join(', ');
 
     return Container(
@@ -40,12 +42,15 @@ class HomeAppBar extends StatelessWidget {
               children: [
                 Text(
                   S.current.hijriDateWithDay(
-                    date.weekDay,
+                    isAr ? date.weekDay : date.enWeekDay,
                     date.day.toLocalized(context),
-                    date.month,
+                    isAr ? date.month : date.enMonth,
                     date.year.toLocalized(context),
                   ),
-                  style: TS.bold16.cairo,
+                  style: TS.bold16.cairo.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
@@ -63,6 +68,7 @@ class HomeAppBar extends StatelessWidget {
                         style: TS.medium14
                             .copyWith(
                               fontSize: 11,
+                              fontWeight: FontWeight.w700,
                               color: scheme.onSurfaceVariant,
                             )
                             .cairo,
@@ -75,10 +81,7 @@ class HomeAppBar extends StatelessWidget {
             ),
           ),
           IconChip(
-            icon: const HugeIcon(
-              icon: HugeIcons.strokeRoundedSettings01,
-              size: 16,
-            ),
+            icon: const HugeIcon(icon: HugeIcons.strokeRoundedSettings01),
             onPressed: () => context.push(AppRouter.settingsPath),
           ),
         ],

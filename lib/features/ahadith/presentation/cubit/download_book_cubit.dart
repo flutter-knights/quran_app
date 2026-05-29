@@ -54,10 +54,17 @@ class DownloadBookCubit extends HydratedCubit<DownloadBookState> {
 
   @override
   DownloadBookState? fromJson(Map<String, dynamic> json) {
-    final List<String> downloadedBooks = List<String>.from(
-      json['downloadedBooks'],
-    );
-    return DownloadBookInitial(downloadedBooks: downloadedBooks);
+    // Never throw here — a bad persisted entry would otherwise crash the app on
+    // launch (this cubit rehydrates at startup). Fall back to "nothing
+    // downloaded".
+    try {
+      final raw = json['downloadedBooks'];
+      final downloadedBooks =
+          raw is List ? raw.whereType<String>().toList() : <String>[];
+      return DownloadBookInitial(downloadedBooks: downloadedBooks);
+    } catch (_) {
+      return DownloadBookInitial(downloadedBooks: const []);
+    }
   }
 
   @override

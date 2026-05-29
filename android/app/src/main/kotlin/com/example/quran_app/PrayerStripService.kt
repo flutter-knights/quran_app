@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import java.util.Calendar
 
@@ -80,6 +81,23 @@ class PrayerStripService : Service() {
     }
 
     private fun handleHide() {
+        // We may have been started via startForegroundService() while no strip
+        // was showing (e.g. a settings change while the strip is OFF). Android
+        // then *requires* startForeground() within ~5s even on the stop path,
+        // or it kills the app with ForegroundServiceDidNotStartInTimeException.
+        // Promote with a transient placeholder, then immediately remove it.
+        try {
+            renderer.ensureChannel()
+            val placeholder = NotificationCompat
+                .Builder(this, PrayerStripRenderer.CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .build()
+            startForeground(PrayerStripRenderer.NOTIFICATION_ID, placeholder)
+        } catch (e: Exception) {
+            Log.w(TAG, "startForeground on hide failed: $e")
+        }
+
         store.clear()
         cancelAlarms()
         NotificationManagerCompat.from(this)

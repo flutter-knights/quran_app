@@ -44,12 +44,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "abu_dawood": MessageLookupByLibrary.simpleMessage("سنن أبي داود"),
         "adhanPerPrayerSection":
             MessageLookupByLibrary.simpleMessage("الأذان لكل صلاة"),
+        "adhan_and_reminders":
+            MessageLookupByLibrary.simpleMessage("الأذان والتذكيرات"),
         "ahadith_count": m0,
         "ahadith_section": MessageLookupByLibrary.simpleMessage("الأحاديث"),
         "al_silsila_sahiha":
             MessageLookupByLibrary.simpleMessage("السلسلة الصحيحة"),
         "al_tirmidhi": MessageLookupByLibrary.simpleMessage("جامع الترمذي"),
         "all_surahs": MessageLookupByLibrary.simpleMessage("جميع السور"),
+        "app_name": MessageLookupByLibrary.simpleMessage("الفرقان"),
         "appearance_section": MessageLookupByLibrary.simpleMessage("المظهر"),
         "arabicLanguage": MessageLookupByLibrary.simpleMessage("اللغة العربية"),
         "arabic_label": MessageLookupByLibrary.simpleMessage("العربية"),
@@ -62,6 +65,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "الإمام محمد بن إسماعيل البخاري"),
         "author_ibn_majah": MessageLookupByLibrary.simpleMessage(
             "الإمام محمد بن يزيد ابن ماجه القزويني"),
+        "author_mishkat": MessageLookupByLibrary.simpleMessage(
+            "الإمام محمد بن عبد الله الخطيب التبريزي"),
         "author_muslim": MessageLookupByLibrary.simpleMessage(
             "الإمام مسلم بن الحجاج النيسابوري"),
         "author_nasai":
@@ -75,6 +80,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("تم إزالة الحفظ"),
         "bookmark_save_failed":
             MessageLookupByLibrary.simpleMessage("تعذّر حفظ المرجعية"),
+        "bookmarks_ahadith_section":
+            MessageLookupByLibrary.simpleMessage("الأحاديث"),
+        "bookmarks_quran_section":
+            MessageLookupByLibrary.simpleMessage("القرآن"),
         "bookmarks_screen_title":
             MessageLookupByLibrary.simpleMessage("الإشارات"),
         "books_count": m2,
@@ -89,11 +98,19 @@ class MessageLookup extends MessageLookupByLibrary {
         "death_albani": MessageLookupByLibrary.simpleMessage("١٤٢٠ هـ"),
         "death_bukhari": MessageLookupByLibrary.simpleMessage("٢٥٦ هـ"),
         "death_ibn_majah": MessageLookupByLibrary.simpleMessage("٢٧٣ هـ"),
+        "death_mishkat": MessageLookupByLibrary.simpleMessage("٧٤١ هـ"),
         "death_muslim": MessageLookupByLibrary.simpleMessage("٢٦١ هـ"),
         "death_nasai": MessageLookupByLibrary.simpleMessage("٣٠٣ هـ"),
         "death_tirmidhi": MessageLookupByLibrary.simpleMessage("٢٧٩ هـ"),
         "dhuhr": MessageLookupByLibrary.simpleMessage("الظهر"),
         "fajr": MessageLookupByLibrary.simpleMessage("الفجر"),
+        "filter_all_chapters":
+            MessageLookupByLibrary.simpleMessage("كل الأبواب"),
+        "filter_apply": MessageLookupByLibrary.simpleMessage("تطبيق"),
+        "filter_chapter_label": MessageLookupByLibrary.simpleMessage("الباب"),
+        "filter_clear": MessageLookupByLibrary.simpleMessage("مسح"),
+        "filter_status_label": MessageLookupByLibrary.simpleMessage("الدرجة"),
+        "filters_title": MessageLookupByLibrary.simpleMessage("تصفية"),
         "full_title_abu_dawood":
             MessageLookupByLibrary.simpleMessage("سنن أبي داود"),
         "full_title_albani":
@@ -102,6 +119,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "الجامع المسند الصحيح المختصر"),
         "full_title_ibn_majah":
             MessageLookupByLibrary.simpleMessage("سنن ابن ماجه"),
+        "full_title_mishkat":
+            MessageLookupByLibrary.simpleMessage("مشكاة المصابيح"),
         "full_title_muslim":
             MessageLookupByLibrary.simpleMessage("المسند الصحيح المختصر"),
         "full_title_nasai": MessageLookupByLibrary.simpleMessage("سنن النسائي"),
@@ -113,6 +132,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "hadith_heading_label":
             MessageLookupByLibrary.simpleMessage("عنوان الحديث"),
         "hadith_number_label": MessageLookupByLibrary.simpleMessage("حديث رقم"),
+        "hadith_of_the_day": MessageLookupByLibrary.simpleMessage("حديث اليوم"),
         "hadith_screen_title":
             MessageLookupByLibrary.simpleMessage("الحديث الشريف"),
         "hadith_total_label":
@@ -120,6 +140,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "hijriDateWithDay": m3,
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("سنن ابن ماجه"),
         "isha": MessageLookupByLibrary.simpleMessage("العشاء"),
+        "jumuah": MessageLookupByLibrary.simpleMessage("الجمعة"),
         "language_arabic": MessageLookupByLibrary.simpleMessage("العربية"),
         "language_english": MessageLookupByLibrary.simpleMessage("English"),
         "lastRead": MessageLookupByLibrary.simpleMessage("آخر قراءة"),
@@ -130,9 +151,36 @@ class MessageLookup extends MessageLookupByLibrary {
         "musnad_ahmad": MessageLookupByLibrary.simpleMessage("مسند أحمد"),
         "narrator_label": MessageLookupByLibrary.simpleMessage("الراوي"),
         "next_hadith": MessageLookupByLibrary.simpleMessage("التالي"),
+        "no_bookmarks_yet":
+            MessageLookupByLibrary.simpleMessage("لا توجد إشارات مرجعية بعد"),
         "notifications": MessageLookupByLibrary.simpleMessage("الإشعارات"),
         "notificationsScreenSubtitle":
             MessageLookupByLibrary.simpleMessage("إدارة إشعارات أوقات الصلاة."),
+        "onb_appearance_title":
+            MessageLookupByLibrary.simpleMessage("خصّص مظهرك"),
+        "onb_continue": MessageLookupByLibrary.simpleMessage("متابعة"),
+        "onb_enable": MessageLookupByLibrary.simpleMessage("تفعيل"),
+        "onb_language_hint":
+            MessageLookupByLibrary.simpleMessage("يمكنك تغييرها لاحقًا"),
+        "onb_language_title": MessageLookupByLibrary.simpleMessage("اختر لغتك"),
+        "onb_location_title":
+            MessageLookupByLibrary.simpleMessage("مواقيت صلاتك بدقّة"),
+        "onb_location_why": MessageLookupByLibrary.simpleMessage(
+            "نستخدم موقعك لحساب مواقيت الصلاة في مدينتك بدقّة. يبقى على جهازك ولا نشاركه."),
+        "onb_not_now": MessageLookupByLibrary.simpleMessage("ليس الآن"),
+        "onb_notifications_title":
+            MessageLookupByLibrary.simpleMessage("لا تفوتك صلاة"),
+        "onb_notifications_why": MessageLookupByLibrary.simpleMessage(
+            "فعّل الإشعارات لتصلك تنبيهات الأذان وتذكيرات الصلاة في أوقاتها. يمكنك ضبطها لاحقًا."),
+        "onb_splash_desc":
+            MessageLookupByLibrary.simpleMessage("عند فتح التطبيق لاحقًا"),
+        "onb_theme_label": MessageLookupByLibrary.simpleMessage("السمة"),
+        "onb_time_format_label":
+            MessageLookupByLibrary.simpleMessage("صيغة الوقت"),
+        "onb_welcome_headline":
+            MessageLookupByLibrary.simpleMessage("القرآن الكريم بين يديك"),
+        "onb_welcome_subtitle": MessageLookupByLibrary.simpleMessage(
+            "اقرأ، استمع، وتدبّر — مع مواقيت صلاتك في مكان واحد."),
         "page_label": m4,
         "pinnedPrayerTimes":
             MessageLookupByLibrary.simpleMessage("أوقات الصلاة المثبتة"),
@@ -150,6 +198,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "playback_restart": MessageLookupByLibrary.simpleMessage("إعادة"),
         "playback_speed": MessageLookupByLibrary.simpleMessage("السرعة"),
         "prayers": MessageLookupByLibrary.simpleMessage("الصلوات"),
+        "previous_hadith": MessageLookupByLibrary.simpleMessage("السابق"),
         "progress_complete": m5,
         "quickAccess": MessageLookupByLibrary.simpleMessage("الوصول السريع"),
         "quran_screen_title":
@@ -161,6 +210,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "reminderOff": MessageLookupByLibrary.simpleMessage("لا"),
         "sahih_bukhari": MessageLookupByLibrary.simpleMessage("صحيح البخاري"),
         "sahih_muslim": MessageLookupByLibrary.simpleMessage("صحيح مسلم"),
+        "search_hadith_hint":
+            MessageLookupByLibrary.simpleMessage("ابحث في هذا الكتاب…"),
+        "search_no_results":
+            MessageLookupByLibrary.simpleMessage("لا توجد أحاديث مطابقة"),
         "search_surah_hint":
             MessageLookupByLibrary.simpleMessage("ابحث عن سورة..."),
         "settings": MessageLookupByLibrary.simpleMessage("الإعدادات"),
@@ -169,6 +222,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "share": MessageLookupByLibrary.simpleMessage("مشاركة"),
         "share_failed":
             MessageLookupByLibrary.simpleMessage("تعذّر فتح نافذة المشاركة"),
+        "show_splash_screen":
+            MessageLookupByLibrary.simpleMessage("شاشة البداية"),
         "status_daeef": MessageLookupByLibrary.simpleMessage("ضعيف"),
         "status_hasan": MessageLookupByLibrary.simpleMessage("حسن"),
         "status_mudu": MessageLookupByLibrary.simpleMessage("موضوع"),
@@ -180,6 +235,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "tafsir": MessageLookupByLibrary.simpleMessage("تفسير"),
         "testAdhanScheduledSnack":
             MessageLookupByLibrary.simpleMessage("أذان تجريبي خلال ٥ ثوانٍ"),
+        "test_section": MessageLookupByLibrary.simpleMessage("اختبار"),
         "the_noble_quran":
             MessageLookupByLibrary.simpleMessage("القرآن الكريم"),
         "time_format_12h": MessageLookupByLibrary.simpleMessage("١٢"),

@@ -31,9 +31,8 @@ class AhadithSearchRepositoryImpl extends AhadithSearchRepository {
     required bool isDownloaded,
   }) async {
     if (AhadithHelpers.isArabic(query)) {
-      final bookNumbers = arabicSearchDataSource.getSearchedHadithsNumbers(
-        query: query,
-      );
+      final bookNumbers = await arabicSearchDataSource
+          .getSearchedHadithsNumbers(query: query);
 
       if (bookNumbers.isEmpty) return Right([]);
 
@@ -42,31 +41,32 @@ class AhadithSearchRepositoryImpl extends AhadithSearchRepository {
         bookSlug,
       );
 
-      List<Hadith> combinedResults = localResult.found;
+      final List<Hadith> combinedResults = localResult.found;
 
       if (!isDownloaded && localResult.missing.isNotEmpty) {
-        List<Hadith> remoteResults;
         try {
-          remoteResults = await ahadithRemoteDataSource.getAhadithByNumbers(
+          final remoteResults =
+              await ahadithRemoteDataSource.getAhadithByNumbers(
             localResult.missing,
             bookSlug,
           );
-        } on DioException catch (_) {
-          remoteResults = [];
+          combinedResults.addAll(remoteResults);
+        } on DioException catch (e) {
+          // Surface the failure only when we have nothing to show; otherwise
+          // return the local matches we already have.
+          if (combinedResults.isEmpty) return left(UnknownFailure(e.toString()));
         }
-
-        combinedResults.addAll(remoteResults);
       }
 
       return Right(AhadithHelpers.sortHadiths(combinedResults));
     } else {
-      final List<Hadith> ahadith;
       if (isDownloaded) {
-        ahadith = ahadithLocalDataSource.getSearchedHadiths(query, bookSlug);
+        final ahadith =
+            ahadithLocalDataSource.getSearchedHadiths(query, bookSlug);
         return right(ahadith);
       } else {
         try {
-          ahadith = await ahadithRemoteDataSource.getSearchedHadiths(
+          final ahadith = await ahadithRemoteDataSource.getSearchedHadiths(
             query,
             bookSlug,
           );

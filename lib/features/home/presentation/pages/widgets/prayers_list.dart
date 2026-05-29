@@ -6,6 +6,7 @@ import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/single_prayer_card.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:quran_app/generated/l10n.dart';
 
 class PrayersList extends StatelessWidget {
   const PrayersList({super.key, required this.prayerTimes});
@@ -13,14 +14,19 @@ class PrayersList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // On Friday, Dhuhr is replaced by Jumu'ah (matches the prayer strip).
+    final isFriday = DateTime.now().weekday == DateTime.friday;
     return BlocBuilder<PrayerCountdownCubit, PrayerCountdownState>(
       builder: (context, state) {
         return Row(
           spacing: 6,
           children: prayersList.map((prayerName) {
+            final label = (isFriday && prayerName == PrayerName.dhuhr)
+                ? S.of(context).jumuah
+                : prayersMap[prayerName]!.prayerName;
             return SinglePrayerCard(
               iconDir: prayersMap[prayerName]!.prayerIcon,
-              prayerName: prayersMap[prayerName]!.prayerName,
+              prayerName: label,
               time24: prayerTimes.timings[prayerName]!,
               is24: sl<SettingsCubit>().state.settingsModel.isFormat12Hours,
               isCurrent: state is PrayerCountdownTick

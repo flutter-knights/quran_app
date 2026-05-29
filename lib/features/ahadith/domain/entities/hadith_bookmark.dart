@@ -2,16 +2,15 @@ class HadithBookmark {
   const HadithBookmark({required this.bookSlug, required this.hadithNumber});
 
   final String bookSlug;
-  final int hadithNumber;
+  final String hadithNumber;
 
   String get storageKey => '$bookSlug:$hadithNumber';
 
   static HadithBookmark? tryParse(String key) {
     final parts = key.split(':');
     if (parts.length != 2) return null;
-    final n = int.tryParse(parts[1]);
-    if (n == null || parts[0].isEmpty) return null;
-    return HadithBookmark(bookSlug: parts[0], hadithNumber: n);
+    if (parts[0].isEmpty || parts[1].isEmpty) return null;
+    return HadithBookmark(bookSlug: parts[0], hadithNumber: parts[1]);
   }
 
   @override
