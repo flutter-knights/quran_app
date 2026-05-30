@@ -8,8 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/assets_dir.dart';
+import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
-import 'package:quran_app/core/usecases/usecase.dart';
 import 'package:quran_app/core/widgets/design/splash_backdrop.dart';
 import 'package:quran_app/core/widgets/design/splash_loader.dart';
 import 'package:quran_app/features/home/domain/usecases/get_daily_prayer_context.dart';
@@ -56,12 +56,10 @@ class _SplashPageState extends State<SplashPage> {
     // fire `determinePosition()` → `requestPermission()` and pop the location
     // dialog over the splash, before the landing. First-run cache is cold
     // anyway, so the warm buys nothing.
-    final onboarded = context
-        .read<SettingsCubit>()
-        .state
-        .settingsModel
-        .hasCompletedOnboarding;
-    if (onboarded) _warmHomeCache();
+    final settings = context.read<SettingsCubit>().state.settingsModel;
+    if (settings.hasCompletedOnboarding) {
+      _warmHomeCache(settings.calculationMethod, settings.asrSchool);
+    }
   }
 
   /// Warms the home screen's prayer-context cache (location + prayer times)
@@ -70,9 +68,11 @@ class _SplashPageState extends State<SplashPage> {
   /// as a side effect — and any failure is silent (home re-fetches and shows
   /// its own loading state). Never gates navigation, so a slow GPS/network can
   /// never trap the user on the splash.
-  void _warmHomeCache() {
+  void _warmHomeCache(CalculationMethod method, AsrSchool school) {
     try {
-      _warmupSub = sl<GetDailyPrayerContext>()(NoParams()).listen(
+      _warmupSub = sl<GetDailyPrayerContext>()(
+        GetDailyPrayerContextParams(method: method, school: school),
+      ).listen(
         (_) {},
         onError: (_) {},
       );
