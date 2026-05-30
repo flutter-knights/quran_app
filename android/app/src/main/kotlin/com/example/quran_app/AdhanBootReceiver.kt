@@ -6,9 +6,12 @@ import android.content.Intent
 import android.util.Log
 
 /**
- * Boot/package-replace receiver that re-arms adhan and reminder alarms from
- * their persisted snapshots. Registered in the manifest for
- * BOOT_COMPLETED and MY_PACKAGE_REPLACED.
+ * Re-arms adhan and reminder alarms from their persisted snapshots whenever the
+ * basis those alarms were scheduled against may have changed. Registered in the
+ * manifest for BOOT_COMPLETED, MY_PACKAGE_REPLACED (reboot / app update) and
+ * TIMEZONE_CHANGED / TIME_SET (travel / DST / manual clock change, so alarms
+ * fire at the correct local wall-clock time — H3). Re-arming is idempotent and
+ * `armDays` skips past triggers, so firing on any of these is safe.
  */
 class AdhanBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {

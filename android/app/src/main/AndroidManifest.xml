@@ -91,6 +91,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <!-- Re-arm from snapshot when the wall clock the alarms were set
+                     against shifts (travel across timezones / DST / manual clock
+                     change), so adhans fire at the correct local time (H3). -->
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
             </intent-filter>
         </receiver>
 
