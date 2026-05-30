@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
@@ -9,6 +11,8 @@ import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/per_prayer_adhan_tile.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/test_adhan_button.dart';
+import 'package:quran_app/features/home/presentation/utils/calculation_method_localization.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 /// Shown at the top of the notifications settings page when the OS has
@@ -113,6 +117,95 @@ class NotificationsSettingsPage extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
                 children: [
                   const _NotifDisabledBanner(),
+                  AppSectionHeader(
+                    label: S.of(context).calculationMethod_section,
+                  ),
+                  const SizedBox(height: 10),
+                  BlocBuilder<SettingsCubit, SettingsState>(
+                    builder: (context, state) {
+                      final method = state.settingsModel.calculationMethod;
+                      final school = state.settingsModel.asrSchool;
+                      return SurfaceCard(
+                        padding: EdgeInsets.zero,
+                        child: Column(
+                          children: [
+                            _PickerRow(
+                              label: S.of(context).calculationMethod_methodLabel,
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<CalculationMethod>(
+                                  value: method,
+                                  isDense: true,
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: context
+                                        .colorScheme.onSurfaceVariant,
+                                    size: 20,
+                                  ),
+                                  dropdownColor: context
+                                      .colorScheme.surfaceContainerHigh,
+                                  style: TS.regular14.cairo.copyWith(
+                                    color: context.colorScheme.onSurface,
+                                  ),
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      context
+                                          .read<SettingsCubit>()
+                                          .updateCalculationMethod(v);
+                                    }
+                                  },
+                                  items: [
+                                    for (final m
+                                        in CalculationMethod.values)
+                                      DropdownMenuItem(
+                                        value: m,
+                                        child: Text(m.localized(context)),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Divider(height: 1, indent: 16),
+                            _PickerRow(
+                              label: S.of(context)
+                                  .calculationMethod_schoolLabel,
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<AsrSchool>(
+                                  value: school,
+                                  isDense: true,
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: context
+                                        .colorScheme.onSurfaceVariant,
+                                    size: 20,
+                                  ),
+                                  dropdownColor: context
+                                      .colorScheme.surfaceContainerHigh,
+                                  style: TS.regular14.cairo.copyWith(
+                                    color: context.colorScheme.onSurface,
+                                  ),
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      context
+                                          .read<SettingsCubit>()
+                                          .updateAsrSchool(v);
+                                    }
+                                  },
+                                  items: [
+                                    for (final s in AsrSchool.values)
+                                      DropdownMenuItem(
+                                        value: s,
+                                        child: Text(s.localized(context)),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
                   AppSectionHeader(label: S.of(context).adhanPerPrayerSection),
                   const SizedBox(height: 10),
                   SurfaceCard(
@@ -136,6 +229,34 @@ class NotificationsSettingsPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A labelled row used inside a [SurfaceCard] to host a picker widget.
+class _PickerRow extends StatelessWidget {
+  const _PickerRow({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 12, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TS.regular14.copyWith(
+                color: context.colorScheme.onSurface,
+              ),
+            ),
+          ),
+          child,
+        ],
       ),
     );
   }

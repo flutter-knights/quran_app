@@ -61,6 +61,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "arabicLanguage": MessageLookupByLibrary.simpleMessage("اللغة العربية"),
         "arabic_label": MessageLookupByLibrary.simpleMessage("العربية"),
         "asr": MessageLookupByLibrary.simpleMessage("العصر"),
+        "asrSchool_hanafi": MessageLookupByLibrary.simpleMessage("الحنفي"),
+        "asrSchool_shafi": MessageLookupByLibrary.simpleMessage(
+            "الافتراضي (الشافعي، المالكي، الحنبلي)"),
         "author_abu_dawood":
             MessageLookupByLibrary.simpleMessage("الإمام أبو داود السجستاني"),
         "author_albani":
@@ -92,6 +95,39 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("الإشارات"),
         "books_count": m2,
         "books_section": MessageLookupByLibrary.simpleMessage("الكتب"),
+        "calculationMethod_auto":
+            MessageLookupByLibrary.simpleMessage("تلقائي (حسب المنطقة)"),
+        "calculationMethod_egypt": MessageLookupByLibrary.simpleMessage(
+            "الهيئة المصرية العامة للمساحة"),
+        "calculationMethod_france":
+            MessageLookupByLibrary.simpleMessage("فرنسا"),
+        "calculationMethod_gulf":
+            MessageLookupByLibrary.simpleMessage("منطقة الخليج"),
+        "calculationMethod_isna": MessageLookupByLibrary.simpleMessage(
+            "الجمعية الإسلامية لأمريكا الشمالية"),
+        "calculationMethod_karachi": MessageLookupByLibrary.simpleMessage(
+            "جامعة العلوم الإسلامية، كراتشي"),
+        "calculationMethod_kuwait":
+            MessageLookupByLibrary.simpleMessage("الكويت"),
+        "calculationMethod_methodLabel":
+            MessageLookupByLibrary.simpleMessage("الطريقة"),
+        "calculationMethod_mwl":
+            MessageLookupByLibrary.simpleMessage("رابطة العالم الإسلامي"),
+        "calculationMethod_qatar": MessageLookupByLibrary.simpleMessage("قطر"),
+        "calculationMethod_russia":
+            MessageLookupByLibrary.simpleMessage("روسيا"),
+        "calculationMethod_schoolLabel":
+            MessageLookupByLibrary.simpleMessage("مذهب حساب العصر"),
+        "calculationMethod_section":
+            MessageLookupByLibrary.simpleMessage("طريقة حساب أوقات الصلاة"),
+        "calculationMethod_singapore":
+            MessageLookupByLibrary.simpleMessage("سنغافورة"),
+        "calculationMethod_tehran":
+            MessageLookupByLibrary.simpleMessage("معهد الجيوفيزياء، طهران"),
+        "calculationMethod_turkey":
+            MessageLookupByLibrary.simpleMessage("تركيا (ديانت)"),
+        "calculationMethod_ummAlQura":
+            MessageLookupByLibrary.simpleMessage("أم القرى (مكة)"),
         "chapter_label": MessageLookupByLibrary.simpleMessage("باب"),
         "collections_label": MessageLookupByLibrary.simpleMessage("المجموعات"),
         "coming_soon": MessageLookupByLibrary.simpleMessage("قريبًا"),

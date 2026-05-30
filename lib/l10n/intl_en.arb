@@ -206,5 +206,25 @@
   "compass_rose_s": "South",
   "compass_rose_sw": "South-West",
   "compass_rose_w": "West",
-  "compass_rose_nw": "North-West"
+  "compass_rose_nw": "North-West",
+
+  "calculationMethod_section": "Calculation method",
+  "calculationMethod_methodLabel": "Method",
+  "calculationMethod_schoolLabel": "Asr (juristic) method",
+  "calculationMethod_auto": "Automatic (by region)",
+  "calculationMethod_mwl": "Muslim World League",
+  "calculationMethod_isna": "ISNA (North America)",
+  "calculationMethod_egypt": "Egyptian General Authority",
+  "calculationMethod_ummAlQura": "Umm al-Qura (Makkah)",
+  "calculationMethod_karachi": "University of Islamic Sciences, Karachi",
+  "calculationMethod_tehran": "Institute of Geophysics, Tehran",
+  "calculationMethod_gulf": "Gulf Region",
+  "calculationMethod_kuwait": "Kuwait",
+  "calculationMethod_qatar": "Qatar",
+  "calculationMethod_singapore": "Singapore",
+  "calculationMethod_france": "France",
+  "calculationMethod_turkey": "Turkey (Diyanet)",
+  "calculationMethod_russia": "Russia",
+  "asrSchool_shafi": "Standard (Shafiʿi, Maliki, Hanbali)",
+  "asrSchool_hanafi": "Hanafi"
 }

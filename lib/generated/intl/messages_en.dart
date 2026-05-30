@@ -64,6 +64,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Arabic Language"),
         "arabic_label": MessageLookupByLibrary.simpleMessage("Arabic"),
         "asr": MessageLookupByLibrary.simpleMessage("Asr"),
+        "asrSchool_hanafi": MessageLookupByLibrary.simpleMessage("Hanafi"),
+        "asrSchool_shafi": MessageLookupByLibrary.simpleMessage(
+            "Standard (Shafiʿi, Maliki, Hanbali)"),
         "author_abu_dawood": MessageLookupByLibrary.simpleMessage(
             "Imam Abu Dawood al-Sijistani"),
         "author_ahmad":
@@ -97,6 +100,40 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Bookmarks"),
         "books_count": m2,
         "books_section": MessageLookupByLibrary.simpleMessage("Books"),
+        "calculationMethod_auto":
+            MessageLookupByLibrary.simpleMessage("Automatic (by region)"),
+        "calculationMethod_egypt":
+            MessageLookupByLibrary.simpleMessage("Egyptian General Authority"),
+        "calculationMethod_france":
+            MessageLookupByLibrary.simpleMessage("France"),
+        "calculationMethod_gulf":
+            MessageLookupByLibrary.simpleMessage("Gulf Region"),
+        "calculationMethod_isna":
+            MessageLookupByLibrary.simpleMessage("ISNA (North America)"),
+        "calculationMethod_karachi": MessageLookupByLibrary.simpleMessage(
+            "University of Islamic Sciences, Karachi"),
+        "calculationMethod_kuwait":
+            MessageLookupByLibrary.simpleMessage("Kuwait"),
+        "calculationMethod_methodLabel":
+            MessageLookupByLibrary.simpleMessage("Method"),
+        "calculationMethod_mwl":
+            MessageLookupByLibrary.simpleMessage("Muslim World League"),
+        "calculationMethod_qatar":
+            MessageLookupByLibrary.simpleMessage("Qatar"),
+        "calculationMethod_russia":
+            MessageLookupByLibrary.simpleMessage("Russia"),
+        "calculationMethod_schoolLabel":
+            MessageLookupByLibrary.simpleMessage("Asr (juristic) method"),
+        "calculationMethod_section":
+            MessageLookupByLibrary.simpleMessage("Calculation method"),
+        "calculationMethod_singapore":
+            MessageLookupByLibrary.simpleMessage("Singapore"),
+        "calculationMethod_tehran": MessageLookupByLibrary.simpleMessage(
+            "Institute of Geophysics, Tehran"),
+        "calculationMethod_turkey":
+            MessageLookupByLibrary.simpleMessage("Turkey (Diyanet)"),
+        "calculationMethod_ummAlQura":
+            MessageLookupByLibrary.simpleMessage("Umm al-Qura (Makkah)"),
         "chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
         "collections_label":
             MessageLookupByLibrary.simpleMessage("Collections"),
