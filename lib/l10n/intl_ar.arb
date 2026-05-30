@@ -162,5 +162,13 @@
 "onb_location_why": "نستخدم موقعك لحساب مواقيت الصلاة في مدينتك بدقّة. يبقى على جهازك ولا نشاركه.",
 "onb_notifications_title": "لا تفوتك صلاة",
 "onb_notifications_why": "فعّل الإشعارات لتصلك تنبيهات الأذان وتذكيرات الصلاة في أوقاتها. يمكنك ضبطها لاحقًا.",
-"show_splash_screen": "شاشة البداية"
+"show_splash_screen": "شاشة البداية",
+"home_locationCard_title": "تحتاج مواقيت الصلاة إلى موقعك",
+"home_locationCard_body": "نستخدمه فقط لحساب مواقيت صلاة دقيقة.",
+"home_locationCard_enable": "تفعيل الموقع",
+"home_locationCard_openSettings": "فتح الإعدادات",
+"home_notifHint_text": "فعّل الإشعارات لسماع الأذان",
+"home_notifHint_allow": "السماح",
+"notifSettings_disabledBanner_text": "الإشعارات متوقفة — لن تسمع الأذان.",
+"notifSettings_disabledBanner_action": "فتح الإعدادات"
 }
