@@ -5,6 +5,7 @@ import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/helper%20functions/ahadith_helpers.dart';
 import 'package:quran_app/features/ahadith/data/datasources/local/ahadith_local_data_source.dart';
 import 'package:quran_app/features/ahadith/data/datasources/remote/ahadith_remote_data_source.dart';
+import 'package:quran_app/features/ahadith/data/repositories/hadith_lookups.dart';
 import 'package:quran_app/features/ahadith/domain/entities/chapter.dart';
 import 'package:quran_app/features/ahadith/domain/entities/download_progress.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
@@ -20,7 +21,7 @@ class AhadithRepositoryImpl implements AhadithRepository {
     required this.ahadithLocalDataSource,
     required this.ahadithRemoteDataSource,
     required Map<String, dynamic> allChapters,
-  }) : _bookLookupMaps = _generateLookups(allChapters);
+  }) : _bookLookupMaps = generateChapterLookups(allChapters);
 
   @override
   Future<Either<Failure, HadithPage>> getAhadithPage(
@@ -49,12 +50,6 @@ class AhadithRepositoryImpl implements AhadithRepository {
     return Right(_decoratePage(page, chapterLookup));
   }
 
-  static const Map<HadithStatus, String> _statusApiValue = {
-    HadithStatus.sahih: 'Sahih',
-    HadithStatus.hasan: 'Hasan',
-    HadithStatus.daeef: 'Da`eef',
-  };
-
   @override
   Future<Either<Failure, HadithPage>> getFilteredAhadithPage({
     required int pageNumber,
@@ -69,7 +64,7 @@ class AhadithRepositoryImpl implements AhadithRepository {
       final page = await ahadithRemoteDataSource.getFilteredAhadithPage(
         pageNumber,
         bookSlug,
-        status: status == null ? null : _statusApiValue[status],
+        status: status == null ? null : hadithStatusApiValue[status],
         chapterNumber: chapterNumber,
       );
       return Right(_decoratePage(page, chapterLookup));
@@ -314,21 +309,4 @@ class AhadithRepositoryImpl implements AhadithRepository {
     return chapters;
   }
 
-  static Map<String, Map<int, Chapter>> _generateLookups(
-    Map<String, dynamic> raw,
-  ) {
-    return raw.map((bookSlug, chaptersList) {
-      final list = chaptersList as List<dynamic>;
-      final lookup = {
-        for (var item in list)
-          item['id'] as int: Chapter(
-            id: item['id'],
-            chapterNumber: item['chapterNumber'],
-            chapterArabic: item['chapterArabic'],
-            chapterEnglish: item['chapterEnglish'],
-          ),
-      };
-      return MapEntry(bookSlug, lookup);
-    });
-  }
 }
