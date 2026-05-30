@@ -59,7 +59,9 @@ class _AhadithListViewState extends State<AhadithListView> {
 
   void _onQueryChanged(String value) {
     setState(() => _query = value);
-    context.read<SearchHadithCubit>().searchAhadith(value, widget.bookSlug);
+    context
+        .read<SearchHadithCubit>()
+        .searchAhadith(value, widget.bookSlug, filter: _filter);
   }
 
   void _clearSearch() {
@@ -75,6 +77,8 @@ class _AhadithListViewState extends State<AhadithListView> {
         .downloadedBooks
         .contains(widget.bookSlug);
     context.read<AhadithCubit>().applyFilter(filter, isDownloaded: isDownloaded);
+    // Keep an active search in sync with the filter.
+    context.read<SearchHadithCubit>().reapplyFilter(filter);
   }
 
   String _bookTitle(BuildContext context) {
