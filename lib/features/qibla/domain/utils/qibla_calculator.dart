@@ -14,10 +14,7 @@ abstract class QiblaCalculator {
   static double _deg(double rad) => rad * 180.0 / math.pi;
 
   /// Normalizes any angle in degrees into [0, 360).
-  static double normalize(double deg) {
-    final m = deg % 360.0;
-    return m < 0 ? m + 360.0 : m;
-  }
+  static double normalize(double deg) => deg % 360.0;
 
   /// Initial great-circle bearing (degrees clockwise from TRUE north) from
   /// (lat, lon) to the Kaaba.
