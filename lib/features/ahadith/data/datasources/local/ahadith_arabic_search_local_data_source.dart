@@ -105,6 +105,9 @@ Map<String, ArabicIndexEntry> _parseZipInBackground(_ZipArgs args) {
 
   final content = utf8.decode(file.content as List<int>);
   final Map<String, dynamic> decoded = jsonDecode(content);
+  // Entries are expected in the enriched {t,c,s} form. Legacy bare-string
+  // entries parse with null chapter/grade, so chapter/grade filtering yields
+  // no Arabic matches until the asset is regenerated with chapter data.
   return decoded.map((key, value) => MapEntry(key, parseIndexValue(value)));
 }
 

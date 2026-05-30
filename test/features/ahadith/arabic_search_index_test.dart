@@ -30,4 +30,33 @@ void main() {
     expect(entry.chapterId, isNull);
     expect(entry.status, isNull);
   });
+
+  test('parseIndexValue parses a well-formed map entry', () {
+    final entry = parseIndexValue({'t': 'الصلاه فرض', 'c': 5, 's': 'sahih'});
+    expect(entry.text, 'الصلاه فرض');
+    expect(entry.chapterId, 5);
+    expect(entry.status, HadithStatus.sahih);
+  });
+
+  test('parseIndexValue tolerates missing c/s keys in map', () {
+    final entry = parseIndexValue({'t': 'نص'});
+    expect(entry.chapterId, isNull);
+    expect(entry.status, isNull);
+  });
+
+  test('parseIndexValue returns null status for unknown grade name', () {
+    final entry = parseIndexValue({'t': 'نص', 's': 'mawdu'});
+    expect(entry.status, isNull);
+  });
+
+  test('filter-before-cap: a chapter match after the cap boundary is not lost', () {
+    // Entries ordered ch9, ch9, ch5. A cap-before-filter (limit:2) would drop 'c'.
+    final orderedIndex = <String, ArabicIndexEntry>{
+      'a': const ArabicIndexEntry(text: 'الصلاه', chapterId: 9, status: HadithStatus.sahih),
+      'b': const ArabicIndexEntry(text: 'الصلاه', chapterId: 9, status: HadithStatus.sahih),
+      'c': const ArabicIndexEntry(text: 'الصلاه', chapterId: 5, status: HadithStatus.sahih),
+    };
+    final result = searchIndexEntries(orderedIndex, 'الصلاه', chapterId: 5, limit: 2);
+    expect(result, ['c']); // would be [] if the cap fired before the filter
+  });
 }
