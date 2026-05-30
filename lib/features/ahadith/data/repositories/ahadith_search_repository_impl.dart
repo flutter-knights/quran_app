@@ -62,9 +62,9 @@ class AhadithSearchRepositoryImpl extends AhadithSearchRepository {
         }
       }
 
-      // Apply the chapter/status filter in-memory. This is currently the only
-      // filter for the Arabic path; it becomes a true safety net once the
-      // Arabic index itself is filter-aware (Task 6).
+      // Apply the chapter/status filter in-memory as a safety net: the
+      // index already filters by chapter/grade, but online-fetched "missing"
+      // hadiths bypass the index, so their chapter/status are enforced here.
       final filtered = combinedResults
           .where((h) => status == null || h.status == status)
           .where((h) => chapterId == null || h.chapterId == chapterId)
