@@ -2,6 +2,7 @@ package com.example.quran_app
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -79,13 +80,32 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             result.error("BAD_ARGS", "Expected Map", null)
             return
         }
-        @Suppress("UNCHECKED_CAST")
-        val timings = (args["timings"] as? Map<String, String>) ?: emptyMap()
+
+        // Parse multi-day payload: args["days"] is a List of {date:String, timings:Map}
+        val daysRaw = args["days"] as? List<*> ?: emptyList<Any?>()
+        val days = daysRaw.mapNotNull { e ->
+            val m = e as? Map<*, *> ?: return@mapNotNull null
+            val date = m["date"] as? String ?: return@mapNotNull null
+            val timingsRaw = m["timings"] as? Map<*, *>
+            val timings = timingsRaw.orEmpty()
+                .entries
+                .mapNotNull { (k, v) ->
+                    val ks = k as? String ?: return@mapNotNull null
+                    val vs = v as? String ?: return@mapNotNull null
+                    ks to vs
+                }
+                .toMap()
+            AdhanScheduler.DaySchedule(date, timings)
+        }
+
         @Suppress("UNCHECKED_CAST")
         val clips = (args["clips"] as? Map<String, String>) ?: emptyMap()
         val localeCode = (args["localeCode"] as? String) ?: "en"
 
-        AdhanScheduler.armToday(ctx, timings, clips, localeCode)
+        if (days.isEmpty()) {
+            Log.w(TAG, "handleScheduleDailyAdhans: no valid days in payload")
+        }
+        AdhanScheduler.armDays(ctx, days, clips, localeCode)
         result.success(null)
     }
 
@@ -112,16 +132,33 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             result.error("BAD_ARGS", "Expected Map", null)
             return
         }
+
+        // Parse multi-day payload: args["days"] is a List of {date:String, timings:Map}
+        val daysRaw = args["days"] as? List<*> ?: emptyList<Any?>()
+        val days = daysRaw.mapNotNull { e ->
+            val m = e as? Map<*, *> ?: return@mapNotNull null
+            val date = m["date"] as? String ?: return@mapNotNull null
+            val timingsRaw = m["timings"] as? Map<*, *>
+            val timings = timingsRaw.orEmpty()
+                .entries
+                .mapNotNull { (k, v) ->
+                    val ks = k as? String ?: return@mapNotNull null
+                    val vs = v as? String ?: return@mapNotNull null
+                    ks to vs
+                }
+                .toMap()
+            AdhanScheduler.DaySchedule(date, timings)
+        }
+
         @Suppress("UNCHECKED_CAST")
         val remindersByPrayer = (args["remindersByPrayer"] as? Map<String, Int>)
             ?: emptyMap()
-        @Suppress("UNCHECKED_CAST")
-        val timings = (args["timings"] as? Map<String, String>) ?: emptyMap()
         val localeCode = (args["localeCode"] as? String) ?: "en"
 
-        PrayerReminderScheduler.armToday(
-            ctx, remindersByPrayer, timings, localeCode,
-        )
+        if (days.isEmpty()) {
+            Log.w(TAG, "handleSchedulePrayerReminders: no valid days in payload")
+        }
+        PrayerReminderScheduler.armDays(ctx, days, remindersByPrayer, localeCode)
         result.success(null)
     }
 
@@ -159,5 +196,6 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     companion object {
         const val CHANNEL = "quran_app/notifications"
+        private const val TAG = "PrayerStripPlugin"
     }
 }
