@@ -17,6 +17,7 @@ import 'package:quran_app/features/ahadith/presentation/cubit/download_book_cubi
 import 'package:quran_app/features/ahadith/presentation/cubit/search_hadith_cubit.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/ahadith_list_item.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/books_list_view.dart';
+import 'package:quran_app/features/ahadith/presentation/pages/widgets/chapter_picker_sheet.dart';
 import 'package:quran_app/features/ahadith/presentation/utils/hadith_list_filter.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -96,9 +97,9 @@ class _AhadithListViewState extends State<AhadithListView> {
   }
 
   Future<void> _openFilterSheet() async {
-    // Full bundled catalogue (Arabic + English), available from book open —
-    // not limited to chapters that happen to be loaded.
-    final chapters = context.read<AhadithCubit>().chapters;
+    final cubit = context.read<AhadithCubit>();
+    final chapters = cubit.chapters;
+    final statuses = cubit.availableStatuses;
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: context.colorScheme.surface,
@@ -108,6 +109,7 @@ class _AhadithListViewState extends State<AhadithListView> {
       ),
       builder: (sheetContext) => _FilterSheet(
         chapters: chapters,
+        statuses: statuses,
         filter: _filter,
         onChanged: _updateFilter,
       ),
@@ -435,62 +437,56 @@ class _StatusChip extends StatelessWidget {
   }
 }
 
-class _ChapterOption extends StatelessWidget {
-  const _ChapterOption({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected ? scheme.primary : scheme.onSurface,
-                ),
-              ),
-            ),
-            if (selected)
-              Icon(Icons.check_rounded, size: 20, color: scheme.primary),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterSheet extends StatelessWidget {
+class _FilterSheet extends StatefulWidget {
   const _FilterSheet({
     required this.chapters,
+    required this.statuses,
     required this.filter,
     required this.onChanged,
   });
 
   final List<Chapter> chapters;
+  final Set<HadithStatus> statuses;
   final HadithListFilter filter;
   final ValueChanged<HadithListFilter> onChanged;
 
   @override
+  State<_FilterSheet> createState() => _FilterSheetState();
+}
+
+class _FilterSheetState extends State<_FilterSheet> {
+  late HadithListFilter _filter = widget.filter;
+
+  void _apply(HadithListFilter next) {
+    setState(() => _filter = next);
+    widget.onChanged(next);
+  }
+
+  Chapter? get _selectedChapter {
+    if (_filter.chapterId == null) return null;
+    for (final c in widget.chapters) {
+      if (c.id == _filter.chapterId) return c;
+    }
+    return null;
+  }
+
+  Future<void> _openChapterPicker() async {
+    final result = await ChapterPickerSheet.show(
+      context,
+      chapters: widget.chapters,
+      selectedChapterId: _filter.chapterId,
+    );
+    if (result == null) return; // dismissed
+    _apply(_filter.withChapter(result.chapterId));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final selected = _selectedChapter;
+    final hasGrades = widget.statuses.length > 1;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -522,14 +518,40 @@ class _FilterSheet extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () {
-                    onChanged(filter.clearChapter());
+                    _apply(const HadithListFilter());
                     Navigator.of(context).pop();
                   },
                   child: Text(S.of(context).filter_clear),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            if (hasGrades) ...[
+              const SizedBox(height: 6),
+              Text(
+                S.of(context).filter_status_label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final status in HadithStatus.values)
+                    if (widget.statuses.contains(status))
+                      _GradePill(
+                        label: statusLabel(context, status),
+                        color: statusColor(status),
+                        selected: _filter.status == status,
+                        onTap: () => _apply(_filter.toggleStatus(status)),
+                      ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 14),
             Text(
               S.of(context).filter_chapter_label,
               style: TextStyle(
@@ -539,40 +561,91 @@ class _FilterSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            if (chapters.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  S.of(context).filter_all_chapters,
-                  style: TextStyle(color: scheme.onSurfaceVariant),
+            InkWell(
+              onTap: widget.chapters.isEmpty ? null : _openChapterPicker,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              )
-            else
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
+                child: Row(
                   children: [
-                    _ChapterOption(
-                      label: S.of(context).filter_all_chapters,
-                      selected: filter.chapterId == null,
-                      onTap: () {
-                        onChanged(filter.clearChapter());
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    for (final c in chapters)
-                      _ChapterOption(
-                        label:
-                            '${c.chapterNumber}. ${Directionality.of(context) == TextDirection.rtl ? c.chapterArabic : c.chapterEnglish}',
-                        selected: filter.chapterId == c.id,
-                        onTap: () {
-                          onChanged(filter.withChapter(c.id));
-                          Navigator.of(context).pop();
-                        },
+                    Expanded(
+                      child: Text(
+                        selected == null
+                            ? S.of(context).filter_all_chapters
+                            : '${selected.chapterNumber}. ${isRtl ? selected.chapterArabic : selected.chapterEnglish}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
                       ),
+                    ),
+                    Icon(
+                      isRtl ? Icons.chevron_left : Icons.chevron_right,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GradePill extends StatelessWidget {
+  const _GradePill({
+    required this.label,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.16) : scheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? color : scheme.onSurface.withValues(alpha: 0.12),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: selected ? color : scheme.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
       ),

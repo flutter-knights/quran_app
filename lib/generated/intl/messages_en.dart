@@ -128,7 +128,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "filter_apply": MessageLookupByLibrary.simpleMessage("Apply"),
         "filter_chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
         "filter_clear": MessageLookupByLibrary.simpleMessage("Clear"),
-        "filter_status_label": MessageLookupByLibrary.simpleMessage("Status"),
+        "filter_status_label": MessageLookupByLibrary.simpleMessage("Grade"),
         "filters_title": MessageLookupByLibrary.simpleMessage("Filters"),
         "full_title_abu_dawood":
             MessageLookupByLibrary.simpleMessage("Sunan Abi Dawood"),
