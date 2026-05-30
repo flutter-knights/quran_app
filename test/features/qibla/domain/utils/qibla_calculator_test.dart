@@ -13,6 +13,7 @@ void main() {
       final b = QiblaCalculator.bearingToKaaba(-33.8688, 151.2093); // Sydney
       expect(b, inInclusiveRange(0, 360));
       expect(b, lessThan(360));
+      expect(b, closeTo(278, 2)); // ~277.5° west-northwest toward Makkah
     });
   });
 
