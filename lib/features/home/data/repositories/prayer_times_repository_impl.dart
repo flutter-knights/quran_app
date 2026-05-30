@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/helper%20functions/time_helpers.dart';
@@ -113,7 +114,10 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
         school: school,
       );
       await prayerTimesLocalDataSource.cache(prayerTimesList);
-    } catch (_) {
+    } catch (e) {
+      // Pre-caching is best-effort, but a silent swallow hid real failures
+      // (network, parse, permission). Log so the failure is diagnosable.
+      debugPrint('[prayer] preCacheMonth($year-$month) failed: $e');
       return;
     }
   }
