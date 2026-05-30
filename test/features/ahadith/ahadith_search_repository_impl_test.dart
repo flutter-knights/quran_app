@@ -47,6 +47,16 @@ void main() {
       arabicSearchDataSource: arabic,
       ahadithLocalDataSource: local,
       ahadithRemoteDataSource: remote,
+      allChapters: const {
+        'sahih-bukhari': [
+          {
+            'id': 5,
+            'chapterNumber': 5,
+            'chapterArabic': 'الوضوء',
+            'chapterEnglish': 'Ablutions',
+          },
+        ],
+      },
     );
   });
 
@@ -110,6 +120,35 @@ void main() {
         (list) => expect(list.map((h) => h.hadithNumber), ['1']),
       );
       verifyNever(() => remote.getAhadithByNumbers(any(), any()));
+    });
+  });
+
+  group('searchHadiths (English, online) — forwards filter to API', () {
+    const englishQuery = 'prayer';
+
+    test('passes status + chapterNumber derived from chapterId', () async {
+      when(() => remote.getSearchedHadiths(
+            any(),
+            any(),
+            status: any(named: 'status'),
+            chapterNumber: any(named: 'chapterNumber'),
+          )).thenAnswer((_) async => [_h('1')]);
+
+      final result = await sut.searchHadiths(
+        query: englishQuery,
+        bookSlug: slug,
+        isDownloaded: false,
+        status: HadithStatus.daeef,
+        chapterId: 5,
+      );
+
+      expect(result.isRight(), isTrue);
+      verify(() => remote.getSearchedHadiths(
+            englishQuery,
+            slug,
+            status: 'Da`eef',
+            chapterNumber: 5, // id 5 -> chapterNumber 5 via allChapters lookup
+          )).called(1);
     });
   });
 }
