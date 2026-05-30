@@ -53,5 +53,15 @@ void main() {
       expect(restored.isFormat12Hours, original.isFormat12Hours);
       expect(restored.isArabic, original.isArabic);
     });
+
+    test('notificationHintDismissed: defaults false and round-trips via map', () {
+      const model = SettingsModel(isFormat12Hours: false, isArabic: true);
+      expect(model.notificationHintDismissed, isFalse);
+
+      final restored = SettingsModel.fromMap(
+        model.copyWith(notificationHintDismissed: true).toMap(),
+      );
+      expect(restored.notificationHintDismissed, isTrue);
+    });
   });
 }

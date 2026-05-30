@@ -19,6 +19,7 @@ class SettingsModel extends Settings {
     super.reminderMinutesByPrayer,
     super.hasCompletedOnboarding,
     super.showSplashOnLaunch,
+    super.notificationHintDismissed,
     super.calculationMethod,
     super.asrSchool,
   });
@@ -36,6 +37,7 @@ class SettingsModel extends Settings {
     Map<PrayerName, int>? reminderMinutesByPrayer,
     bool? hasCompletedOnboarding,
     bool? showSplashOnLaunch,
+    bool? notificationHintDismissed,
     CalculationMethod? calculationMethod,
     AsrSchool? asrSchool,
   }) {
@@ -52,6 +54,8 @@ class SettingsModel extends Settings {
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       showSplashOnLaunch: showSplashOnLaunch ?? this.showSplashOnLaunch,
+      notificationHintDismissed:
+          notificationHintDismissed ?? this.notificationHintDismissed,
       calculationMethod: calculationMethod ?? this.calculationMethod,
       asrSchool: asrSchool ?? this.asrSchool,
     );
@@ -83,6 +87,7 @@ class SettingsModel extends Settings {
       // back through onboarding, so absence reads as "already onboarded".
       hasCompletedOnboarding: map['hasCompletedOnboarding'] ?? true,
       showSplashOnLaunch: map['showSplashOnLaunch'] ?? true,
+      notificationHintDismissed: map['notificationHintDismissed'] ?? false,
       calculationMethod: CalculationMethod.values.firstWhere(
         (m) => m.name == (map['calculationMethod'] as String?),
         orElse: () => CalculationMethod.auto,
@@ -111,6 +116,7 @@ class SettingsModel extends Settings {
       },
       'hasCompletedOnboarding': hasCompletedOnboarding,
       'showSplashOnLaunch': showSplashOnLaunch,
+      'notificationHintDismissed': notificationHintDismissed,
       'calculationMethod': calculationMethod.name,
       'asrSchool': asrSchool.name,
     };
