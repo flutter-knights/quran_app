@@ -47,13 +47,20 @@ class QiblaCubit extends Cubit<QiblaState> {
   Future<void> start() async {
     emit(const QiblaLoading());
     await _locationSub?.cancel();
-    _locationSub = getCurrentLocation(NoParams()).listen((result) {
-      if (isClosed) return;
-      result.fold(
-        (failure) => emit(QiblaError(failure)),
-        _onLocation,
-      );
-    });
+    await _compassSub?.cancel();
+    _sensorTimer?.cancel();
+    _locationSub = getCurrentLocation(NoParams()).listen(
+      (result) {
+        if (isClosed) return;
+        result.fold(
+          (failure) => emit(QiblaError(failure)),
+          _onLocation,
+        );
+      },
+      onError: (Object e) {
+        if (!isClosed) emit(QiblaError(UnknownFailure(e.toString())));
+      },
+    );
   }
 
   /// Re-run the whole pipeline (recalibrate button).

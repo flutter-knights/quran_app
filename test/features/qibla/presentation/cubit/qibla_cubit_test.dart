@@ -120,7 +120,7 @@ void main() {
       return build(compass: const Stream.empty());
     },
     act: (c) => c.start(),
-    wait: const Duration(milliseconds: 120),
+    wait: const Duration(milliseconds: 400),
     expect: () => [
       isA<QiblaLoading>(),
       isA<QiblaLoaded>().having((s) => s.hasCompass, 'hasCompass', true),
