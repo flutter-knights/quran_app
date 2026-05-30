@@ -54,12 +54,15 @@ class AhadithSearchRepositoryImpl extends AhadithSearchRepository {
               .getAhadithByNumbers(localResult.missing, bookSlug);
           combinedResults.addAll(remoteResults);
         } on DioException catch (e) {
+          // Surface the failure only when we have nothing to show; otherwise
+          // return the local matches we already have.
           if (combinedResults.isEmpty) return left(UnknownFailure(e.toString()));
         }
       }
 
-      // Safety net for any entity whose chapter/status slipped past the index
-      // filter (e.g. a remote-fetched missing number).
+      // Apply the chapter/status filter in-memory. This is currently the only
+      // filter for the Arabic path; it becomes a true safety net once the
+      // Arabic index itself is filter-aware (Task 6).
       final filtered = combinedResults
           .where((h) => status == null || h.status == status)
           .where((h) => chapterId == null || h.chapterId == chapterId)
@@ -77,6 +80,8 @@ class AhadithSearchRepositoryImpl extends AhadithSearchRepository {
         return right(ahadith);
       } else {
         try {
+          // Unknown book/chapter id resolves to null, so the request simply
+          // omits the chapter filter rather than erroring (fail-soft).
           final chapterNumber = chapterId == null
               ? null
               : _bookLookupMaps[bookSlug]?[chapterId]?.chapterNumber;
