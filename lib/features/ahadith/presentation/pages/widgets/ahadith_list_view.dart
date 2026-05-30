@@ -130,7 +130,7 @@ class _AhadithListViewState extends State<AhadithListView> {
               trailing: IconChip(
                 icon: HugeIcon(
                   icon: HugeIcons.strokeRoundedFilterHorizontal,
-                  color: _filter.chapterId != null ? scheme.primary : null,
+                  color: _filter.isActive ? scheme.primary : null,
                 ),
                 onPressed: _openFilterSheet,
               ),
