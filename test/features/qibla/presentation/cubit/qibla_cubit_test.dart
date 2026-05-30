@@ -127,6 +127,22 @@ void main() {
       isA<QiblaLoaded>().having((s) => s.hasCompass, 'hasCompass', false),
     ],
   );
+
+  blocTest<QiblaCubit, QiblaState>(
+    'does not restart the compass when location re-emits with ~same bearing',
+    build: () {
+      when(() => getLocation.call(any())).thenAnswer(
+        (_) => Stream.fromIterable([Right(location), Right(location)]),
+      );
+      return build(
+          compass: Stream.value(const CompassReading(heading: 100, accuracy: 5)));
+    },
+    act: (c) => c.start(),
+    wait: const Duration(milliseconds: 50),
+    verify: (_) {
+      verify(() => watchHeading.call(any())).called(1);
+    },
+  );
 }
 
 final _epoch = DateTime(2024, 1, 1);
