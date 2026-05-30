@@ -9,6 +9,10 @@ abstract class PrayerNotificationScheduler {
   /// the grant result (null if unknown/unsupported). Channels and exact-alarm
   /// setup remain in [init], which runs later in the launch pipeline.
   Future<bool?> requestNotificationsPermission();
+
+  /// Whether OS notifications are currently enabled for the app. Drives the
+  /// Home notification hint and the resume re-check. Returns false if unknown.
+  Future<bool> areNotificationsEnabled();
   Future<void> scheduleDailyPrayerNotifications(PrayerTimes prayerTimes);
   Future<void> cancelAllPrayerNotifications();
 
