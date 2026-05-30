@@ -147,9 +147,9 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     const initSettings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(
-        requestAlertPermission: true,
+        requestAlertPermission: false,
         requestBadgePermission: false,
-        requestSoundPermission: true,
+        requestSoundPermission: false,
       ),
     );
     await _plugin.initialize(settings: initSettings);
