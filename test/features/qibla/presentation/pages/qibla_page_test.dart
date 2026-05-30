@@ -34,6 +34,8 @@ void main() {
     when(() => cubit.state).thenReturn(const QiblaLoading());
     await tester.pumpWidget(host());
     expect(find.byType(QiblaSkeleton), findsOneWidget);
+    // Drain the app-bar chip's flutter_animate press timers before teardown.
+    await tester.pump(const Duration(milliseconds: 200));
   });
 
   testWidgets('shows fallback card when hasCompass is false', (tester) async {
@@ -44,7 +46,7 @@ void main() {
       hasCompass: false,
     ));
     await tester.pumpWidget(host());
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
     expect(find.byType(QiblaFallbackCard), findsOneWidget);
   });
 }
