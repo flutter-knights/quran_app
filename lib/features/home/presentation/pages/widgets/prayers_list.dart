@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/helper%20functions/time_helpers.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/single_prayer_card.dart';
@@ -15,7 +16,11 @@ class PrayersList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // On Friday, Dhuhr is replaced by Jumu'ah (matches the prayer strip).
-    final isFriday = DateTime.now().weekday == DateTime.friday;
+    // Derive the weekday from the context date these timings belong to — not
+    // DateTime.now() — so the label stays correct after the post-Isha roll.
+    final isFriday =
+        prayerTimes.date.gregorianDate.gregorianDate().weekday ==
+            DateTime.friday;
     return BlocBuilder<PrayerCountdownCubit, PrayerCountdownState>(
       builder: (context, state) {
         return Row(
@@ -29,7 +34,7 @@ class PrayersList extends StatelessWidget {
               prayerName: label,
               time24: prayerTimes.timings[prayerName]!,
               is24: sl<SettingsCubit>().state.settingsModel.isFormat12Hours,
-              isCurrent: state is PrayerCountdownTick
+              isNext: state is PrayerCountdownTick
                   ? state.prayerCountdown.nextPrayer == prayerName
                   : false,
             );
