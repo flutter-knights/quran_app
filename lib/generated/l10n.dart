@@ -1261,10 +1261,10 @@ class S {
     );
   }
 
-  /// `Status`
+  /// `Grade`
   String get filter_status_label {
     return Intl.message(
-      'Status',
+      'Grade',
       name: 'filter_status_label',
       desc: '',
       args: [],
