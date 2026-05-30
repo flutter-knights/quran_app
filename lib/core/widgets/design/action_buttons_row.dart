@@ -26,6 +26,7 @@ class ActionBtn extends StatelessWidget {
     required this.icon,
     required this.label,
     this.onPressed,
+    this.iconTrailing = false,
   }) : _primary = false;
 
   const ActionBtn.primary({
@@ -33,11 +34,16 @@ class ActionBtn extends StatelessWidget {
     required this.icon,
     required this.label,
     this.onPressed,
+    this.iconTrailing = false,
   }) : _primary = true;
 
   final Widget icon;
   final String label;
   final VoidCallback? onPressed;
+
+  /// Renders the icon after the label. Combined with a directional arrow this
+  /// keeps a "forward" action's arrow trailing — right in LTR, left in RTL.
+  final bool iconTrailing;
   final bool _primary;
 
   @override
@@ -67,23 +73,22 @@ class ActionBtn extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconTheme(
-                data: IconThemeData(color: fg, size: 14),
-                child: icon,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: fg,
-                ),
-              ),
+              for (final w in iconTrailing
+                  ? [_label(fg), const SizedBox(width: 6), _icon(fg)]
+                  : [_icon(fg), const SizedBox(width: 6), _label(fg)])
+                w,
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget _icon(Color fg) =>
+      IconTheme(data: IconThemeData(color: fg, size: 14), child: icon);
+
+  Widget _label(Color fg) => Text(
+        label,
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg),
+      );
 }

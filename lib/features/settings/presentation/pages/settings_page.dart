@@ -7,6 +7,7 @@ import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/feature_flags.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
@@ -22,85 +23,134 @@ class SettingsPage extends StatelessWidget {
     final scheme = context.colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        title: Text(S.current.settings, style: TS.bold20.cairo),
-        backgroundColor: scheme.surface,
-      ),
-      body: BlocBuilder<SettingsCubit, SettingsState>(
-        builder: (context, state) {
-          final settings = state.settingsModel;
-          return ListView(
-            padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 32),
-            children: [
-              AppSectionHeader(label: S.of(context).appearance_section),
-              const SizedBox(height: 10),
-              PalettePickerWidget(
-                currentPalette: settings.palette,
-                onSelect: (p) => sl<SettingsCubit>().updatePalette(p),
-              ),
-              const SizedBox(height: 24),
-              AppSectionHeader(label: S.of(context).general_section),
-              const SizedBox(height: 10),
-              SurfaceCard(
-                child: Column(
-                  children: [
-                    _SelectorRow(
-                      icon: HugeIcons.strokeRoundedClock01,
-                      label: S.current.twentyFourHourFormat,
-                      selector: AppSegmentedSelector<bool>(
-                        selected: settings.isFormat12Hours,
-                        onChanged: (v) => sl<SettingsCubit>()
-                            .updateSettings(isFormat12Hours: v),
-                        options: [
-                          SegmentOption(value: false, label: S.of(context).time_format_12h),
-                          SegmentOption(value: true, label: S.of(context).time_format_24h),
-                        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            AppScreenAppBar(title: S.current.settings),
+            Expanded(
+              child: BlocBuilder<SettingsCubit, SettingsState>(
+                builder: (context, state) {
+                  final settings = state.settingsModel;
+                  return ListView(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      16,
+                      16,
+                      16,
+                      32,
+                    ),
+                    children: [
+                      AppSectionHeader(label: S.of(context).appearance_section),
+                      const SizedBox(height: 10),
+                      PalettePickerWidget(
+                        currentPalette: settings.palette,
+                        onSelect: (p) => sl<SettingsCubit>().updatePalette(p),
                       ),
-                    ),
-                    Container(
-                      height: 1,
-                      color: scheme.onSurface.withValues(alpha: 0.06),
-                    ),
-                    _SelectorRow(
-                      icon: HugeIcons.strokeRoundedLanguageSquare,
-                      label: S.current.arabicLanguage,
-                      selector: AppSegmentedSelector<bool>(
-                        selected: settings.isArabic,
-                        onChanged: (v) =>
-                            sl<SettingsCubit>().updateSettings(isArabic: v),
-                        options: [
-                          SegmentOption(value: true, label: S.of(context).language_arabic),
-                          SegmentOption(value: false, label: S.of(context).language_english),
-                        ],
+                      const SizedBox(height: 24),
+                      AppSectionHeader(label: S.of(context).general_section),
+                      const SizedBox(height: 10),
+                      SurfaceCard(
+                        child: Column(
+                          children: [
+                            _SelectorRow(
+                              icon: HugeIcons.strokeRoundedClock01,
+                              label: S.current.twentyFourHourFormat,
+                              selector: AppSegmentedSelector<bool>(
+                                selected: settings.isFormat12Hours,
+                                onChanged: (v) => sl<SettingsCubit>()
+                                    .updateSettings(isFormat12Hours: v),
+                                options: [
+                                  SegmentOption(
+                                    value: false,
+                                    label: S.of(context).time_format_12h,
+                                  ),
+                                  SegmentOption(
+                                    value: true,
+                                    label: S.of(context).time_format_24h,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              height: 1,
+                              color: scheme.onSurface.withValues(alpha: 0.06),
+                            ),
+                            _SelectorRow(
+                              icon: HugeIcons.strokeRoundedLanguageSquare,
+                              label: S.current.arabicLanguage,
+                              selector: AppSegmentedSelector<bool>(
+                                selected: settings.isArabic,
+                                onChanged: (v) => sl<SettingsCubit>()
+                                    .updateSettings(isArabic: v),
+                                options: [
+                                  SegmentOption(
+                                    value: true,
+                                    label: S.of(context).language_arabic,
+                                  ),
+                                  SegmentOption(
+                                    value: false,
+                                    label: S.of(context).language_english,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              height: 1,
+                              color: scheme.onSurface.withValues(alpha: 0.06),
+                            ),
+                            _SelectorRow(
+                              icon: HugeIcons.strokeRoundedImage02,
+                              label: S.current.show_splash_screen,
+                              selector: Switch(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                value: settings.showSplashOnLaunch,
+                                onChanged: (v) => sl<SettingsCubit>()
+                                    .updateShowSplashOnLaunch(v),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      if (FeatureFlags.pinnedPrayerStripUi) ...[
+                        const SizedBox(height: 24),
+                        AppSectionHeader(label: S.current.notifications),
+                        const SizedBox(height: 10),
+                        SurfaceCard(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _NotificationRow(
+                            label: S.current.pinnedPrayerTimes,
+                            trailing: Switch(
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              value: settings.isPrayerStripPinned,
+                              onChanged: (_) =>
+                                  sl<SettingsCubit>().updatePrayerStripPinned(
+                                    !settings.isPrayerStripPinned,
+                                  ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SurfaceCard(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          onTap: () =>
+                              context.push(AppRouter.notificationsPath),
+                          child: _NotificationRow(
+                            label: S.current.adhan_and_reminders,
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
-              if (FeatureFlags.pinnedPrayerStripUi) ...[
-                const SizedBox(height: 24),
-                AppSectionHeader(label: S.current.notifications),
-                const SizedBox(height: 10),
-                SurfaceCard(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    leading: HugeIcon(
-                      icon: HugeIcons.strokeRoundedNotification01,
-                      color: scheme.secondary,
-                      size: 22,
-                    ),
-                    title: Text(
-                      S.current.notifications,
-                      style: TS.regular16.cairo,
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push(AppRouter.notificationsPath),
-                  ),
-                ),
-              ],
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -126,10 +176,37 @@ class _SelectorRow extends StatelessWidget {
         children: [
           HugeIcon(icon: icon, color: scheme.onSurface, size: 20),
           const SizedBox(width: 10),
-          Expanded(
-            child: Text(label, style: TS.regular16.cairo),
-          ),
+          Expanded(child: Text(label, style: TS.regular16.cairo)),
           selector,
+        ],
+      ),
+    );
+  }
+}
+
+/// Fixed-height notification row so the section's cards are all the same height
+/// regardless of their trailing control (switch vs chevron).
+class _NotificationRow extends StatelessWidget {
+  const _NotificationRow({required this.label, required this.trailing});
+
+  final String label;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    return SizedBox(
+      height: 52,
+      child: Row(
+        children: [
+          HugeIcon(
+            icon: HugeIcons.strokeRoundedNotification01,
+            color: scheme.onSurface,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Text(label, style: TS.regular16.cairo)),
+          trailing,
         ],
       ),
     );

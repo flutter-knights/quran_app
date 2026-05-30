@@ -1,48 +1,45 @@
-// Generates assets/mushaf/pages/page_NNN.png and assets/mushaf/bounds/page_NNN.json
-// for every mushaf page (1..604). Run with --concurrency=1 to avoid FontLoader races.
+// Generates the two-layer mushaf assets for every page (1..604):
+//   assets/mushaf/pages/page_NNN.png         -> BODY layer  (alpha mask)
+//   assets/mushaf/pages/page_NNN_accent.png  -> ACCENT layer (alpha mask)
+//   assets/mushaf/bounds/page_NNN.json       -> ayah highlight bounds
+//
+// Both PNGs are colourless alpha masks (RGB is black); the app tints them at
+// runtime with two srcIn Image layers — body -> colorScheme.onSurface, accent
+// -> colorScheme.secondary — so the pages adapt to light/dark themes.
+//   - BODY  : verse text + surah NAME + basmala + oval metadata (label+number)
+//   - ACCENT: the ornamental header FRAME glyph + the ayah-number rosettes
 //
 // Pipeline per page:
-//   WOFF -> in-Dart SFNT (TTF) -> FontLoader -> TextPainter -> Picture -> PNG
-//   getBoxesForSelection -> normalized bounds (snapped) -> JSON
+//   original TTF -> FontLoader -> ONE split-span list -> body & accent painters
+//   (identical geometry) -> Picture -> PNG; getBoxesForSelection -> bounds JSON.
 //
-// Multi-surah pages: every entry in `surahHeadersIndexes` reserves a line in
-// the painter via a `​\n` placeholder; the decorative header.png frame +
-// centered surah name are overlaid at each placeholder's `lineIndex *
-// lineHeight` after the painter has been drawn. Keeps mid-page surah headers
-// (e.g. page 604, where Falaq and Nas start mid-page) visually identical to
-// the top header.
+// The header decoration is the QCF2BSML glyph 0xf2 (an ornamental band with two
+// side ovals), scaled to fill the header line; the surah name is centred in it
+// and the two ovals carry "ترتيبها <surah#>" and "آياتها <verse count>" in the
+// UthmanTN naskh font. (Earlier versions overlaid assets/images/header.png.)
 //
-// Header positioning uses `lineIndex * lineHeight` rather than
-// `getBoxesForSelection(...).first.top`, because the latter's value drifts by
-// 5-30 px across pages: includeLineSpacingMiddle distributes half-leading
-// proportionally to the line's font ascent/descent, and each page uses a
-// different per-page QCF font with different metrics. Every TextStyle here
-// sets `height: lineHeight/fontSize`, so the line grid is exact.
+// Rosette colouring: the ayah-end rosette is the last non-newline glyph of each
+// verse; it is split into its own span so the accent layer can carry it while
+// the body layer leaves a transparent gap. Splitting is geometry-neutral (QCF
+// is glyph-per-PUA-codepoint), so bounds are byte-identical to the unsplit
+// layout — verified against the committed bounds before the full run.
 //
-// Spillover guard (Fix 2): on a few pages (303, 307, 335, 443, …) the
-// `quran.line_break.dart` symbols-per-line config undercounts total symbols
-// by 1, so `_injectLineBreaks` emits one extra `\n` that pushes a 1-2 glyph
-// tail onto a 16th painter line. We pre-trim the last \n from the last ayah
-// that has one so the tail merges back onto line 15.
+// All TextStyles set `height: lineHeight/fontSize`, so every painter line is
+// exactly `lineHeight` tall and the header grid (`lineIndex * lineHeight`) is
+// exact regardless of per-page QCF font metrics.
 //
-// FontSize factor 0.82 (was 0.85, was 0.9) keeps the widest QCF lines within
-// `_renderWidth` so they don't word-wrap, and reduces the margin variance on
-// pages 303 and 335 (inherently wide glyphs). At 0.85 those lines had ~11 px
-// margin; at 0.82 they have ~37 px. Trade-off: ~9 % smaller glyphs vs 0.9,
-// more margin left/right — visible but acceptable.
-//
-// Bounds units: ayahs AND basmalas are recorded. Basmala bounds use
-// `ayah: 0`, matching the convention used by per-surah basmala audio files.
-//
-// Bounds snapping: only the page-wide leftmost and rightmost edges snap
-// (within 60 px tolerance at 1536 px width). Vertical tops/bottoms cluster
-// at 6 px to remove 1-2 px hairline gaps between adjacent rows. Mid-line
-// ayah-to-ayah transitions stay at their actual midpoint positions.
-//
-// Validation per page: PNG > 10 KB AND every unit (ayah or basmala) has
-// rects AND painter doesn't exceed 15 lines.
+// FontSize factor 0.82 keeps the widest QCF lines within `_renderWidth`.
+// Spillover guard trims a spurious trailing \n so wide pages stay within 15
+// lines. Bounds: ayahs AND basmalas (basmala uses ayah:0). Horizontal edges
+// snap within 60px; vertical tops/bottoms cluster at 6px.
 //
 //   flutter test test/tools/generate_mushaf_assets_test.dart --concurrency=1
+//
+// Post-step (optional, ~42% smaller): the emitted PNGs are alpha masks, so they
+// quantize losslessly-enough with pngquant (the srcIn tint ignores RGB; only
+// the alpha edge matters). Compress in place, e.g.:
+//   find assets/mushaf/pages -name '*.png' -print0 \
+//     | xargs -0 -n 40 pngquant --quality=60-90 --ext .png --force --skip-if-larger --
 
 import 'dart:convert';
 import 'dart:io';
@@ -51,28 +48,55 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran/quran.dart' as quran;
 import 'mushaf_page_builder.dart';
-import 'woff_to_ttf.dart';
 
-const String _headerImagePath = 'assets/images/header.png';
 const double _renderWidth = 1536;
 const double _aspect = 1.82;
 const double _fontSizeFactor = 0.82;
 const String _outputPagesDir = 'assets/mushaf/pages';
 const String _outputBoundsDir = 'assets/mushaf/bounds';
 const String _headerFontFamily = 'QCF_P000';
-const String _headerFontPath = 'assets/fonts/QCF/QCF2BSML.woff';
+const String _headerFontPath = 'assets/QCF2BSMLfonts/QCF2BSML.ttf';
+const String _metaFontFamily = 'UthmanMeta';
+const String _metaFontPath = 'assets/QCF2BSMLfonts/UthmanTN1B Ver10.otf';
 const String _basmalaText = '!"#\n';
 const String _headerPlaceholder = '​\n';
+// QCF2BSML 0xf2: the ornamental surah-header frame band (replaces header.png).
+const String _frameGlyph = 'ò';
+// Downward nudge so the surah name sits vertically centred in the frame.
+const double _nameDyOffset = 12;
+// Oval centres (manually picked) as fractions of width / header-band height,
+// and a downward nudge for the label+number block within the oval.
+const double _ovalLeftX = 0.2055;
+const double _ovalRightX = 0.7918;
+const double _ovalY = 0.4831;
+const double _ovalBlockDy = 8;
+
+// Both layers are colourless alpha masks. `_opaque` = paint into the mask;
+// `_clear` = reserve layout space but paint nothing.
+const Color _opaque = Colors.black;
+const Color _clear = Color(0x00000000);
 
 const double _horizontalSnapTolerancePx = 60;
 const double _verticalSnapTolerancePx = 6;
+
+const List<String> _arabicDigits = [
+  '٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩',
+];
+String _arabicNumber(int n) =>
+    n.toString().split('').map((d) => _arabicDigits[int.parse(d)]).join();
+
+// Frame-glyph ink bounds: identical for every page (same header font + size),
+// so measure once and cache.
+Rect? _frameInk;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
-    await _loadFontFromWoff(_headerFontFamily, _headerFontPath);
+    await _loadFontFromTtf(_headerFontFamily, _headerFontPath);
+    await _loadFontFromTtf(_metaFontFamily, _metaFontPath);
     Directory(_outputPagesDir).createSync(recursive: true);
     Directory(_outputBoundsDir).createSync(recursive: true);
   });
@@ -87,8 +111,8 @@ void main() {
 Future<void> _renderPage(int pageNumber) async {
   final pageFontFamily = 'QCF_P${pageNumber.toString().padLeft(3, '0')}';
   final pageFontPath =
-      'assets/fonts/QCF/QCF2${pageNumber.toString().padLeft(3, '0')}.woff';
-  await _loadFontFromWoff(pageFontFamily, pageFontPath);
+      'assets/QCF2BSMLfonts/QCF2${pageNumber.toString().padLeft(3, '0')}.ttf';
+  await _loadFontFromTtf(pageFontFamily, pageFontPath);
 
   final page = buildMushafPage(pageNumber);
 
@@ -96,34 +120,27 @@ Future<void> _renderPage(int pageNumber) async {
   final lineHeight = _renderWidth / 15 * 1.8;
   final pageHeight = _renderWidth * _aspect;
 
-  final verseStyle = TextStyle(
-    fontFamily: pageFontFamily,
-    fontSize: fontSize,
-    height: lineHeight / fontSize,
-    color: Colors.black,
-    locale: const Locale('ar'),
-  );
-  final headerNameStyle = TextStyle(
-    fontFamily: _headerFontFamily,
-    fontSize: fontSize * 1.4,
-    color: Colors.black,
-    locale: const Locale('ar'),
-  );
-  final basmalaStyle = TextStyle(
-    fontFamily: _headerFontFamily,
-    fontSize: fontSize,
-    height: lineHeight / fontSize,
-    color: Colors.black,
-    locale: const Locale('ar'),
-  );
+  TextStyle verse(Color c) => TextStyle(
+        fontFamily: pageFontFamily,
+        fontSize: fontSize,
+        height: lineHeight / fontSize,
+        color: c,
+        locale: const Locale('ar'),
+      );
+  TextStyle basmala(Color c) => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: fontSize,
+        height: lineHeight / fontSize,
+        color: c,
+        locale: const Locale('ar'),
+      );
 
   final headerIndexes = page.surahHeadersIndexes.toSet();
   final basmalaIndexes = page.basmalaIndexes.toSet();
 
-  // Fix 2: trim the spurious trailing \n if the data source emitted one
-  // more newline than fits in the 15-line budget. Budget = 14 newlines
-  // for 15 painter lines, minus one already-contained-in-each header
-  // placeholder and one in each basmala.
+  // Spillover guard: trim the spurious trailing \n if the data source emitted
+  // one more newline than fits the 15-line budget (14 newlines minus the one in
+  // each header placeholder and each basmala).
   final ayahs = List<String>.from(page.ayahs);
   final ayahNlBudget = 14 - headerIndexes.length - basmalaIndexes.length;
   var ayahNlCount = 0;
@@ -139,35 +156,32 @@ Future<void> _renderPage(int pageNumber) async {
     }
   }
 
-  final children = <InlineSpan>[];
+  // ONE split-span descriptor list (role: body | basmala | rosette) feeds the
+  // body painter, the accent painter, and the bounds — identical geometry.
+  final descriptors = <({String text, String role})>[];
   // Highlight units = ayahs + basmalas. Basmalas use ayah=0.
   final units = <({int surah, int ayah, int start, int end})>[];
-  // lineIndex is captured BEFORE the placeholder's own '\n' is appended, so it
-  // maps to the painter line the header occupies — independent of per-page
-  // QCF font metrics. See header positioning below.
-  final headerPlaceholders = <({int lineIndex, String name})>[];
+  final headerPlaceholders = <({int lineIndex, String name, int surah})>[];
   var cursor = 0;
   var lineIndex = 0;
-  // True when the painter cursor sits at the start of a fresh line (i.e., the
-  // last appended text ended with `\n`, OR nothing has been appended yet).
-  // The spillover guard above can strip the trailing `\n` from the last ayah
-  // even when that `\n` is the *only* separator between the last ayah and a
-  // trailing surah header (e.g. pages 445, 452 — Yaseen → Saaffat, Saaffat →
-  // Sad). Without this guard we'd draw the header image on the same line as
-  // the last ayah's tail. We bump `lineIndex` for the header so its image
-  // lands on the next visual line; the placeholder's own `\n` still creates
-  // that empty line in the painter, so the maxLines budget is respected.
   var atLineStart = true;
   var surahCounter = 0;
+  void add(String text, String role) {
+    descriptors.add((text: text, role: role));
+    cursor += text.length;
+  }
+
   for (var i = 0; i <= ayahs.length; i++) {
     if (headerIndexes.contains(i)) {
       if (!atLineStart) lineIndex++;
       headerPlaceholders.add((
         lineIndex: lineIndex,
         name: page.surahNames[surahCounter],
+        surah: i < page.ayahIdentifiers.length
+            ? page.ayahIdentifiers[i].surah
+            : -1,
       ));
-      children.add(TextSpan(text: _headerPlaceholder, style: verseStyle));
-      cursor += _headerPlaceholder.length;
+      add(_headerPlaceholder, 'body');
       lineIndex += '\n'.allMatches(_headerPlaceholder).length;
       atLineStart = _headerPlaceholder.endsWith('\n');
       surahCounter++;
@@ -177,8 +191,7 @@ Future<void> _renderPage(int pageNumber) async {
           ? page.ayahIdentifiers[i].surah
           : -1;
       final start = cursor;
-      children.add(TextSpan(text: _basmalaText, style: basmalaStyle));
-      cursor += _basmalaText.length;
+      add(_basmalaText, 'basmala');
       lineIndex += '\n'.allMatches(_basmalaText).length;
       atLineStart = _basmalaText.endsWith('\n');
       units.add((surah: basmalaSurah, ayah: 0, start: start, end: cursor));
@@ -186,8 +199,22 @@ Future<void> _renderPage(int pageNumber) async {
     if (i < ayahs.length) {
       final start = cursor;
       final ayahText = ayahs[i];
-      children.add(TextSpan(text: ayahText, style: verseStyle));
-      cursor += ayahText.length;
+      // Split the trailing rosette (last non-newline rune) into its own span.
+      final runes = ayahText.runes.toList();
+      var last = runes.length - 1;
+      while (last >= 0 && runes[last] == 0x0a) {
+        last--;
+      }
+      if (last >= 0) {
+        final body = String.fromCharCodes(runes.sublist(0, last));
+        final rosette = String.fromCharCode(runes[last]);
+        final tail = String.fromCharCodes(runes.sublist(last + 1));
+        if (body.isNotEmpty) add(body, 'body');
+        add(rosette, 'rosette');
+        if (tail.isNotEmpty) add(tail, 'body');
+      } else {
+        add(ayahText, 'body');
+      }
       lineIndex += '\n'.allMatches(ayahText).length;
       atLineStart = ayahText.endsWith('\n');
       final ident = page.ayahIdentifiers[i];
@@ -200,71 +227,104 @@ Future<void> _renderPage(int pageNumber) async {
     }
   }
 
-  final painter = TextPainter(
-    text: TextSpan(children: children),
-    textDirection: TextDirection.rtl,
-    textAlign: TextAlign.center,
-    maxLines: 15,
-  );
-  painter.layout(minWidth: _renderWidth, maxWidth: _renderWidth);
+  TextStyle styleFor(String role, Color c) =>
+      role == 'basmala' ? basmala(c) : verse(c);
+  List<InlineSpan> spans(Map<String, Color> colors) => [
+        for (final d in descriptors)
+          TextSpan(text: d.text, style: styleFor(d.role, colors[d.role]!)),
+      ];
+  TextPainter layeredPainter(Map<String, Color> colors) => TextPainter(
+        text: TextSpan(children: spans(colors)),
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.center,
+        maxLines: 15,
+      )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
 
-  expect(painter.didExceedMaxLines, isFalse,
+  final bodyPainter = layeredPainter(
+      const {'body': _opaque, 'basmala': _opaque, 'rosette': _clear});
+  final accentPainter = layeredPainter(
+      const {'body': _clear, 'basmala': _clear, 'rosette': _opaque});
+
+  expect(bodyPainter.didExceedMaxLines, isFalse,
       reason: 'page $pageNumber exceeded 15-line budget '
-          '(${painter.computeLineMetrics().length} lines, '
+          '(${bodyPainter.computeLineMetrics().length} lines, '
           '${page.surahHeadersIndexes.length} headers)');
 
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
+  // Frame glyph geometry: map its ink rect onto the full header box.
+  final framePainter = TextPainter(
+    text: TextSpan(
+        text: _frameGlyph,
+        style: TextStyle(
+            fontFamily: _headerFontFamily, fontSize: fontSize, color: _opaque)),
+    textDirection: TextDirection.rtl,
+    textAlign: TextAlign.center,
+  )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
+  _frameInk ??= await _measureInk(framePainter);
+  final ink = _frameInk!;
+  final frameSx = _renderWidth / ink.width;
+  final frameSy = lineHeight / ink.height;
 
-  painter.paint(canvas, Offset.zero);
+  // ---- BODY layer: painter + surah name + oval metadata ----
+  final bodyImage = await _toImage(pageHeight, (canvas) {
+    bodyPainter.paint(canvas, Offset.zero);
+    for (final h in headerPlaceholders) {
+      final headerY = h.lineIndex * lineHeight;
+      final namePainter = TextPainter(
+        text: TextSpan(
+            text: h.name,
+            style: TextStyle(
+                fontFamily: _headerFontFamily,
+                fontSize: fontSize * 1.4,
+                color: _opaque,
+                locale: const Locale('ar'))),
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.center,
+      )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
+      namePainter.paint(canvas,
+          Offset(0, headerY + (lineHeight - namePainter.height) / 2 + _nameDyOffset));
+      if (h.surah > 0) {
+        final cy = headerY + _ovalY * lineHeight;
+        _ovalMeta(canvas, 'ترتيبها', _arabicNumber(h.surah),
+            _ovalRightX * _renderWidth, cy, fontSize);
+        _ovalMeta(canvas, 'آياتها', _arabicNumber(quran.getVerseCount(h.surah)),
+            _ovalLeftX * _renderWidth, cy, fontSize);
+      }
+    }
+  });
 
-  final headerImage = await _loadImage(_headerImagePath);
-  final headerTint = Paint()
-    ..colorFilter =
-        const ColorFilter.mode(Colors.black, BlendMode.srcIn);
-  for (final h in headerPlaceholders) {
-    // Deterministic: every style sets `height: lineHeight/fontSize`, so every
-    // painter line is exactly `lineHeight` tall regardless of which QCF font
-    // the line uses. `boxes.first.top` from includeLineSpacingMiddle drifted
-    // by 5-30 px across pages because the half-leading above line 0 is
-    // distributed proportionally to the line's font ascent/descent — and
-    // those differ per QCF page font.
-    final headerY = h.lineIndex * lineHeight;
+  // ---- ACCENT layer: painter (rosettes) + frame glyph ----
+  final accentImage = await _toImage(pageHeight, (canvas) {
+    accentPainter.paint(canvas, Offset.zero);
+    for (final h in headerPlaceholders) {
+      final headerY = h.lineIndex * lineHeight;
+      canvas.save();
+      canvas.translate(0, headerY);
+      canvas.scale(frameSx, frameSy);
+      canvas.translate(-ink.left, -ink.top);
+      framePainter.paint(canvas, Offset.zero);
+      canvas.restore();
+    }
+  });
 
-    canvas.drawImageRect(
-      headerImage,
-      Rect.fromLTWH(
-          0, 0, headerImage.width.toDouble(), headerImage.height.toDouble()),
-      Rect.fromLTWH(0, headerY, _renderWidth, lineHeight),
-      headerTint,
-    );
+  final pad = pageNumber.toString().padLeft(3, '0');
+  final bodyFile = File('$_outputPagesDir/page_$pad.png');
+  await bodyFile.writeAsBytes(await _png(bodyImage));
+  final accentFile = File('$_outputPagesDir/page_${pad}_accent.png');
+  await accentFile.writeAsBytes(await _png(accentImage));
 
-    final namePainter = TextPainter(
-      text: TextSpan(text: h.name, style: headerNameStyle),
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.center,
-    );
-    namePainter.layout(minWidth: _renderWidth, maxWidth: _renderWidth);
-    final nameDy = headerY + (lineHeight - namePainter.height) / 2;
-    namePainter.paint(canvas, Offset(0, nameDy + 4));
-  }
+  final bodyLen = bodyFile.lengthSync();
+  expect(bodyLen, greaterThan(10 * 1024),
+      reason: 'page $pageNumber body PNG too small ($bodyLen bytes)');
+  final accentLen = accentFile.lengthSync();
+  expect(accentLen, greaterThan(0),
+      reason: 'page $pageNumber accent PNG empty');
+  expect(accentLen, lessThan(bodyLen),
+      reason: 'page $pageNumber accent PNG unexpectedly large ($accentLen)');
 
-  final picture = recorder.endRecording();
-  final image =
-      await picture.toImage(_renderWidth.toInt(), pageHeight.toInt());
-  final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
-  final pngFile = File(
-      '$_outputPagesDir/page_${pageNumber.toString().padLeft(3, '0')}.png');
-  await pngFile.writeAsBytes(pngBytes!.buffer.asUint8List());
-
-  final pngLen = pngFile.lengthSync();
-  expect(pngLen, greaterThan(10 * 1024),
-      reason: 'page $pageNumber PNG too small ($pngLen bytes)');
-
-  // --- Bounds: gather, snap, normalize, write JSON ---------------------
+  // --- Bounds: gather, snap, normalize, write JSON (from body geometry) ---
   final unitBoxes = <List<ui.TextBox>>[];
   for (final u in units) {
-    final boxes = painter.getBoxesForSelection(
+    final boxes = bodyPainter.getBoxesForSelection(
       TextSelection(baseOffset: u.start, extentOffset: u.end),
       boxHeightStyle: ui.BoxHeightStyle.includeLineSpacingMiddle,
     );
@@ -272,9 +332,11 @@ Future<void> _renderPage(int pageNumber) async {
         reason:
             'page $pageNumber unit surah=${u.surah} ayah=${u.ayah} has no rects');
     if (u.ayah == 0) {
-      final corrected = boxes.map((b) => ui.TextBox.fromLTRBD(
-            b.left, b.top, _renderWidth - b.left, b.bottom, b.direction,
-          )).toList();
+      final corrected = boxes
+          .map((b) => ui.TextBox.fromLTRBD(
+                b.left, b.top, _renderWidth - b.left, b.bottom, b.direction,
+              ))
+          .toList();
       unitBoxes.add(corrected);
     } else {
       unitBoxes.add(boxes);
@@ -294,22 +356,80 @@ Future<void> _renderPage(int pageNumber) async {
           .map((r) => {
                 'x': double.parse((r.left / _renderWidth).toStringAsFixed(5)),
                 'y': double.parse((r.top / pageHeight).toStringAsFixed(5)),
-                'w':
-                    double.parse((r.width / _renderWidth).toStringAsFixed(5)),
-                'h':
-                    double.parse((r.height / pageHeight).toStringAsFixed(5)),
+                'w': double.parse((r.width / _renderWidth).toStringAsFixed(5)),
+                'h': double.parse((r.height / pageHeight).toStringAsFixed(5)),
               })
           .toList(),
     });
   }
   expect(bounds, isNotEmpty, reason: 'page $pageNumber has no units');
 
-  final jsonFile = File(
-      '$_outputBoundsDir/page_${pageNumber.toString().padLeft(3, '0')}.json');
+  final jsonFile = File('$_outputBoundsDir/page_$pad.json');
   await jsonFile.writeAsString(jsonEncode({
     'page': pageNumber,
     'ayahs': bounds,
   }));
+}
+
+// Stacked Arabic label (small) above a number, centred at (cx, cy) and nudged
+// down by `_ovalBlockDy`. `height: 1.0` keeps the two lines tight.
+void _ovalMeta(
+    Canvas canvas, String label, String number, double cx, double cy, double fontSize) {
+  TextPainter line(String t, double size) => TextPainter(
+        text: TextSpan(
+            text: t,
+            style: TextStyle(
+                fontFamily: _metaFontFamily,
+                fontSize: size,
+                height: 1.0,
+                color: _opaque,
+                locale: const Locale('ar'))),
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.center,
+      )..layout();
+  final lp = line(label, fontSize * 0.30 + 2);
+  final np = line(number, fontSize * 0.36 + 2);
+  const gap = 8.0;
+  final total = lp.height + gap + np.height;
+  var y = cy - total / 2 + _ovalBlockDy;
+  lp.paint(canvas, Offset(cx - lp.width / 2, y));
+  y += lp.height + gap;
+  np.paint(canvas, Offset(cx - np.width / 2, y));
+}
+
+// Tight ink bounds (alpha>0) of a painter drawn at origin in renderWidth space.
+Future<Rect> _measureInk(TextPainter p) async {
+  final w = _renderWidth.toInt();
+  final h = p.height.ceil();
+  final rec = ui.PictureRecorder();
+  p.paint(Canvas(rec), Offset.zero);
+  final img = await rec.endRecording().toImage(w, h);
+  final data =
+      (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
+  var minX = w, minY = h, maxX = -1, maxY = -1;
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      if (data[(y * w + x) * 4 + 3] != 0) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  return Rect.fromLTRB(
+      minX.toDouble(), minY.toDouble(), (maxX + 1).toDouble(), (maxY + 1).toDouble());
+}
+
+Future<ui.Image> _toImage(double pageHeight, void Function(Canvas) draw) async {
+  final rec = ui.PictureRecorder();
+  draw(Canvas(rec));
+  return rec.endRecording().toImage(_renderWidth.toInt(), pageHeight.toInt());
+}
+
+Future<List<int>> _png(ui.Image img) async {
+  final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+  return bytes!.buffer.asUint8List();
 }
 
 List<List<Rect>> _snapBoundsAcrossPage(List<List<ui.TextBox>> boxesPerUnit) {
@@ -362,9 +482,7 @@ List<double> _cluster1D(List<double> values, double tolerance) {
       clusters.add([sorted[i]]);
     }
   }
-  return clusters
-      .map((c) => c.reduce((a, b) => a + b) / c.length)
-      .toList();
+  return clusters.map((c) => c.reduce((a, b) => a + b) / c.length).toList();
 }
 
 double _snap(double value, List<double> clusters, double tolerance) {
@@ -374,21 +492,18 @@ double _snap(double value, List<double> clusters, double tolerance) {
   return value;
 }
 
-// Loads from the on-disk path rather than rootBundle: the WOFF fonts and
-// header.png are not registered in pubspec.yaml at runtime (728e772 stripped
-// the 605 QCF font entries), so the asset bundle can't find them. The
-// generator only runs at build time, where direct disk access is fine.
-Future<void> _loadFontFromWoff(String family, String diskPath) async {
-  final woffBytes = await File(diskPath).readAsBytes();
-  final ttfBytes = woffToSfnt(woffBytes);
+// Loads from the on-disk path rather than rootBundle: the QCF fonts are not
+// registered in pubspec.yaml at runtime (728e772 stripped the 605 QCF font
+// entries), so the asset bundle can't find them. The generator only runs at
+// build time, where direct disk access is fine.
+//
+// Reads the original TTF straight into the FontLoader. (Earlier this pipeline
+// loaded WOFF and converted WOFF -> SFNT in-Dart, because flutter_test didn't
+// shape PUA codepoints from WOFF reliably; the original TTFs in
+// assets/QCF2BSMLfonts shape identically and skip that step.)
+Future<void> _loadFontFromTtf(String family, String diskPath) async {
+  final ttfBytes = await File(diskPath).readAsBytes();
   final loader = FontLoader(family);
-  loader.addFont(Future.value(ByteData.view(ttfBytes.buffer)));
+  loader.addFont(Future.value(ByteData.sublistView(ttfBytes)));
   await loader.load();
-}
-
-Future<ui.Image> _loadImage(String diskPath) async {
-  final bytes = await File(diskPath).readAsBytes();
-  final codec = await ui.instantiateImageCodec(bytes);
-  final frame = await codec.getNextFrame();
-  return frame.image;
 }

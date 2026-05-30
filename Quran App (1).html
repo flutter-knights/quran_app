@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quran App — Full Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Inter:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════════════════
+       1. PALETTE DEFINITIONS
+    ══════════════════════════════════════════════════ */
+    [data-theme="neutral-dark"] {
+      --bg:              #0D0D0D;
+      --surface:         #1A1A1A;
+      --primary:         #2E5244;
+      --secondary:       #5C8070;
+      --on-surface:      #F5F5F5;
+      --on-surface-var:  #8A8A8A;
+      --border-base:     245,245,245;
+      --frame:           #111111;
+      --mushaf-bg:       #1C1A14;
+      --mushaf-text:     #D4C5B0;
+      --mushaf-border:   rgba(255,255,255,0.06);
+    }
+    [data-theme="neutral-light"] {
+      --bg:              #F4F4F4;
+      --surface:         #EAEAEA;
+      --primary:         #2E5244;
+      --secondary:       #5C8070;
+      --on-surface:      #141414;
+      --on-surface-var:  #686868;
+      --border-base:     14,14,14;
+      --frame:           #D8D8D8;
+      --mushaf-bg:       #FFFCF5;
+      --mushaf-text:     #1A1208;
+      --mushaf-border:   rgba(0,0,0,0.06);
+    }
+    [data-theme="slate-dark"] {
+      --bg:              #0A0C10;
+      --surface:         #141820;
+      --primary:         #1C4558;
+      --secondary:       #4878A0;
+      --on-surface:      #F0F4F8;
+      --on-surface-var:  #8A92A0;
+      --border-base:     240,244,248;
+      --frame:           #080A0E;
+      --mushaf-bg:       #111620;
+      --mushaf-text:     #C8D4E0;
+      --mushaf-border:   rgba(255,255,255,0.05);
+    }
+    [data-theme="slate-light"] {
+      --bg:              #F0F3F8;
+      --surface:         #E2E8F2;
+      --primary:         #1C4558;
+      --secondary:       #4878A0;
+      --on-surface:      #0A0C12;
+      --on-surface-var:  #5E6880;
+      --border-base:     10,12,18;
+      --frame:           #C8D0E0;
+      --mushaf-bg:       #F8FBFF;
+      --mushaf-text:     #0A0E14;
+      --mushaf-border:   rgba(10,12,24,0.06);
+    }
+    [data-theme] {
+      --on-surface-06:  rgba(var(--border-base), 0.06);
+      --on-surface-10:  rgba(var(--border-base), 0.10);
+      --on-surface-12:  rgba(var(--border-base), 0.12);
+      --on-surface-20:  rgba(var(--border-base), 0.20);
+      --sahih:  #3D9E6E;
+      --hasan:  #C8882A;
+      --daeef:  #D05050;
+    }
+
+    /* ══════════════════════════════════════════════════
+       2. RESET + BODY
+    ══════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #101010;
+      min-height: 100vh;
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 60px;
+      gap: 20px;
+      direction: ltr; /* dev chrome reads LTR; the phone overrides to its own dir */
+    }
+
+    /* ══════════════════════════════════════════════════
+       3. PALETTE SWITCHER
+    ══════════════════════════════════════════════════ */
+    .switcher-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .switcher-row {
+      display: flex; gap: 6px;
+      background: #1C1C1C;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 5px;
+    }
+    .sw-btn {
+      padding: 7px 16px; border-radius: 10px; border: none;
+      background: transparent; color: rgba(255,255,255,0.4);
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: background 0.18s, color 0.18s;
+      white-space: nowrap; display: flex; align-items: center; gap: 6px;
+    }
+    .sw-btn.active { background: #2E2E2E; color: #fff; }
+    .sw-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .switcher-hint { font-size: 11px; color: rgba(255,255,255,0.25); letter-spacing: 0.3px; }
+
+    /* ══════════════════════════════════════════════════
+       4. SCREEN SELECTOR
+    ══════════════════════════════════════════════════ */
+    .screen-selector {
+      display: flex; gap: 6px;
+      background: #1C1C1C;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 5px;
+      max-width: 100%; overflow-x: auto; scrollbar-width: none;
+    }
+    .screen-selector::-webkit-scrollbar { display: none; }
+    .ss-btn {
+      padding: 6px 14px; border-radius: 10px; border: none;
+      background: transparent; color: rgba(255,255,255,0.4);
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: background 0.18s, color 0.18s;
+      white-space: nowrap;
+    }
+    .ss-btn.active { background: #2E2E2E; color: #fff; }
+
+    /* ══════════════════════════════════════════════════
+       5. PHONE FRAME
+    ══════════════════════════════════════════════════ */
+    .phone {
+      width: 390px; height: 812px;
+      border-radius: 44px;
+      border: 7px solid var(--frame, #111);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 40px 100px rgba(0,0,0,0.75);
+      overflow: hidden; position: relative;
+      background: var(--bg); flex-shrink: 0;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .phone::before {
+      content: ''; position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 110px; height: 28px;
+      background: var(--frame, #111);
+      border-radius: 0 0 18px 18px; z-index: 200;
+      transition: background 0.3s;
+    }
+
+    /* ══════════════════════════════════════════════════
+       6. SCREEN CONTAINER + SCREEN ITEMS
+    ══════════════════════════════════════════════════ */
+    .screen {
+      position: absolute; inset: 0;
+      background: var(--bg);
+      transition: background 0.3s;
+    }
+    .sc {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      background: var(--bg);
+      opacity: 0; pointer-events: none;
+      /* Safe-area top: 28px notch + 6px breathing room so content never hides under it */
+      padding-top: 34px;
+      transition: opacity 0.22s ease, background 0.3s;
+    }
+    .sc.active { opacity: 1; pointer-events: auto; }
+    .sc-scroll {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      scrollbar-width: none;
+    }
+    .sc-scroll::-webkit-scrollbar { display: none; }
+    .content {
+      padding: 16px 16px 32px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       7. SHARED: APP BAR
+    ══════════════════════════════════════════════════ */
+    .app-bar {
+      height: 60px; padding: 0 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg);
+      border-bottom: 1px solid var(--on-surface-06);
+      flex-shrink: 0;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .app-bar-center { display: flex; flex-direction: column; align-items: center; }
+    .app-bar-label {
+      font-size: 10px; font-weight: 500; color: var(--on-surface-var);
+      letter-spacing: 0.5px; transition: color 0.3s;
+    }
+    .app-bar-title {
+      font-size: 15px; font-weight: 700; color: var(--on-surface);
+      font-family: 'Amiri', serif; transition: color 0.3s;
+    }
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 1px solid var(--on-surface-12);
+      background: var(--on-surface-06);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--on-surface); flex-shrink: 0;
+      transition: background 0.3s, border-color 0.3s, color 0.3s;
+    }
+    .icon-btn svg {
+      width: 16px; height: 16px; stroke: currentColor; fill: none;
+      stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* ══════════════════════════════════════════════════
+       8. SHARED: SECTION HEADER
+    ══════════════════════════════════════════════════ */
+    .section-header { display: flex; align-items: center; gap: 8px; }
+    .section-bar {
+      width: 3px; height: 16px; border-radius: 2px;
+      background: var(--secondary); flex-shrink: 0; transition: background 0.3s;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 700; color: var(--on-surface-var);
+      letter-spacing: 1.2px; text-transform: uppercase;
+      flex: 1; transition: color 0.3s;
+    }
+    .section-link {
+      font-size: 11px; font-weight: 600; color: var(--secondary);
+      cursor: pointer; transition: color 0.3s;
+    }
+
+    /* ══════════════════════════════════════════════════
+       9. SHARED: CARDS + CHAPTER CARD
+    ══════════════════════════════════════════════════ */
+    .chapter-card {
+      background: var(--surface); border-radius: 16px; padding: 16px;
+      border: 1px solid var(--on-surface-06);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .chapter-card-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .card-sep { height: 1px; background: var(--on-surface-06); margin-bottom: 12px; transition: background 0.3s; }
+    .chapter-arabic {
+      font-family: 'Amiri', serif; font-size: 18px; font-weight: 700;
+      color: var(--secondary); direction: rtl; text-align: right;
+      line-height: 1.6; margin-bottom: 4px; transition: color 0.3s;
+    }
+    .chapter-english {
+      font-size: 13px; font-weight: 500; color: var(--on-surface-var);
+      transition: color 0.3s;
+    }
+    .chapter-ref { font-size: 11px; font-weight: 600; color: var(--on-surface-var); transition: color 0.3s; }
+
+    /* ══════════════════════════════════════════════════
+       10. SHARED: ARABIC BLOCK + ORNAMENT + TRANSLATION
+    ══════════════════════════════════════════════════ */
+    .arabic-block {
+      background: var(--surface); border-radius: 16px; padding: 20px 18px;
+      border: 1px solid var(--on-surface-06);
+      border-right: 3px solid var(--primary);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .arabic-text {
+      font-family: 'Amiri Quran', 'Amiri', serif; font-size: 23px;
+      line-height: 2.1; color: var(--on-surface);
+      direction: rtl; text-align: right; transition: color 0.3s;
+    }
+    .ornament-div { display: flex; align-items: center; gap: 10px; }
+    .div-line { flex: 1; height: 1px; background: var(--on-surface-06); transition: background 0.3s; }
+    .div-diamond {
+      width: 6px; height: 6px; background: var(--secondary);
+      transform: rotate(45deg); border-radius: 1px; flex-shrink: 0; transition: background 0.3s;
+    }
+    .translation-text {
+      font-size: 15px; font-weight: 400; color: var(--on-surface);
+      line-height: 1.78; transition: color 0.3s;
+    }
+
+    /* ══════════════════════════════════════════════════
+       11. SHARED: STATUS BADGE
+    ══════════════════════════════════════════════════ */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+    }
+    .status-badge.sahih { background: rgba(61,158,110,0.12); color: var(--sahih); border: 1px solid rgba(61,158,110,0.28); }
+    .status-badge.hasan { background: rgba(200,136,42,0.12); color: var(--hasan); border: 1px solid rgba(200,136,42,0.28); }
+    .status-badge.daeef { background: rgba(208,80,80,0.12); color: var(--daeef); border: 1px solid rgba(208,80,80,0.28); }
+    .status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    /* ══════════════════════════════════════════════════
+       12. SHARED: ACTION BUTTONS ROW
+    ══════════════════════════════════════════════════ */
+    .actions-row { display: flex; gap: 10px; }
+    .action-btn {
+      flex: 1; height: 44px; border-radius: 12px;
+      border: 1px solid var(--on-surface-12);
+      background: var(--on-surface-06); color: var(--on-surface-var);
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 6px; transition: background 0.3s, border-color 0.3s, color 0.3s;
+    }
+    .action-btn.primary-btn { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .action-btn svg {
+      width: 14px; height: 14px; stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .annotation {
+      font-size: 10px; font-weight: 500; color: var(--on-surface-var);
+      text-align: center; opacity: 0.5; transition: color 0.3s;
+    }
+
+    /* ══════════════════════════════════════════════════
+       13. NARRATOR CARD
+    ══════════════════════════════════════════════════ */
+    .narrator-card {
+      background: var(--surface); border-radius: 12px; padding: 14px;
+      border: 1px solid var(--on-surface-06);
+      border-left: 3px solid var(--secondary);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .narrator-lbl {
+      font-size: 10px; font-weight: 700; color: var(--secondary);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; transition: color 0.3s;
+    }
+    .narrator-txt { font-size: 13px; color: var(--on-surface-var); line-height: 1.55; transition: color 0.3s; }
+
+    /* ══════════════════════════════════════════════════
+       14. ANIMATIONS
+    ══════════════════════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ══════════════════════════════════════════════════
+       15. SPLASH SCREEN — redesigned around a calligraphic
+            mihrab arch + brand wordmark, no clip-art mosque.
+    ══════════════════════════════════════════════════ */
+    .sc-splash {
+      background:
+        radial-gradient(120% 60% at 50% 0%, rgba(255,255,255,0.06) 0%, transparent 60%),
+        radial-gradient(80% 50% at 50% 110%, rgba(0,0,0,0.35) 0%, transparent 70%),
+        var(--primary) !important;
+      /* MUST stay position:absolute inset:0 (inherited from .sc) so it fills the phone */
+      overflow: hidden;
+      align-items: center; justify-content: center;
+    }
+    .splash-grid {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.7;
+      background-image:
+        repeating-linear-gradient(60deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 36px),
+        repeating-linear-gradient(-60deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 36px);
+    }
+    .splash-body {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      position: relative; z-index: 1; padding: 0 32px;
+      gap: 26px;
+    }
+    /* Mihrab — pointed Islamic arch frame around the wordmark */
+    .splash-mihrab {
+      width: 188px; height: 250px;
+      position: relative;
+      animation: scaleIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .splash-mihrab svg { width: 100%; height: 100%; display: block; }
+    .splash-mark {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px; padding-top: 8px;
+    }
+    .splash-mark-glyph {
+      font-family: 'Amiri Quran', 'Amiri', serif;
+      font-size: 64px; line-height: 1; color: #fff;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.25);
+    }
+    .splash-mark-rule {
+      width: 36px; height: 1px;
+      background: rgba(255,255,255,0.35);
+    }
+    .splash-mark-sub {
+      font-family: 'Reem Kufi', 'Amiri', serif;
+      font-size: 11px; font-weight: 600; letter-spacing: 4px;
+      color: rgba(255,255,255,0.7); text-transform: uppercase;
+      direction: ltr; unicode-bidi: isolate;
+    }
+    .splash-title {
+      font-family: 'Amiri', serif; font-size: 34px; font-weight: 700;
+      color: #fff; text-align: center; line-height: 1.2;
+      animation: slideUp 0.6s ease 0.25s both;
+      letter-spacing: 0.5px;
+    }
+    .splash-slogan {
+      font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 12px; font-weight: 500;
+      color: rgba(255,255,255,0.55); letter-spacing: 6px;
+      text-align: center;
+      animation: slideUp 0.6s ease 0.4s both;
+    }
+    .splash-loader {
+      position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 6px;
+      animation: fadeIn 0.6s ease 0.7s both;
+    }
+    .splash-loader-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.7);
+      animation: loaderPulse 1.2s ease-in-out infinite;
+    }
+    .splash-loader-dot:nth-child(2) { animation-delay: 0.18s; }
+    .splash-loader-dot:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes loaderPulse {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50%      { opacity: 1;    transform: scale(1); }
+    }
+
+    /* ══════════════════════════════════════════════════
+       15b. LANDING / ONBOARDING SCREEN — simplified
+    ══════════════════════════════════════════════════ */
+    .sc-landing {
+      background: var(--bg);
+    }
+    .landing-top {
+      position: relative; padding: 24px 22px 28px;
+      background: var(--primary);
+      color: #fff;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      overflow: hidden;
+    }
+    .landing-top::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(60% 80% at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 70%),
+        repeating-linear-gradient(60deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 30px),
+        repeating-linear-gradient(-60deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 30px);
+    }
+    .landing-top-row {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 26px;
+    }
+    .landing-brand {
+      display: flex; align-items: center; gap: 9px;
+    }
+    .landing-brand-mark {
+      width: 32px; height: 32px; border-radius: 9px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Amiri Quran', 'Amiri', serif;
+      font-size: 17px; color: #fff;
+    }
+    .landing-brand-name {
+      font-family: 'Reem Kufi', serif; font-size: 13px; font-weight: 700;
+      color: #fff; letter-spacing: 1.5px;
+      direction: ltr; unicode-bidi: isolate;
+    }
+    .landing-skip {
+      font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,0.65); background: none; border: none; cursor: pointer;
+      padding: 8px 4px;
+    }
+    .landing-hero {
+      position: relative; z-index: 1;
+    }
+    .landing-headline {
+      font-family: 'Amiri', serif; font-size: 26px; font-weight: 700;
+      color: #fff; line-height: 1.4; margin-bottom: 12px;
+    }
+    .landing-sub {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 12.5px; font-weight: 400; line-height: 1.7;
+      color: rgba(255,255,255,0.72);
+      max-width: 300px;
+    }
+
+    .landing-body {
+      padding: 22px 18px 26px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+    /* Vertical feature rows (icon + text) — lighter than a 2×2 grid */
+    .landing-features {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .landing-feat {
+      background: transparent; border: none; padding: 10px 4px;
+      display: flex; align-items: center; gap: 14px;
+      border-bottom: 1px solid var(--on-surface-06);
+    }
+    .landing-feat:last-child { border-bottom: none; }
+    .landing-feat-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .landing-feat-icon svg {
+      width: 17px; height: 17px; stroke: var(--secondary); fill: none;
+      stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .landing-feat-text { flex: 1; min-width: 0; }
+    .landing-feat-title {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 13.5px; font-weight: 700; color: var(--on-surface);
+      margin-bottom: 2px;
+    }
+    .landing-feat-sub {
+      font-size: 11px; font-weight: 500; color: var(--on-surface-var);
+      line-height: 1.5;
+    }
+    .landing-cta {
+      margin-top: 4px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; height: 50px; border-radius: 14px;
+      background: var(--primary); color: #fff; border: none;
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 14px; font-weight: 700; letter-spacing: 0.5px;
+      cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    }
+    .landing-cta svg {
+      width: 14px; height: 14px; stroke: #fff; fill: none;
+      stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Language switcher chip — sits beside the palette switcher */
+    .lang-switcher {
+      display: flex; gap: 4px;
+      background: #1C1C1C;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 5px;
+    }
+    .lang-btn {
+      padding: 7px 14px; border-radius: 10px; border: none;
+      background: transparent; color: rgba(255,255,255,0.4);
+      font-family: 'Inter', 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      cursor: pointer; transition: background 0.18s, color 0.18s;
+    }
+    .lang-btn.active { background: #2E2E2E; color: #fff; }
+
+    /* In-app language toggle pill (lives inside settings sheet) */
+    .lang-toggle {
+      display: inline-flex; background: var(--on-surface-06);
+      border: 1px solid var(--on-surface-10); border-radius: 9px;
+      padding: 3px; gap: 2px;
+    }
+    .lang-toggle-btn {
+      padding: 4px 10px; border-radius: 7px; border: none;
+      background: transparent; color: var(--on-surface-var);
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s, color 0.2s;
+    }
+    .lang-toggle-btn.active {
+      background: var(--secondary); color: #fff;
+    }
+
+    /* When the phone is in EN mode, flip dir for the relevant elements */
+    .phone[data-lang="en"] {
+      direction: ltr;
+    }
+    .phone[data-lang="en"] .home-hijri,
+    .phone[data-lang="en"] .home-location,
+    .phone[data-lang="en"] .countdown-text,
+    .phone[data-lang="en"] .prayer-name,
+    .phone[data-lang="en"] .surah-badge,
+    .phone[data-lang="en"] .lr-sub,
+    .phone[data-lang="en"] .quick-label,
+    .phone[data-lang="en"] .quick-sub,
+    .phone[data-lang="en"] .lrb-value,
+    .phone[data-lang="en"] .search-input,
+    .phone[data-lang="en"] .surah-meta,
+    .phone[data-lang="en"] .po-ref,
+    .phone[data-lang="en"] .hp-num,
+    .phone[data-lang="en"] .hp-chapter,
+    .phone[data-lang="en"] .page-number {
+      direction: ltr;
+    }
+    .phone[data-lang="en"] .app-bar-title,
+    .phone[data-lang="en"] .sheet-title,
+    .phone[data-lang="en"] .settings-label {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Hide opposite-language nodes */
+    .lang-ar { display: inline; }
+    .lang-en { display: none; }
+    .phone[data-lang="en"] .lang-ar { display: none; }
+    .phone[data-lang="en"] .lang-en { display: inline; }
+    /* Block-level variants */
+    .lang-ar-block { display: block; }
+    .lang-en-block { display: none; }
+    .phone[data-lang="en"] .lang-ar-block { display: none; }
+    .phone[data-lang="en"] .lang-en-block { display: block; }
+
+    /* ══════════════════════════════════════════════════
+       16. HOME SCREEN
+    ══════════════════════════════════════════════════ */
+    .home-app-bar-date {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .home-hijri {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 14px; font-weight: 700;
+      color: var(--on-surface); direction: rtl; transition: color 0.3s;
+    }
+    .home-location {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 500; color: var(--on-surface-var);
+      direction: rtl; transition: color 0.3s;
+    }
+    .home-location svg {
+      width: 10px; height: 10px; stroke: var(--on-surface-var); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0;
+    }
+    .time-hero {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 0 4px; gap: 7px;
+    }
+    .time-display {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 58px; font-weight: 800;
+      color: var(--on-surface); letter-spacing: -2px; line-height: 1;
+      transition: color 0.3s; direction: ltr;
+    }
+    .time-period {
+      font-size: 20px; font-weight: 600; color: var(--secondary);
+      margin-left: 6px; vertical-align: middle; transition: color 0.3s;
+    }
+    .countdown-row { display: flex; align-items: center; gap: 6px; }
+    .countdown-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--secondary); flex-shrink: 0; transition: background 0.3s;
+    }
+    .countdown-text {
+      font-size: 13px; font-weight: 600; color: var(--on-surface-var);
+      direction: rtl; transition: color 0.3s;
+    }
+    .countdown-prayer { color: var(--secondary); font-weight: 700; transition: color 0.3s; }
+
+    /* Prayer cards */
+    .prayers-row { display: flex; gap: 7px; }
+    .prayer-card {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 5px; padding: 10px 4px 11px; border-radius: 12px;
+      border: 1px solid transparent; cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .prayer-card.active { background: var(--surface); border-color: var(--on-surface-06); }
+    .prayer-name {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 10px; font-weight: 700;
+      color: var(--on-surface); direction: rtl; transition: color 0.3s;
+    }
+    .prayer-icon {
+      width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    }
+    .prayer-icon svg {
+      width: 18px; height: 18px; stroke: var(--on-surface-var); fill: none;
+      stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.3s;
+    }
+    .prayer-time {
+      font-size: 10px; font-weight: 600; color: var(--on-surface-var);
+      direction: ltr; transition: color 0.3s;
+    }
+    .prayer-active-dot {
+      width: 4px; height: 4px; border-radius: 50%; background: var(--secondary); transition: background 0.3s;
+    }
+    .prayer-card.active .prayer-name,
+    .prayer-card.active .prayer-time { color: var(--secondary); }
+    .prayer-card.active .prayer-icon svg { stroke: var(--secondary); }
+
+    /* Last read card — compact */
+    .last-read-card {
+      background: var(--surface); border-radius: 14px; padding: 12px 14px;
+      border: 1px solid var(--on-surface-06);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .lr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .surah-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700;
+      color: var(--secondary); background: var(--on-surface-06);
+      border: 1px solid var(--on-surface-12); direction: rtl;
+      transition: color 0.3s, background 0.3s;
+    }
+    .surah-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .lr-page { font-size: 10.5px; font-weight: 600; color: var(--on-surface-var); transition: color 0.3s; }
+    .lr-arabic {
+      font-family: 'Amiri', serif; font-size: 17px; font-weight: 700;
+      color: var(--secondary); direction: rtl; text-align: right;
+      line-height: 1.45; margin-bottom: 2px; transition: color 0.3s;
+    }
+    .lr-sub {
+      font-size: 10.5px; font-weight: 500; color: var(--on-surface-var);
+      margin-bottom: 8px; direction: rtl; text-align: right; transition: color 0.3s;
+    }
+    .progress-wrap {
+      height: 3px; background: var(--on-surface-06); border-radius: 4px;
+      overflow: hidden; margin-bottom: 8px; transition: background 0.3s;
+    }
+    .progress-fill { height: 100%; border-radius: 4px; background: var(--secondary); width: 34%; transition: background 0.3s; }
+    .lr-footer { display: flex; align-items: center; justify-content: space-between; }
+    .progress-label { font-size: 10px; font-weight: 600; color: var(--on-surface-var); transition: color 0.3s; }
+    .continue-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 9px;
+      background: var(--primary); border: none; color: #fff;
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 11px; font-weight: 700;
+      cursor: pointer; direction: rtl;
+    }
+    .continue-btn svg {
+      width: 11px; height: 11px; stroke: #fff; fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Quick grid — 4-up row of tile-above-label icons */
+    .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .quick-card {
+      background: transparent; border: none; padding: 0;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px; cursor: pointer;
+    }
+    .quick-icon {
+      width: 100%; aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      background: var(--surface); border: 1px solid var(--on-surface-06);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.25s, border-color 0.25s, transform 0.18s;
+    }
+    .quick-card:hover .quick-icon { background: var(--on-surface-06); transform: translateY(-1px); }
+    .quick-icon svg {
+      width: 24px; height: 24px; stroke: var(--on-surface); fill: none;
+      stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+      transition: stroke 0.3s;
+    }
+    .quick-label {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 11px; font-weight: 600; color: var(--on-surface);
+      direction: rtl; text-align: center; line-height: 1.3;
+      transition: color 0.3s;
+    }
+    /* Sub-label no longer used in the compact tile layout */
+    .quick-sub { display: none; }
+
+    /* Settings bottom sheet */
+    .settings-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+      opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 300;
+    }
+    .settings-overlay.visible { opacity: 1; pointer-events: auto; }
+    .settings-sheet {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-radius: 20px 20px 0 0;
+      padding: 0 0 32px; transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1), background 0.3s; z-index: 301;
+    }
+    .settings-sheet.open { transform: translateY(0); }
+    .sheet-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: var(--on-surface-20); margin: 10px auto 0; transition: background 0.3s;
+    }
+    .sheet-title {
+      font-size: 15px; font-weight: 700; color: var(--on-surface);
+      padding: 16px 20px 12px; border-bottom: 1px solid var(--on-surface-06);
+      transition: color 0.3s, border-color 0.3s;
+    }
+    .settings-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-bottom: 1px solid var(--on-surface-06);
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row-left { display: flex; align-items: center; gap: 12px; }
+    .settings-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      display: flex; align-items: center; justify-content: center; transition: background 0.3s;
+    }
+    .settings-icon svg {
+      width: 15px; height: 15px; stroke: var(--secondary); fill: none;
+      stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.3s;
+    }
+    .settings-label { font-size: 13px; font-weight: 600; color: var(--on-surface); transition: color 0.3s; }
+
+    /* ══════════════════════════════════════════════════
+       SETTINGS — full screen
+    ══════════════════════════════════════════════════ */
+    /* Profile header */
+    .set-profile {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px; border-radius: 18px;
+      background: var(--surface); border: 1px solid var(--on-surface-06);
+      margin-bottom: 22px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .set-avatar {
+      width: 54px; height: 54px; border-radius: 16px; flex-shrink: 0;
+      background: var(--primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Amiri', serif; font-size: 26px; font-weight: 700;
+    }
+    .set-profile-info { flex: 1; min-width: 0; text-align: right; }
+    .phone[data-lang="en"] .set-profile-info { text-align: left; }
+    .set-profile-name {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+      font-size: 16px; font-weight: 700; color: var(--on-surface);
+      margin-bottom: 2px; transition: color 0.3s;
+    }
+    .set-profile-sub {
+      font-size: 11.5px; font-weight: 500; color: var(--on-surface-var);
+      transition: color 0.3s;
+    }
+    .set-profile-edit {
+      flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: background 0.25s;
+    }
+    .set-profile-edit:hover { background: var(--on-surface-10); }
+    .set-profile-edit svg {
+      width: 15px; height: 15px; stroke: var(--secondary); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Section group */
+    .set-group { margin-bottom: 22px; }
+    .set-group-label {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      color: var(--on-surface-var); text-transform: uppercase;
+      padding: 0 6px 8px; transition: color 0.3s;
+    }
+    .set-card {
+      background: var(--surface); border: 1px solid var(--on-surface-06);
+      border-radius: 16px; overflow: hidden;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .set-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 14px; border-bottom: 1px solid var(--on-surface-06);
+      transition: border-color 0.3s;
+    }
+    .set-row:last-child { border-bottom: none; }
+    .set-row-icon {
+      width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .set-row-icon svg {
+      width: 15px; height: 15px; stroke: var(--secondary); fill: none;
+      stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .set-row-text { flex: 1; min-width: 0; text-align: right; }
+    .phone[data-lang="en"] .set-row-text { text-align: left; }
+    .set-row-title {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+      font-size: 13px; font-weight: 600; color: var(--on-surface);
+      transition: color 0.3s;
+    }
+    .set-row-sub {
+      font-size: 10.5px; font-weight: 500; color: var(--on-surface-var);
+      margin-top: 1px; transition: color 0.3s;
+    }
+    /* Trailing value + chevron (for select rows) */
+    .set-row-value {
+      display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+      font-size: 12px; font-weight: 600; color: var(--on-surface-var);
+      transition: color 0.3s;
+    }
+    .set-row-value svg {
+      width: 14px; height: 14px; stroke: var(--on-surface-var); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    /* App-theme swatch row inside settings */
+    .set-theme-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 14px; border-bottom: 1px solid var(--on-surface-06);
+    }
+    .set-theme-swatches { display: flex; gap: 10px; flex: 1; justify-content: flex-end; }
+    .phone[data-lang="en"] .set-theme-swatches { justify-content: flex-start; }
+    .set-theme-dot {
+      width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: border-color 0.2s, transform 0.18s;
+    }
+    .set-theme-dot:hover { transform: scale(1.08); }
+    .set-theme-dot.active { border-color: var(--on-surface); }
+    /* Font-size stepper */
+    .set-font-row { padding: 13px 14px; border-bottom: 1px solid var(--on-surface-06); }
+    .set-font-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .set-font-track {
+      display: flex; align-items: center; gap: 0;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      border-radius: 10px; overflow: hidden;
+    }
+    .set-font-btn {
+      flex: 1; padding: 8px 0; border: none; background: transparent;
+      color: var(--on-surface); cursor: pointer;
+      font-family: 'Amiri', serif; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .set-font-btn:hover { background: var(--on-surface-06); }
+    .set-font-btn.sm { font-size: 13px; }
+    .set-font-btn.md { font-size: 16px; }
+    .set-font-btn.lg { font-size: 20px; }
+    .set-font-btn.active { background: var(--secondary); color: #fff; }
+    .set-font-btn + .set-font-btn { border-right: 1px solid var(--on-surface-10); }
+    /* Sign-out / danger row */
+    .set-signout {
+      width: 100%; margin-top: 4px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px; border-radius: 14px;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      color: #d8654f; cursor: pointer;
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+      font-size: 13px; font-weight: 700;
+      transition: background 0.25s;
+    }
+    .set-signout:hover { background: var(--on-surface-10); }
+    .set-signout svg {
+      width: 16px; height: 16px; stroke: #d8654f; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .set-version {
+      text-align: center; font-size: 10.5px; font-weight: 500;
+      color: var(--on-surface-var); margin-top: 16px; letter-spacing: 0.3px;
+      transition: color 0.3s;
+    }
+    .toggle-switch {
+      width: 40px; height: 24px; border-radius: 12px;
+      background: var(--on-surface-20); position: relative; cursor: pointer;
+      transition: background 0.25s;
+    }
+    .toggle-switch.on { background: var(--secondary); }
+    .toggle-knob {
+      position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 9px; background: #fff;
+      transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    .toggle-switch.on .toggle-knob { transform: translateX(16px); }
+
+    /* ══════════════════════════════════════════════════
+       17. SURAH LIST SCREEN
+    ══════════════════════════════════════════════════ */
+    .last-read-bar {
+      background: var(--surface); border-radius: 14px; padding: 12px 14px;
+      border: 1px solid var(--on-surface-06);
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .lrb-left { display: flex; align-items: center; gap: 10px; }
+    .lrb-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lrb-icon svg {
+      width: 17px; height: 17px; stroke: var(--secondary); fill: none;
+      stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .lrb-label { font-size: 10px; font-weight: 700; color: var(--on-surface-var); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 1px; transition: color 0.3s; }
+    .lrb-value { font-size: 13px; font-weight: 700; color: var(--on-surface); direction: rtl; transition: color 0.3s; }
+    .lrb-btn {
+      padding: 7px 13px; border-radius: 9px; background: var(--primary); border: none;
+      color: #fff; font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer;
+    }
+    .search-bar {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface); border-radius: 12px; padding: 0 12px;
+      height: 40px; border: 1px solid var(--on-surface-10);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .search-bar svg {
+      width: 15px; height: 15px; stroke: var(--on-surface-var); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; transition: stroke 0.3s;
+    }
+    .search-input {
+      flex: 1; border: none; background: transparent;
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--on-surface); outline: none; direction: rtl;
+      transition: color 0.3s;
+    }
+    .search-input::placeholder { color: var(--on-surface-var); }
+    .surahs-list { display: flex; flex-direction: column; gap: 8px; }
+    .surah-tile {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border-radius: 12px; padding: 10px 12px;
+      border: 1px solid var(--on-surface-06); cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .surah-play-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-12);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer; transition: background 0.3s;
+    }
+    .surah-play-btn svg {
+      width: 13px; height: 13px; fill: var(--secondary); stroke: none; transition: fill 0.3s;
+    }
+    .surah-info { flex: 1; min-width: 0; }
+    .surah-name {
+      font-family: 'Amiri', serif; font-size: 18px; font-weight: 700;
+      color: var(--on-surface); direction: rtl; text-align: right;
+      line-height: 1.3; margin-bottom: 3px; transition: color 0.3s;
+    }
+    .surah-meta {
+      font-size: 10px; font-weight: 600; color: var(--on-surface-var);
+      direction: rtl; text-align: right; letter-spacing: 0.2px; transition: color 0.3s;
+    }
+    .surah-num {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 10px; font-weight: 700;
+      color: var(--on-surface-var); transition: background 0.3s, color 0.3s;
+    }
+
+    /* ══════════════════════════════════════════════════
+       18. MUSHAF SCREEN
+    ══════════════════════════════════════════════════ */
+    .sc-mushaf { background: var(--mushaf-bg) !important; }
+    .mushaf-wrapper {
+      flex: 1; display: flex; flex-direction: column;
+      padding: 12px; gap: 10px; overflow: hidden;
+    }
+    /* Floating playback overlay — hovers over the bottom of the mushaf page */
+    .playback-dock {
+      position: absolute;
+      left: 16px; right: 16px; bottom: 12px;
+      z-index: 5;
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 8px 6px 14px;
+      background: color-mix(in oklab, var(--surface) 78%, transparent);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      border: 1px solid var(--on-surface-10);
+      border-radius: 999px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      transition: background 0.3s, border-color 0.3s, opacity 0.25s;
+    }
+    /* RTL: padding inversion */
+    .phone[data-lang="en"] .playback-dock { padding: 6px 14px 6px 8px; }
+    .pd-info {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column;
+      align-items: flex-end;
+      gap: 1px;
+      text-align: right;
+      overflow: hidden;
+    }
+    .phone[data-lang="en"] .pd-info { align-items: flex-start; text-align: left; }
+    .pd-ref {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 11.5px; font-weight: 700; color: var(--on-surface);
+      transition: color 0.3s;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .pd-reciter {
+      font-size: 10px; font-weight: 500; color: var(--on-surface-var);
+      transition: color 0.3s;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .pd-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: var(--on-surface-var);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+    .pd-btn:hover { background: var(--on-surface-06); color: var(--on-surface); }
+    .pd-btn-sm svg { width: 11px; height: 11px; }
+    .pd-btn-play {
+      width: 36px; height: 36px;
+      background: var(--primary); color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .pd-btn-play:hover { background: var(--primary); color: #fff; }
+    .pd-btn-play svg { width: 12px; height: 12px; }
+    /* Hide the now-unused playback-overlay rules (legacy CSS) */
+    .playback-overlay { display: none; }
+    /* Mushaf wrapper needs position:relative so the absolute dock anchors to it */
+    .mushaf-wrapper { position: relative; }
+    .po-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .po-ref {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--secondary); direction: rtl; transition: color 0.3s;
+    }
+    .po-reciter {
+      display: flex; align-items: center; gap: 4px;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      border-radius: 8px; padding: 4px 8px; font-size: 10px; font-weight: 600;
+      color: var(--on-surface-var); cursor: pointer; transition: background 0.3s;
+    }
+    .po-reciter svg {
+      width: 10px; height: 10px; stroke: var(--on-surface-var); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .po-close {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      font-size: 14px; color: var(--on-surface-var); transition: background 0.3s;
+    }
+    .po-controls { display: flex; align-items: center; justify-content: space-between; }
+    .po-controls-center { display: flex; align-items: center; gap: 18px; }
+    .pc-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: background 0.3s;
+    }
+    .pc-btn svg {
+      width: 15px; height: 15px; stroke: var(--on-surface); fill: none;
+      stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.3s;
+    }
+    .pc-btn.play {
+      width: 42px; height: 42px;
+      background: var(--primary); border-color: var(--primary);
+    }
+    .pc-btn.play svg { stroke: #fff; }
+    .pc-btn svg.filled { fill: var(--on-surface); stroke: none; transition: fill 0.3s; }
+    .po-speed {
+      background: var(--on-surface-06); border: 1px solid var(--on-surface-10);
+      border-radius: 8px; padding: 5px 9px;
+      font-size: 11px; font-weight: 700; color: var(--secondary);
+      cursor: pointer; transition: background 0.3s;
+    }
+    /* Mushaf page */
+    .mushaf-page {
+      flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
+      border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 14px 12px 12px; gap: 6px;
+      transition: background 0.35s, border-color 0.35s, color 0.35s;
+      position: relative;
+      /* Local theming tokens — per-paper rules override these */
+      --mp-bg: var(--mushaf-bg);
+      --mp-border: var(--mushaf-border);
+      --mp-ink: var(--mushaf-text);
+      --mp-meta: var(--on-surface-var);
+      --mp-image-filter: contrast(1.05);
+      background: var(--mp-bg);
+      border: 1px solid var(--mp-border);
+      color: var(--mp-ink);
+    }
+
+    /* —— Paper themes —— */
+    .mushaf-page[data-paper="parchment"] {
+      --mp-bg: #f0e6d2;
+      --mp-border: rgba(120,90,40,0.18);
+      --mp-ink: #3a2a14;
+      --mp-meta: rgba(58,42,20,0.6);
+      --mp-image-filter: sepia(0.35) contrast(1.08) brightness(0.92);
+    }
+    .mushaf-page[data-paper="night"] {
+      --mp-bg: #0d0f12;
+      --mp-border: rgba(220,180,90,0.18);
+      --mp-ink: #e8d9a8;
+      --mp-meta: rgba(232,217,168,0.55);
+      --mp-image-filter: invert(1) hue-rotate(180deg) sepia(0.4) saturate(1.4) brightness(0.95) contrast(0.95);
+    }
+    .mushaf-page[data-paper="sky"] {
+      --mp-bg: #eaf1f7;
+      --mp-border: rgba(60,100,140,0.18);
+      --mp-ink: #1a3550;
+      --mp-meta: rgba(26,53,80,0.6);
+      --mp-image-filter: contrast(1.1) hue-rotate(190deg) saturate(1.2);
+    }
+    .mushaf-page[data-paper="mint"] {
+      --mp-bg: #e4ede4;
+      --mp-border: rgba(60,100,75,0.2);
+      --mp-ink: #1b3a26;
+      --mp-meta: rgba(27,58,38,0.6);
+      --mp-image-filter: contrast(1.08) hue-rotate(60deg) saturate(0.4) brightness(0.92);
+    }
+    .mushaf-page::-webkit-scrollbar { display: none; }
+    /* Metadata is now a floating overlay chip, not an inline header */
+    .mushaf-page-header {
+      position: absolute; top: 10px; left: 12px; right: 12px;
+      z-index: 5;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      padding: 6px 14px;
+      background: color-mix(in oklab, var(--mp-bg) 80%, transparent);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      border: 1px solid var(--mp-border);
+      border-radius: 999px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      transition: background 0.35s, border-color 0.35s;
+    }
+    .mph-side {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 10px; font-weight: 700;
+      color: var(--mp-meta); letter-spacing: 1px; text-transform: uppercase;
+      transition: color 0.35s;
+    }
+    .mph-center {
+      font-family: 'Amiri', serif; font-size: 14px; font-weight: 700;
+      color: var(--mp-ink); direction: rtl; transition: color 0.35s;
+    }
+    .mushaf-page-image {
+      width: 100%; height: auto; display: block;
+      flex-shrink: 0;
+      margin-top: 40px;
+      filter: var(--mp-image-filter);
+      transition: filter 0.35s;
+    }
+    /* App dark themes still invert the PNG when no per-paper theme is chosen */
+    [data-theme="neutral-dark"] .mushaf-page:not([data-paper]) .mushaf-page-image,
+    [data-theme="slate-dark"]   .mushaf-page:not([data-paper]) .mushaf-page-image {
+      filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.95);
+    }
+    /* Mushaf bottom bar */
+    .mushaf-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      height: 44px; flex-shrink: 0; position: relative;
+      border-top: 1px solid var(--mushaf-border);
+      background: var(--mushaf-bg); padding: 0 14px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .paper-picker {
+      display: flex; align-items: center; gap: 7px;
+    }
+    .paper-swatch {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 1.5px solid var(--on-surface-12);
+      cursor: pointer; padding: 0; position: relative;
+      transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s;
+    }
+    .paper-swatch:hover { transform: scale(1.1); }
+    .paper-swatch.active {
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 3px var(--secondary);
+    }
+    .mushaf-bottom .page-number {
+      flex: 1; text-align: center;
+    }
+    .page-number {
+      font-family: 'IBM Plex Sans Arabic', 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--on-surface-var); direction: ltr; transition: color 0.3s;
+    }
+    .mushaf-fab {
+      position: absolute; right: 14px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--primary); border: none;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .mushaf-fab svg {
+      width: 16px; height: 16px; stroke: #fff; fill: none;
+      stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* ══════════════════════════════════════════════════
+       19. BOOKS LIST SCREEN — single leading badge that
+            doubles as download action
+    ══════════════════════════════════════════════════ */
+    .books-list { display: flex; flex-direction: column; gap: 10px; }
+    .book-card {
+      background: var(--surface); border-radius: 14px; padding: 14px;
+      border: 1px solid var(--on-surface-06); cursor: pointer;
+      display: flex; align-items: center; gap: 14px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .book-info { flex: 1; min-width: 0; text-align: right; }
+    .phone[data-lang="en"] .book-info { text-align: left; }
+    .book-title-ar {
+      font-family: 'Amiri', serif; font-size: 17px; font-weight: 700;
+      color: var(--on-surface); line-height: 1.25;
+      margin-bottom: 2px; transition: color 0.3s;
+    }
+    .book-title-en {
+      font-size: 11px; font-weight: 600; color: var(--on-surface-var);
+      letter-spacing: 0.3px; margin-bottom: 4px;
+      transition: color 0.3s;
+      direction: ltr; unicode-bidi: isolate;
+      text-align: right;
+    }
+    .phone[data-lang="en"] .book-title-en { text-align: left; }
+    .book-meta {
+      font-size: 11px; font-weight: 500; color: var(--on-surface-var);
+      letter-spacing: 0.2px; transition: color 0.3s;
+    }
+    .book-meta bdi, .book-meta .num { unicode-bidi: isolate; }
+
+    /* Leading badge — icon-only action, three states: download / downloading / saved */
+    .book-action {
+      width: 44px; height: 44px; flex-shrink: 0;
+      border-radius: 12px;
+      background: var(--on-surface-06);
+      border: 1px solid var(--on-surface-10);
+      color: var(--on-surface-var);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.25s, border-color 0.25s, color 0.25s;
+      position: relative;
+    }
+    .book-action svg {
+      width: 18px; height: 18px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .book-action:hover {
+      background: var(--on-surface-10);
+      color: var(--on-surface);
+    }
+    .book-action.downloaded {
+      background: rgba(61,158,110,0.12);
+      border-color: rgba(61,158,110,0.3);
+      color: var(--sahih);
+    }
+    .book-action.downloading {
+      color: var(--secondary);
+      border-color: rgba(var(--border-base),0.25);
+    }
+    .book-action.downloading .ba-pct {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: -0.3px;
+      direction: ltr; unicode-bidi: isolate;
+    }
+
+    .download-progress-wrap {
+      height: 3px; border-radius: 2px; background: var(--on-surface-10);
+      margin-top: 8px; overflow: hidden; transition: background 0.3s;
+    }
+    .download-progress-fill { height: 100%; border-radius: 2px; background: var(--secondary); transition: background 0.3s; }
+
+    /* ══════════════════════════════════════════════════
+       20. AHADITH LIST SCREEN
+    ══════════════════════════════════════════════════ */
+    .ahadith-list { display: flex; flex-direction: column; gap: 10px; }
+    .hadith-preview {
+      background: var(--surface); border-radius: 12px; padding: 12px 14px;
+      border: 1px solid var(--on-surface-06); cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .hp-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .hp-num {
+      font-size: 10px; font-weight: 700; color: var(--on-surface-var);
+      direction: rtl; letter-spacing: 0.5px; transition: color 0.3s;
+    }
+    .hp-arabic {
+      font-family: 'Amiri', serif; font-size: 15px;
+      color: var(--on-surface); direction: rtl; text-align: right;
+      line-height: 1.7; margin-bottom: 8px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; transition: color 0.3s;
+    }
+    .hp-chapter {
+      font-size: 11px; font-weight: 600; color: var(--on-surface-var);
+      direction: rtl; text-align: right; transition: color 0.3s;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══ TOP CONTROLS ═══════════════════════════════════ -->
+  <div class="switcher-wrap">
+    <div class="switcher-row">
+      <button class="sw-btn active" onclick="setTheme('neutral-dark',this)">
+        <span class="sw-dot" style="background:#5C8070;"></span>Neutral Dark
+      </button>
+      <button class="sw-btn" onclick="setTheme('neutral-light',this)">
+        <span class="sw-dot" style="background:#5C8070;outline:1.5px solid #aaa;outline-offset:1px;"></span>Neutral Light
+      </button>
+      <button class="sw-btn" onclick="setTheme('slate-dark',this)">
+        <span class="sw-dot" style="background:#4878A0;"></span>Slate Dark
+      </button>
+      <button class="sw-btn" onclick="setTheme('slate-light',this)">
+        <span class="sw-dot" style="background:#4878A0;outline:1.5px solid #aaa;outline-offset:1px;"></span>Slate Light
+      </button>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('ar',this)">العربية</button>
+      <button class="lang-btn" onclick="setLang('en',this)">English</button>
+    </div>
+    <span class="switcher-hint">Theme &amp; language &middot; choose to preview</span>
+  </div>
+
+  <!-- ═══ SCREEN SELECTOR ════════════════════════════════ -->
+  <div class="screen-selector">
+    <button class="ss-btn active"  data-s="splash"  onclick="showScreen('splash',this)">Splash</button>
+    <button class="ss-btn"         data-s="landing" onclick="showScreen('landing',this)">Landing</button>
+    <button class="ss-btn"         data-s="home"    onclick="showScreen('home',this)">Home</button>
+    <button class="ss-btn"         data-s="surah"   onclick="showScreen('surah',this)">Surahs</button>
+    <button class="ss-btn"         data-s="mushaf"  onclick="showScreen('mushaf',this)">Mushaf</button>
+    <button class="ss-btn"         data-s="books"   onclick="showScreen('books',this)">Books</button>
+    <button class="ss-btn"         data-s="ahadith" onclick="showScreen('ahadith',this)">Ahadith</button>
+    <button class="ss-btn"         data-s="hadith"  onclick="showScreen('hadith',this)">Hadith</button>
+    <button class="ss-btn"         data-s="settings" onclick="showScreen('settings',this)">Settings</button>
+  </div>
+
+  <!-- ═══ PHONE ═══════════════════════════════════════════ -->
+  <div class="phone" data-theme="neutral-dark" data-lang="ar" id="phone">
+    <div class="screen">
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 1: SPLASH — redesigned
+      ──────────────────────────────────────────────── -->
+      <div class="sc sc-splash active" id="sc-splash">
+        <div class="splash-grid"></div>
+
+        <div class="splash-body">
+          <div class="splash-mihrab">
+            <!-- Pointed mihrab arch with double border + corner ornaments -->
+            <svg viewBox="0 0 188 250" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <!-- Outer arch -->
+              <path d="M14 240 L14 110 Q14 14 94 14 Q174 14 174 110 L174 240"
+                    stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>
+              <!-- Inner arch (inset) -->
+              <path d="M28 240 L28 112 Q28 28 94 28 Q160 28 160 112 L160 240"
+                    stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+              <!-- Top finial -->
+              <path d="M94 14 L88 6 L94 0 L100 6 Z" fill="rgba(255,255,255,0.7)"/>
+              <!-- Corner diamonds -->
+              <rect x="9" y="235" width="10" height="10" transform="rotate(45 14 240)" fill="rgba(255,255,255,0.5)"/>
+              <rect x="169" y="235" width="10" height="10" transform="rotate(45 174 240)" fill="rgba(255,255,255,0.5)"/>
+              <!-- Decorative dots along arch crown -->
+              <circle cx="60" cy="32" r="1.5" fill="rgba(255,255,255,0.55)"/>
+              <circle cx="94" cy="22" r="1.5" fill="rgba(255,255,255,0.55)"/>
+              <circle cx="128" cy="32" r="1.5" fill="rgba(255,255,255,0.55)"/>
+              <!-- Base rule -->
+              <line x1="14" y1="240" x2="174" y2="240" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+            </svg>
+
+            <div class="splash-mark">
+              <div class="splash-mark-glyph">ﷲ</div>
+              <div class="splash-mark-rule"></div>
+              <div class="splash-mark-sub">QURAN+</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="splash-title">
+              <span class="lang-ar">القرآن الكريم</span>
+              <span class="lang-en">The Noble Qur'an</span>
+            </div>
+            <div class="splash-slogan">
+              <span class="lang-ar">اِقْرَأْ · تَدَبَّرْ · اِحْفَظْ</span>
+              <span class="lang-en">READ · REFLECT · MEMORIZE</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="splash-loader">
+          <span class="splash-loader-dot"></span>
+          <span class="splash-loader-dot"></span>
+          <span class="splash-loader-dot"></span>
+        </div>
+      </div>
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 1b: LANDING — simplified, single-column flow
+      ──────────────────────────────────────────────── -->
+      <div class="sc" id="sc-landing">
+        <div class="sc-scroll">
+
+          <div class="landing-top">
+            <div class="landing-top-row">
+              <div class="landing-brand">
+                <div class="landing-brand-mark">ﷲ</div>
+                <div class="landing-brand-name">QURAN+</div>
+              </div>
+              <button class="landing-skip" onclick="document.querySelector('.ss-btn[data-s=&quot;home&quot;]').click()">
+                <span class="lang-ar">تخطّي</span>
+                <span class="lang-en">Skip</span>
+              </button>
+            </div>
+
+            <div class="landing-hero">
+              <div class="landing-headline">
+                <span class="lang-ar">رفيقك<br/>في قراءة القرآن</span>
+                <span class="lang-en">Your companion<br/>for reading the Qur'an</span>
+              </div>
+              <div class="landing-sub">
+                <span class="lang-ar">مصحف كامل، تلاوات بصوت كبار القرّاء، ومواقيت الصلاة — في تطبيق واحد.</span>
+                <span class="lang-en">The full Mushaf, recitations from leading reciters, and prayer times — all in one place.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="landing-body">
+
+            <div class="landing-features">
+              <div class="landing-feat">
+                <div class="landing-feat-icon">
+                  <svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 012-2h14"/><path d="M4 19a2 2 0 002 2h14V5"/><line x1="9" y1="9" x2="17" y2="9"/><line x1="9" y1="13" x2="14" y2="13"/></svg>
+                </div>
+                <div class="landing-feat-text">
+                  <div class="landing-feat-title"><span class="lang-ar">المصحف الشريف</span><span class="lang-en">The Mushaf</span></div>
+                  <div class="landing-feat-sub"><span class="lang-ar">١١٤ سورة بخط المدينة</span><span class="lang-en">114 surahs in Madinah script</span></div>
+                </div>
+              </div>
+
+              <div class="landing-feat">
+                <div class="landing-feat-icon">
+                  <svg viewBox="0 0 24 24"><path d="M3 18a3 3 0 003 3h12a3 3 0 003-3V8l-6-6H6a3 3 0 00-3 3z"/><polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
+                </div>
+                <div class="landing-feat-text">
+                  <div class="landing-feat-title"><span class="lang-ar">الكتب الستة</span><span class="lang-en">The Six Books</span></div>
+                  <div class="landing-feat-sub"><span class="lang-ar">مع درجة كل حديث وتخريجه</span><span class="lang-en">With grade and reference for each hadith</span></div>
+                </div>
+              </div>
+
+              <div class="landing-feat">
+                <div class="landing-feat-icon">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                </div>
+                <div class="landing-feat-text">
+                  <div class="landing-feat-title"><span class="lang-ar">مواقيت الصلاة</span><span class="lang-en">Prayer Times</span></div>
+                  <div class="landing-feat-sub"><span class="lang-ar">حسب موقعك مع تنبيه الأذان</span><span class="lang-en">By your location, with adhan alerts</span></div>
+                </div>
+              </div>
+            </div>
+
+            <button class="landing-cta" onclick="document.querySelector('.ss-btn[data-s=&quot;home&quot;]').click()">
+              <span class="lang-ar">ابدأ القراءة</span>
+              <span class="lang-en">Start reading</span>
+              <svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 2: HOME
+      ──────────────────────────────────────────────── -->
+      <div class="sc" id="sc-home">
+        <!-- App Bar -->
+        <div class="app-bar">
+          <div class="home-app-bar-date">
+            <span class="home-hijri">السبت، ٢٥ ذو القعدة ١٤٤٧</span>
+            <span class="home-location">
+              <svg viewBox="0 0 24 24"><path d="M12 21s-7-6.686-7-11a7 7 0 1114 0c0 4.314-7 11-7 11z"/><circle cx="12" cy="10" r="2"/></svg>
+              القاهرة، مصر
+            </span>
+          </div>
+          <div class="icon-btn" onclick="document.querySelector('.ss-btn[data-s=&quot;settings&quot;]').click()">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </div>
+        </div>
+
+        <div class="sc-scroll">
+          <div class="content">
+
+            <!-- Time Hero -->
+            <div class="time-hero">
+              <div class="time-display">4:32<span class="time-period">م</span></div>
+              <div class="countdown-row">
+                <span class="countdown-dot"></span>
+                <span class="countdown-text">٣ س ٤٥ د حتى <span class="countdown-prayer">العشاء</span></span>
+              </div>
+            </div>
+
+            <!-- Ornament -->
+            <div class="ornament-div"><div class="div-line"></div><div class="div-diamond"></div><div class="div-line"></div></div>
+
+            <!-- Prayers section -->
+            <div class="section-header">
+              <div class="section-bar"></div>
+              <span class="section-label">الصلوات</span>
+            </div>
+
+            <div class="prayers-row">
+              <div class="prayer-card">
+                <span class="prayer-name">الفجر</span>
+                <div class="prayer-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+                <span class="prayer-time">5:04 AM</span>
+              </div>
+              <div class="prayer-card">
+                <span class="prayer-name">الظهر</span>
+                <div class="prayer-icon"><svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg></div>
+                <span class="prayer-time">12:17 PM</span>
+              </div>
+              <div class="prayer-card">
+                <span class="prayer-name">العصر</span>
+                <div class="prayer-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M17 12a5 5 0 11-10 0"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg></div>
+                <span class="prayer-time">3:45 PM</span>
+              </div>
+              <div class="prayer-card">
+                <span class="prayer-name">المغرب</span>
+                <div class="prayer-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M17 18a5 5 0 00-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/></svg></div>
+                <span class="prayer-time">6:15 PM</span>
+              </div>
+              <div class="prayer-card active">
+                <span class="prayer-name">العشاء</span>
+                <div class="prayer-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+                <span class="prayer-time">8:00 PM</span>
+                <div class="prayer-active-dot"></div>
+              </div>
+            </div>
+
+            <!-- Last Read -->
+            <div class="section-header">
+              <div class="section-bar"></div>
+              <span class="section-label">آخر قراءة</span>
+            </div>
+            <div class="last-read-card">
+              <div class="lr-top">
+                <div class="surah-badge"><span class="surah-dot"></span>سورة ٢</div>
+                <span class="lr-page">صفحة ٤٣</span>
+              </div>
+              <div class="card-sep"></div>
+              <div class="lr-arabic">البقرة</div>
+              <div class="lr-sub">آية الكرسي · الآية ٢٥٥</div>
+              <div class="progress-wrap"><div class="progress-fill"></div></div>
+              <div class="lr-footer">
+                <span class="progress-label">34% مكتمل</span>
+                <button class="continue-btn">
+                  <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+                  استمر
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Access -->
+            <div class="section-header">
+              <div class="section-bar"></div>
+              <span class="section-label">الوصول السريع</span>
+            </div>
+            <div class="quick-grid">
+              <div class="quick-card">
+                <div class="quick-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 012-2h14"/><path d="M4 19a2 2 0 002 2h14V5"/><line x1="12" y1="7" x2="18" y2="7"/><line x1="12" y1="11" x2="18" y2="11"/></svg></div>
+                <div><div class="quick-label">القرآن الكريم</div><div class="quick-sub">١١٤ سورة</div></div>
+              </div>
+              <div class="quick-card">
+                <div class="quick-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg></div>
+                <div><div class="quick-label">الحديث الشريف</div><div class="quick-sub">الكتب الستة</div></div>
+              </div>
+              <div class="quick-card">
+                <div class="quick-icon"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+                <div><div class="quick-label">تصحيح القراءة</div><div class="quick-sub">تعلّم التجويد</div></div>
+              </div>
+              <div class="quick-card">
+                <div class="quick-icon"><svg viewBox="0 0 24 24"><path d="M5 3h14a1 1 0 011 1v17l-7-4-7 4V4a1 1 0 011-1z"/></svg></div>
+                <div><div class="quick-label">الإشارات</div><div class="quick-sub">٣ محفوظات</div></div>
+              </div>
+            </div>
+
+            <div class="annotation">بسم الله الرحمن الرحيم</div>
+          </div>
+        </div>
+
+        <!-- Settings Sheet -->
+        <div class="settings-overlay" id="settings-overlay" onclick="toggleSettings(false)"></div>
+        <div class="settings-sheet" id="settings-sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-title">الإعدادات</div>
+          <div class="settings-row">
+            <div class="settings-row-left">
+              <div class="settings-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
+              <span class="settings-label">الوضع الداكن</span>
+            </div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-left">
+              <div class="settings-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+              <span class="settings-label">توقيت ٢٤ ساعة</span>
+            </div>
+            <div class="toggle-switch" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-left">
+              <div class="settings-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+              <span class="settings-label">اللغة العربية</span>
+            </div>
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 3: SURAH LIST
+      ──────────────────────────────────────────────── -->
+      <div class="sc" id="sc-surah">
+        <div class="app-bar">
+          <div class="icon-btn"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="app-bar-center">
+            <span class="app-bar-label">
+              <span class="lang-ar">القرآن الكريم</span>
+              <span class="lang-en">The Noble Qur'an</span>
+            </span>
+            <span class="app-bar-title">
+              <span class="lang-ar">السور</span>
+              <span class="lang-en">Surahs</span>
+            </span>
+          </div>
+          <div class="icon-btn"><svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg></div>
+        </div>
+        <div class="sc-scroll">
+          <div class="content">
+
+            <!-- Continue reading bar -->
+            <div class="last-read-bar">
+              <div class="lrb-left">
+                <div class="lrb-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 012-2h14"/><path d="M4 19a2 2 0 002 2h14V5"/></svg></div>
+                <div>
+                  <div class="lrb-label">متابعة القراءة</div>
+                  <div class="lrb-value">البقرة · آية ٢٥٥</div>
+                </div>
+              </div>
+              <div class="lrb-btn">صفحة ٤٣</div>
+            </div>
+
+            <!-- Search -->
+            <div class="search-bar">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+              <input class="search-input" type="text" placeholder="ابحث عن سورة..." />
+            </div>
+
+            <!-- Section header -->
+            <div class="section-header">
+              <div class="section-bar"></div>
+              <span class="section-label">جميع السور</span>
+              <span class="section-link">١١٤ سورة</span>
+            </div>
+
+            <!-- Surah list -->
+            <div class="surahs-list">
+              <div class="surah-tile">
+                <div class="surah-play-btn"><svg viewBox="0 0 24 24" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg></div>
+                <div class="surah-info">
+                  <div class="surah-name">الفاتحة</div>
+                  <div class="surah-meta">مكية · ٧ آيات · ص ١</div>
+                </div>
+                <div class="surah-num">١</div>
+              </div>
+              <div class="surah-tile">
+                <div class="surah-play-btn"><svg viewBox="0 0 24 24" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg></div>
+                <div class="surah-info">
+                  <div class="surah-name">البقرة</div>
+                  <div class="surah-meta">مدنية · ٢٨٦ آية · ص ٢</div>
+                </div>
+                <div class="surah-num">٢</div>
+              </div>
+              <div class="surah-tile">
+                <div class="surah-play-btn"><svg viewBox="0 0 24 24" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg></div>
+                <div class="surah-info">
+                  <div class="surah-name">آل عمران</div>
+                  <div class="surah-meta">مدنية · ٢٠٠ آية · ص ٥٠</div>
+                </div>
+                <div class="surah-num">٣</div>
+              </div>
+              <div class="surah-tile">
+                <div class="surah-play-btn"><svg viewBox="0 0 24 24" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg></div>
+                <div class="surah-info">
+                  <div class="surah-name">النساء</div>
+                  <div class="surah-meta">مدنية · ١٧٦ آية · ص ٧٧</div>
+                </div>
+                <div class="surah-num">٤</div>
+              </div>
+              <div class="surah-tile">
+                <div class="surah-play-btn"><svg viewBox="0 0 24 24" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg></div>
+                <div class="surah-info">
+                  <div class="surah-name">المائدة</div>
+                  <div class="surah-meta">مدنية · ١٢٠ آية · ص ١٠٦</div>
+                </div>
+                <div class="surah-num">٥</div>
+              </div>
+              <div class="surah-tile">
+                <div class="surah-play-btn"><svg viewBox="0 0 24 24" width="14" height="14"><polygon points="5,3 19,12 5,21"/></svg></div>
+                <div class="surah-info">
+                  <div class="surah-name">الأنعام</div>
+                  <div class="surah-meta">مكية · ١٦٥ آية · ص ١٢٨</div>
+                </div>
+                <div class="surah-num">٦</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 4: MUSHAF
+      ──────────────────────────────────────────────── -->
+      <div class="sc sc-mushaf" id="sc-mushaf">
+        <div class="mushaf-wrapper">
+
+          <!-- Mushaf Page — fills the screen; playback dock sits below it -->
+          <div class="mushaf-page">
+            <div class="mushaf-page-header">
+              <span class="mph-side">
+                <span class="lang-ar">الجزء ١</span>
+                <span class="lang-en">Juz' 1</span>
+              </span>
+              <span class="mph-center">
+                <span class="lang-ar">سُورَةُ الْبَقَرَةِ</span>
+                <span class="lang-en">Al-Baqarah</span>
+              </span>
+              <span class="mph-side">٢ : ١٢٠-١٢٦</span>
+            </div>
+            <img class="mushaf-page-image" src="assets/mushaf-page-19.png" alt="Surah Al-Baqarah · Page 19" />
+          </div>
+
+          <!-- Playback dock — compact, sits below the page inside the wrapper -->
+          <div class="playback-dock">
+            <button class="pd-btn pd-btn-sm" aria-label="prev ayah">
+              <svg viewBox="0 0 24 24"><polygon points="18,4 8,12 18,20" fill="currentColor"/></svg>
+            </button>
+            <div class="pd-info">
+              <div class="pd-ref">
+                <span class="lang-ar">البقرة · الآية ١٢٢</span>
+                <span class="lang-en">Al-Baqarah · Verse 122</span>
+              </div>
+              <div class="pd-reciter">مشاري العفاسي</div>
+            </div>
+            <button class="pd-btn pd-btn-play" aria-label="play">
+              <svg viewBox="0 0 24 24"><polygon points="7,4 20,12 7,20" fill="#fff"/></svg>
+            </button>
+            <button class="pd-btn pd-btn-sm" aria-label="next ayah">
+              <svg viewBox="0 0 24 24"><polygon points="6,4 16,12 6,20" fill="currentColor"/></svg>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Bottom bar — paper-theme picker + page number -->
+        <div class="mushaf-bottom">
+          <div class="paper-picker" role="radiogroup" aria-label="سمة الصفحة">
+            <button class="paper-swatch active" data-paper=""
+                    title="افتراضي" aria-label="Default"
+                    style="background: var(--mushaf-bg);"
+                    onclick="setPaper('', this)"></button>
+            <button class="paper-swatch" data-paper="parchment"
+                    title="رقّ" aria-label="Parchment"
+                    style="background: #f0e6d2;"
+                    onclick="setPaper('parchment', this)"></button>
+            <button class="paper-swatch" data-paper="night"
+                    title="ليلي" aria-label="Night"
+                    style="background: #0d0f12;"
+                    onclick="setPaper('night', this)"></button>
+            <button class="paper-swatch" data-paper="sky"
+                    title="سماوي" aria-label="Sky"
+                    style="background: #eaf1f7;"
+                    onclick="setPaper('sky', this)"></button>
+            <button class="paper-swatch" data-paper="mint"
+                    title="نعناع" aria-label="Mint"
+                    style="background: #e4ede4;"
+                    onclick="setPaper('mint', this)"></button>
+          </div>
+          <span class="page-number">صفحة ١٩ من ٦٠٤</span>
+        </div>
+      </div>
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 5: BOOKS LIST
+      ──────────────────────────────────────────────── -->
+      <div class="sc" id="sc-books">
+        <div class="app-bar">
+          <div class="icon-btn"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="app-bar-center">
+            <span class="app-bar-label">
+              <span class="lang-ar">المجموعات</span>
+              <span class="lang-en">Collections</span>
+            </span>
+            <span class="app-bar-title">الحديث الشريف</span>
+          </div>
+          <div class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+        </div>
+        <div class="sc-scroll">
+          <div class="content">
+
+            <div class="section-header">
+              <div class="section-bar"></div>
+              <span class="section-label">الكتب</span>
+              <span class="section-link">٧ كتب</span>
+            </div>
+
+            <div class="books-list">
+
+              <!-- Bukhari — saved -->
+              <div class="book-card">
+                <div class="book-action downloaded" aria-label="saved">
+                  <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+                </div>
+                <div class="book-info">
+                  <div class="book-title-ar">صحيح البخاري</div>
+                  <div class="book-title-en">Sahih al-Bukhari</div>
+                  <div class="book-meta">الإمام البخاري · <bdi>٧٬٥٦٣</bdi> حديث</div>
+                </div>
+              </div>
+
+              <!-- Muslim -->
+              <div class="book-card">
+                <div class="book-action" aria-label="download">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="book-info">
+                  <div class="book-title-ar">صحيح مسلم</div>
+                  <div class="book-title-en">Sahih Muslim</div>
+                  <div class="book-meta">الإمام مسلم · <bdi>٧٬٥٠٠</bdi> حديث</div>
+                </div>
+              </div>
+
+              <!-- Tirmidhi — downloading -->
+              <div class="book-card" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                  <div class="book-action downloading" aria-label="downloading">
+                    <span class="ba-pct">67%</span>
+                  </div>
+                  <div class="book-info">
+                    <div class="book-title-ar">سنن الترمذي</div>
+                    <div class="book-title-en">Al-Tirmidhi</div>
+                    <div class="book-meta">الإمام الترمذي · <bdi>٤٬٤٠٠</bdi> حديث</div>
+                  </div>
+                </div>
+                <div class="download-progress-wrap">
+                  <div class="download-progress-fill" style="width: 67%;"></div>
+                </div>
+              </div>
+
+              <!-- Abu Dawood -->
+              <div class="book-card">
+                <div class="book-action" aria-label="download">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="book-info">
+                  <div class="book-title-ar">سنن أبي داود</div>
+                  <div class="book-title-en">Abu Dawood</div>
+                  <div class="book-meta">الإمام أبو داود · <bdi>٥٬٢٧٤</bdi> حديث</div>
+                </div>
+              </div>
+
+              <!-- Ibn Majah -->
+              <div class="book-card">
+                <div class="book-action" aria-label="download">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="book-info">
+                  <div class="book-title-ar">سنن ابن ماجه</div>
+                  <div class="book-title-en">Ibn Majah</div>
+                  <div class="book-meta">الإمام ابن ماجه · <bdi>٤٬٣٤١</bdi> حديث</div>
+                </div>
+              </div>
+
+              <!-- Al-Nasa'i -->
+              <div class="book-card">
+                <div class="book-action" aria-label="download">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="book-info">
+                  <div class="book-title-ar">السنن النسائي</div>
+                  <div class="book-title-en">Al-Nasa'i</div>
+                  <div class="book-meta">الإمام النسائي · <bdi>٥٬٧٥٨</bdi> حديث</div>
+                </div>
+              </div>
+
+              <!-- Mishkat -->
+              <div class="book-card">
+                <div class="book-action" aria-label="download">
+                  <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="book-info">
+                  <div class="book-title-ar">مشكاة المصابيح</div>
+                  <div class="book-title-en">Mishkat al-Masabih</div>
+                  <div class="book-meta">الشيخ التبريزي · <bdi>٥٬٩٤٥</bdi> حديث</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 6: AHADITH LIST
+      ──────────────────────────────────────────────── -->
+      <div class="sc" id="sc-ahadith">
+        <div class="app-bar">
+          <div class="icon-btn"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="app-bar-center">
+            <span class="app-bar-label">
+              <span class="lang-ar">صحيح البخاري</span>
+              <span class="lang-en">Sahih al-Bukhari</span>
+            </span>
+            <span class="app-bar-title">صحيح البخاري</span>
+          </div>
+          <div class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></div>
+        </div>
+        <div class="sc-scroll">
+          <div class="content">
+
+            <div class="section-header">
+              <div class="section-bar"></div>
+              <span class="section-label">الأحاديث</span>
+              <span class="section-link">٧٥٦٣ حديث</span>
+            </div>
+
+            <div class="ahadith-list">
+
+              <div class="hadith-preview">
+                <div class="hp-top">
+                  <div class="status-badge sahih"><span class="status-dot"></span>صحيح</div>
+                  <span class="hp-num">#١</span>
+                </div>
+                <div class="hp-arabic">إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى، فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ...</div>
+                <div class="hp-chapter">باب بَدْءُ الْوَحْيِ</div>
+              </div>
+
+              <div class="hadith-preview">
+                <div class="hp-top">
+                  <div class="status-badge sahih"><span class="status-dot"></span>صحيح</div>
+                  <span class="hp-num">#٢</span>
+                </div>
+                <div class="hp-arabic">بُنِيَ الإِسْلاَمُ عَلَى خَمْسٍ: شَهَادَةِ أَنْ لاَ إِلَهَ إِلاَّ اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ وَإِقَامِ الصَّلاَةِ...</div>
+                <div class="hp-chapter">باب دَعَائِمُ الإِسْلاَمِ</div>
+              </div>
+
+              <div class="hadith-preview">
+                <div class="hp-top">
+                  <div class="status-badge sahih"><span class="status-dot"></span>صحيح</div>
+                  <span class="hp-num">#٨</span>
+                </div>
+                <div class="hp-arabic">أُمِرْتُ أَنْ أُقَاتِلَ النَّاسَ حَتَّى يَشْهَدُوا أَنْ لاَ إِلَهَ إِلاَّ اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ...</div>
+                <div class="hp-chapter">باب فَضْلُ مَنْ أَسْلَمَ</div>
+              </div>
+
+              <div class="hadith-preview">
+                <div class="hp-top">
+                  <div class="status-badge sahih"><span class="status-dot"></span>صحيح</div>
+                  <span class="hp-num">#٤٢</span>
+                </div>
+                <div class="hp-arabic">إِذَا دَخَلَ رَمَضَانُ فُتِّحَتْ أَبْوَابُ الجَنَّةِ، وَغُلِّقَتْ أَبْوَابُ جَهَنَّمَ، وَسُلْسِلَتِ الشَّيَاطِينُ...</div>
+                <div class="hp-chapter">باب فَضْلُ الصِّيَامِ وَقِيَامِ اللَّيْلِ</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 7: HADITH DETAIL  (matches reference design exactly)
+      ──────────────────────────────────────────────── -->
+      <div class="sc" id="sc-hadith">
+        <div class="app-bar">
+          <div class="icon-btn"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="app-bar-center">
+            <span class="app-bar-label">
+              <span class="lang-ar">صحيح البخاري</span>
+              <span class="lang-en">Sahih al-Bukhari</span>
+            </span>
+            <span class="app-bar-title">
+              <span class="lang-ar">حديث رقم ٤٢</span>
+              <span class="lang-en">Hadith #42</span>
+            </span>
+          </div>
+          <div class="icon-btn" style="font-size:15px;">
+            <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </div>
+        </div>
+        <div class="sc-scroll">
+          <div class="content">
+
+            <!-- Chapter Card -->
+            <div class="chapter-card">
+              <div class="chapter-card-top">
+                <div class="status-badge sahih">
+                  <span class="status-dot"></span>
+                  <span class="lang-ar">صحيح</span><span class="lang-en">Sahih</span>
+                </div>
+                <span class="chapter-ref">
+                  <span class="lang-ar">الباب ٧</span>
+                  <span class="lang-en">Chapter 7</span>
+                </span>
+              </div>
+              <div class="card-sep"></div>
+              <div class="chapter-arabic">باب في فضل الصيام وقيام الليل</div>
+              <div class="chapter-english">
+                <span class="lang-ar">في فضل الصيام وقيام الليل</span>
+                <span class="lang-en">On the Virtue of Fasting and Night Prayer</span>
+              </div>
+            </div>
+
+            <!-- Arabic header -->
+            <div class="section-header">
+              <div class="section-bar"></div>
+              <span class="section-label">
+                <span class="lang-ar">النص العربي</span>
+                <span class="lang-en">Arabic</span>
+              </span>
+            </div>
+
+            <!-- Arabic text block -->
+            <div class="arabic-block">
+              <div class="arabic-text">حَدَّثَنَا عَبْدُ اللَّهِ بْنُ يُوسُفَ، قَالَ: أَخْبَرَنَا مَالِكٌ، عَنِ ابْنِ شِهَابٍ، عَنْ أَبِي سَلَمَةَ بْنِ عَبْدِ الرَّحْمَنِ، عَنْ أَبِي هُرَيْرَةَ رَضِيَ اللَّهُ عَنْهُ، أَنَّ رَسُولَ اللَّهِ ﷺ قَالَ: إِذَا دَخَلَ رَمَضَانُ فُتِّحَتْ أَبْوَابُ الجَنَّةِ</div>
+            </div>
+
+            <!-- Ornament -->
+            <div class="ornament-div"><div class="div-line"></div><div class="div-diamond"></div><div class="div-line"></div></div>
+
+            <!-- Translation header -->
+            <div class="section-header">
+              <div class="section-bar"></div>
+              <span class="section-label">
+                <span class="lang-ar">المعنى</span>
+                <span class="lang-en">Translation</span>
+              </span>
+            </div>
+
+            <!-- Translation -->
+            <div class="translation-text">
+              <span class="lang-ar-block">عن أبي هريرة رضي الله عنه أن رسول الله ﷺ قال: إذا دخل شهر رمضان فُتِّحت أبواب السماء، وغُلِّقت أبواب النار، وصُفِّدت الشياطين.</span>
+              <span class="lang-en-block">Narrated Abu Huraira: Allah's Messenger (ﷺ) said, “When the month of Ramadan starts, the gates of the heaven are opened and the gates of Hell are closed and the devils are chained.”</span>
+            </div>
+
+            <!-- Narrator -->
+            <div class="narrator-card">
+              <div class="narrator-lbl">
+                <span class="lang-ar">الراوي</span>
+                <span class="lang-en">Narrator</span>
+              </div>
+              <div class="narrator-txt">
+                <span class="lang-ar-block">أبو هريرة (رضي الله عنه) — عن مالك، عن ابن شهاب، عن أبي سلمة بن عبد الرحمن.</span>
+                <span class="lang-en-block">Abu Huraira (رضي الله عنه) — via Malik, from Ibn Shihab, from Abu Salamah ibn Abd al-Rahman</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-row">
+              <button class="action-btn">
+                <svg viewBox="0 0 24 24"><path d="M5 3h14a1 1 0 011 1v17l-7-4-7 4V4a1 1 0 011-1z"/></svg>
+                <span class="lang-ar">حفظ</span><span class="lang-en">Bookmark</span>
+              </button>
+              <button class="action-btn">
+                <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                <span class="lang-ar">مشاركة</span><span class="lang-en">Share</span>
+              </button>
+              <button class="action-btn primary-btn">
+                <span class="lang-ar">التالي</span><span class="lang-en">Next</span>
+                <svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+              </button>
+            </div>
+
+            <div class="annotation">
+              <span class="lang-ar">صحيح البخاري · كتاب الصوم</span>
+              <span class="lang-en">Sahih al-Bukhari · Book of Fasting</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ────────────────────────────────────────────────
+           SCREEN 8: SETTINGS
+      ──────────────────────────────────────────────── -->
+      <div class="sc" id="sc-settings">
+        <div class="app-bar">
+          <div class="icon-btn" onclick="document.querySelector('.ss-btn[data-s=&quot;home&quot;]').click()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="app-bar-center">
+            <span class="app-bar-label">
+              <span class="lang-ar">حسابي</span>
+              <span class="lang-en">My Account</span>
+            </span>
+            <span class="app-bar-title">
+              <span class="lang-ar">الإعدادات</span>
+              <span class="lang-en">Settings</span>
+            </span>
+          </div>
+          <div class="icon-btn" style="opacity:0; pointer-events:none;"></div>
+        </div>
+
+        <div class="sc-scroll">
+          <div class="content">
+
+            <!-- Profile -->
+            <div class="set-profile">
+              <div class="set-avatar">ع</div>
+              <div class="set-profile-info">
+                <div class="set-profile-name">
+                  <span class="lang-ar">عبد الله</span>
+                  <span class="lang-en">Abdullah</span>
+                </div>
+                <div class="set-profile-sub">
+                  <span class="lang-ar">‏<bdi>١٢</bdi> يوم متتالٍ · ختمة واحدة</span>
+                  <span class="lang-en">12-day streak · 1 khatma</span>
+                </div>
+              </div>
+              <div class="set-profile-edit" aria-label="edit profile">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg>
+              </div>
+            </div>
+
+            <!-- Appearance -->
+            <div class="set-group">
+              <div class="set-group-label">
+                <span class="lang-ar">المظهر</span>
+                <span class="lang-en">Appearance</span>
+              </div>
+              <div class="set-card">
+
+                <!-- App theme swatches -->
+                <div class="set-theme-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="13" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="10" cy="20" r="2.5"/><path d="M12 2a10 10 0 000 20"/></svg></div>
+                  <div class="set-row-text" style="flex:0 0 auto;">
+                    <div class="set-row-title"><span class="lang-ar">سمة التطبيق</span><span class="lang-en">App theme</span></div>
+                  </div>
+                  <div class="set-theme-swatches">
+                    <div class="set-theme-dot active" style="background:#2E5244;" title="أخضر داكن" onclick="setThemeFromSettings('neutral-dark', this)"></div>
+                    <div class="set-theme-dot" style="background:#5C8070;" title="أخضر فاتح" onclick="setThemeFromSettings('neutral-light', this)"></div>
+                    <div class="set-theme-dot" style="background:#1C4558;" title="أزرق داكن" onclick="setThemeFromSettings('slate-dark', this)"></div>
+                    <div class="set-theme-dot" style="background:#4878A0;" title="أزرق فاتح" onclick="setThemeFromSettings('slate-light', this)"></div>
+                  </div>
+                </div>
+
+                <!-- Dark mode -->
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">الوضع الداكن</span><span class="lang-en">Dark mode</span></div>
+                    <div class="set-row-sub"><span class="lang-ar">مريح للعين ليلًا</span><span class="lang-en">Easy on the eyes at night</span></div>
+                  </div>
+                  <div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+                </div>
+
+                <!-- Mushaf paper -->
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 012-2h14"/><path d="M4 19a2 2 0 002 2h14V5"/><line x1="9" y1="9" x2="17" y2="9"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">ورق المصحف</span><span class="lang-en">Mushaf paper</span></div>
+                  </div>
+                  <div class="set-row-value">
+                    <span class="lang-ar">رقّ</span><span class="lang-en">Parchment</span>
+                    <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Reading -->
+            <div class="set-group">
+              <div class="set-group-label">
+                <span class="lang-ar">القراءة والتلاوة</span>
+                <span class="lang-en">Reading &amp; Recitation</span>
+              </div>
+              <div class="set-card">
+
+                <!-- Font size -->
+                <div class="set-font-row">
+                  <div class="set-font-top">
+                    <div class="set-row-icon"><svg viewBox="0 0 24 24"><polyline points="4,7 4,4 20,4 20,7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div>
+                    <div class="set-row-text">
+                      <div class="set-row-title"><span class="lang-ar">حجم خط المصحف</span><span class="lang-en">Mushaf font size</span></div>
+                    </div>
+                  </div>
+                  <div class="set-font-track">
+                    <button class="set-font-btn sm" onclick="setFont(this)">ا</button>
+                    <button class="set-font-btn md active" onclick="setFont(this)">ا</button>
+                    <button class="set-font-btn lg" onclick="setFont(this)">ا</button>
+                  </div>
+                </div>
+
+                <!-- Reciter -->
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">القارئ</span><span class="lang-en">Reciter</span></div>
+                  </div>
+                  <div class="set-row-value">
+                    <span class="lang-ar">مشاري العفاسي</span><span class="lang-en">Mishary Alafasy</span>
+                    <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+                  </div>
+                </div>
+
+                <!-- Translation -->
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><path d="M4 5h7M4 9h7M9 5c0 6-2 9-5 11"/><path d="M7 7c0 4 3 7 6 8"/><path d="M14 19l4-9 4 9M15.5 16h5"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">الترجمة</span><span class="lang-en">Translation</span></div>
+                  </div>
+                  <div class="set-row-value">
+                    <span class="lang-ar">العربية فقط</span><span class="lang-en">Arabic only</span>
+                    <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+                  </div>
+                </div>
+
+                <!-- Tajweed colors -->
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 000 20"/><path d="M12 8v8M8 12h8"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">ألوان التجويد</span><span class="lang-en">Tajweed colors</span></div>
+                    <div class="set-row-sub"><span class="lang-ar">إبراز أحكام التلاوة</span><span class="lang-en">Highlight recitation rules</span></div>
+                  </div>
+                  <div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="set-group">
+              <div class="set-group-label">
+                <span class="lang-ar">التنبيهات</span>
+                <span class="lang-en">Notifications</span>
+              </div>
+              <div class="set-card">
+
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">تنبيهات الصلاة</span><span class="lang-en">Prayer alerts</span></div>
+                  </div>
+                  <div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+                </div>
+
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M15.5 8.5a5 5 0 010 7M19 5a9 9 0 010 14"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">صوت الأذان</span><span class="lang-en">Adhan sound</span></div>
+                    <div class="set-row-sub"><span class="lang-ar">مكة المكرمة</span><span class="lang-en">Makkah</span></div>
+                  </div>
+                  <div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+                </div>
+
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">آية اليوم</span><span class="lang-en">Verse of the day</span></div>
+                  </div>
+                  <div class="toggle-switch" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- General -->
+            <div class="set-group">
+              <div class="set-group-label">
+                <span class="lang-ar">عام</span>
+                <span class="lang-en">General</span>
+              </div>
+              <div class="set-card">
+
+                <!-- Language toggle -->
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">اللغة</span><span class="lang-en">Language</span></div>
+                  </div>
+                  <div class="lang-toggle">
+                    <button class="lang-toggle-btn active" data-lang="ar" onclick="setLang('ar')">عربي</button>
+                    <button class="lang-toggle-btn" data-lang="en" onclick="setLang('en')">EN</button>
+                  </div>
+                </div>
+
+                <!-- 24h time -->
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">توقيت ٢٤ ساعة</span><span class="lang-en">24-hour time</span></div>
+                  </div>
+                  <div class="toggle-switch" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+                </div>
+
+                <!-- Storage -->
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/><path d="M3 12a9 3 0 0018 0"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">التخزين</span><span class="lang-en">Storage</span></div>
+                    <div class="set-row-sub"><span class="lang-ar">‏<bdi>١</bdi> كتاب محمَّل</span><span class="lang-en">1 book downloaded</span></div>
+                  </div>
+                  <div class="set-row-value">
+                    <span><bdi>٢٤٠ MB</bdi></span>
+                    <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- About -->
+            <div class="set-group">
+              <div class="set-group-label">
+                <span class="lang-ar">حول التطبيق</span>
+                <span class="lang-en">About</span>
+              </div>
+              <div class="set-card">
+
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9.5 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.5 9,9"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">قيّم التطبيق</span><span class="lang-en">Rate the app</span></div>
+                  </div>
+                  <div class="set-row-value"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div>
+                </div>
+
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">شارك مع صديق</span><span class="lang-en">Share with a friend</span></div>
+                  </div>
+                  <div class="set-row-value"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div>
+                </div>
+
+                <div class="set-row">
+                  <div class="set-row-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                  <div class="set-row-text">
+                    <div class="set-row-title"><span class="lang-ar">الخصوصية</span><span class="lang-en">Privacy</span></div>
+                  </div>
+                  <div class="set-row-value"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div>
+                </div>
+
+              </div>
+            </div>
+
+            <button class="set-signout">
+              <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span class="lang-ar">تسجيل الخروج</span><span class="lang-en">Sign out</span>
+            </button>
+
+            <div class="set-version">QURAN+ · <bdi>v2.4.0</bdi></div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end .screen -->
+  </div><!-- end .phone -->
+
+  <script>
+    function setTheme(theme, btn) {
+      document.getElementById('phone').setAttribute('data-theme', theme);
+      document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function setLang(lang, btn) {
+      const phone = document.getElementById('phone');
+      phone.setAttribute('data-lang', lang);
+      phone.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      if (btn) {
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      // Sync any in-app toggles too
+      document.querySelectorAll('.lang-toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+      });
+    }
+
+    function setPaper(paper, btn) {
+      const page = document.querySelector('.mushaf-page');
+      if (!page) return;
+      if (paper) page.setAttribute('data-paper', paper);
+      else page.removeAttribute('data-paper');
+      document.querySelectorAll('.paper-swatch').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    }
+
+    function showScreen(name, btn) {
+      document.querySelectorAll('.sc').forEach(s => s.classList.remove('active'));
+      document.getElementById('sc-' + name).classList.add('active');
+      document.querySelectorAll('.ss-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function toggleSettings(show) {
+      document.getElementById('settings-sheet').classList.toggle('open', show);
+      document.getElementById('settings-overlay').classList.toggle('visible', show);
+    }
+
+    // Settings screen: app-theme swatches drive the phone theme + sync the dev switcher
+    function setThemeFromSettings(theme, dot) {
+      document.getElementById('phone').setAttribute('data-theme', theme);
+      document.querySelectorAll('.set-theme-dot').forEach(d => d.classList.remove('active'));
+      if (dot) dot.classList.add('active');
+      // keep the dev palette switcher in sync
+      const map = { 'neutral-dark':0, 'neutral-light':1, 'slate-dark':2, 'slate-light':3 };
+      const btns = document.querySelectorAll('.sw-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      if (btns[map[theme]]) btns[map[theme]].classList.add('active');
+    }
+
+    // Font-size stepper on the settings screen
+    function setFont(btn) {
+      btn.parentElement.querySelectorAll('.set-font-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  </script>
+
+</body>
+</html>

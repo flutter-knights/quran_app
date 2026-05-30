@@ -17,7 +17,7 @@ class HadithHiveModelAdapter extends TypeAdapter<HadithHiveModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return HadithHiveModel(
-      hadithNumber: fields[0] as int,
+      hadithNumber: fields[0] as String,
       englishHadith: fields[1] as String,
       arabicHadith: fields[2] as String,
       englishNarrator: fields[5] as String,

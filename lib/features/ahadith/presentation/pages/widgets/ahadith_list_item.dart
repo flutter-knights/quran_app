@@ -37,9 +37,9 @@ class AhadithListItem extends StatelessWidget {
               Text(
                 '#${hadith.hadithNumber.toLocalized(context)}',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: scheme.onSurfaceVariant,
+                  color: scheme.secondary,
                   letterSpacing: 0.5,
                 ),
               ),

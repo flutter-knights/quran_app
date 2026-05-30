@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/ornament_divider.dart';
 import 'package:quran_app/core/widgets/design/home_skeleton.dart';
@@ -8,6 +9,7 @@ import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_app_bar.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/last_read_card.dart';
+import 'package:quran_app/features/ahadith/presentation/pages/widgets/daily_hadith_card.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/prayers_list.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/quick_access_grid.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/upcoming_prayer.dart';
@@ -67,6 +69,21 @@ class HomeView extends StatelessWidget {
                             AppSectionHeader(label: S.of(context).quickAccess),
                             const SizedBox(height: 10),
                             const QuickAccessGrid(),
+                            const DailyHadithCard(),
+                            const SizedBox(height: 28),
+                            Center(
+                              child: Text(
+                                'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                                textDirection: TextDirection.rtl,
+                                textAlign: TextAlign.center,
+                                style: TS.bold16.scheherazade.copyWith(
+                                  fontSize: 11,
+                                  color: scheme.onSurface.withValues(alpha: 0.4),
+                                  height: 1.9,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
                           ],
                         ),
                       ),

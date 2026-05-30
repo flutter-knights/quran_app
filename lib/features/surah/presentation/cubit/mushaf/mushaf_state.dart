@@ -17,12 +17,17 @@ class MushafState extends Equatable {
   /// playback target instead of vanishing the moment the highlight is cleared.
   final bool isOverlayPinned;
 
+  /// True when the Mushaf chrome (app bar, bottom bar, etc.) is visible.
+  /// Defaults to false (chrome hidden by default).
+  final bool chromeVisible;
+
   const MushafState({
     required this.currentPage,
     this.highlightedAyah,
     this.playingAyah,
     this.highlightedAyahCenterY,
     this.isOverlayPinned = false,
+    this.chromeVisible = false,
   });
 
   factory MushafState.initial(int page) =>
@@ -34,6 +39,7 @@ class MushafState extends Equatable {
     AyahIdentifier? playingAyah,
     double? highlightedAyahCenterY,
     bool? isOverlayPinned,
+    bool? chromeVisible,
     bool clearHighlighted = false,
     bool clearPlaying = false,
     bool clearHighlightedCenterY = false,
@@ -47,6 +53,7 @@ class MushafState extends Equatable {
           ? null
           : (highlightedAyahCenterY ?? this.highlightedAyahCenterY),
       isOverlayPinned: isOverlayPinned ?? this.isOverlayPinned,
+      chromeVisible: chromeVisible ?? this.chromeVisible,
     );
   }
 
@@ -57,5 +64,6 @@ class MushafState extends Equatable {
         playingAyah,
         highlightedAyahCenterY,
         isOverlayPinned,
+        chromeVisible,
       ];
 }

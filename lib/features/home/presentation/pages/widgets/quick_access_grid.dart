@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/core/widgets/prettier_tap.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class QuickAccessGrid extends StatelessWidget {
@@ -31,7 +32,7 @@ class QuickAccessGrid extends StatelessWidget {
         _QuickTile(
           icon: HugeIcons.strokeRoundedFavourite,
           label: S.of(context).bookmarks_screen_title,
-          enabled: false,
+          onTap: () => context.push(AppRouter.bookmarksPath),
         ),
         _QuickTile(
           icon: HugeIcons.strokeRoundedSettings01,
@@ -48,44 +49,29 @@ class _QuickTile extends StatelessWidget {
     required this.icon,
     required this.label,
     this.onTap,
-    this.enabled = true,
   });
 
   final List<List<dynamic>> icon;
   final String label;
   final VoidCallback? onTap;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
-    return Opacity(
-      opacity: enabled ? 1 : 0.4,
-      child: Column(
+    final tile = Container(
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+        border: context.cardBorder(),
+        boxShadow: context.cardShadow(),
+      ),
+      alignment: Alignment.center,
+      child: HugeIcon(icon: icon, size: 24, color: scheme.onSurface),
+    );
+    return Column(
         children: [
           Expanded(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: enabled ? onTap : null,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: scheme.primary.withValues(alpha: 0.12),
-                        blurRadius: 14,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: HugeIcon(icon: icon, size: 24, color: scheme.onSurface),
-                ),
-              ),
-            ),
+            child: PrettierTap(onTap: onTap, child: tile),
           ),
           const SizedBox(height: 6),
           Text(
@@ -101,7 +87,6 @@ class _QuickTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
-      ),
     );
   }
 }

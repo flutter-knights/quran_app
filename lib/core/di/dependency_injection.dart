@@ -23,6 +23,7 @@ Future<void> initGetIt() async {
   initSurahList();
   initMushaf();
   initAhadith();
+  initAhadithSearch();
   initPlayback();
   initBookmarks();
   initLastRead();
