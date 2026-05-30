@@ -17,12 +17,18 @@ class NextPrayerResolver {
   /// Returns the first prayer whose time is strictly greater than [now].
   /// Wraps to [PrayerName.fajr] when all of today's prayers have passed,
   /// or when [timings] is empty / unparseable.
+  ///
+  /// When [skipSunrise] is `true`, [PrayerName.sunrise] is never returned as
+  /// the "next" prayer — the resolver skips it and moves on to the next
+  /// candidate. Defaults to `false` (sunrise is a valid next prayer).
   static PrayerName resolve({
     required Map<PrayerName, String> timings,
     required DateTime now,
+    bool skipSunrise = false,
   }) {
     final nowMinutes = now.hour * 60 + now.minute;
     for (final p in _order) {
+      if (skipSunrise && p == PrayerName.sunrise) continue;
       final raw = timings[p];
       if (raw == null) continue;
       final minutes = _parseHHmm(raw);
