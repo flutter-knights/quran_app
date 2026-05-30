@@ -19,7 +19,7 @@ String normalizeArabic(String text) {
 }
 
 Future<void> crawlBook(String bookSlug, String apiKey) async {
-  Map<String, String> searchIndex = {};
+  Map<String, dynamic> searchIndex = {};
   int currentPage = 1;
   bool hasNext = true;
 
@@ -47,10 +47,18 @@ Future<void> crawlBook(String bookSlug, String apiKey) async {
 
           for (var item in list) {
             String rawArabic = item['hadithArabic'] ?? "";
-            // Use number as key, normalized text as value
-            searchIndex[item['hadithNumber'].toString()] = normalizeArabic(
-              rawArabic,
-            );
+            final status = (item['status'] ?? '').toString().toLowerCase();
+            // Normalize to the app's HadithStatus enum names.
+            final statusName = status == 'sahih'
+                ? 'sahih'
+                : status == 'hasan'
+                    ? 'hasan'
+                    : 'daeef';
+            searchIndex[item['hadithNumber'].toString()] = {
+              't': normalizeArabic(rawArabic),
+              'c': item['chapter']?['id'],
+              's': statusName,
+            };
           }
 
           stdout.write('\r✅ Page $currentPage processed...'); // Inline update
