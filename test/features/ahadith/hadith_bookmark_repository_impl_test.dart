@@ -12,7 +12,7 @@ void main() {
   late _MockDataSource dataSource;
   late HadithBookmarkRepositoryImpl sut;
 
-  const bookmark = HadithBookmark(bookSlug: 'bukhari', hadithNumber: 42);
+  const bookmark = HadithBookmark(bookSlug: 'bukhari', hadithNumber: '42');
 
   setUpAll(() {
     registerFallbackValue(bookmark);

@@ -51,6 +51,14 @@ class MushafCubit extends Cubit<MushafState> {
     emit(state.copyWith(isOverlayPinned: true));
   }
 
+  /// Toggles the Mushaf chrome (app bar, bottom bar, etc.) visibility.
+  void toggleChrome() =>
+      emit(state.copyWith(chromeVisible: !state.chromeVisible));
+
+  /// Sets the Mushaf chrome visibility explicitly.
+  void setChrome(bool visible) =>
+      emit(state.copyWith(chromeVisible: visible));
+
   /// Shrinks the overlay back to its FAB state. Also clears any active
   /// highlight so the overlay's visibility check (`highlightedAyah != null ||
   /// isOverlayPinned`) goes false.

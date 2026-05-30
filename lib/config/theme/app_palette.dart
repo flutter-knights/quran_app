@@ -17,9 +17,9 @@ extension AppPaletteX on ColorPalette {
 
   Color get surface => switch (this) {
         ColorPalette.neutralDark => const Color(0xFF1A1A1A),
-        ColorPalette.neutralLight => const Color(0xFFEAEAEA),
+        ColorPalette.neutralLight => const Color(0xFFE2E2E2),
         ColorPalette.slateDark => const Color(0xFF141820),
-        ColorPalette.slateLight => const Color(0xFFE2E8F2),
+        ColorPalette.slateLight => const Color(0xFFD8E2F0),
       };
 
   Color get primary => switch (this) {

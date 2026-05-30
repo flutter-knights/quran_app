@@ -1230,6 +1230,336 @@ class S {
       args: [],
     );
   }
+
+  /// `Search this book…`
+  String get search_hadith_hint {
+    return Intl.message(
+      'Search this book…',
+      name: 'search_hadith_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No matching ahadith`
+  String get search_no_results {
+    return Intl.message(
+      'No matching ahadith',
+      name: 'search_no_results',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Filters`
+  String get filters_title {
+    return Intl.message(
+      'Filters',
+      name: 'filters_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Status`
+  String get filter_status_label {
+    return Intl.message(
+      'Status',
+      name: 'filter_status_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chapter`
+  String get filter_chapter_label {
+    return Intl.message(
+      'Chapter',
+      name: 'filter_chapter_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All chapters`
+  String get filter_all_chapters {
+    return Intl.message(
+      'All chapters',
+      name: 'filter_all_chapters',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear`
+  String get filter_clear {
+    return Intl.message(
+      'Clear',
+      name: 'filter_clear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Apply`
+  String get filter_apply {
+    return Intl.message(
+      'Apply',
+      name: 'filter_apply',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Previous`
+  String get previous_hadith {
+    return Intl.message(
+      'Previous',
+      name: 'previous_hadith',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hadith of the Day`
+  String get hadith_of_the_day {
+    return Intl.message(
+      'Hadith of the Day',
+      name: 'hadith_of_the_day',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Jumu'ah`
+  String get jumuah {
+    return Intl.message(
+      'Jumu\'ah',
+      name: 'jumuah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Adhan & Reminders`
+  String get adhan_and_reminders {
+    return Intl.message(
+      'Adhan & Reminders',
+      name: 'adhan_and_reminders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Quran`
+  String get bookmarks_quran_section {
+    return Intl.message(
+      'Quran',
+      name: 'bookmarks_quran_section',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ahadith`
+  String get bookmarks_ahadith_section {
+    return Intl.message(
+      'Ahadith',
+      name: 'bookmarks_ahadith_section',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No bookmarks yet`
+  String get no_bookmarks_yet {
+    return Intl.message(
+      'No bookmarks yet',
+      name: 'no_bookmarks_yet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Test`
+  String get test_section {
+    return Intl.message(
+      'Test',
+      name: 'test_section',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Al-Furqan`
+  String get app_name {
+    return Intl.message(
+      'Al-Furqan',
+      name: 'app_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue`
+  String get onb_continue {
+    return Intl.message(
+      'Continue',
+      name: 'onb_continue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable`
+  String get onb_enable {
+    return Intl.message(
+      'Enable',
+      name: 'onb_enable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not now`
+  String get onb_not_now {
+    return Intl.message(
+      'Not now',
+      name: 'onb_not_now',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The Noble Qur'an, in your hands`
+  String get onb_welcome_headline {
+    return Intl.message(
+      'The Noble Qur\'an, in your hands',
+      name: 'onb_welcome_headline',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Read, listen, and reflect — with your prayer times in one place.`
+  String get onb_welcome_subtitle {
+    return Intl.message(
+      'Read, listen, and reflect — with your prayer times in one place.',
+      name: 'onb_welcome_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose your language`
+  String get onb_language_title {
+    return Intl.message(
+      'Choose your language',
+      name: 'onb_language_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You can change it later`
+  String get onb_language_hint {
+    return Intl.message(
+      'You can change it later',
+      name: 'onb_language_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Personalize your look`
+  String get onb_appearance_title {
+    return Intl.message(
+      'Personalize your look',
+      name: 'onb_appearance_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Theme`
+  String get onb_theme_label {
+    return Intl.message(
+      'Theme',
+      name: 'onb_theme_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Time format`
+  String get onb_time_format_label {
+    return Intl.message(
+      'Time format',
+      name: 'onb_time_format_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Each time you open the app from now on`
+  String get onb_splash_desc {
+    return Intl.message(
+      'Each time you open the app from now on',
+      name: 'onb_splash_desc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your prayer times, precisely`
+  String get onb_location_title {
+    return Intl.message(
+      'Your prayer times, precisely',
+      name: 'onb_location_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We use your location to calculate accurate prayer times for your city. It stays on your device and is never shared.`
+  String get onb_location_why {
+    return Intl.message(
+      'We use your location to calculate accurate prayer times for your city. It stays on your device and is never shared.',
+      name: 'onb_location_why',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Never miss a prayer`
+  String get onb_notifications_title {
+    return Intl.message(
+      'Never miss a prayer',
+      name: 'onb_notifications_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allow notifications to receive the adhan and prayer reminders on time. You can fine-tune them later in settings.`
+  String get onb_notifications_why {
+    return Intl.message(
+      'Allow notifications to receive the adhan and prayer reminders on time. You can fine-tune them later in settings.',
+      name: 'onb_notifications_why',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Splash screen`
+  String get show_splash_screen {
+    return Intl.message(
+      'Splash screen',
+      name: 'show_splash_screen',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

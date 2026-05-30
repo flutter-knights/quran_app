@@ -44,6 +44,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "abu_dawood": MessageLookupByLibrary.simpleMessage("Sunan Abi Dawood"),
         "adhanPerPrayerSection":
             MessageLookupByLibrary.simpleMessage("Adhan per prayer"),
+        "adhan_and_reminders":
+            MessageLookupByLibrary.simpleMessage("Adhan & Reminders"),
         "ahadith_count": m0,
         "ahadith_section": MessageLookupByLibrary.simpleMessage("Ahadith"),
         "al_silsila_sahiha":
@@ -51,6 +53,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "al_tirmidhi":
             MessageLookupByLibrary.simpleMessage("Jami\' al-Tirmidhi"),
         "all_surahs": MessageLookupByLibrary.simpleMessage("All Surahs"),
+        "app_name": MessageLookupByLibrary.simpleMessage("Al-Furqan"),
         "appearance_section":
             MessageLookupByLibrary.simpleMessage("Appearance"),
         "arabicLanguage":
@@ -82,6 +85,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Bookmark removed"),
         "bookmark_save_failed":
             MessageLookupByLibrary.simpleMessage("Couldn\'t save bookmark"),
+        "bookmarks_ahadith_section":
+            MessageLookupByLibrary.simpleMessage("Ahadith"),
+        "bookmarks_quran_section":
+            MessageLookupByLibrary.simpleMessage("Quran"),
         "bookmarks_screen_title":
             MessageLookupByLibrary.simpleMessage("Bookmarks"),
         "books_count": m2,
@@ -104,6 +111,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "death_tirmidhi": MessageLookupByLibrary.simpleMessage("279 AH"),
         "dhuhr": MessageLookupByLibrary.simpleMessage("Dhuhr"),
         "fajr": MessageLookupByLibrary.simpleMessage("Fajr"),
+        "filter_all_chapters":
+            MessageLookupByLibrary.simpleMessage("All chapters"),
+        "filter_apply": MessageLookupByLibrary.simpleMessage("Apply"),
+        "filter_chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
+        "filter_clear": MessageLookupByLibrary.simpleMessage("Clear"),
+        "filter_status_label": MessageLookupByLibrary.simpleMessage("Status"),
+        "filters_title": MessageLookupByLibrary.simpleMessage("Filters"),
         "full_title_abu_dawood":
             MessageLookupByLibrary.simpleMessage("Sunan Abi Dawood"),
         "full_title_ahmad": MessageLookupByLibrary.simpleMessage(
@@ -129,12 +143,15 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Hadith Heading"),
         "hadith_number_label":
             MessageLookupByLibrary.simpleMessage("Hadith No."),
+        "hadith_of_the_day":
+            MessageLookupByLibrary.simpleMessage("Hadith of the Day"),
         "hadith_screen_title": MessageLookupByLibrary.simpleMessage("Hadith"),
         "hadith_total_label":
             MessageLookupByLibrary.simpleMessage("Total Ahadith"),
         "hijriDateWithDay": m3,
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn Majah"),
         "isha": MessageLookupByLibrary.simpleMessage("Isha"),
+        "jumuah": MessageLookupByLibrary.simpleMessage("Jumu\'ah"),
         "language_arabic": MessageLookupByLibrary.simpleMessage("العربية"),
         "language_english": MessageLookupByLibrary.simpleMessage("English"),
         "lastRead": MessageLookupByLibrary.simpleMessage("Last Read"),
@@ -145,9 +162,37 @@ class MessageLookup extends MessageLookupByLibrary {
         "musnad_ahmad": MessageLookupByLibrary.simpleMessage("Musnad Ahmad"),
         "narrator_label": MessageLookupByLibrary.simpleMessage("Narrator"),
         "next_hadith": MessageLookupByLibrary.simpleMessage("Next"),
+        "no_bookmarks_yet":
+            MessageLookupByLibrary.simpleMessage("No bookmarks yet"),
         "notifications": MessageLookupByLibrary.simpleMessage("Notifications"),
         "notificationsScreenSubtitle": MessageLookupByLibrary.simpleMessage(
             "Manage prayer-time notifications."),
+        "onb_appearance_title":
+            MessageLookupByLibrary.simpleMessage("Personalize your look"),
+        "onb_continue": MessageLookupByLibrary.simpleMessage("Continue"),
+        "onb_enable": MessageLookupByLibrary.simpleMessage("Enable"),
+        "onb_language_hint":
+            MessageLookupByLibrary.simpleMessage("You can change it later"),
+        "onb_language_title":
+            MessageLookupByLibrary.simpleMessage("Choose your language"),
+        "onb_location_title": MessageLookupByLibrary.simpleMessage(
+            "Your prayer times, precisely"),
+        "onb_location_why": MessageLookupByLibrary.simpleMessage(
+            "We use your location to calculate accurate prayer times for your city. It stays on your device and is never shared."),
+        "onb_not_now": MessageLookupByLibrary.simpleMessage("Not now"),
+        "onb_notifications_title":
+            MessageLookupByLibrary.simpleMessage("Never miss a prayer"),
+        "onb_notifications_why": MessageLookupByLibrary.simpleMessage(
+            "Allow notifications to receive the adhan and prayer reminders on time. You can fine-tune them later in settings."),
+        "onb_splash_desc": MessageLookupByLibrary.simpleMessage(
+            "Each time you open the app from now on"),
+        "onb_theme_label": MessageLookupByLibrary.simpleMessage("Theme"),
+        "onb_time_format_label":
+            MessageLookupByLibrary.simpleMessage("Time format"),
+        "onb_welcome_headline": MessageLookupByLibrary.simpleMessage(
+            "The Noble Qur\'an, in your hands"),
+        "onb_welcome_subtitle": MessageLookupByLibrary.simpleMessage(
+            "Read, listen, and reflect — with your prayer times in one place."),
         "page_label": m4,
         "pinnedPrayerTimes":
             MessageLookupByLibrary.simpleMessage("Pinned prayer times"),
@@ -165,6 +210,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "playback_restart": MessageLookupByLibrary.simpleMessage("Restart"),
         "playback_speed": MessageLookupByLibrary.simpleMessage("Speed"),
         "prayers": MessageLookupByLibrary.simpleMessage("Prayers"),
+        "previous_hadith": MessageLookupByLibrary.simpleMessage("Previous"),
         "progress_complete": m5,
         "quickAccess": MessageLookupByLibrary.simpleMessage("Quick Access"),
         "quran_screen_title": MessageLookupByLibrary.simpleMessage("Quran"),
@@ -176,6 +222,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "sahih_bukhari":
             MessageLookupByLibrary.simpleMessage("Sahih al-Bukhari"),
         "sahih_muslim": MessageLookupByLibrary.simpleMessage("Sahih Muslim"),
+        "search_hadith_hint":
+            MessageLookupByLibrary.simpleMessage("Search this book…"),
+        "search_no_results":
+            MessageLookupByLibrary.simpleMessage("No matching ahadith"),
         "search_surah_hint":
             MessageLookupByLibrary.simpleMessage("Search for a surah..."),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
@@ -184,6 +234,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "share": MessageLookupByLibrary.simpleMessage("Share"),
         "share_failed":
             MessageLookupByLibrary.simpleMessage("Couldn\'t open share sheet"),
+        "show_splash_screen":
+            MessageLookupByLibrary.simpleMessage("Splash screen"),
         "status_daeef": MessageLookupByLibrary.simpleMessage("Da\'eef"),
         "status_hasan": MessageLookupByLibrary.simpleMessage("Hasan"),
         "status_mudu": MessageLookupByLibrary.simpleMessage("Maudu\'"),
@@ -195,6 +247,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "tafsir": MessageLookupByLibrary.simpleMessage("Tafsir"),
         "testAdhanScheduledSnack":
             MessageLookupByLibrary.simpleMessage("Test adhan in 5 seconds"),
+        "test_section": MessageLookupByLibrary.simpleMessage("Test"),
         "the_noble_quran":
             MessageLookupByLibrary.simpleMessage("The Noble Qur\'an"),
         "time_format_12h": MessageLookupByLibrary.simpleMessage("12h"),
