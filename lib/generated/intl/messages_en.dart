@@ -33,11 +33,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m5(percent) => "${percent}% complete";
 
-  static String m6(time, prayerName) => "${time} remaining for ${prayerName}";
+  static String m6(deg) => "Face ${deg}° from North to face the Qibla.";
 
-  static String m7(minutes) => "${minutes} min before";
+  static String m7(km) => "${km} km";
 
-  static String m8(count) => "${count} surahs";
+  static String m8(time, prayerName) => "${time} remaining for ${prayerName}";
+
+  static String m9(minutes) => "${minutes} min before";
+
+  static String m10(count) => "${count} surahs";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -97,6 +101,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "collections_label":
             MessageLookupByLibrary.simpleMessage("Collections"),
         "coming_soon": MessageLookupByLibrary.simpleMessage("Coming soon"),
+        "compass_rose_e": MessageLookupByLibrary.simpleMessage("East"),
+        "compass_rose_n": MessageLookupByLibrary.simpleMessage("North"),
+        "compass_rose_ne": MessageLookupByLibrary.simpleMessage("North-East"),
+        "compass_rose_nw": MessageLookupByLibrary.simpleMessage("North-West"),
+        "compass_rose_s": MessageLookupByLibrary.simpleMessage("South"),
+        "compass_rose_se": MessageLookupByLibrary.simpleMessage("South-East"),
+        "compass_rose_sw": MessageLookupByLibrary.simpleMessage("South-West"),
+        "compass_rose_w": MessageLookupByLibrary.simpleMessage("West"),
         "continue_reading":
             MessageLookupByLibrary.simpleMessage("Continue reading"),
         "darkMode": MessageLookupByLibrary.simpleMessage("Dark Mode"),
@@ -228,12 +240,32 @@ class MessageLookup extends MessageLookupByLibrary {
         "prayers": MessageLookupByLibrary.simpleMessage("Prayers"),
         "previous_hadith": MessageLookupByLibrary.simpleMessage("Previous"),
         "progress_complete": m5,
+        "qibla_align_manually": m6,
+        "qibla_aligned":
+            MessageLookupByLibrary.simpleMessage("Aligned with the Qibla"),
+        "qibla_app_bar_label":
+            MessageLookupByLibrary.simpleMessage("Qibla Direction"),
+        "qibla_bearing_suffix":
+            MessageLookupByLibrary.simpleMessage("Qibla bearing"),
+        "qibla_calibrate_hint": MessageLookupByLibrary.simpleMessage(
+            "Wave your phone in a figure-8 to calibrate"),
+        "qibla_distance_km": m7,
+        "qibla_no_compass_title":
+            MessageLookupByLibrary.simpleMessage("No compass on this device"),
+        "qibla_point_to_kaaba": MessageLookupByLibrary.simpleMessage(
+            "Point your phone toward the Kaaba"),
+        "qibla_recalibrate":
+            MessageLookupByLibrary.simpleMessage("Recalibrate"),
+        "qibla_screen_title": MessageLookupByLibrary.simpleMessage("Qibla"),
+        "qibla_to_makkah": MessageLookupByLibrary.simpleMessage("To Makkah"),
+        "qibla_your_location":
+            MessageLookupByLibrary.simpleMessage("Your location"),
         "quickAccess": MessageLookupByLibrary.simpleMessage("Quick Access"),
         "quran_screen_title": MessageLookupByLibrary.simpleMessage("Quran"),
         "reciter_label": MessageLookupByLibrary.simpleMessage("Reciter"),
-        "remainingTimeLabel": m6,
+        "remainingTimeLabel": m8,
         "reminderLabel": MessageLookupByLibrary.simpleMessage("Remind me"),
-        "reminderMinutesBefore": m7,
+        "reminderMinutesBefore": m9,
         "reminderOff": MessageLookupByLibrary.simpleMessage("Off"),
         "sahih_bukhari":
             MessageLookupByLibrary.simpleMessage("Sahih al-Bukhari"),
@@ -259,7 +291,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "sunan_nasai": MessageLookupByLibrary.simpleMessage("Sunan an-Nasa\'i"),
         "sunrise": MessageLookupByLibrary.simpleMessage("Sunrise"),
         "surahs_appbar_title": MessageLookupByLibrary.simpleMessage("Surahs"),
-        "surahs_count": m8,
+        "surahs_count": m10,
         "tafsir": MessageLookupByLibrary.simpleMessage("Tafsir"),
         "testAdhanScheduledSnack":
             MessageLookupByLibrary.simpleMessage("Test adhan in 5 seconds"),
