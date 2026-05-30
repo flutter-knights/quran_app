@@ -55,17 +55,23 @@ void main() {
     expect(calls.single.method, 'refreshStrip');
   });
 
-  test('scheduleDailyAdhans invokes the channel with timings + audio map',
+  test('scheduleDailyAdhans invokes the channel with days + audio map',
       () async {
+    final days = [
+      {
+        'date': '2026-05-22',
+        'timings': {'fajr': '04:15', 'isha': '21:16'},
+      }
+    ];
     await ds.scheduleDailyAdhans(
-      timingsByPrayer: const {'fajr': '04:15', 'isha': '21:16'},
+      days: days,
       clipAssetByPrayer: const {'fajr': 'fajr_adhan', 'isha': 'normal_adhan'},
       volume: 1.0,
       localeCode: 'en',
     );
     expect(calls.single.method, 'scheduleDailyAdhans');
     final args = calls.single.arguments as Map;
-    expect(args['timings'], {'fajr': '04:15', 'isha': '21:16'});
+    expect(args['days'], days);
     expect(args['volume'], 1.0);
     expect(args['localeCode'], 'en');
   });
@@ -87,23 +93,23 @@ void main() {
     );
   });
 
-  test('schedulePrayerReminders invokes the channel with the reminder map',
+  test('schedulePrayerReminders invokes the channel with the days + reminder map',
       () async {
+    final days = [
+      {
+        'date': '2026-05-22',
+        'timings': {'fajr': '04:15', 'dhuhr': '12:52', 'maghrib': '19:46'},
+      }
+    ];
     await ds.schedulePrayerReminders(
+      days: days,
       remindersByPrayer: const {'fajr': 15, 'maghrib': 5},
-      timingsByPrayer: const {
-        'fajr': '04:15',
-        'dhuhr': '12:52',
-        'maghrib': '19:46',
-      },
       localeCode: 'ar',
     );
     expect(calls.single.method, 'schedulePrayerReminders');
     final args = calls.single.arguments as Map;
+    expect(args['days'], days);
     expect(args['remindersByPrayer'], {'fajr': 15, 'maghrib': 5});
-    expect(args['timings'], {
-      'fajr': '04:15', 'dhuhr': '12:52', 'maghrib': '19:46',
-    });
     expect(args['localeCode'], 'ar');
   });
 

@@ -16,15 +16,15 @@ abstract class NotificationsNativeDataSource {
   Future<void> disableStrip();
   Future<void> refreshStrip(PrayerStripState state);
   Future<void> scheduleDailyAdhans({
-    required Map<String, String> timingsByPrayer,
+    required List<Map<String, dynamic>> days,
     required Map<String, String> clipAssetByPrayer,
     required double volume,
     required String localeCode,
   });
   Future<void> cancelAllAdhans();
   Future<void> schedulePrayerReminders({
+    required List<Map<String, dynamic>> days,
     required Map<String, int> remindersByPrayer,
-    required Map<String, String> timingsByPrayer,
     required String localeCode,
   });
   Future<void> cancelAllReminders();
@@ -62,13 +62,13 @@ class NotificationsNativeDataSourceImpl
 
   @override
   Future<void> scheduleDailyAdhans({
-    required Map<String, String> timingsByPrayer,
+    required List<Map<String, dynamic>> days,
     required Map<String, String> clipAssetByPrayer,
     required double volume,
     required String localeCode,
   }) =>
       _invoke('scheduleDailyAdhans', {
-        'timings': timingsByPrayer,
+        'days': days,
         'clips': clipAssetByPrayer,
         'volume': volume,
         'localeCode': localeCode,
@@ -79,13 +79,13 @@ class NotificationsNativeDataSourceImpl
 
   @override
   Future<void> schedulePrayerReminders({
+    required List<Map<String, dynamic>> days,
     required Map<String, int> remindersByPrayer,
-    required Map<String, String> timingsByPrayer,
     required String localeCode,
   }) =>
       _invoke('schedulePrayerReminders', {
+        'days': days,
         'remindersByPrayer': remindersByPrayer,
-        'timings': timingsByPrayer,
         'localeCode': localeCode,
       });
 
