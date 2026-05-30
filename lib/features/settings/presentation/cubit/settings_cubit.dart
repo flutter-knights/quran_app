@@ -68,6 +68,16 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
     );
   }
 
+  /// Permanently dismisses the Home notification hint.
+  void dismissNotificationHint() {
+    if (state.settingsModel.notificationHintDismissed) return;
+    emit(
+      SettingsState(
+        state.settingsModel.copyWith(notificationHintDismissed: true),
+      ),
+    );
+  }
+
   void updateShowSplashOnLaunch(bool value) {
     emit(
       SettingsState(state.settingsModel.copyWith(showSplashOnLaunch: value)),

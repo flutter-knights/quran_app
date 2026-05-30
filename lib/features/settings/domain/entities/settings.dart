@@ -25,6 +25,10 @@ class Settings extends Equatable {
   /// Whether the splash screen plays on launch. User-toggleable in settings.
   final bool showSplashOnLaunch;
 
+  /// Whether the user dismissed the Home "turn on notifications" hint. Once
+  /// dismissed it stays hidden (no re-nag); the Settings banner remains.
+  final bool notificationHintDismissed;
+
   /// The prayer-times calculation method. Defaults to [CalculationMethod.auto]
   /// which resolves the method from the user's country at runtime.
   final CalculationMethod calculationMethod;
@@ -62,6 +66,7 @@ class Settings extends Equatable {
     this.reminderMinutesByPrayer = defaultReminderMinutes,
     this.hasCompletedOnboarding = false,
     this.showSplashOnLaunch = true,
+    this.notificationHintDismissed = false,
     this.calculationMethod = CalculationMethod.auto,
     this.asrSchool = AsrSchool.shafi,
   });
@@ -78,6 +83,7 @@ class Settings extends Equatable {
     Map<PrayerName, int>? reminderMinutesByPrayer,
     bool? hasCompletedOnboarding,
     bool? showSplashOnLaunch,
+    bool? notificationHintDismissed,
     CalculationMethod? calculationMethod,
     AsrSchool? asrSchool,
   }) {
@@ -93,6 +99,7 @@ class Settings extends Equatable {
       reminderMinutesByPrayer: reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
       hasCompletedOnboarding: hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       showSplashOnLaunch: showSplashOnLaunch ?? this.showSplashOnLaunch,
+      notificationHintDismissed: notificationHintDismissed ?? this.notificationHintDismissed,
       calculationMethod: calculationMethod ?? this.calculationMethod,
       asrSchool: asrSchool ?? this.asrSchool,
     );
@@ -111,6 +118,7 @@ class Settings extends Equatable {
         reminderMinutesByPrayer,
         hasCompletedOnboarding,
         showSplashOnLaunch,
+        notificationHintDismissed,
         calculationMethod,
         asrSchool,
       ];
