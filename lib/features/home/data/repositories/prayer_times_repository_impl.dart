@@ -51,13 +51,7 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
           prayerTimesLocalDataSource.getCached(date: tomorrowDate);
 
       if (tomorrowData != null) {
-        return Right(
-          PrayerTimes(
-            key: todayData.key,
-            date: todayData.date,
-            timings: tomorrowData.timings,
-          ),
-        );
+        return Right(tomorrowData);
       }
     }
 

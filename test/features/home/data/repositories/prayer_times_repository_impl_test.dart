@@ -4,7 +4,8 @@ import 'package:hive/hive.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/features/home/data/datasources/local/prayer_config_signature.dart';
-import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
+import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart'
+    show PrayerTimesLocalDataSource, formatKey;
 import 'package:quran_app/features/home/data/datasources/remote/prayer_time_remote_data_source.dart';
 import 'package:quran_app/features/home/data/repositories/prayer_times_repository_impl.dart';
 import 'package:quran_app/features/home/domain/entities/location.dart';
@@ -61,6 +62,85 @@ void main() {
           gregorianDate: key,
         ),
       );
+
+  group('getPrayerTimes', () {
+    test(
+        'after-Isha: returns tomorrow wholesale (key, date, timings all from tomorrow)',
+        () async {
+      final now = DateTime.now();
+      final tomorrow = now.add(const Duration(days: 1));
+
+      final String todayKey = formatKey(date: now);
+      final String tomorrowKey = formatKey(date: tomorrow);
+
+      // Today's object has Isha at 00:01 so that DateTime.now() is always after it.
+      final todayObj = PrayerTimes(
+        key: todayKey,
+        timings: {
+          PrayerName.fajr: '00:00',
+          PrayerName.sunrise: '00:00',
+          PrayerName.dhuhr: '00:00',
+          PrayerName.asr: '00:00',
+          PrayerName.maghrib: '00:00',
+          PrayerName.isha: '00:01',
+        },
+        date: Date(
+          month: '1',
+          weekDay: 'Mon',
+          year: '1446',
+          day: '1',
+          enMonth: 'Muharram',
+          enWeekDay: 'Mon',
+          gregorianDate: todayKey,
+        ),
+      );
+
+      // Tomorrow's object has distinct timings and its own key/gregorianDate.
+      final tomorrowObj = PrayerTimes(
+        key: tomorrowKey,
+        timings: {
+          PrayerName.fajr: '04:15',
+          PrayerName.sunrise: '05:45',
+          PrayerName.dhuhr: '12:15',
+          PrayerName.asr: '15:45',
+          PrayerName.maghrib: '18:15',
+          PrayerName.isha: '19:45',
+        },
+        date: Date(
+          month: '2',
+          weekDay: 'Tue',
+          year: '1446',
+          day: '2',
+          enMonth: 'Muharram',
+          enWeekDay: 'Tue',
+          gregorianDate: tomorrowKey,
+        ),
+      );
+
+      // clearCache is called because the signature store has no prior value.
+      when(() => local.clearCache()).thenReturn(null);
+
+      // getCached dispatches by date: today → todayObj, tomorrow → tomorrowObj.
+      when(() => local.getCached(date: any(named: 'date'))).thenAnswer((inv) {
+        final d = inv.namedArguments[#date] as DateTime;
+        final isTomorrow = d.year == tomorrow.year &&
+            d.month == tomorrow.month &&
+            d.day == tomorrow.day;
+        return isTomorrow ? tomorrowObj : todayObj;
+      });
+
+      final result = await repo.getPrayerTimes(location);
+
+      final pt = result.getOrElse(() => throw Exception('Expected Right'));
+
+      expect(pt.key, equals(tomorrowKey),
+          reason: 'key must come from tomorrow, not today');
+      expect(pt.date.gregorianDate, equals(tomorrowKey),
+          reason: 'gregorianDate must come from tomorrow');
+      expect(pt.timings[PrayerName.isha], equals('19:45'),
+          reason: 'timings must come from tomorrow wholesale');
+    });
+  });
 
   group('preCacheMonth', () {
     test('skips network when month is already fully cached', () async {

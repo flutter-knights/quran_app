@@ -28,8 +28,9 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
     _dailyPrayerContext = dailyPrayerContext;
 
     // Reset flags ONLY when the gregorian date actually changes (new calendar day).
-    // When the same date reloads (e.g. after-Isha returns today's date + tomorrow's
-    // timings), flags are preserved to prevent an immediate re-fire.
+    // context.date always equals the day the timings are for; a context dated
+    // ahead of today is the post-Isha wholesale roll and is NOT stale — flags
+    // are preserved when the same date reloads to prevent an immediate re-fire.
     if (prevDate == null || prevDate != dailyPrayerContext.date) {
       _isAfterIshaRefreshed = false;
       _isMidnightRefreshed = false;
@@ -63,11 +64,10 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
         currentPrayer = prayerName;
         continue;
       }
-      if (now.isBefore(prayerTime)) {
-        targetNextPrayerTime = prayerTime;
-        nextPrayer = prayerName;
-        break;
-      }
+      // now <= prayerTime -> first upcoming (exact-equal counts as upcoming)
+      targetNextPrayerTime = prayerTime;
+      nextPrayer = prayerName;
+      break;
     }
 
     emit(
@@ -91,11 +91,13 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
       return;
     }
 
-    // Midnight refresh: device clock has rolled into a new gregorian day.
-    if ((now.day != contextDate.day ||
-            now.month != contextDate.month ||
-            now.year != contextDate.year) &&
-        !_isMidnightRefreshed) {
+    // Stale/rolled-past refresh: the loaded context is for a day we have ALREADY
+    // passed (context.date is strictly before today). A context dated AHEAD of
+    // today (the post-Isha wholesale roll) is NOT stale, so use isAfter, not !=.
+    final today = DateTime(now.year, now.month, now.day);
+    final ctxDay =
+        DateTime(contextDate.year, contextDate.month, contextDate.day);
+    if (today.isAfter(ctxDay) && !_isMidnightRefreshed) {
       _isMidnightRefreshed = true;
       emit(PrayerCountdownRequestRefresh(silent: true));
     }

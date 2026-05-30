@@ -120,27 +120,24 @@ void main() {
   });
 
   test(
-      'new-day context after midnight resets flags so refresh fires again',
+      'context dated ahead (post-Isha wholesale roll) does NOT fire a spurious refresh',
       () async {
     final cubit = PrayerCountdownCubit();
-    final today = DateTime.now();
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    // Context is for tomorrow while the device clock is still today.
+    final ctx = ctxFor(tomorrow, ishaHour: 0);
 
-    // 1st context: today after isha — fires refresh
-    cubit.startTimer(ctxFor(today, ishaHour: 0));
-    await Future<void>.delayed(const Duration(milliseconds: 30));
-
-    // 2nd context: tomorrow (different date) — flags reset, refresh fires again
-    final tomorrow = today.add(const Duration(days: 1));
     final emitted = <PrayerCountdownState>[];
     final sub = cubit.stream.listen(emitted.add);
 
-    cubit.startTimer(ctxFor(tomorrow, ishaHour: 0));
-    await Future<void>.delayed(const Duration(milliseconds: 30));
+    cubit.startTimer(ctx);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
 
+    expect(emitted.whereType<PrayerCountdownTick>().isNotEmpty, isTrue);
     expect(
-      emitted.whereType<PrayerCountdownRequestRefresh>().length,
-      greaterThanOrEqualTo(1),
-      reason: 'new-day context resets flags → refresh fires again',
+      emitted.whereType<PrayerCountdownRequestRefresh>(),
+      isEmpty,
+      reason: 'a context dated ahead of the device is not stale; no refresh',
     );
 
     await sub.cancel();
