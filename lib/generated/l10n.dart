@@ -1560,6 +1560,86 @@ class S {
       args: [],
     );
   }
+
+  /// `Prayer times need your location`
+  String get home_locationCard_title {
+    return Intl.message(
+      'Prayer times need your location',
+      name: 'home_locationCard_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We use it only to compute accurate prayer times.`
+  String get home_locationCard_body {
+    return Intl.message(
+      'We use it only to compute accurate prayer times.',
+      name: 'home_locationCard_body',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable location`
+  String get home_locationCard_enable {
+    return Intl.message(
+      'Enable location',
+      name: 'home_locationCard_enable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open settings`
+  String get home_locationCard_openSettings {
+    return Intl.message(
+      'Open settings',
+      name: 'home_locationCard_openSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on notifications to hear the adhan`
+  String get home_notifHint_text {
+    return Intl.message(
+      'Turn on notifications to hear the adhan',
+      name: 'home_notifHint_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allow`
+  String get home_notifHint_allow {
+    return Intl.message(
+      'Allow',
+      name: 'home_notifHint_allow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notifications are off — you won't hear the adhan.`
+  String get notifSettings_disabledBanner_text {
+    return Intl.message(
+      'Notifications are off — you won\'t hear the adhan.',
+      name: 'notifSettings_disabledBanner_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open settings`
+  String get notifSettings_disabledBanner_action {
+    return Intl.message(
+      'Open settings',
+      name: 'notifSettings_disabledBanner_action',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

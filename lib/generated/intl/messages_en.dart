@@ -149,6 +149,17 @@ class MessageLookup extends MessageLookupByLibrary {
         "hadith_total_label":
             MessageLookupByLibrary.simpleMessage("Total Ahadith"),
         "hijriDateWithDay": m3,
+        "home_locationCard_body": MessageLookupByLibrary.simpleMessage(
+            "We use it only to compute accurate prayer times."),
+        "home_locationCard_enable":
+            MessageLookupByLibrary.simpleMessage("Enable location"),
+        "home_locationCard_openSettings":
+            MessageLookupByLibrary.simpleMessage("Open settings"),
+        "home_locationCard_title": MessageLookupByLibrary.simpleMessage(
+            "Prayer times need your location"),
+        "home_notifHint_allow": MessageLookupByLibrary.simpleMessage("Allow"),
+        "home_notifHint_text": MessageLookupByLibrary.simpleMessage(
+            "Turn on notifications to hear the adhan"),
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn Majah"),
         "isha": MessageLookupByLibrary.simpleMessage("Isha"),
         "jumuah": MessageLookupByLibrary.simpleMessage("Jumu\'ah"),
@@ -164,6 +175,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "next_hadith": MessageLookupByLibrary.simpleMessage("Next"),
         "no_bookmarks_yet":
             MessageLookupByLibrary.simpleMessage("No bookmarks yet"),
+        "notifSettings_disabledBanner_action":
+            MessageLookupByLibrary.simpleMessage("Open settings"),
+        "notifSettings_disabledBanner_text":
+            MessageLookupByLibrary.simpleMessage(
+                "Notifications are off — you won\'t hear the adhan."),
         "notifications": MessageLookupByLibrary.simpleMessage("Notifications"),
         "notificationsScreenSubtitle": MessageLookupByLibrary.simpleMessage(
             "Manage prayer-time notifications."),

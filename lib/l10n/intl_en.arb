@@ -170,5 +170,21 @@
 "onb_location_why": "We use your location to calculate accurate prayer times for your city. It stays on your device and is never shared.",
 "onb_notifications_title": "Never miss a prayer",
 "onb_notifications_why": "Allow notifications to receive the adhan and prayer reminders on time. You can fine-tune them later in settings.",
-"show_splash_screen": "Splash screen"
+"show_splash_screen": "Splash screen",
+"home_locationCard_title": "Prayer times need your location",
+"@home_locationCard_title": {},
+"home_locationCard_body": "We use it only to compute accurate prayer times.",
+"@home_locationCard_body": {},
+"home_locationCard_enable": "Enable location",
+"@home_locationCard_enable": {},
+"home_locationCard_openSettings": "Open settings",
+"@home_locationCard_openSettings": {},
+"home_notifHint_text": "Turn on notifications to hear the adhan",
+"@home_notifHint_text": {},
+"home_notifHint_allow": "Allow",
+"@home_notifHint_allow": {},
+"notifSettings_disabledBanner_text": "Notifications are off — you won't hear the adhan.",
+"@notifSettings_disabledBanner_text": {},
+"notifSettings_disabledBanner_action": "Open settings",
+"@notifSettings_disabledBanner_action": {}
 }

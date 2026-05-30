@@ -138,6 +138,17 @@ class MessageLookup extends MessageLookupByLibrary {
         "hadith_total_label":
             MessageLookupByLibrary.simpleMessage("إجمالي الأحاديث"),
         "hijriDateWithDay": m3,
+        "home_locationCard_body": MessageLookupByLibrary.simpleMessage(
+            "نستخدمه فقط لحساب مواقيت صلاة دقيقة."),
+        "home_locationCard_enable":
+            MessageLookupByLibrary.simpleMessage("تفعيل الموقع"),
+        "home_locationCard_openSettings":
+            MessageLookupByLibrary.simpleMessage("فتح الإعدادات"),
+        "home_locationCard_title": MessageLookupByLibrary.simpleMessage(
+            "تحتاج مواقيت الصلاة إلى موقعك"),
+        "home_notifHint_allow": MessageLookupByLibrary.simpleMessage("السماح"),
+        "home_notifHint_text":
+            MessageLookupByLibrary.simpleMessage("فعّل الإشعارات لسماع الأذان"),
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("سنن ابن ماجه"),
         "isha": MessageLookupByLibrary.simpleMessage("العشاء"),
         "jumuah": MessageLookupByLibrary.simpleMessage("الجمعة"),
@@ -153,6 +164,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "next_hadith": MessageLookupByLibrary.simpleMessage("التالي"),
         "no_bookmarks_yet":
             MessageLookupByLibrary.simpleMessage("لا توجد إشارات مرجعية بعد"),
+        "notifSettings_disabledBanner_action":
+            MessageLookupByLibrary.simpleMessage("فتح الإعدادات"),
+        "notifSettings_disabledBanner_text":
+            MessageLookupByLibrary.simpleMessage(
+                "الإشعارات متوقفة — لن تسمع الأذان."),
         "notifications": MessageLookupByLibrary.simpleMessage("الإشعارات"),
         "notificationsScreenSubtitle":
             MessageLookupByLibrary.simpleMessage("إدارة إشعارات أوقات الصلاة."),
