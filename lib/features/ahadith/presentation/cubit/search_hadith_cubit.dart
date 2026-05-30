@@ -16,8 +16,6 @@ class SearchHadithCubit extends Cubit<SearchHadithState> {
   Timer? _debounce;
   String _lastQuery = '';
   String? _lastBookSlug;
-  // ignore: unused_field
-  HadithListFilter _lastFilter = const HadithListFilter();
 
   SearchHadithCubit({
     required this.downloadBookCubit,
@@ -33,7 +31,6 @@ class SearchHadithCubit extends Cubit<SearchHadithState> {
 
     _lastQuery = query;
     _lastBookSlug = bookSlug;
-    _lastFilter = filter;
 
     if (query.trim().isEmpty) {
       emit(SearchHadithInitial());
@@ -64,11 +61,10 @@ class SearchHadithCubit extends Cubit<SearchHadithState> {
 
   /// Re-runs the current query under a new filter (called when the user changes
   /// the filter while a search is active). No-op if there is no active query.
+  /// Re-runs the current query under a new filter (called when the user changes
+  /// the filter while a search is active). No-op if there is no active query.
   void reapplyFilter(HadithListFilter filter) {
-    if (_lastBookSlug == null || _lastQuery.trim().isEmpty) {
-      _lastFilter = filter;
-      return;
-    }
+    if (_lastBookSlug == null || _lastQuery.trim().isEmpty) return;
     searchAhadith(_lastQuery, _lastBookSlug!, filter: filter);
   }
 
