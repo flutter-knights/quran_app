@@ -7,6 +7,8 @@ import 'package:quran_app/features/ahadith/presentation/pages/ahadith_list_page.
 import 'package:quran_app/features/ahadith/presentation/pages/books_list_page.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/hadith_page.dart';
 import 'package:quran_app/features/bookmarks/presentation/pages/bookmarks_page.dart';
+import 'package:quran_app/features/qibla/presentation/cubit/qibla_cubit.dart';
+import 'package:quran_app/features/qibla/presentation/pages/qibla_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
 import 'package:quran_app/features/home/presentation/pages/notifications_settings_page.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/onboarding_page.dart';
@@ -33,6 +35,7 @@ abstract class AppRouter {
   static const String hadithPath = "/hadith";
   static const String settingsPath = "/settings";
   static const String bookmarksPath = "/bookmarks";
+  static const String qiblaPath = "/qibla";
 
   /// Builds the router once with a startup-computed [initialLocation] (see
   /// `QuranApp`): splash on first run / when the splash is enabled, otherwise
@@ -96,6 +99,15 @@ abstract class AppRouter {
         path: bookmarksPath,
         pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) => const BookmarksPage(),
+        ),
+      ),
+      GoRoute(
+        path: qiblaPath,
+        pageBuilder: GoTransitions.fade.withScale.build(
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<QiblaCubit>()..start(),
+            child: const QiblaPage(),
+          ),
         ),
       ),
       GoRoute(
