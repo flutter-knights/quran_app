@@ -48,7 +48,12 @@ class AhadithRemoteDataSource {
     return HadithPageModel.fromJson(ahadithResponse.data);
   }
 
-  Future<List<Hadith>> getSearchedHadiths(String query, String bookSlug) async {
+  Future<List<Hadith>> getSearchedHadiths(
+    String query,
+    String bookSlug, {
+    String? status,
+    int? chapterNumber,
+  }) async {
     final Response ahadithResponse;
     try {
       ahadithResponse = await dio.get(
@@ -57,6 +62,8 @@ class AhadithRemoteDataSource {
           'paginate': kPageLimit,
           'book': bookSlug,
           'hadithEnglish': query,
+          if (status != null) 'status': status,
+          if (chapterNumber != null) 'chapter': chapterNumber,
         },
       );
     } on DioException catch (e) {
@@ -67,10 +74,7 @@ class AhadithRemoteDataSource {
     final List<dynamic>? dataList = ahadithResponse.data['hadiths']?['data'];
 
     if (dataList == null || dataList.isEmpty) return [];
-    List<Hadith> ahadithList = dataList
-        .map((e) => HadithModel.fromJson(e))
-        .toList();
-    return ahadithList;
+    return dataList.map((e) => HadithModel.fromJson(e)).toList();
   }
 
   Future<List<Hadith>> getAhadithByNumbers(
