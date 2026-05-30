@@ -1840,6 +1840,196 @@ class S {
       args: [],
     );
   }
+
+  /// `Calculation method`
+  String get calculationMethod_section {
+    return Intl.message(
+      'Calculation method',
+      name: 'calculationMethod_section',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Method`
+  String get calculationMethod_methodLabel {
+    return Intl.message(
+      'Method',
+      name: 'calculationMethod_methodLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Asr (juristic) method`
+  String get calculationMethod_schoolLabel {
+    return Intl.message(
+      'Asr (juristic) method',
+      name: 'calculationMethod_schoolLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatic (by region)`
+  String get calculationMethod_auto {
+    return Intl.message(
+      'Automatic (by region)',
+      name: 'calculationMethod_auto',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Muslim World League`
+  String get calculationMethod_mwl {
+    return Intl.message(
+      'Muslim World League',
+      name: 'calculationMethod_mwl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ISNA (North America)`
+  String get calculationMethod_isna {
+    return Intl.message(
+      'ISNA (North America)',
+      name: 'calculationMethod_isna',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Egyptian General Authority`
+  String get calculationMethod_egypt {
+    return Intl.message(
+      'Egyptian General Authority',
+      name: 'calculationMethod_egypt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Umm al-Qura (Makkah)`
+  String get calculationMethod_ummAlQura {
+    return Intl.message(
+      'Umm al-Qura (Makkah)',
+      name: 'calculationMethod_ummAlQura',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `University of Islamic Sciences, Karachi`
+  String get calculationMethod_karachi {
+    return Intl.message(
+      'University of Islamic Sciences, Karachi',
+      name: 'calculationMethod_karachi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Institute of Geophysics, Tehran`
+  String get calculationMethod_tehran {
+    return Intl.message(
+      'Institute of Geophysics, Tehran',
+      name: 'calculationMethod_tehran',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Gulf Region`
+  String get calculationMethod_gulf {
+    return Intl.message(
+      'Gulf Region',
+      name: 'calculationMethod_gulf',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kuwait`
+  String get calculationMethod_kuwait {
+    return Intl.message(
+      'Kuwait',
+      name: 'calculationMethod_kuwait',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Qatar`
+  String get calculationMethod_qatar {
+    return Intl.message(
+      'Qatar',
+      name: 'calculationMethod_qatar',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Singapore`
+  String get calculationMethod_singapore {
+    return Intl.message(
+      'Singapore',
+      name: 'calculationMethod_singapore',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `France`
+  String get calculationMethod_france {
+    return Intl.message(
+      'France',
+      name: 'calculationMethod_france',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turkey (Diyanet)`
+  String get calculationMethod_turkey {
+    return Intl.message(
+      'Turkey (Diyanet)',
+      name: 'calculationMethod_turkey',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Russia`
+  String get calculationMethod_russia {
+    return Intl.message(
+      'Russia',
+      name: 'calculationMethod_russia',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Standard (Shafiʿi, Maliki, Hanbali)`
+  String get asrSchool_shafi {
+    return Intl.message(
+      'Standard (Shafiʿi, Maliki, Hanbali)',
+      name: 'asrSchool_shafi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hanafi`
+  String get asrSchool_hanafi {
+    return Intl.message(
+      'Hanafi',
+      name: 'asrSchool_hanafi',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

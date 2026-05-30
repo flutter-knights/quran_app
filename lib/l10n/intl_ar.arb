@@ -190,5 +190,25 @@
   "compass_rose_s": "جنوب",
   "compass_rose_sw": "جنوب غرب",
   "compass_rose_w": "غرب",
-  "compass_rose_nw": "شمال غرب"
+  "compass_rose_nw": "شمال غرب",
+
+  "calculationMethod_section": "طريقة حساب أوقات الصلاة",
+  "calculationMethod_methodLabel": "الطريقة",
+  "calculationMethod_schoolLabel": "مذهب حساب العصر",
+  "calculationMethod_auto": "تلقائي (حسب المنطقة)",
+  "calculationMethod_mwl": "رابطة العالم الإسلامي",
+  "calculationMethod_isna": "الجمعية الإسلامية لأمريكا الشمالية",
+  "calculationMethod_egypt": "الهيئة المصرية العامة للمساحة",
+  "calculationMethod_ummAlQura": "أم القرى (مكة)",
+  "calculationMethod_karachi": "جامعة العلوم الإسلامية، كراتشي",
+  "calculationMethod_tehran": "معهد الجيوفيزياء، طهران",
+  "calculationMethod_gulf": "منطقة الخليج",
+  "calculationMethod_kuwait": "الكويت",
+  "calculationMethod_qatar": "قطر",
+  "calculationMethod_singapore": "سنغافورة",
+  "calculationMethod_france": "فرنسا",
+  "calculationMethod_turkey": "تركيا (ديانت)",
+  "calculationMethod_russia": "روسيا",
+  "asrSchool_shafi": "الافتراضي (الشافعي، المالكي، الحنبلي)",
+  "asrSchool_hanafi": "الحنفي"
 }
