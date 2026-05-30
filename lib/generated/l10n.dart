@@ -1640,6 +1640,206 @@ class S {
       args: [],
     );
   }
+
+  /// `Qibla`
+  String get qibla_screen_title {
+    return Intl.message(
+      'Qibla',
+      name: 'qibla_screen_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Qibla Direction`
+  String get qibla_app_bar_label {
+    return Intl.message(
+      'Qibla Direction',
+      name: 'qibla_app_bar_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Point your phone toward the Kaaba`
+  String get qibla_point_to_kaaba {
+    return Intl.message(
+      'Point your phone toward the Kaaba',
+      name: 'qibla_point_to_kaaba',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Aligned with the Qibla`
+  String get qibla_aligned {
+    return Intl.message(
+      'Aligned with the Qibla',
+      name: 'qibla_aligned',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Qibla bearing`
+  String get qibla_bearing_suffix {
+    return Intl.message(
+      'Qibla bearing',
+      name: 'qibla_bearing_suffix',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To Makkah`
+  String get qibla_to_makkah {
+    return Intl.message(
+      'To Makkah',
+      name: 'qibla_to_makkah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your location`
+  String get qibla_your_location {
+    return Intl.message(
+      'Your location',
+      name: 'qibla_your_location',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{km} km`
+  String qibla_distance_km(Object km) {
+    return Intl.message(
+      '$km km',
+      name: 'qibla_distance_km',
+      desc: '',
+      args: [km],
+    );
+  }
+
+  /// `No compass on this device`
+  String get qibla_no_compass_title {
+    return Intl.message(
+      'No compass on this device',
+      name: 'qibla_no_compass_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Face {deg}° from North to face the Qibla.`
+  String qibla_align_manually(Object deg) {
+    return Intl.message(
+      'Face $deg° from North to face the Qibla.',
+      name: 'qibla_align_manually',
+      desc: '',
+      args: [deg],
+    );
+  }
+
+  /// `Wave your phone in a figure-8 to calibrate`
+  String get qibla_calibrate_hint {
+    return Intl.message(
+      'Wave your phone in a figure-8 to calibrate',
+      name: 'qibla_calibrate_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recalibrate`
+  String get qibla_recalibrate {
+    return Intl.message(
+      'Recalibrate',
+      name: 'qibla_recalibrate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `North`
+  String get compass_rose_n {
+    return Intl.message(
+      'North',
+      name: 'compass_rose_n',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `North-East`
+  String get compass_rose_ne {
+    return Intl.message(
+      'North-East',
+      name: 'compass_rose_ne',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `East`
+  String get compass_rose_e {
+    return Intl.message(
+      'East',
+      name: 'compass_rose_e',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `South-East`
+  String get compass_rose_se {
+    return Intl.message(
+      'South-East',
+      name: 'compass_rose_se',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `South`
+  String get compass_rose_s {
+    return Intl.message(
+      'South',
+      name: 'compass_rose_s',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `South-West`
+  String get compass_rose_sw {
+    return Intl.message(
+      'South-West',
+      name: 'compass_rose_sw',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `West`
+  String get compass_rose_w {
+    return Intl.message(
+      'West',
+      name: 'compass_rose_w',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `North-West`
+  String get compass_rose_nw {
+    return Intl.message(
+      'North-West',
+      name: 'compass_rose_nw',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
