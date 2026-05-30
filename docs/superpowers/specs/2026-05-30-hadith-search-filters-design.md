@@ -155,8 +155,15 @@ cap, the search index must carry each hadith's chapter (and, for symmetry, grade
 ### Backward compatibility
 - The bundled asset is replaced wholesale (no user migration). The parser should
   tolerate a missing/old-format value defensively (treat a bare string as
-  `{t: value}` with no chapter/status) so a stale asset degrades to today's
-  behavior rather than crashing.
+  `{t: value}` with no chapter/status) so a stale asset never crashes.
+- **Interim behavior until the asset is regenerated:** with the legacy
+  bare-string asset still bundled, old entries parse with null chapter/grade.
+  Arabic search *without* a filter is unaffected (text-only match). Arabic search
+  *with* a chapter/grade filter returns **empty** (the index filters everything
+  out, and the repo's in-memory net can only narrow, not recover). This is
+  stricter than the pre-fix behavior (which showed partial, post-filtered
+  results); it is resolved the moment the `{t,c,s}` asset ships (Task 7). The
+  English (downloaded + online) paths do not depend on the asset.
 
 ## Error Handling
 

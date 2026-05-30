@@ -61,8 +61,6 @@ class SearchHadithCubit extends Cubit<SearchHadithState> {
 
   /// Re-runs the current query under a new filter (called when the user changes
   /// the filter while a search is active). No-op if there is no active query.
-  /// Re-runs the current query under a new filter (called when the user changes
-  /// the filter while a search is active). No-op if there is no active query.
   void reapplyFilter(HadithListFilter filter) {
     if (_lastBookSlug == null || _lastQuery.trim().isEmpty) return;
     searchAhadith(_lastQuery, _lastBookSlug!, filter: filter);
