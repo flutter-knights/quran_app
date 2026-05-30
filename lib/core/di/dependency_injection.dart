@@ -5,6 +5,7 @@ import 'package:quran_app/features/ahadith/ahadith_di.dart';
 import 'package:quran_app/features/bookmarks/bookmarks_di.dart';
 import 'package:quran_app/features/home/home_di.dart';
 import 'package:quran_app/features/notifications/notifications_di.dart';
+import 'package:quran_app/features/qibla/qibla_di.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 import '../../features/quran_playback/playback_di.dart';
@@ -19,6 +20,7 @@ Future<void> initGetIt() async {
   sl.registerLazySingleton<Dio>(() => Dio());
   sl.registerSingleton<SettingsCubit>(SettingsCubit());
   initHome();
+  initQibla();
   initNotifications();
   initSurahList();
   initMushaf();
