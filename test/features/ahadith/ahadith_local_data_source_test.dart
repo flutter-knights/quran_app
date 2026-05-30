@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/features/ahadith/data/datasources/local/ahadith_local_data_source.dart';
 import 'package:quran_app/features/ahadith/data/models/hadith_hive_model.dart';
+import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 
 class _MockBox extends Mock implements Box<HadithHiveModel> {}
 
@@ -17,6 +18,25 @@ HadithHiveModel _model(String number, int page) => HadithHiveModel(
       pageNumber: page,
       bookSlug: 'sahih-bukhari',
       chapterId: 1,
+    );
+
+HadithHiveModel _modelFull(
+  String number, {
+  int chapterId = 1,
+  String status = 'sahih',
+  String english = 'en',
+}) =>
+    HadithHiveModel(
+      hadithNumber: number,
+      englishHadith: english,
+      arabicHadith: 'ar',
+      englishNarrator: '',
+      arabicHeader: '',
+      englishHeader: '',
+      status: status,
+      pageNumber: 1,
+      bookSlug: 'sahih-bukhari',
+      chapterId: chapterId,
     );
 
 void main() {
@@ -90,6 +110,48 @@ void main() {
 
       expect(result.found, isEmpty);
       expect(result.missing, ['50']);
+    });
+  });
+
+  group('getSearchedHadiths with filters', () {
+    test('filters by chapterId before applying the result cap', () {
+      final keys = [
+        'sahih-bukhari_1_1',
+        'sahih-bukhari_1_2',
+        'sahih-bukhari_1_3',
+      ];
+      when(() => box.keys).thenReturn(keys);
+      when(() => box.get('sahih-bukhari_1_1'))
+          .thenReturn(_modelFull('1', chapterId: 5, english: 'prayer one'));
+      when(() => box.get('sahih-bukhari_1_2'))
+          .thenReturn(_modelFull('2', chapterId: 9, english: 'prayer two'));
+      when(() => box.get('sahih-bukhari_1_3'))
+          .thenReturn(_modelFull('3', chapterId: 5, english: 'prayer three'));
+
+      final result = sut.getSearchedHadiths(
+        'prayer',
+        'sahih-bukhari',
+        chapterId: 5,
+      );
+
+      expect(result.map((h) => h.hadithNumber).toSet(), {'1', '3'});
+    });
+
+    test('filters by status', () {
+      final keys = ['sahih-bukhari_1_1', 'sahih-bukhari_1_2'];
+      when(() => box.keys).thenReturn(keys);
+      when(() => box.get('sahih-bukhari_1_1'))
+          .thenReturn(_modelFull('1', status: 'sahih', english: 'prayer one'));
+      when(() => box.get('sahih-bukhari_1_2'))
+          .thenReturn(_modelFull('2', status: 'daeef', english: 'prayer two'));
+
+      final result = sut.getSearchedHadiths(
+        'prayer',
+        'sahih-bukhari',
+        status: HadithStatus.daeef,
+      );
+
+      expect(result.map((h) => h.hadithNumber), ['2']);
     });
   });
 }
