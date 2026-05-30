@@ -114,7 +114,7 @@ void main() {
   });
 
   group('getSearchedHadiths with filters', () {
-    test('filters by chapterId before applying the result cap', () {
+    test('excludes hadith from other chapters', () {
       final keys = [
         'sahih-bukhari_1_1',
         'sahih-bukhari_1_2',
@@ -137,6 +137,32 @@ void main() {
       expect(result.map((h) => h.hadithNumber).toSet(), {'1', '3'});
     });
 
+    test('returns in-chapter matches beyond the page cap (filter before cap)', () {
+      // 105 text-matching hadith: numbers 1..100 in chapter 9, 101..105 in
+      // chapter 5. Querying chapter 5 must return all five (101..105), even
+      // though they sit past kPageLimit (100) in iteration order. With the old
+      // filter-after-cap order, take(100) would keep only the chapter-9 hadith
+      // and the chapter-5 matches would be lost.
+      final keys = [for (int n = 1; n <= 105; n++) 'sahih-bukhari_1_$n'];
+      when(() => box.keys).thenReturn(keys);
+      when(() => box.get(any())).thenAnswer((invocation) {
+        final key = invocation.positionalArguments.first as String;
+        final n = int.parse(key.split('_').last);
+        return _modelFull('$n', chapterId: n <= 100 ? 9 : 5, english: 'prayer $n');
+      });
+
+      final result = sut.getSearchedHadiths(
+        'prayer',
+        'sahih-bukhari',
+        chapterId: 5,
+      );
+
+      expect(
+        result.map((h) => h.hadithNumber).toSet(),
+        {'101', '102', '103', '104', '105'},
+      );
+    });
+
     test('filters by status', () {
       final keys = ['sahih-bukhari_1_1', 'sahih-bukhari_1_2'];
       when(() => box.keys).thenReturn(keys);
@@ -151,7 +177,7 @@ void main() {
         status: HadithStatus.daeef,
       );
 
-      expect(result.map((h) => h.hadithNumber), ['2']);
+      expect(result.map((h) => h.hadithNumber).single, '2');
     });
   });
 }
