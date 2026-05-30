@@ -61,8 +61,6 @@ class LocationRepositoryImpl extends LocationRepository {
       cachedLocation.latitude,
       cachedLocation.longitude,
     );
-    if (distance < 20000) return false;
-    prayerTimesLocalDataSource.clearCache();
-    return true;
+    return distance >= 20000;
   }
 }

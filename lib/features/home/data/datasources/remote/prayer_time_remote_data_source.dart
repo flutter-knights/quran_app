@@ -11,16 +11,20 @@ class PrayerTimeRemoteDataSource {
     Location location, {
     int? year,
     int? month,
+    required int method,
+    required int school,
   }) async {
     final queryParameters = <String, dynamic>{
       'latitude': location.latitude,
       'longitude': location.longitude,
+      'method': method,
+      'school': school,
     };
     if (year != null) queryParameters['year'] = year;
     if (month != null) queryParameters['month'] = month;
 
     final Response prayerTimesResponse = await dio.get(
-      'http://api.aladhan.com/v1/calendar',
+      'https://api.aladhan.com/v1/calendar',
       queryParameters: queryParameters,
     );
     final prayerTimesResponseData = prayerTimesResponse.data['data'];

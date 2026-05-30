@@ -23,21 +23,23 @@ void main() {
         requestOptions: RequestOptions(path: ''),
       );
 
-  test('without year/month: sends only lat/lng', () async {
+  test('without year/month: sends lat/lng + method/school, uses https', () async {
     when(() => dio.get(
           any(),
           queryParameters: any(named: 'queryParameters'),
         )).thenAnswer((_) async => emptyResponse());
 
-    await ds.getPrayerTimesList(location);
+    await ds.getPrayerTimesList(location, method: 3, school: 0);
 
     final captured = verify(() => dio.get(
-          'http://api.aladhan.com/v1/calendar',
+          'https://api.aladhan.com/v1/calendar',
           queryParameters: captureAny(named: 'queryParameters'),
         )).captured.single as Map<String, dynamic>;
 
     expect(captured['latitude'], 30.0);
     expect(captured['longitude'], 31.2);
+    expect(captured['method'], 3);
+    expect(captured['school'], 0);
     expect(captured.containsKey('month'), isFalse);
     expect(captured.containsKey('year'), isFalse);
   });
@@ -48,10 +50,10 @@ void main() {
           queryParameters: any(named: 'queryParameters'),
         )).thenAnswer((_) async => emptyResponse());
 
-    await ds.getPrayerTimesList(location, year: 2025, month: 6);
+    await ds.getPrayerTimesList(location, year: 2025, month: 6, method: 5, school: 1);
 
     final captured = verify(() => dio.get(
-          'http://api.aladhan.com/v1/calendar',
+          'https://api.aladhan.com/v1/calendar',
           queryParameters: captureAny(named: 'queryParameters'),
         )).captured.single as Map<String, dynamic>;
 
@@ -59,5 +61,7 @@ void main() {
     expect(captured['longitude'], 31.2);
     expect(captured['month'], 6);
     expect(captured['year'], 2025);
+    expect(captured['method'], 5);
+    expect(captured['school'], 1);
   });
 }
