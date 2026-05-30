@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/ornament_divider.dart';
 import 'package:quran_app/core/widgets/design/home_skeleton.dart';
@@ -9,6 +11,7 @@ import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_app_bar.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/last_read_card.dart';
+import 'package:quran_app/features/home/presentation/pages/widgets/location_recovery_card.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/daily_hadith_card.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/prayers_list.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/quick_access_grid.dart';
@@ -38,6 +41,32 @@ class HomeView extends StatelessWidget {
                 return const HomeSkeleton();
               }
               if (state is DailyPrayerContextFailed) {
+                final failure = state.failure;
+                if (failure is LocationPermissionDeniedFailure) {
+                  return LocationRecoveryCard(
+                    actionLabel: S.of(context).home_locationCard_enable,
+                    onAction: () async {
+                      await Geolocator.requestPermission();
+                      if (context.mounted) {
+                        context
+                            .read<DailyPrayerContextCubit>()
+                            .fetchDailyPrayerContext();
+                      }
+                    },
+                  );
+                }
+                if (failure is LocationPermissionDeniedForeverFailure) {
+                  return LocationRecoveryCard(
+                    actionLabel: S.of(context).home_locationCard_openSettings,
+                    onAction: () => Geolocator.openAppSettings(),
+                  );
+                }
+                if (failure is LocationServiceDisabledFailure) {
+                  return LocationRecoveryCard(
+                    actionLabel: S.of(context).home_locationCard_openSettings,
+                    onAction: () => Geolocator.openLocationSettings(),
+                  );
+                }
                 return Center(child: Text(state.message));
               }
               if (state is DailyPrayerContextLoaded) {
