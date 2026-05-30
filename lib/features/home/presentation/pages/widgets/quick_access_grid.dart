@@ -39,6 +39,11 @@ class QuickAccessGrid extends StatelessWidget {
           label: S.of(context).settings_screen_title,
           onTap: () => context.push(AppRouter.settingsPath),
         ),
+        _QuickTile(
+          icon: HugeIcons.strokeRoundedCompass,
+          label: S.of(context).qibla_screen_title,
+          onTap: () => context.push(AppRouter.qiblaPath),
+        ),
       ],
     );
   }
