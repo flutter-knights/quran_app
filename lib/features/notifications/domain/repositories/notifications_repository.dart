@@ -12,11 +12,11 @@ abstract class NotificationsRepository {
   Future<Either<Failure, Unit>> disableStrip();
   Future<Either<Failure, Unit>> refreshStrip(PrayerStripState state);
 
-  /// Schedules today's per-prayer adhan notifications.
+  /// Schedules per-prayer adhan notifications for the given days.
   /// [enabledByPrayer] filters which prayers receive an adhan.
   /// Replaces any previously scheduled set.
   Future<Either<Failure, Unit>> scheduleDailyAdhans({
-    required PrayerTimes prayerTimes,
+    required List<PrayerTimes> days,
     required AdhanAudioSettings audio,
     required Map<PrayerName, bool> enabledByPrayer,
     required String localeCode,
@@ -24,11 +24,11 @@ abstract class NotificationsRepository {
 
   Future<Either<Failure, Unit>> cancelAllAdhans();
 
-  /// Schedules pre-prayer reminder notifications.
+  /// Schedules pre-prayer reminder notifications for the given days.
   /// [reminderMinutesByPrayer] maps each prayer to a positive offset in
   /// minutes; 0 means no reminder. Replaces any previously scheduled set.
   Future<Either<Failure, Unit>> schedulePrayerReminders({
-    required PrayerTimes prayerTimes,
+    required List<PrayerTimes> days,
     required Map<PrayerName, int> reminderMinutesByPrayer,
     required String localeCode,
   });

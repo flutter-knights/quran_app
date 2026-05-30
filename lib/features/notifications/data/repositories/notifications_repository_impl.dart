@@ -63,25 +63,34 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
 
   @override
   Future<Either<Failure, Unit>> scheduleDailyAdhans({
-    required PrayerTimes prayerTimes,
+    required List<PrayerTimes> days,
     required AdhanAudioSettings audio,
     required Map<PrayerName, bool> enabledByPrayer,
     required String localeCode,
   }) =>
       _run(() async {
+        if (days.isEmpty) return;
         if (defaultTargetPlatform == TargetPlatform.android) {
-          final filteredTimings = <PrayerName, String>{
-            for (final e in prayerTimes.timings.entries)
-              if (enabledByPrayer[e.key] ?? true) e.key: e.value,
-          };
+          final daysPayload = [
+            for (final pt in days)
+              {
+                'date': _toIsoDate(pt.date.gregorianDate),
+                'timings': {
+                  for (final e in pt.timings.entries)
+                    if (enabledByPrayer[e.key] ?? true)
+                      e.key.name.toLowerCase(): e.value,
+                },
+              },
+          ];
           await native.scheduleDailyAdhans(
-            timingsByPrayer: _lowercasePrayerKeys(filteredTimings),
+            days: daysPayload,
             clipAssetByPrayer: _lowercasePrayerKeys(audio.clipAssetByPrayer),
             volume: audio.volume,
             localeCode: localeCode,
           );
         } else {
-          await legacyScheduler.scheduleDailyPrayerNotifications(prayerTimes);
+          await legacyScheduler
+              .scheduleDailyPrayerNotifications(days.first);
         }
       });
 
@@ -97,22 +106,34 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
 
   @override
   Future<Either<Failure, Unit>> schedulePrayerReminders({
-    required PrayerTimes prayerTimes,
+    required List<PrayerTimes> days,
     required Map<PrayerName, int> reminderMinutesByPrayer,
     required String localeCode,
   }) =>
       _runOptional('schedulePrayerReminders', () async {
+        if (days.isEmpty) return;
         if (defaultTargetPlatform == TargetPlatform.android) {
           final filtered = <String, int>{
             for (final e in reminderMinutesByPrayer.entries)
               if (e.value > 0) e.key.name.toLowerCase(): e.value,
           };
+          final daysPayload = [
+            for (final pt in days)
+              {
+                'date': _toIsoDate(pt.date.gregorianDate),
+                'timings': {
+                  for (final e in pt.timings.entries)
+                    e.key.name.toLowerCase(): e.value,
+                },
+              },
+          ];
           await native.schedulePrayerReminders(
+            days: daysPayload,
             remindersByPrayer: filtered,
-            timingsByPrayer: _lowercasePrayerKeys(prayerTimes.timings),
             localeCode: localeCode,
           );
         } else {
+          final prayerTimes = days.first;
           await legacyScheduler.cancelAllStaticReminders();
           final date = _parseGregorian(prayerTimes.date.gregorianDate);
           if (date == null) return;
@@ -161,6 +182,16 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     final y = int.tryParse(parts[2]);
     if (d == null || m == null || y == null) return null;
     return DateTime(y, m, d);
+  }
+
+  /// Converts "dd-MM-yyyy" (PrayerTimes.date.gregorianDate) to "yyyy-MM-dd".
+  String _toIsoDate(String ddMMYyyy) {
+    final parts = ddMMYyyy.split('-');
+    if (parts.length != 3) return ddMMYyyy;
+    final dd = parts[0].padLeft(2, '0');
+    final mm = parts[1].padLeft(2, '0');
+    final yyyy = parts[2];
+    return '$yyyy-$mm-$dd';
   }
 
   String _prayerNameLocalized(PrayerName p, String locale) {

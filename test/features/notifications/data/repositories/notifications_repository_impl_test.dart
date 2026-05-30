@@ -57,6 +57,7 @@ void main() {
     repo = NotificationsRepositoryImpl(native: native, legacyScheduler: scheduler);
     registerFallbackValue(state);
     registerFallbackValue(pt);
+    registerFallbackValue(<Map<String, dynamic>>[]);
   });
 
   group('enableStrip', () {
@@ -96,14 +97,14 @@ void main() {
         () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       when(() => native.scheduleDailyAdhans(
-            timingsByPrayer: any(named: 'timingsByPrayer'),
+            days: any(named: 'days'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
             localeCode: any(named: 'localeCode'),
           )).thenAnswer((_) async {});
 
       final r = await repo.scheduleDailyAdhans(
-        prayerTimes: pt,
+        days: [pt],
         audio: AdhanAudioSettings.defaults(),
         enabledByPrayer: allEnabled,
         localeCode: 'en',
@@ -111,7 +112,7 @@ void main() {
 
       expect(r, const Right(unit));
       verify(() => native.scheduleDailyAdhans(
-            timingsByPrayer: any(named: 'timingsByPrayer'),
+            days: any(named: 'days'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
             localeCode: any(named: 'localeCode'),
@@ -125,17 +126,18 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       Map<String, String>? capturedTimings;
       when(() => native.scheduleDailyAdhans(
-            timingsByPrayer: any(named: 'timingsByPrayer'),
+            days: any(named: 'days'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
             localeCode: any(named: 'localeCode'),
           )).thenAnswer((invocation) async {
-        capturedTimings = invocation.namedArguments[#timingsByPrayer]
-            as Map<String, String>;
+        final days = invocation.namedArguments[#days]
+            as List<Map<String, dynamic>>;
+        capturedTimings = (days.first['timings'] as Map).cast<String, String>();
       });
 
       await repo.scheduleDailyAdhans(
-        prayerTimes: pt,
+        days: [pt],
         audio: AdhanAudioSettings.defaults(),
         enabledByPrayer: const {
           PrayerName.fajr: false,
@@ -153,13 +155,68 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
+    test('Android: passes days list of length 3 with ISO dates', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+
+      PrayerTimes makePt(String gregorian) => PrayerTimes(
+            key: gregorian,
+            timings: {
+              PrayerName.fajr: '04:15',
+              PrayerName.sunrise: '05:07',
+              PrayerName.dhuhr: '12:52',
+              PrayerName.asr: '16:28',
+              PrayerName.maghrib: '19:46',
+              PrayerName.isha: '21:16',
+            },
+            date: Date(
+              month: 'test',
+              weekDay: 'Monday',
+              day: gregorian.split('-')[0],
+              year: gregorian.split('-')[2],
+              enMonth: 'Test',
+              enWeekDay: 'Monday',
+              gregorianDate: gregorian,
+            ),
+          );
+
+      final day1 = makePt('22-05-2026');
+      final day2 = makePt('23-05-2026');
+      final day3 = makePt('24-05-2026');
+
+      List<Map<String, dynamic>>? capturedDays;
+      when(() => native.scheduleDailyAdhans(
+            days: any(named: 'days'),
+            clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
+            volume: any(named: 'volume'),
+            localeCode: any(named: 'localeCode'),
+          )).thenAnswer((invocation) async {
+        capturedDays = (invocation.namedArguments[#days]
+                as List)
+            .cast<Map<String, dynamic>>();
+      });
+
+      await repo.scheduleDailyAdhans(
+        days: [day1, day2, day3],
+        audio: AdhanAudioSettings.defaults(),
+        enabledByPrayer: allEnabled,
+        localeCode: 'en',
+      );
+
+      expect(capturedDays, isNotNull);
+      expect(capturedDays!.length, 3);
+      expect(capturedDays![0]['date'], '2026-05-22');
+      expect(capturedDays![1]['date'], '2026-05-23');
+      expect(capturedDays![2]['date'], '2026-05-24');
+      debugDefaultTargetPlatformOverride = null;
+    });
+
     test('iOS: routes to legacy scheduler, ignores native', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       when(() => scheduler.scheduleDailyPrayerNotifications(any()))
           .thenAnswer((_) async {});
 
       final r = await repo.scheduleDailyAdhans(
-        prayerTimes: pt,
+        days: [pt],
         audio: AdhanAudioSettings.defaults(),
         enabledByPrayer: allEnabled,
         localeCode: 'en',
@@ -168,7 +225,7 @@ void main() {
       expect(r, const Right(unit));
       verify(() => scheduler.scheduleDailyPrayerNotifications(pt)).called(1);
       verifyNever(() => native.scheduleDailyAdhans(
-            timingsByPrayer: any(named: 'timingsByPrayer'),
+            days: any(named: 'days'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
             localeCode: any(named: 'localeCode'),
@@ -180,14 +237,14 @@ void main() {
         () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       when(() => native.scheduleDailyAdhans(
-            timingsByPrayer: any(named: 'timingsByPrayer'),
+            days: any(named: 'days'),
             clipAssetByPrayer: any(named: 'clipAssetByPrayer'),
             volume: any(named: 'volume'),
             localeCode: any(named: 'localeCode'),
           )).thenThrow(Exception('boom'));
 
       final r = await repo.scheduleDailyAdhans(
-        prayerTimes: pt,
+        days: [pt],
         audio: AdhanAudioSettings.defaults(),
         enabledByPrayer: allEnabled,
         localeCode: 'en',
@@ -222,13 +279,13 @@ void main() {
         () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       when(() => native.schedulePrayerReminders(
+            days: any(named: 'days'),
             remindersByPrayer: any(named: 'remindersByPrayer'),
-            timingsByPrayer: any(named: 'timingsByPrayer'),
             localeCode: any(named: 'localeCode'),
           )).thenAnswer((_) async {});
 
       final r = await repo.schedulePrayerReminders(
-        prayerTimes: pt,
+        days: [pt],
         reminderMinutesByPrayer: const {
           PrayerName.fajr: 15,
           PrayerName.asr: 10,
@@ -239,8 +296,8 @@ void main() {
 
       expect(r, const Right(unit));
       verify(() => native.schedulePrayerReminders(
+            days: any(named: 'days'),
             remindersByPrayer: {'fajr': 15, 'asr': 10},
-            timingsByPrayer: any(named: 'timingsByPrayer'),
             localeCode: 'en',
           )).called(1);
       debugDefaultTargetPlatformOverride = null;
@@ -249,15 +306,15 @@ void main() {
     test('Android: swallows MissingPluginException as Right(unit)', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       when(() => native.schedulePrayerReminders(
+            days: any(named: 'days'),
             remindersByPrayer: any(named: 'remindersByPrayer'),
-            timingsByPrayer: any(named: 'timingsByPrayer'),
             localeCode: any(named: 'localeCode'),
           )).thenThrow(
         const PlatformNotImplementedException('schedulePrayerReminders'),
       );
 
       final r = await repo.schedulePrayerReminders(
-        prayerTimes: pt,
+        days: [pt],
         reminderMinutesByPrayer: const {PrayerName.fajr: 15},
         localeCode: 'en',
       );
@@ -271,8 +328,8 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       Map<String, int>? captured;
       when(() => native.schedulePrayerReminders(
+            days: any(named: 'days'),
             remindersByPrayer: any(named: 'remindersByPrayer'),
-            timingsByPrayer: any(named: 'timingsByPrayer'),
             localeCode: any(named: 'localeCode'),
           )).thenAnswer((invocation) async {
         captured = invocation.namedArguments[#remindersByPrayer]
@@ -280,7 +337,7 @@ void main() {
       });
 
       await repo.schedulePrayerReminders(
-        prayerTimes: pt,
+        days: [pt],
         reminderMinutesByPrayer: const {
           PrayerName.fajr: 0,
           PrayerName.dhuhr: 10,

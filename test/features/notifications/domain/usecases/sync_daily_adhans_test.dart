@@ -55,24 +55,25 @@ void main() {
     useCase = SyncDailyAdhans(repository: repo);
     registerFallbackValue(pt);
     registerFallbackValue(AdhanAudioSettings.defaults());
+    registerFallbackValue(<PrayerTimes>[]);
   });
 
   test('delegates to scheduleDailyAdhans AND schedulePrayerReminders',
       () async {
     when(() => repo.scheduleDailyAdhans(
-          prayerTimes: any(named: 'prayerTimes'),
+          days: any(named: 'days'),
           audio: any(named: 'audio'),
           enabledByPrayer: any(named: 'enabledByPrayer'),
           localeCode: any(named: 'localeCode'),
         )).thenAnswer((_) async => const Right(unit));
     when(() => repo.schedulePrayerReminders(
-          prayerTimes: any(named: 'prayerTimes'),
+          days: any(named: 'days'),
           reminderMinutesByPrayer: any(named: 'reminderMinutesByPrayer'),
           localeCode: any(named: 'localeCode'),
         )).thenAnswer((_) async => const Right(unit));
 
     final result = await useCase.call(SyncDailyAdhansParams(
-      prayerTimes: pt,
+      days: [pt],
       enabledByPrayer: allEnabled,
       reminderMinutesByPrayer: noReminders,
       localeCode: 'en',
@@ -80,13 +81,13 @@ void main() {
 
     expect(result.isRight(), true);
     verify(() => repo.scheduleDailyAdhans(
-          prayerTimes: pt,
+          days: any(named: 'days'),
           audio: AdhanAudioSettings.defaults(),
           enabledByPrayer: allEnabled,
           localeCode: 'en',
         )).called(1);
     verify(() => repo.schedulePrayerReminders(
-          prayerTimes: pt,
+          days: any(named: 'days'),
           reminderMinutesByPrayer: noReminders,
           localeCode: 'en',
         )).called(1);
@@ -95,7 +96,7 @@ void main() {
   test('returns Left when scheduleDailyAdhans fails (skips reminders)',
       () async {
     when(() => repo.scheduleDailyAdhans(
-          prayerTimes: any(named: 'prayerTimes'),
+          days: any(named: 'days'),
           audio: any(named: 'audio'),
           enabledByPrayer: any(named: 'enabledByPrayer'),
           localeCode: any(named: 'localeCode'),
@@ -104,7 +105,7 @@ void main() {
         ));
 
     final result = await useCase.call(SyncDailyAdhansParams(
-      prayerTimes: pt,
+      days: [pt],
       enabledByPrayer: allEnabled,
       reminderMinutesByPrayer: noReminders,
       localeCode: 'en',
@@ -112,7 +113,7 @@ void main() {
 
     expect(result.isLeft(), true);
     verifyNever(() => repo.schedulePrayerReminders(
-          prayerTimes: any(named: 'prayerTimes'),
+          days: any(named: 'days'),
           reminderMinutesByPrayer: any(named: 'reminderMinutesByPrayer'),
           localeCode: any(named: 'localeCode'),
         ));

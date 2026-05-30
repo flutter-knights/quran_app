@@ -6,6 +6,8 @@ import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/usecases/usecase.dart';
+import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
+import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/home/domain/usecases/pre_cache_prayer_times.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
@@ -86,10 +88,21 @@ class HomePage extends StatelessWidget {
                 ),
               );
               final locale = settings.isArabic ? 'ar' : 'en';
+              final local = sl<PrayerTimesLocalDataSource>();
+              final today = DateTime.now();
+              final days = <PrayerTimes>[
+                loaded.dailyPrayerContext.prayerTimes,
+              ];
+              for (var i = 1; i <= 2; i++) {
+                final d = local.getCached(
+                  date: today.add(Duration(days: i)),
+                );
+                if (d != null) days.add(d);
+              }
               unawaited(
                 sl<SyncDailyAdhans>().call(
                   SyncDailyAdhansParams(
-                    prayerTimes: loaded.dailyPrayerContext.prayerTimes,
+                    days: days,
                     enabledByPrayer: settings.adhanEnabledByPrayer,
                     reminderMinutesByPrayer: settings.reminderMinutesByPrayer,
                     localeCode: locale,
@@ -133,10 +146,21 @@ class HomePage extends StatelessWidget {
                 if (ctxState is DailyPrayerContextLoaded) {
                   final locale =
                       settings.settingsModel.isArabic ? 'ar' : 'en';
+                  final local = sl<PrayerTimesLocalDataSource>();
+                  final today = DateTime.now();
+                  final days = <PrayerTimes>[
+                    ctxState.dailyPrayerContext.prayerTimes,
+                  ];
+                  for (var i = 1; i <= 2; i++) {
+                    final d = local.getCached(
+                      date: today.add(Duration(days: i)),
+                    );
+                    if (d != null) days.add(d);
+                  }
                   unawaited(
                     sl<SyncDailyAdhans>().call(
                       SyncDailyAdhansParams(
-                        prayerTimes: ctxState.dailyPrayerContext.prayerTimes,
+                        days: days,
                         enabledByPrayer:
                             settings.settingsModel.adhanEnabledByPrayer,
                         reminderMinutesByPrayer:
