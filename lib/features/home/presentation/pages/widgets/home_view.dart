@@ -8,8 +8,12 @@ import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/ornament_divider.dart';
 import 'package:quran_app/core/widgets/design/home_skeleton.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
+import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_app_bar.dart';
+import 'package:quran_app/features/home/presentation/pages/widgets/notification_hint.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/last_read_card.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/location_recovery_card.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/daily_hadith_card.dart';
@@ -81,6 +85,25 @@ class HomeView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            NotificationHint(
+                              dismissed: context
+                                  .watch<SettingsCubit>()
+                                  .state
+                                  .settingsModel
+                                  .notificationHintDismissed,
+                              onDismiss: () => context
+                                  .read<SettingsCubit>()
+                                  .dismissNotificationHint(),
+                              onAllow: () async {
+                                await sl<PrayerNotificationScheduler>()
+                                    .requestNotificationsPermission();
+                                if (context.mounted) {
+                                  context
+                                      .read<DailyPrayerContextCubit>()
+                                      .fetchDailyPrayerContext(silent: true);
+                                }
+                              },
+                            ),
                             const UpcomingPrayer(),
                             const SizedBox(height: 14),
                             const OrnamentDivider(),
