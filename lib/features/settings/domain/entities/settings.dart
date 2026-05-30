@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
@@ -23,6 +24,13 @@ class Settings extends Equatable {
 
   /// Whether the splash screen plays on launch. User-toggleable in settings.
   final bool showSplashOnLaunch;
+
+  /// The prayer-times calculation method. Defaults to [CalculationMethod.auto]
+  /// which resolves the method from the user's country at runtime.
+  final CalculationMethod calculationMethod;
+
+  /// The Asr juristic school. Defaults to [AsrSchool.shafi].
+  final AsrSchool asrSchool;
 
   static const Map<PrayerName, bool> defaultAdhanEnabled = {
     PrayerName.fajr: true,
@@ -54,6 +62,8 @@ class Settings extends Equatable {
     this.reminderMinutesByPrayer = defaultReminderMinutes,
     this.hasCompletedOnboarding = false,
     this.showSplashOnLaunch = true,
+    this.calculationMethod = CalculationMethod.auto,
+    this.asrSchool = AsrSchool.shafi,
   });
 
   Settings copyWith({
@@ -68,6 +78,8 @@ class Settings extends Equatable {
     Map<PrayerName, int>? reminderMinutesByPrayer,
     bool? hasCompletedOnboarding,
     bool? showSplashOnLaunch,
+    CalculationMethod? calculationMethod,
+    AsrSchool? asrSchool,
   }) {
     return Settings(
       isArabic: isArabic ?? this.isArabic,
@@ -81,6 +93,8 @@ class Settings extends Equatable {
       reminderMinutesByPrayer: reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
       hasCompletedOnboarding: hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       showSplashOnLaunch: showSplashOnLaunch ?? this.showSplashOnLaunch,
+      calculationMethod: calculationMethod ?? this.calculationMethod,
+      asrSchool: asrSchool ?? this.asrSchool,
     );
   }
 
@@ -97,5 +111,7 @@ class Settings extends Equatable {
         reminderMinutesByPrayer,
         hasCompletedOnboarding,
         showSplashOnLaunch,
+        calculationMethod,
+        asrSchool,
       ];
 }
