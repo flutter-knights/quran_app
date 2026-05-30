@@ -75,6 +75,21 @@ class QiblaCubit extends Cubit<QiblaState> {
     ));
     if (isClosed) return;
 
+    final current = state;
+    if (current is QiblaLoaded &&
+        (current.direction.bearing - direction.bearing).abs() < 0.5) {
+      // Near-identical re-emit (cached -> fresh location): refresh the facts but
+      // keep the live compass subscription running (no needle dropout/restart).
+      emit(QiblaLoaded(
+        direction: direction,
+        locationName: _locationName(location),
+        hasCompass: current.hasCompass,
+        trueHeading: current.trueHeading,
+        accuracy: current.accuracy,
+      ));
+      return;
+    }
+
     emit(QiblaLoaded(
       direction: direction,
       locationName: _locationName(location),
@@ -124,7 +139,7 @@ class QiblaCubit extends Cubit<QiblaState> {
   String? _locationName(Location l) {
     final city = l.city ?? l.enCity;
     final country = l.country ?? l.enCountry;
-    if (city != null && country != null) return '$city، $country';
+    if (city != null && country != null) return '$city, $country';
     return city ?? country;
   }
 

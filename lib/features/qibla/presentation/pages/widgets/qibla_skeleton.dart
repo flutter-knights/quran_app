@@ -15,7 +15,7 @@ class QiblaSkeleton extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(18, 24, 18, 24),
         child: Column(
           children: [
-            QiblaCompassDial(pointerAngle: 0, size: 260),
+            QiblaCompassDial(bearing: 298, trueHeading: 0, size: 260),
             const SizedBox(height: 24),
             const QiblaDegreeReadout(bearing: 298, rose: CompassRose.nw),
             const SizedBox(height: 20),

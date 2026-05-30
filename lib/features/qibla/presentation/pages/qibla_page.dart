@@ -63,8 +63,8 @@ class QiblaPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
                   QiblaCompassDial(
-                    pointerAngle:
-                        state.hasCompass ? state.pointerAngle : null,
+                    bearing: state.direction.bearing,
+                    trueHeading: state.hasCompass ? state.trueHeading : null,
                     size: 280,
                   ),
                   const SizedBox(height: 18),

@@ -2,55 +2,109 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 
-class QiblaCompassDial extends StatelessWidget {
+/// A true-north compass dial: the dial ring + N/E/S/W letters rotate so North
+/// always points at real north (by -trueHeading), and the Kaaba needle sits at
+/// the actual Qibla bearing. When [trueHeading] is null (no magnetometer) the
+/// dial is static (N up) and the needle shows the bearing clockwise from North.
+/// Rotation always takes the shortest arc (no 359->0 long spin).
+class QiblaCompassDial extends StatefulWidget {
   const QiblaCompassDial({
     super.key,
-    required this.pointerAngle, // degrees; null => static (fallback)
+    required this.bearing,
+    required this.trueHeading,
     required this.size,
   });
 
-  final double? pointerAngle;
+  final double bearing;
+  final double? trueHeading;
   final double size;
+
+  @override
+  State<QiblaCompassDial> createState() => _QiblaCompassDialState();
+}
+
+class _QiblaCompassDialState extends State<QiblaCompassDial> {
+  late double _dialTurns;
+  late double _needleTurns;
+
+  @override
+  void initState() {
+    super.initState();
+    _dialTurns = _dialTargetDeg() / 360.0;
+    _needleTurns = _needleTargetDeg() / 360.0;
+  }
+
+  @override
+  void didUpdateWidget(QiblaCompassDial old) {
+    super.didUpdateWidget(old);
+    _dialTurns = _shortest(_dialTurns, _dialTargetDeg() / 360.0);
+    _needleTurns = _shortest(_needleTurns, _needleTargetDeg() / 360.0);
+  }
+
+  double _dialTargetDeg() => -(widget.trueHeading ?? 0);
+  double _needleTargetDeg() => widget.bearing - (widget.trueHeading ?? 0);
+
+  /// Continuous turns value near [prev] whose fractional part equals
+  /// [targetTurns]'s, taking the shortest direction.
+  static double _shortest(double prev, double targetTurns) {
+    var delta = (targetTurns - prev) % 1.0; // [0,1)
+    if (delta > 0.5) delta -= 1.0;
+    return prev + delta;
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
-    final angle = (pointerAngle ?? 0) * math.pi / 180.0;
+    const dur = Duration(milliseconds: 400);
+    const curve = Curves.easeOut;
     return SizedBox(
-      width: size,
-      height: size,
+      width: widget.size,
+      height: widget.size,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Dial face + ticks
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: scheme.surfaceContainer,
-              border: context.cardBorder(),
-            ),
-            child: CustomPaint(
-              painter: _DialPainter(
-                tick: scheme.onSurface.withValues(alpha: 0.12),
-                cardinal: scheme.onSurfaceVariant,
-              ),
+          // Rotating dial: ticks + cardinal letters track real north.
+          AnimatedRotation(
+            turns: _dialTurns,
+            duration: dur,
+            curve: curve,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: widget.size,
+                  height: widget.size,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: scheme.surfaceContainer,
+                    border: context.cardBorder(),
+                  ),
+                  child: CustomPaint(
+                    painter: _DialPainter(
+                      tick: scheme.onSurface.withValues(alpha: 0.12),
+                      cardinal: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                _Letter('N', Alignment.topCenter, scheme.secondary),
+                _Letter('E', Alignment.centerRight, scheme.onSurfaceVariant),
+                _Letter('S', Alignment.bottomCenter, scheme.onSurfaceVariant),
+                _Letter('W', Alignment.centerLeft, scheme.onSurfaceVariant),
+              ],
             ),
           ),
-          // Cardinal letters
-          _Letter('N', Alignment.topCenter, scheme.secondary),
-          _Letter('E', Alignment.centerRight, scheme.onSurfaceVariant),
-          _Letter('S', Alignment.bottomCenter, scheme.onSurfaceVariant),
-          _Letter('W', Alignment.centerLeft, scheme.onSurfaceVariant),
-          // Rotating needle
+          // Kaaba needle at the Qibla bearing.
           AnimatedRotation(
-            turns: angle / (2 * math.pi),
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOut,
-            child: _Needle(size: size, color: scheme.primary, accent: scheme.secondary),
+            turns: _needleTurns,
+            duration: dur,
+            curve: curve,
+            child: _Needle(
+                size: widget.size, color: scheme.primary, accent: scheme.secondary),
           ),
           // Hub
           Container(
-            width: 16, height: 16,
+            width: 16,
+            height: 16,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: scheme.secondary,
@@ -74,7 +128,8 @@ class _Letter extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Text(text,
-              style: TextStyle(fontWeight: FontWeight.w700, color: color, fontSize: 14)),
+              style: TextStyle(
+                  fontWeight: FontWeight.w700, color: color, fontSize: 14)),
         ),
       );
 }
@@ -90,9 +145,9 @@ class _Needle extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         SizedBox(height: size * 0.08),
-        // Kaaba marker
         Container(
-          width: 40, height: 40,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(12),
@@ -100,12 +155,13 @@ class _Needle extends StatelessWidget {
           ),
           child: const Icon(Icons.mosque, color: Color(0xFFC8A24A), size: 20),
         ),
-        // Beam
         Container(
-          width: 3, height: size * 0.25,
+          width: 3,
+          height: size * 0.25,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.topCenter, end: Alignment.bottomCenter,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
               colors: [accent, accent.withValues(alpha: 0)],
             ),
           ),
