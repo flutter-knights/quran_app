@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/hive_config.dart';
 import 'package:quran_app/config/hydrated_bloc_config.dart';
@@ -48,16 +47,15 @@ class _AppLoaderState extends State<AppLoader> {
     if (!mounted) return;
     setState(() => _ready = true);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      while (await Geolocator.checkPermission() == LocationPermission.denied) {
-        await Future.delayed(const Duration(milliseconds: 300));
-      }
-      try {
-        await sl<PrayerNotificationScheduler>().init();
-      } catch (e, st) {
-        debugPrint('PrayerNotificationScheduler.init failed: $e\n$st');
-      }
-    });
+    // init() is non-interactive (timezone + channels only) — safe to run
+    // unconditionally. It must NOT be gated on a location-permission poll:
+    // a user who taps "Not now" on location leaves permission at `denied`,
+    // which would spin a 300ms loop forever and never init the scheduler.
+    try {
+      await sl<PrayerNotificationScheduler>().init();
+    } catch (e, st) {
+      debugPrint('PrayerNotificationScheduler.init failed: $e\n$st');
+    }
   }
 
   @override
