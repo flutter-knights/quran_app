@@ -19,9 +19,6 @@ class HadithListFilter {
 
   HadithListFilter withChapter(int? id) =>
       HadithListFilter(status: status, chapterId: id);
-
-  HadithListFilter clearChapter() =>
-      HadithListFilter(status: status, chapterId: null);
 }
 
 /// Pure filter for the in-memory list. Returns [list] unchanged when no filter
