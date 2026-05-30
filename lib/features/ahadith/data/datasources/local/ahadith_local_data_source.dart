@@ -91,25 +91,32 @@ class AhadithLocalDataSource {
     return index;
   }
 
-  List<Hadith> getSearchedHadiths(String query, String bookSlug) {
+  List<Hadith> getSearchedHadiths(
+    String query,
+    String bookSlug, {
+    HadithStatus? status,
+    int? chapterId,
+  }) {
     final String keyPrefix = "${bookSlug}_";
     final String lowercaseQuery = query.toLowerCase();
 
     final allKeys = hadithBox.keys.cast<String>();
-
     final relevantKeys = allKeys.where((key) => key.startsWith(keyPrefix));
-
     if (relevantKeys.isEmpty) return [];
 
     final List<Hadith> results = relevantKeys
         .map((key) => hadithBox.get(key))
-        .where((model) => model != null)
+        .whereType<HadithHiveModel>()
         .where(
           (model) =>
-              model!.englishHadith.toLowerCase().contains(lowercaseQuery),
+              model.englishHadith.toLowerCase().contains(lowercaseQuery),
         )
+        .map((model) => model.toEntity())
+        // Narrow by the active filter BEFORE capping, so a chapter/grade with
+        // matches beyond the first page is never silently truncated away.
+        .where((h) => status == null || h.status == status)
+        .where((h) => chapterId == null || h.chapterId == chapterId)
         .take(kPageLimit)
-        .map((model) => model!.toEntity())
         .toList();
 
     return AhadithHelpers.sortHadiths(results);
