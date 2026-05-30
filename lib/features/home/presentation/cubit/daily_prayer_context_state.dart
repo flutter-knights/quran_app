@@ -20,8 +20,12 @@ final class DailyPrayerContextLoaded extends DailyPrayerContextState {
 final class DailyPrayerContextLoading extends DailyPrayerContextState {}
 
 final class DailyPrayerContextFailed extends DailyPrayerContextState {
-  final String error;
-  const DailyPrayerContextFailed(this.error);
+  final Failure failure;
+
+  const DailyPrayerContextFailed(this.failure);
+
+  String get message => failure.message;
+
   @override
-  List<Object> get props => [error];
+  List<Object> get props => [failure];
 }

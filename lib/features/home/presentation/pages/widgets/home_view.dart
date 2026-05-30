@@ -38,7 +38,7 @@ class HomeView extends StatelessWidget {
                 return const HomeSkeleton();
               }
               if (state is DailyPrayerContextFailed) {
-                return Center(child: Text(state.error));
+                return Center(child: Text(state.message));
               }
               if (state is DailyPrayerContextLoaded) {
                 final ctx = state.dailyPrayerContext;
