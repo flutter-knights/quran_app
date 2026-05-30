@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:geomag/geomag.dart';
+import 'package:intl/intl.dart';
 import 'package:quran_app/core/usecases/usecase.dart';
 
 class DeclinationParams extends Equatable {
@@ -20,7 +21,13 @@ class DeclinationParams extends Equatable {
 /// Magnetic declination (degrees east of true north) at a location, from the
 /// World Magnetic Model via the `geomag` package. Pure computation.
 class GetMagneticDeclination implements UseCase<double, DeclinationParams> {
-  GetMagneticDeclination({GeoMag? geoMag}) : _geoMag = geoMag ?? GeoMag();
+  // `geomag`'s WmmCof parses its model date with a locale-less
+  // `DateFormat('MM/dd/yyyy')`, which throws a FormatException when built while
+  // a non-Latin-digit locale (e.g. Arabic) is active — the app runs under 'ar',
+  // so constructing GeoMag() directly crashed QiblaCubit on the /qibla route.
+  // Pin construction to a fixed Latin locale so the date parse always succeeds.
+  GetMagneticDeclination({GeoMag? geoMag})
+      : _geoMag = geoMag ?? Intl.withLocale('en_US', () => GeoMag());
 
   final GeoMag _geoMag;
 
