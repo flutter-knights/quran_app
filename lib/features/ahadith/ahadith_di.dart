@@ -136,6 +136,7 @@ void initAhadithSearch() {
       ahadithLocalDataSource: sl(),
       ahadithRemoteDataSource: sl(),
       arabicSearchDataSource: sl(),
+      allChapters: sl(instanceName: 'chapters'),
     ),
   );
   sl.registerFactory<SearchHadithCubit>(
