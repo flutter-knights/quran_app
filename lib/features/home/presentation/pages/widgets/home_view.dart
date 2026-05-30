@@ -52,9 +52,16 @@ class HomeView extends StatelessWidget {
                     onAction: () async {
                       await Geolocator.requestPermission();
                       if (context.mounted) {
+                        final s = context
+                            .read<SettingsCubit>()
+                            .state
+                            .settingsModel;
                         context
                             .read<DailyPrayerContextCubit>()
-                            .fetchDailyPrayerContext();
+                            .fetchDailyPrayerContext(
+                              method: s.calculationMethod,
+                              school: s.asrSchool,
+                            );
                       }
                     },
                   );
@@ -98,9 +105,17 @@ class HomeView extends StatelessWidget {
                                 await sl<PrayerNotificationScheduler>()
                                     .requestNotificationsPermission();
                                 if (context.mounted) {
+                                  final s = context
+                                      .read<SettingsCubit>()
+                                      .state
+                                      .settingsModel;
                                   context
                                       .read<DailyPrayerContextCubit>()
-                                      .fetchDailyPrayerContext(silent: true);
+                                      .fetchDailyPrayerContext(
+                                        silent: true,
+                                        method: s.calculationMethod,
+                                        school: s.asrSchool,
+                                      );
                                 }
                               },
                             ),

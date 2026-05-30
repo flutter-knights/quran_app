@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/core/errors/failure.dart';
-import 'package:quran_app/core/usecases/usecase.dart';
 import 'package:quran_app/features/home/domain/entities/daily_prayer_context.dart';
 import 'package:quran_app/features/home/domain/entities/location.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
@@ -18,7 +20,12 @@ void main() {
   late _MockGetDailyPrayerContext usecase;
 
   setUpAll(() {
-    registerFallbackValue(NoParams());
+    registerFallbackValue(
+      const GetDailyPrayerContextParams(
+        method: CalculationMethod.auto,
+        school: AsrSchool.shafi,
+      ),
+    );
   });
 
   setUp(() {
@@ -58,7 +65,10 @@ void main() {
           .thenAnswer((_) => Stream.value(Right(ctx)));
       return DailyPrayerContextCubit(getDailyPrayerContext: usecase);
     },
-    act: (c) => c.fetchDailyPrayerContext(),
+    act: (c) => c.fetchDailyPrayerContext(
+      method: CalculationMethod.auto,
+      school: AsrSchool.shafi,
+    ),
     expect: () => [
       isA<DailyPrayerContextLoading>(),
       isA<DailyPrayerContextLoaded>(),
@@ -72,7 +82,11 @@ void main() {
           .thenAnswer((_) => Stream.value(Right(ctx)));
       return DailyPrayerContextCubit(getDailyPrayerContext: usecase);
     },
-    act: (c) => c.fetchDailyPrayerContext(silent: true),
+    act: (c) => c.fetchDailyPrayerContext(
+      silent: true,
+      method: CalculationMethod.auto,
+      school: AsrSchool.shafi,
+    ),
     expect: () => [isA<DailyPrayerContextLoaded>()],
   );
 
@@ -84,7 +98,10 @@ void main() {
       );
       return DailyPrayerContextCubit(getDailyPrayerContext: usecase);
     },
-    act: (c) => c.fetchDailyPrayerContext(),
+    act: (c) => c.fetchDailyPrayerContext(
+      method: CalculationMethod.auto,
+      school: AsrSchool.shafi,
+    ),
     expect: () => [
       isA<DailyPrayerContextLoading>(),
       isA<DailyPrayerContextFailed>(),
@@ -101,7 +118,10 @@ void main() {
       );
       return DailyPrayerContextCubit(getDailyPrayerContext: usecase);
     },
-    act: (c) => c.fetchDailyPrayerContext(),
+    act: (c) => c.fetchDailyPrayerContext(
+      method: CalculationMethod.auto,
+      school: AsrSchool.shafi,
+    ),
     expect: () => [
       isA<DailyPrayerContextLoading>(),
       isA<DailyPrayerContextFailed>().having(
@@ -110,5 +130,58 @@ void main() {
         isA<LocationPermissionDeniedFailure>(),
       ),
     ],
+  );
+
+  test(
+    'cancel in-flight (M4): second fetch cancels first; late emission from '
+    'first stream does not overwrite second result',
+    () async {
+      // First call: a stream we control — won't emit until we push.
+      final firstController =
+          StreamController<Either<Failure, DailyPrayerContext>>();
+
+      // Second call: emits a Loaded result immediately.
+      final secondCtx = ctx; // same ctx for simplicity
+
+      var callCount = 0;
+      when(() => usecase.call(any())).thenAnswer((_) {
+        callCount++;
+        if (callCount == 1) return firstController.stream;
+        return Stream.value(Right(secondCtx));
+      });
+
+      final cubit =
+          DailyPrayerContextCubit(getDailyPrayerContext: usecase);
+
+      // Start first fetch (emits Loading, then hangs).
+      unawaited(
+        cubit.fetchDailyPrayerContext(
+          method: CalculationMethod.auto,
+          school: AsrSchool.shafi,
+        ),
+      );
+
+      // Give the first fetch a moment to subscribe.
+      await Future<void>.delayed(Duration.zero);
+
+      // Start second fetch (cancels first, emits Loading then Loaded).
+      await cubit.fetchDailyPrayerContext(
+        method: CalculationMethod.mwl,
+        school: AsrSchool.hanafi,
+      );
+
+      // Allow the second stream to deliver its Loaded event.
+      await Future<void>.delayed(Duration.zero);
+
+      // Now emit from the (cancelled) first stream — should be ignored.
+      firstController.add(Right(ctx));
+      await Future<void>.delayed(Duration.zero);
+
+      // Final state must be Loaded (from the second fetch), not overwritten.
+      expect(cubit.state, isA<DailyPrayerContextLoaded>());
+
+      await firstController.close();
+      await cubit.close();
+    },
   );
 }
