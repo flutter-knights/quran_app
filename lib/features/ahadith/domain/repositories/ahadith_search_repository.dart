@@ -8,6 +8,8 @@ abstract class AhadithSearchRepository {
     required String query,
     required String bookSlug,
     required bool isDownloaded,
+    HadithStatus? status,
+    int? chapterId,
   });
   void dispose();
 }
