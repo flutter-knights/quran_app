@@ -10,20 +10,20 @@ class SinglePrayerCard extends StatelessWidget {
     super.key,
     required this.time24,
     required this.is24,
-    required this.isCurrent,
+    required this.isNext,
     required this.prayerName,
     required this.iconDir,
   });
   final String time24;
   final String prayerName;
   final String iconDir;
-  final bool isCurrent;
+  final bool isNext;
   final bool is24;
 
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
-    final fg = isCurrent ? scheme.secondary : scheme.onSurfaceVariant;
+    final fg = isNext ? scheme.secondary : scheme.onSurfaceVariant;
     final timeStyle = TextStyle(
       fontSize: 10,
       fontWeight: FontWeight.w600,
@@ -33,10 +33,10 @@ class SinglePrayerCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsetsDirectional.fromSTEB(4, 10, 4, 11),
         decoration: BoxDecoration(
-          color: isCurrent ? scheme.surfaceContainer : Colors.transparent,
+          color: isNext ? scheme.surfaceContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: isCurrent ? context.cardBorder() : null,
-          boxShadow: isCurrent ? context.cardShadow(alpha: 0.14) : null,
+          border: isNext ? context.cardBorder() : null,
+          boxShadow: isNext ? context.cardShadow(alpha: 0.14) : null,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -46,7 +46,7 @@ class SinglePrayerCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: isCurrent ? scheme.secondary : scheme.onSurface,
+                color: isNext ? scheme.secondary : scheme.onSurface,
               ),
             ),
             const SizedBox(height: 5),
@@ -66,7 +66,7 @@ class SinglePrayerCard extends StatelessWidget {
               ),
               value: is24,
             ),
-            if (isCurrent) ...[
+            if (isNext) ...[
               const SizedBox(height: 4),
               Container(
                 width: 4,
