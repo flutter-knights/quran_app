@@ -1,11 +1,13 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 
-/// A true-north compass dial: the dial ring + N/E/S/W letters rotate so North
-/// always points at real north (by -trueHeading), and the Kaaba needle sits at
-/// the actual Qibla bearing. When [trueHeading] is null (no magnetometer) the
-/// dial is static (N up) and the needle shows the bearing clockwise from North.
+/// Qibla compass: a fixed dial (ticks + N/E/S/W) with a Kaaba needle that
+/// rotates to point at the Qibla. With a live heading the needle angle is the
+/// Qibla bearing relative to the phone's top (`bearing - trueHeading`), so it
+/// swings as you turn and points straight up when you face the Kaaba. Without a
+/// magnetometer ([trueHeading] null) it sits at the bearing clockwise from North.
 /// Rotation always takes the shortest arc (no 359->0 long spin).
 class QiblaCompassDial extends StatefulWidget {
   const QiblaCompassDial({
@@ -24,25 +26,27 @@ class QiblaCompassDial extends StatefulWidget {
 }
 
 class _QiblaCompassDialState extends State<QiblaCompassDial> {
-  late double _dialTurns;
   late double _needleTurns;
 
   @override
   void initState() {
     super.initState();
-    _dialTurns = _dialTargetDeg() / 360.0;
     _needleTurns = _needleTargetDeg() / 360.0;
   }
 
   @override
   void didUpdateWidget(QiblaCompassDial old) {
     super.didUpdateWidget(old);
-    _dialTurns = _shortest(_dialTurns, _dialTargetDeg() / 360.0);
     _needleTurns = _shortest(_needleTurns, _needleTargetDeg() / 360.0);
   }
 
-  double _dialTargetDeg() => -(widget.trueHeading ?? 0);
-  double _needleTargetDeg() => widget.bearing - (widget.trueHeading ?? 0);
+  double _needleTargetDeg() {
+    final heading = widget.trueHeading;
+    // No heading => show the bearing clockwise from the (fixed) North mark.
+    if (heading == null) return widget.bearing;
+    // Live heading => point at the Qibla relative to the phone's top.
+    return widget.bearing - heading;
+  }
 
   /// Continuous turns value near [prev] whose fractional part equals
   /// [targetTurns]'s, taking the shortest direction.
@@ -55,53 +59,44 @@ class _QiblaCompassDialState extends State<QiblaCompassDial> {
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
-    const dur = Duration(milliseconds: 400);
-    const curve = Curves.easeOut;
     return SizedBox(
       width: widget.size,
       height: widget.size,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Rotating dial: ticks + cardinal letters track real north.
-          AnimatedRotation(
-            turns: _dialTurns,
-            duration: dur,
-            curve: curve,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: widget.size,
-                  height: widget.size,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: scheme.surfaceContainer,
-                    border: context.cardBorder(),
-                  ),
-                  child: CustomPaint(
-                    painter: _DialPainter(
-                      tick: scheme.onSurface.withValues(alpha: 0.12),
-                      cardinal: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                _Letter('N', Alignment.topCenter, scheme.secondary),
-                _Letter('E', Alignment.centerRight, scheme.onSurfaceVariant),
-                _Letter('S', Alignment.bottomCenter, scheme.onSurfaceVariant),
-                _Letter('W', Alignment.centerLeft, scheme.onSurfaceVariant),
-              ],
+          // Fixed dial face + ticks.
+          Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: scheme.surfaceContainer,
+              border: context.cardBorder(),
+            ),
+            child: CustomPaint(
+              painter: _DialPainter(
+                tick: scheme.onSurface.withValues(alpha: 0.12),
+                cardinal: scheme.onSurfaceVariant,
+              ),
             ),
           ),
-          // Kaaba needle at the Qibla bearing.
+          // Fixed cardinal letters (N tinted as the top reference).
+          _Letter('N', Alignment.topCenter, scheme.secondary),
+          _Letter('E', Alignment.centerRight, scheme.onSurfaceVariant),
+          _Letter('S', Alignment.bottomCenter, scheme.onSurfaceVariant),
+          _Letter('W', Alignment.centerLeft, scheme.onSurfaceVariant),
+          // Rotating Kaaba needle.
           AnimatedRotation(
             turns: _needleTurns,
-            duration: dur,
-            curve: curve,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
             child: _Needle(
-                size: widget.size, color: scheme.primary, accent: scheme.secondary),
+                size: widget.size,
+                color: scheme.primary,
+                accent: scheme.secondary),
           ),
-          // Hub
+          // Center hub.
           Container(
             width: 16,
             height: 16,
@@ -144,20 +139,27 @@ class _Needle extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        SizedBox(height: size * 0.08),
+        SizedBox(height: size * 0.06),
+        // Kaaba marker at the needle tip.
         Container(
-          width: 40,
-          height: 40,
+          width: 46,
+          height: 46,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(13),
             border: Border.all(color: accent, width: 2),
           ),
-          child: const Icon(Icons.mosque, color: Color(0xFFC8A24A), size: 20),
+          alignment: Alignment.center,
+          child: const HugeIcon(
+            icon: HugeIcons.strokeRoundedKaaba01,
+            color: Color(0xFFC8A24A),
+            size: 26,
+          ),
         ),
+        // Beam from the hub up to the marker.
         Container(
           width: 3,
-          height: size * 0.25,
+          height: size * 0.26,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
