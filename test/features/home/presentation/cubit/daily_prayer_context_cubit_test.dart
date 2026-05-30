@@ -90,4 +90,25 @@ void main() {
       isA<DailyPrayerContextFailed>(),
     ],
   );
+
+  blocTest<DailyPrayerContextCubit, DailyPrayerContextState>(
+    'fetchDailyPrayerContext: Failed state carries the typed Failure',
+    build: () {
+      when(() => usecase.call(any())).thenAnswer(
+        (_) => Stream.value(
+          const Left(LocationPermissionDeniedFailure('denied')),
+        ),
+      );
+      return DailyPrayerContextCubit(getDailyPrayerContext: usecase);
+    },
+    act: (c) => c.fetchDailyPrayerContext(),
+    expect: () => [
+      isA<DailyPrayerContextLoading>(),
+      isA<DailyPrayerContextFailed>().having(
+        (s) => s.failure,
+        'failure',
+        isA<LocationPermissionDeniedFailure>(),
+      ),
+    ],
+  );
 }
