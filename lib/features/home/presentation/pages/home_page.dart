@@ -247,6 +247,9 @@ class _StripResumeGuardState extends State<_StripResumeGuard>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
+    // Re-fetch so a now-granted location clears the recovery card. Silent to
+    // avoid a skeleton flash when data is already showing.
+    context.read<DailyPrayerContextCubit>().fetchDailyPrayerContext(silent: true);
     final ctxState = context.read<DailyPrayerContextCubit>().state;
     if (ctxState is DailyPrayerContextLoaded) {
       _enableOrRefreshStrip(context, ctxState);
