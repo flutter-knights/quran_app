@@ -39,6 +39,8 @@ class AhadithSearchRepositoryImpl extends AhadithSearchRepository {
     if (AhadithHelpers.isArabic(query)) {
       final bookNumbers = await arabicSearchDataSource.getSearchedHadithsNumbers(
         query: query,
+        status: status,
+        chapterId: chapterId,
       );
 
       if (bookNumbers.isEmpty) return Right([]);

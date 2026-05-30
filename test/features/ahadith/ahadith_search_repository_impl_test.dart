@@ -79,8 +79,11 @@ void main() {
   group('searchHadiths (Arabic, online) — partial vs error', () {
     test('returns local matches when the remote fetch fails but some exist',
         () async {
-      when(() => arabic.getSearchedHadithsNumbers(query: any(named: 'query')))
-          .thenAnswer((_) async => ['1', '2']);
+      when(() => arabic.getSearchedHadithsNumbers(
+            query: any(named: 'query'),
+            status: any(named: 'status'),
+            chapterId: any(named: 'chapterId'),
+          )).thenAnswer((_) async => ['1', '2']);
       when(() => local.getAhadithByNumbers(any(), any()))
           .thenReturn((found: [_h('1')], missing: ['2']));
       when(() => remote.getAhadithByNumbers(any(), any())).thenThrow(
@@ -101,8 +104,11 @@ void main() {
 
     test('surfaces a Left when the remote fails and there are no local matches',
         () async {
-      when(() => arabic.getSearchedHadithsNumbers(query: any(named: 'query')))
-          .thenAnswer((_) async => ['1', '2']);
+      when(() => arabic.getSearchedHadithsNumbers(
+            query: any(named: 'query'),
+            status: any(named: 'status'),
+            chapterId: any(named: 'chapterId'),
+          )).thenAnswer((_) async => ['1', '2']);
       when(() => local.getAhadithByNumbers(any(), any()))
           .thenReturn((found: <Hadith>[], missing: ['1', '2']));
       when(() => remote.getAhadithByNumbers(any(), any())).thenThrow(
@@ -120,8 +126,11 @@ void main() {
     });
 
     test('does not hit the network when the book is downloaded', () async {
-      when(() => arabic.getSearchedHadithsNumbers(query: any(named: 'query')))
-          .thenAnswer((_) async => ['1', '2']);
+      when(() => arabic.getSearchedHadithsNumbers(
+            query: any(named: 'query'),
+            status: any(named: 'status'),
+            chapterId: any(named: 'chapterId'),
+          )).thenAnswer((_) async => ['1', '2']);
       when(() => local.getAhadithByNumbers(any(), any()))
           .thenReturn((found: [_h('1')], missing: ['2']));
 
@@ -141,8 +150,11 @@ void main() {
 
   group('searchHadiths (Arabic, downloaded) — in-memory filter', () {
     test('filters Arabic results in-memory by status and chapter', () async {
-      when(() => arabic.getSearchedHadithsNumbers(query: any(named: 'query')))
-          .thenAnswer((_) async => ['1', '2', '3']);
+      when(() => arabic.getSearchedHadithsNumbers(
+            query: any(named: 'query'),
+            status: any(named: 'status'),
+            chapterId: any(named: 'chapterId'),
+          )).thenAnswer((_) async => ['1', '2', '3']);
       when(() => local.getAhadithByNumbers(any(), any())).thenReturn((
         found: [
           _hFull('1', status: HadithStatus.sahih, chapterId: 5),
