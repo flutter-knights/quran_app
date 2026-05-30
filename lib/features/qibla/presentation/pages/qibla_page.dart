@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
-import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/errors/failure.dart';
+import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
+import 'package:quran_app/core/widgets/design/icon_chip.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/location_recovery_card.dart';
 import 'package:quran_app/features/qibla/presentation/cubit/qibla_cubit.dart';
 import 'package:quran_app/features/qibla/presentation/pages/widgets/qibla_compass_dial.dart';
@@ -24,69 +25,66 @@ class QiblaPage extends StatelessWidget {
     final s = S.of(context);
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        backgroundColor: scheme.surface,
-        title: Column(
+      body: SafeArea(
+        child: Column(
           children: [
-            Text(s.qibla_app_bar_label,
-                style: TS.regular12.copyWith(color: scheme.onSurfaceVariant)),
-            Text(s.qibla_screen_title,
-                style: TS.bold16.copyWith(color: scheme.onSurface)),
+            AppScreenAppBar(
+              label: s.qibla_app_bar_label,
+              title: s.qibla_screen_title,
+              trailing: IconChip(
+                icon: const HugeIcon(icon: HugeIcons.strokeRoundedRefresh),
+                onPressed: () => context.read<QiblaCubit>().recalibrate(),
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<QiblaCubit, QiblaState>(
+                builder: (context, state) {
+                  if (state is QiblaLoading || state is QiblaInitial) {
+                    return const QiblaSkeleton();
+                  }
+                  if (state is QiblaError) {
+                    return _buildError(context, state.failure);
+                  }
+                  if (state is QiblaLoaded) {
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+                      child: Column(
+                        children: [
+                          QiblaStatusPill(
+                            isAligned: state.isAligned,
+                            needsCalibration: state.needsCalibration,
+                          ),
+                          const SizedBox(height: 18),
+                          QiblaCompassDial(
+                            bearing: state.direction.bearing,
+                            trueHeading:
+                                state.hasCompass ? state.trueHeading : null,
+                            size: 280,
+                          ),
+                          const SizedBox(height: 18),
+                          QiblaDegreeReadout(
+                            bearing: state.direction.bearing,
+                            rose: state.direction.rose,
+                          ),
+                          const SizedBox(height: 16),
+                          if (!state.hasCompass) ...[
+                            QiblaFallbackCard(bearing: state.direction.bearing),
+                            const SizedBox(height: 16),
+                          ],
+                          QiblaMetaCards(
+                            locationName: state.locationName,
+                            distanceKm: state.direction.distanceKm,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
           ],
         ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            tooltip: s.qibla_recalibrate,
-            icon: const HugeIcon(
-                icon: HugeIcons.strokeRoundedRefresh, size: 20),
-            onPressed: () => context.read<QiblaCubit>().recalibrate(),
-          ),
-        ],
-      ),
-      body: BlocBuilder<QiblaCubit, QiblaState>(
-        builder: (context, state) {
-          if (state is QiblaLoading || state is QiblaInitial) {
-            return const QiblaSkeleton();
-          }
-          if (state is QiblaError) {
-            return _buildError(context, state.failure);
-          }
-          if (state is QiblaLoaded) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
-              child: Column(
-                children: [
-                  QiblaStatusPill(
-                    isAligned: state.isAligned,
-                    needsCalibration: state.needsCalibration,
-                  ),
-                  const SizedBox(height: 18),
-                  QiblaCompassDial(
-                    bearing: state.direction.bearing,
-                    trueHeading: state.hasCompass ? state.trueHeading : null,
-                    size: 280,
-                  ),
-                  const SizedBox(height: 18),
-                  QiblaDegreeReadout(
-                    bearing: state.direction.bearing,
-                    rose: state.direction.rose,
-                  ),
-                  const SizedBox(height: 16),
-                  if (!state.hasCompass) ...[
-                    QiblaFallbackCard(bearing: state.direction.bearing),
-                    const SizedBox(height: 16),
-                  ],
-                  QiblaMetaCards(
-                    locationName: state.locationName,
-                    distanceKm: state.direction.distanceKm,
-                  ),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
       ),
     );
   }
