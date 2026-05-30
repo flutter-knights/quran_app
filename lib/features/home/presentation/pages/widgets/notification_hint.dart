@@ -90,7 +90,7 @@ class _NotificationHintState extends State<NotificationHint>
           TextButton(
             onPressed: () async {
               await widget.onAllow();
-              await _refresh();
+              if (mounted) await _refresh();
             },
             child: Text(s.home_notifHint_allow),
           ),
