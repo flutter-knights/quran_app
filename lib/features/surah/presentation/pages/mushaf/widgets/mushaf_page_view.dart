@@ -10,9 +10,10 @@ import '../../../../domain/entities/mushaf_page_entity.dart';
 import '../../../../domain/usecases/get_mushaf_page.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
+import '../../../utils/mushaf_chrome_layout.dart';
 import 'ayah_action_popover.dart';
 import 'ayah_highlight_painter.dart';
-import 'mushaf_printed_chrome.dart';
+import 'mushaf_header_band.dart';
 
 class MushafPageView extends StatefulWidget {
   const MushafPageView({super.key, required this.pageNumber});
@@ -71,111 +72,198 @@ class _MushafPageViewState extends State<MushafPageView>
       future: _entityFuture,
       builder: (context, snapshot) {
         final entity = snapshot.data;
-        return AspectRatio(
-          aspectRatio: 1 / 1.82,
+        return ColoredBox(
+          color: paperColors.background,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  Positioned.fill(child: ColoredBox(color: paperColors.background)),
-                  Image.asset(
-                    _imagePath,
-                    color: paperColors.ink,
-                    colorBlendMode: BlendMode.srcIn,
-                    gaplessPlayback: true,
-                    filterQuality: FilterQuality.medium,
-                    fit: BoxFit.fill,
+              final layout = resolveMushafChromeLayout(
+                availableWidth: constraints.maxWidth,
+                availableHeight: constraints.maxHeight,
+              );
+              final pageSize = Size(layout.pageWidth, layout.pageHeight);
+              final page = _buildPage(
+                context,
+                entity,
+                paperColors,
+                settings.pageBrightness,
+                pageSize,
+              );
+
+              // Tall screens get dedicated header/footer bands in the
+              // letterbox slack — the page art keeps its natural size, so the
+              // ayah bounds (hit-test + highlight) stay valid untouched.
+              if (layout.hasBands) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: layout.pageWidth,
+                        height: layout.headerHeight,
+                        child: MushafHeaderBand(
+                          pageNumber: widget.pageNumber,
+                          colors: paperColors,
+                        ),
+                      ),
+                      page,
+                      SizedBox(
+                        width: layout.pageWidth,
+                        height: layout.footerHeight,
+                        child: MushafPageNumberOrnament(
+                          pageNumber: widget.pageNumber,
+                          colors: paperColors,
+                        ),
+                      ),
+                    ],
                   ),
-                  Image.asset(
-                    _accentPath,
-                    color: paperColors.accent,
-                    colorBlendMode: BlendMode.srcIn,
-                    gaplessPlayback: true,
-                    filterQuality: FilterQuality.medium,
-                    fit: BoxFit.fill,
-                  ),
-                  if (settings.pageBrightness < 1.0)
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: ColoredBox(
-                          key: const ValueKey('page-brightness-scrim'),
-                          color: Colors.black.withValues(
-                            alpha: 1.0 - settings.pageBrightness,
+                );
+              }
+
+              // No slack: the page fills the height, so chrome floats over it
+              // and fades out with the reading chrome (never covers text while
+              // reading).
+              return Center(
+                child: SizedBox.fromSize(
+                  size: pageSize,
+                  child: Stack(
+                    children: [
+                      page,
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: _FadingChrome(
+                          child: _OverlayHeader(
+                            pageNumber: widget.pageNumber,
+                            colors: paperColors,
                           ),
                         ),
                       ),
-                    ),
-                  if (entity != null)
-                    BlocBuilder<MushafCubit, MushafState>(
-                      buildWhen: (a, b) =>
-                          a.highlightedAyah != b.highlightedAyah ||
-                          a.playingAyah != b.playingAyah,
-                      builder: (context, state) {
-                        if (state.highlightedAyah != _shownHighlightedAyah ||
-                            state.playingAyah != _shownPlayingAyah) {
-                          _prevHighlightedAyah = _shownHighlightedAyah;
-                          _prevPlayingAyah = _shownPlayingAyah;
-                          _shownHighlightedAyah = state.highlightedAyah;
-                          _shownPlayingAyah = state.playingAyah;
-                          if (_shownHighlightedAyah != null ||
-                              _shownPlayingAyah != null ||
-                              _prevHighlightedAyah != null ||
-                              _prevPlayingAyah != null) {
-                            _controller.forward(from: 0);
-                          }
-                          _publishHighlightBounds(
-                              context, _shownHighlightedAyah, entity.ayahs);
-                        }
-                        return AnimatedBuilder(
-                          animation: _controller,
-                          builder: (_, _) => CustomPaint(
-                            painter: AyahHighlightPainter(
-                              ayahs: entity.ayahs,
-                              highlightedAyah: _shownHighlightedAyah,
-                              prevHighlightedAyah: _prevHighlightedAyah,
-                              playingAyah: _shownPlayingAyah,
-                              prevPlayingAyah: _prevPlayingAyah,
-                              highlightColor: paperColors.accent,
-                              playingColor: paperColors.ink,
-                              animationValue: _controller.value,
-                            ),
+                      Positioned(
+                        bottom: 6,
+                        left: 0,
+                        right: 0,
+                        child: _FadingChrome(
+                          child: MushafPageNumberOrnament(
+                            pageNumber: widget.pageNumber,
+                            colors: paperColors,
                           ),
-                        );
-                      },
-                    ),
-                  if (entity != null)
-                    Positioned.fill(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTapUp: (details) => _handleTap(
-                          context,
-                          details.localPosition,
-                          constraints,
-                          entity.ayahs,
-                        ),
-                        onLongPressStart: (details) => _handleLongPress(
-                          context,
-                          details.localPosition,
-                          constraints,
-                          entity.ayahs,
                         ),
                       ),
-                    ),
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: MushafPrintedChrome(
-                        pageNumber: widget.pageNumber,
-                        colors: paperColors,
-                      ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               );
             },
           ),
         );
       },
+    );
+  }
+
+  /// The page art layers (background, glyphs, accent, brightness scrim,
+  /// highlight painter, gesture handler) at a fixed [size]. The ayah bounds are
+  /// normalized to this box, so hit-testing and highlight painting use
+  /// [size]-tight constraints.
+  Widget _buildPage(
+    BuildContext context,
+    MushafPageEntity? entity,
+    MushafPaperColors paperColors,
+    double pageBrightness,
+    Size size,
+  ) {
+    final pageConstraints = BoxConstraints.tight(size);
+    return SizedBox.fromSize(
+      size: size,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(child: ColoredBox(color: paperColors.background)),
+          Image.asset(
+            _imagePath,
+            color: paperColors.ink,
+            colorBlendMode: BlendMode.srcIn,
+            gaplessPlayback: true,
+            filterQuality: FilterQuality.medium,
+            fit: BoxFit.fill,
+          ),
+          Image.asset(
+            _accentPath,
+            color: paperColors.accent,
+            colorBlendMode: BlendMode.srcIn,
+            gaplessPlayback: true,
+            filterQuality: FilterQuality.medium,
+            fit: BoxFit.fill,
+          ),
+          if (pageBrightness < 1.0)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: ColoredBox(
+                  key: const ValueKey('page-brightness-scrim'),
+                  color: Colors.black.withValues(
+                    alpha: 1.0 - pageBrightness,
+                  ),
+                ),
+              ),
+            ),
+          if (entity != null)
+            BlocBuilder<MushafCubit, MushafState>(
+              buildWhen: (a, b) =>
+                  a.highlightedAyah != b.highlightedAyah ||
+                  a.playingAyah != b.playingAyah,
+              builder: (context, state) {
+                if (state.highlightedAyah != _shownHighlightedAyah ||
+                    state.playingAyah != _shownPlayingAyah) {
+                  _prevHighlightedAyah = _shownHighlightedAyah;
+                  _prevPlayingAyah = _shownPlayingAyah;
+                  _shownHighlightedAyah = state.highlightedAyah;
+                  _shownPlayingAyah = state.playingAyah;
+                  if (_shownHighlightedAyah != null ||
+                      _shownPlayingAyah != null ||
+                      _prevHighlightedAyah != null ||
+                      _prevPlayingAyah != null) {
+                    _controller.forward(from: 0);
+                  }
+                  _publishHighlightBounds(
+                      context, _shownHighlightedAyah, entity.ayahs);
+                }
+                return AnimatedBuilder(
+                  animation: _controller,
+                  builder: (_, _) => CustomPaint(
+                    painter: AyahHighlightPainter(
+                      ayahs: entity.ayahs,
+                      highlightedAyah: _shownHighlightedAyah,
+                      prevHighlightedAyah: _prevHighlightedAyah,
+                      playingAyah: _shownPlayingAyah,
+                      prevPlayingAyah: _prevPlayingAyah,
+                      highlightColor: paperColors.accent,
+                      playingColor: paperColors.ink,
+                      animationValue: _controller.value,
+                    ),
+                  ),
+                );
+              },
+            ),
+          if (entity != null)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp: (details) => _handleTap(
+                  context,
+                  details.localPosition,
+                  pageConstraints,
+                  entity.ayahs,
+                ),
+                onLongPressStart: (details) => _handleLongPress(
+                  context,
+                  details.localPosition,
+                  pageConstraints,
+                  entity.ayahs,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -265,5 +353,52 @@ class _MushafPageViewState extends State<MushafPageView>
     } else {
       cubit.setChrome(false);
     }
+  }
+}
+
+/// Wraps overlay chrome so it follows the reading-chrome visibility: it fades
+/// out while reading (so it never permanently covers the page text) and is
+/// always click-through (taps fall to the page's gesture handler).
+class _FadingChrome extends StatelessWidget {
+  const _FadingChrome({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MushafCubit, MushafState>(
+      buildWhen: (a, b) => a.chromeVisible != b.chromeVisible,
+      builder: (context, state) => IgnorePointer(
+        child: AnimatedOpacity(
+          opacity: state.chromeVisible ? 1 : 0,
+          duration: const Duration(milliseconds: 180),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+/// The running header drawn over a full-bleed page (overlay mode): a slim
+/// translucent strip behind the surah/juz glyphs so they stay legible above
+/// the text underneath.
+class _OverlayHeader extends StatelessWidget {
+  const _OverlayHeader({required this.pageNumber, required this.colors});
+
+  final int pageNumber;
+  final MushafPaperColors colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: kMushafHeaderBandHeight,
+      decoration: BoxDecoration(
+        color: colors.background.withValues(alpha: 0.82),
+        border: Border(
+          bottom: BorderSide(color: colors.accent.withValues(alpha: 0.25)),
+        ),
+      ),
+      child: MushafHeaderBand(pageNumber: pageNumber, colors: colors),
+    );
   }
 }
