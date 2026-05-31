@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
@@ -40,6 +41,17 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
 
   void updateMushafPaper(MushafPaper paper) {
     emit(SettingsState(state.settingsModel.copyWith(mushafPaper: paper)));
+  }
+
+  void updatePageBrightness(double value) {
+    final clamped = value.clamp(Settings.minPageBrightness, 1.0);
+    emit(SettingsState(
+      state.settingsModel.copyWith(pageBrightness: clamped),
+    ));
+  }
+
+  void updateReadingMode(MushafReadingMode mode) {
+    emit(SettingsState(state.settingsModel.copyWith(readingMode: mode)));
   }
 
   void updatePlaybackSpeed(double speed) {
