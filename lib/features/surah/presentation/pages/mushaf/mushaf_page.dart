@@ -101,17 +101,32 @@ class _MushafPageState extends State<MushafPage> {
         body: SafeArea(
           child: Stack(
             children: [
+              // PAGE — scales into the safe area above the player when active.
               Positioned.fill(
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: PageView.builder(
-                    controller: _controller,
-                    itemCount: 604,
-                    onPageChanged: (i) =>
-                        _mushafCubit.setPage(_pageNumberFor(i)),
-                    itemBuilder: (_, i) =>
-                        MushafPageView(pageNumber: _pageNumberFor(i)),
-                  ),
+                child: BlocBuilder<MushafCubit, MushafState>(
+                  buildWhen: (a, b) =>
+                      a.highlightedAyah != b.highlightedAyah ||
+                      a.isOverlayPinned != b.isOverlayPinned,
+                  builder: (context, state) {
+                    final playerVisible =
+                        state.highlightedAyah != null || state.isOverlayPinned;
+                    return AnimatedPadding(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeOutCubic,
+                      padding: EdgeInsets.only(bottom: playerVisible ? 132 : 0),
+                      child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: PageView.builder(
+                          controller: _controller,
+                          itemCount: 604,
+                          onPageChanged: (i) =>
+                              _mushafCubit.setPage(_pageNumberFor(i)),
+                          itemBuilder: (_, i) =>
+                              MushafPageView(pageNumber: _pageNumberFor(i)),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               // Floating action dock (chrome toggled by tap).
