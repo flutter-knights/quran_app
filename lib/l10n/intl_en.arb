@@ -139,7 +139,7 @@
 "language_arabic": "العربية",
 "language_english": "English",
 "search_hadith_hint": "Search this book…",
-"search_no_results": "No matching ahadith",
+"search_no_results": "No results",
 "filters_title": "Filters",
 "filter_status_label": "Status",
 "filter_chapter_label": "Chapter",
@@ -170,5 +170,40 @@
 "onb_location_why": "We use your location to calculate accurate prayer times for your city. It stays on your device and is never shared.",
 "onb_notifications_title": "Never miss a prayer",
 "onb_notifications_why": "Allow notifications to receive the adhan and prayer reminders on time. You can fine-tune them later in settings.",
-"show_splash_screen": "Splash screen"
+"show_splash_screen": "Splash screen",
+  "search_quran_hint": "Search surah, juzʼ, page, or ayah…",
+  "tab_surahs": "Surahs",
+  "tab_juz": "Juzʼ",
+  "tab_pages": "Pages",
+  "jump_to_page_header": "Go to page",
+  "all_juz": "All Juzʼ",
+  "juz_label": "Juzʼ {number}",
+  "@juz_label": {
+    "placeholders": { "number": { "type": "Object" } }
+  },
+  "go_to_page": "Go to page {number}",
+  "@go_to_page": {
+    "placeholders": { "number": { "type": "Object" } }
+  },
+  "go_to_juz": "Go to Juzʼ {number}",
+  "@go_to_juz": {
+    "placeholders": { "number": { "type": "Object" } }
+  },
+  "search_section_surahs": "Surahs",
+  "search_section_ayahs": "Ayahs",
+  "ayahs_count": "{count} ayahs",
+  "@ayahs_count": {
+    "placeholders": { "count": { "type": "Object" } }
+  },
+  "search_more_results": "+{count} more — refine your search",
+  "@search_more_results": {
+    "placeholders": { "count": { "type": "Object" } }
+  },
+  "start_reading": "Start reading",
+  "start_reading_subtitle": "Begin with Al-Fatiha",
+  "surah_ayah_label": "{surah} · Ayah {ayah}",
+  "@surah_ayah_label": {
+    "placeholders": { "surah": { "type": "Object" }, "ayah": { "type": "Object" } }
+  },
+  "bookmarks_title": "Bookmarks"
 }

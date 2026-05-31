@@ -1241,10 +1241,10 @@ class S {
     );
   }
 
-  /// `No matching ahadith`
+  /// `No results`
   String get search_no_results {
     return Intl.message(
-      'No matching ahadith',
+      'No results',
       name: 'search_no_results',
       desc: '',
       args: [],
@@ -1556,6 +1556,176 @@ class S {
     return Intl.message(
       'Splash screen',
       name: 'show_splash_screen',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search surah, juzʼ, page, or ayah…`
+  String get search_quran_hint {
+    return Intl.message(
+      'Search surah, juzʼ, page, or ayah…',
+      name: 'search_quran_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Surahs`
+  String get tab_surahs {
+    return Intl.message(
+      'Surahs',
+      name: 'tab_surahs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Juzʼ`
+  String get tab_juz {
+    return Intl.message(
+      'Juzʼ',
+      name: 'tab_juz',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pages`
+  String get tab_pages {
+    return Intl.message(
+      'Pages',
+      name: 'tab_pages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Go to page`
+  String get jump_to_page_header {
+    return Intl.message(
+      'Go to page',
+      name: 'jump_to_page_header',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All Juzʼ`
+  String get all_juz {
+    return Intl.message(
+      'All Juzʼ',
+      name: 'all_juz',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Juzʼ {number}`
+  String juz_label(Object number) {
+    return Intl.message(
+      'Juzʼ $number',
+      name: 'juz_label',
+      desc: '',
+      args: [number],
+    );
+  }
+
+  /// `Go to page {number}`
+  String go_to_page(Object number) {
+    return Intl.message(
+      'Go to page $number',
+      name: 'go_to_page',
+      desc: '',
+      args: [number],
+    );
+  }
+
+  /// `Go to Juzʼ {number}`
+  String go_to_juz(Object number) {
+    return Intl.message(
+      'Go to Juzʼ $number',
+      name: 'go_to_juz',
+      desc: '',
+      args: [number],
+    );
+  }
+
+  /// `Surahs`
+  String get search_section_surahs {
+    return Intl.message(
+      'Surahs',
+      name: 'search_section_surahs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ayahs`
+  String get search_section_ayahs {
+    return Intl.message(
+      'Ayahs',
+      name: 'search_section_ayahs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} ayahs`
+  String ayahs_count(Object count) {
+    return Intl.message(
+      '$count ayahs',
+      name: 'ayahs_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `+{count} more — refine your search`
+  String search_more_results(Object count) {
+    return Intl.message(
+      '+$count more — refine your search',
+      name: 'search_more_results',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Start reading`
+  String get start_reading {
+    return Intl.message(
+      'Start reading',
+      name: 'start_reading',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Begin with Al-Fatiha`
+  String get start_reading_subtitle {
+    return Intl.message(
+      'Begin with Al-Fatiha',
+      name: 'start_reading_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{surah} · Ayah {ayah}`
+  String surah_ayah_label(Object surah, Object ayah) {
+    return Intl.message(
+      '$surah · Ayah $ayah',
+      name: 'surah_ayah_label',
+      desc: '',
+      args: [surah, ayah],
+    );
+  }
+
+  /// `Bookmarks`
+  String get bookmarks_title {
+    return Intl.message(
+      'Bookmarks',
+      name: 'bookmarks_title',
       desc: '',
       args: [],
     );

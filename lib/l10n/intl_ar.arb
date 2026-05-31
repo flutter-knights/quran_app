@@ -131,7 +131,7 @@
 "language_arabic": "العربية",
 "language_english": "English",
 "search_hadith_hint": "ابحث في هذا الكتاب…",
-"search_no_results": "لا توجد أحاديث مطابقة",
+"search_no_results": "لا توجد نتائج",
 "filters_title": "تصفية",
 "filter_status_label": "الدرجة",
 "filter_chapter_label": "الباب",
@@ -162,5 +162,40 @@
 "onb_location_why": "نستخدم موقعك لحساب مواقيت الصلاة في مدينتك بدقّة. يبقى على جهازك ولا نشاركه.",
 "onb_notifications_title": "لا تفوتك صلاة",
 "onb_notifications_why": "فعّل الإشعارات لتصلك تنبيهات الأذان وتذكيرات الصلاة في أوقاتها. يمكنك ضبطها لاحقًا.",
-"show_splash_screen": "شاشة البداية"
+"show_splash_screen": "شاشة البداية",
+  "search_quran_hint": "ابحث عن سورة أو جزء أو صفحة أو آية…",
+  "tab_surahs": "السور",
+  "tab_juz": "الأجزاء",
+  "tab_pages": "الصفحات",
+  "jump_to_page_header": "انتقل إلى صفحة",
+  "all_juz": "كل الأجزاء",
+  "juz_label": "الجزء {number}",
+  "@juz_label": {
+    "placeholders": { "number": { "type": "Object" } }
+  },
+  "go_to_page": "انتقل إلى صفحة {number}",
+  "@go_to_page": {
+    "placeholders": { "number": { "type": "Object" } }
+  },
+  "go_to_juz": "انتقل إلى الجزء {number}",
+  "@go_to_juz": {
+    "placeholders": { "number": { "type": "Object" } }
+  },
+  "search_section_surahs": "السور",
+  "search_section_ayahs": "الآيات",
+  "ayahs_count": "{count} آية",
+  "@ayahs_count": {
+    "placeholders": { "count": { "type": "Object" } }
+  },
+  "search_more_results": "+{count} أخرى — حدّد بحثك",
+  "@search_more_results": {
+    "placeholders": { "count": { "type": "Object" } }
+  },
+  "start_reading": "ابدأ القراءة",
+  "start_reading_subtitle": "ابدأ بسورة الفاتحة",
+  "surah_ayah_label": "{surah} · آية {ayah}",
+  "@surah_ayah_label": {
+    "placeholders": { "surah": { "type": "Object" }, "ayah": { "type": "Object" } }
+  },
+  "bookmarks_title": "العلامات المرجعية"
 }
