@@ -1241,11 +1241,21 @@ class S {
     );
   }
 
-  /// `No results`
+  /// `No matching ahadith`
   String get search_no_results {
     return Intl.message(
-      'No results',
+      'No matching ahadith',
       name: 'search_no_results',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No results`
+  String get quran_search_no_results {
+    return Intl.message(
+      'No results',
+      name: 'quran_search_no_results',
       desc: '',
       args: [],
     );

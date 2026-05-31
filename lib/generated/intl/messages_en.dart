@@ -24,20 +24,32 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(surah, ayah) => "Surah ${surah}, Ayah ${ayah}";
 
-  static String m2(count) => "${count} books";
+  static String m2(count) => "${count} ayahs";
 
-  static String m3(weekday, day, month, year) =>
+  static String m3(count) => "${count} books";
+
+  static String m4(number) => "Go to Juzʼ ${number}";
+
+  static String m5(number) => "Go to page ${number}";
+
+  static String m6(weekday, day, month, year) =>
       "${weekday}, ${day} ${month} ${year} AH";
 
-  static String m4(page) => "Page ${page}";
+  static String m7(number) => "Juzʼ ${number}";
 
-  static String m5(percent) => "${percent}% complete";
+  static String m8(page) => "Page ${page}";
 
-  static String m6(time, prayerName) => "${time} remaining for ${prayerName}";
+  static String m9(percent) => "${percent}% complete";
 
-  static String m7(minutes) => "${minutes} min before";
+  static String m10(time, prayerName) => "${time} remaining for ${prayerName}";
 
-  static String m8(count) => "${count} surahs";
+  static String m11(minutes) => "${minutes} min before";
+
+  static String m12(count) => "+${count} more — refine your search";
+
+  static String m13(surah, ayah) => "${surah} · Ayah ${ayah}";
+
+  static String m14(count) => "${count} surahs";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -52,6 +64,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Al-Silsila al-Sahiha"),
         "al_tirmidhi":
             MessageLookupByLibrary.simpleMessage("Jami\' al-Tirmidhi"),
+        "all_juz": MessageLookupByLibrary.simpleMessage("All Juzʼ"),
         "all_surahs": MessageLookupByLibrary.simpleMessage("All Surahs"),
         "app_name": MessageLookupByLibrary.simpleMessage("Al-Furqan"),
         "appearance_section":
@@ -79,6 +92,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "author_tirmidhi": MessageLookupByLibrary.simpleMessage(
             "Imam Muhammad ibn \'Isa al-Tirmidhi"),
         "ayah_label": m1,
+        "ayahs_count": m2,
         "bookmark": MessageLookupByLibrary.simpleMessage("Bookmark"),
         "bookmark_added": MessageLookupByLibrary.simpleMessage("Bookmarked"),
         "bookmark_removed":
@@ -91,7 +105,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Quran"),
         "bookmarks_screen_title":
             MessageLookupByLibrary.simpleMessage("Bookmarks"),
-        "books_count": m2,
+        "bookmarks_title": MessageLookupByLibrary.simpleMessage("Bookmarks"),
+        "books_count": m3,
         "books_section": MessageLookupByLibrary.simpleMessage("Books"),
         "chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
         "collections_label":
@@ -137,6 +152,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "full_title_tirmidhi":
             MessageLookupByLibrary.simpleMessage("Jami\' al-Tirmidhi"),
         "general_section": MessageLookupByLibrary.simpleMessage("General"),
+        "go_to_juz": m4,
+        "go_to_page": m5,
         "hadith_books_appbar_title":
             MessageLookupByLibrary.simpleMessage("Hadith Books"),
         "hadith_heading_label":
@@ -148,10 +165,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "hadith_screen_title": MessageLookupByLibrary.simpleMessage("Hadith"),
         "hadith_total_label":
             MessageLookupByLibrary.simpleMessage("Total Ahadith"),
-        "hijriDateWithDay": m3,
+        "hijriDateWithDay": m6,
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn Majah"),
         "isha": MessageLookupByLibrary.simpleMessage("Isha"),
+        "jump_to_page_header":
+            MessageLookupByLibrary.simpleMessage("Go to page"),
         "jumuah": MessageLookupByLibrary.simpleMessage("Jumu\'ah"),
+        "juz_label": m7,
         "language_arabic": MessageLookupByLibrary.simpleMessage("العربية"),
         "language_english": MessageLookupByLibrary.simpleMessage("English"),
         "lastRead": MessageLookupByLibrary.simpleMessage("Last Read"),
@@ -193,7 +213,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "The Noble Qur\'an, in your hands"),
         "onb_welcome_subtitle": MessageLookupByLibrary.simpleMessage(
             "Read, listen, and reflect — with your prayer times in one place."),
-        "page_label": m4,
+        "page_label": m8,
         "pinnedPrayerTimes":
             MessageLookupByLibrary.simpleMessage("Pinned prayer times"),
         "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
@@ -211,21 +231,28 @@ class MessageLookup extends MessageLookupByLibrary {
         "playback_speed": MessageLookupByLibrary.simpleMessage("Speed"),
         "prayers": MessageLookupByLibrary.simpleMessage("Prayers"),
         "previous_hadith": MessageLookupByLibrary.simpleMessage("Previous"),
-        "progress_complete": m5,
+        "progress_complete": m9,
         "quickAccess": MessageLookupByLibrary.simpleMessage("Quick Access"),
         "quran_screen_title": MessageLookupByLibrary.simpleMessage("Quran"),
+        "quran_search_no_results":
+            MessageLookupByLibrary.simpleMessage("No results"),
         "reciter_label": MessageLookupByLibrary.simpleMessage("Reciter"),
-        "remainingTimeLabel": m6,
+        "remainingTimeLabel": m10,
         "reminderLabel": MessageLookupByLibrary.simpleMessage("Remind me"),
-        "reminderMinutesBefore": m7,
+        "reminderMinutesBefore": m11,
         "reminderOff": MessageLookupByLibrary.simpleMessage("Off"),
         "sahih_bukhari":
             MessageLookupByLibrary.simpleMessage("Sahih al-Bukhari"),
         "sahih_muslim": MessageLookupByLibrary.simpleMessage("Sahih Muslim"),
         "search_hadith_hint":
             MessageLookupByLibrary.simpleMessage("Search this book…"),
+        "search_more_results": m12,
         "search_no_results":
             MessageLookupByLibrary.simpleMessage("No matching ahadith"),
+        "search_quran_hint": MessageLookupByLibrary.simpleMessage(
+            "Search surah, juzʼ, page, or ayah…"),
+        "search_section_ayahs": MessageLookupByLibrary.simpleMessage("Ayahs"),
+        "search_section_surahs": MessageLookupByLibrary.simpleMessage("Surahs"),
         "search_surah_hint":
             MessageLookupByLibrary.simpleMessage("Search for a surah..."),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
@@ -236,14 +263,21 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Couldn\'t open share sheet"),
         "show_splash_screen":
             MessageLookupByLibrary.simpleMessage("Splash screen"),
+        "start_reading": MessageLookupByLibrary.simpleMessage("Start reading"),
+        "start_reading_subtitle":
+            MessageLookupByLibrary.simpleMessage("Begin with Al-Fatiha"),
         "status_daeef": MessageLookupByLibrary.simpleMessage("Da\'eef"),
         "status_hasan": MessageLookupByLibrary.simpleMessage("Hasan"),
         "status_mudu": MessageLookupByLibrary.simpleMessage("Maudu\'"),
         "status_sahih": MessageLookupByLibrary.simpleMessage("Sahih"),
         "sunan_nasai": MessageLookupByLibrary.simpleMessage("Sunan an-Nasa\'i"),
         "sunrise": MessageLookupByLibrary.simpleMessage("Sunrise"),
+        "surah_ayah_label": m13,
         "surahs_appbar_title": MessageLookupByLibrary.simpleMessage("Surahs"),
-        "surahs_count": m8,
+        "surahs_count": m14,
+        "tab_juz": MessageLookupByLibrary.simpleMessage("Juzʼ"),
+        "tab_pages": MessageLookupByLibrary.simpleMessage("Pages"),
+        "tab_surahs": MessageLookupByLibrary.simpleMessage("Surahs"),
         "tafsir": MessageLookupByLibrary.simpleMessage("Tafsir"),
         "testAdhanScheduledSnack":
             MessageLookupByLibrary.simpleMessage("Test adhan in 5 seconds"),
