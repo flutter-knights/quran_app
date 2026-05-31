@@ -25,6 +25,9 @@ void main() {
     test('valid to passes through', () {
       expect(PlaybackRangeValidator.clampTo(surah: 2, from: 50, value: 100), 100);
     });
+    test('out-of-range from (300) is capped at last (286), result clamps to 286', () {
+      expect(PlaybackRangeValidator.clampTo(surah: 2, from: 300, value: 200), 286);
+    });
   });
 
   group('clampRepeat (rule 5)', () {
@@ -48,6 +51,9 @@ void main() {
     test('numeric (incl. Arabic-Indic digits) parses', () {
       expect(PlaybackRangeValidator.parseCounter('12'), 12);
       expect(PlaybackRangeValidator.parseCounter('٧'), 7);
+    });
+    test('extended Arabic-Indic digit (U+06F7) parses to 7', () {
+      expect(PlaybackRangeValidator.parseCounter('۷'), 7);
     });
   });
 }

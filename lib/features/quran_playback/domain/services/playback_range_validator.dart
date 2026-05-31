@@ -7,6 +7,7 @@ import 'package:quran/quran.dart' as quran;
 /// 3. to < from → to follows from (to = from).
 /// 4. single-surah ranges (enforced by callers using one surah's count).
 /// 5. repeat ∈ [1, 99]; blank/0 → 1.
+/// 6–7. handled in the UI layer (Task 5).
 /// 8. non-numeric input → null (caller keeps the last valid value).
 class PlaybackRangeValidator {
   static const int maxRepeat = 99;
@@ -20,7 +21,7 @@ class PlaybackRangeValidator {
 
   static int clampTo({required int surah, required int from, required int value}) {
     final last = quran.getVerseCount(surah);
-    final lo = from < 1 ? 1 : from;
+    final lo = from.clamp(1, last);
     if (value < lo) return lo;
     if (value > last) return last;
     return value;
@@ -40,6 +41,10 @@ class PlaybackRangeValidator {
       // Arabic-Indic ٠..٩ = U+0660..U+0669 → ASCII 0..9
       if (code >= 0x0660 && code <= 0x0669) {
         return String.fromCharCode(code - 0x0660 + 0x30);
+      }
+      // Extended Arabic-Indic (Farsi/Urdu) ۰..۹ = U+06F0..U+06F9 → ASCII 0..9
+      if (code >= 0x06F0 && code <= 0x06F9) {
+        return String.fromCharCode(code - 0x06F0 + 0x30);
       }
       return ch;
     }).join();
