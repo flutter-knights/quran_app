@@ -8,18 +8,22 @@ class SegmentOption<T> {
 }
 
 /// Compact segmented control. The selected segment is filled with the theme
-/// accent. Generic over the option value type.
+/// accent. Generic over the option value type. Set [expand] to make the
+/// segments share the full available width (each segment Expanded); otherwise
+/// the control hugs its content.
 class AppSegmentedSelector<T> extends StatelessWidget {
   const AppSegmentedSelector({
     super.key,
     required this.options,
     required this.selected,
     required this.onChanged,
+    this.expand = false,
   });
 
   final List<SegmentOption<T>> options;
   final T selected;
   final ValueChanged<T> onChanged;
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +35,24 @@ class AppSegmentedSelector<T> extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
         children: [
           for (final option in options)
-            _Segment(
-              label: option.label,
-              selected: option.value == selected,
-              onTap: () => onChanged(option.value),
-            ),
+            if (expand)
+              Expanded(
+                child: _Segment(
+                  label: option.label,
+                  selected: option.value == selected,
+                  expand: true,
+                  onTap: () => onChanged(option.value),
+                ),
+              )
+            else
+              _Segment(
+                label: option.label,
+                selected: option.value == selected,
+                onTap: () => onChanged(option.value),
+              ),
         ],
       ),
     );
@@ -50,11 +64,13 @@ class _Segment extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.expand = false,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +82,9 @@ class _Segment extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: 16,
+          alignment: expand ? Alignment.center : null,
+          padding: EdgeInsetsDirectional.symmetric(
+            horizontal: expand ? 8 : 16,
             vertical: 7,
           ),
           decoration: BoxDecoration(
@@ -76,6 +93,7 @@ class _Segment extends StatelessWidget {
           ),
           child: Text(
             label,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,

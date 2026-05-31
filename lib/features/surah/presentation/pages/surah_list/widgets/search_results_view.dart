@@ -10,8 +10,11 @@ import 'package:quran_app/features/search/domain/entities/search_result.dart';
 import 'package:quran_app/features/search/presentation/cubit/search_state.dart';
 import 'package:quran_app/generated/l10n.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
+
 import 'ayah_result_tile.dart';
-import 'surah_result_tile.dart';
+import 'surah_list_tile.dart';
 
 /// Builds the grouped search-result slivers (jump suggestions → surahs →
 /// ayahs). Returns a single sliver (a [SliverMainAxisGroup]) so it slots
@@ -50,8 +53,10 @@ Widget searchResultsSliver(BuildContext context, SearchState search) {
     );
   }
 
-  // Surahs.
+  // Surahs — reuse the exact browse tile (Arabic name + meta, no translation),
+  // resolved from the loaded SurahCubit list (entity #n is at index n-1).
   if (r.surahs.isNotEmpty) {
+    final entities = context.read<SurahCubit>().state;
     groups.add(_header(context, S.of(context).search_section_surahs,
         r.surahs.length.toLocalized(context)));
     groups.add(
@@ -60,7 +65,13 @@ Widget searchResultsSliver(BuildContext context, SearchState search) {
         sliver: SliverList.separated(
           itemCount: r.surahs.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
-          itemBuilder: (_, i) => SurahResultTile(result: r.surahs[i]),
+          itemBuilder: (_, i) {
+            final idx = r.surahs[i].number - 1;
+            if (idx < 0 || idx >= entities.length) {
+              return const SizedBox.shrink();
+            }
+            return SurahListTile(surah: entities[idx]);
+          },
         ),
       ),
     );
