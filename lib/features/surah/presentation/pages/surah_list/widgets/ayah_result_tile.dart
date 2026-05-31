@@ -52,9 +52,9 @@ class AyahResultTile extends StatelessWidget {
               textAlign: TextAlign.right,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TS.bold16.amiriQuran.copyWith(
+              style: TS.bold16.scheherazade.copyWith(
                 color: scheme.onSurface,
-                height: 1.7,
+                height: 1.8,
               ),
             ),
             const SizedBox(height: 6),
