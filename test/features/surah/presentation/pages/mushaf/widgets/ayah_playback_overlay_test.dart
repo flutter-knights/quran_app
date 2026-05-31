@@ -41,6 +41,8 @@ class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
 class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   _FakePlayback(super.initial);
   AyahIdentifier? lastPlay;
+  AyahIdentifier? lastRangeStart;
+  AyahIdentifier? lastRangeEnd;
   bool stopped = false;
   bool paused = false;
   double? speedSet;
@@ -48,6 +50,16 @@ class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   Future<void> playSelected(AyahIdentifier a) async {
     lastPlay = a;
     emit(state.copyWith(currentAyah: a, isPlaying: true));
+  }
+
+  @override
+  Future<void> playRange({
+    required AyahIdentifier start,
+    required AyahIdentifier end,
+  }) async {
+    lastRangeStart = start;
+    lastRangeEnd = end;
+    emit(state.copyWith(currentAyah: start, isPlaying: true));
   }
 
   @override
@@ -122,14 +134,18 @@ void main() {
     expect(find.byIcon(Icons.play_arrow), findsOneWidget);
   });
 
-  testWidgets('tapping play calls PlaybackCubit.playSelected', (tester) async {
+  testWidgets('tapping play calls PlaybackCubit.playRange to end of surah',
+      (tester) async {
     final m = _FakeMushaf(
         const MushafState(currentPage: 1, highlightedAyah: _target));
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.play_arrow));
-    expect(p.lastPlay, _target);
+    await tester.pumpAndSettle();
+    // playRange should have been called with start = target and end = last ayah of surah 2
+    expect(p.lastRangeStart, _target);
+    expect(p.lastRangeEnd, const AyahIdentifier(surah: 2, ayah: 286));
   });
 
   testWidgets('paused on same target → tap play calls resume (not restart)',

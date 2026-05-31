@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
@@ -62,7 +63,14 @@ class MushafActionDock extends StatelessWidget {
         firstAyah = AyahIdentifier(surah: firstAyah.surah, ayah: 0);
       }
       mushafCubit.toggleHighlight(firstAyah);
-      context.read<PlaybackCubit>().playSelected(firstAyah);
+      final surah = firstAyah.surah;
+      final start = firstAyah.ayah == 0
+          ? AyahIdentifier(surah: surah, ayah: 1)
+          : firstAyah;
+      context.read<PlaybackCubit>().playRange(
+            start: start,
+            end: AyahIdentifier(surah: surah, ayah: quran.getVerseCount(surah)),
+          );
     } else {
       mushafCubit.pinOverlay();
     }

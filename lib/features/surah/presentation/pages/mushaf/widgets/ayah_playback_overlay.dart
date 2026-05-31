@@ -7,6 +7,7 @@ import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../../quran_playback/domain/entities/reciter.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
+import '../../../../../quran_playback/presentation/widgets/playback_repeat_options.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 
@@ -108,15 +109,58 @@ class _Body extends StatelessWidget {
                   onPressed: () =>
                       context.read<MushafCubit>().unpinOverlay(),
                 ),
+                IconButton(
+                  key: const ValueKey('playback-expand'),
+                  icon: const Icon(Icons.tune),
+                  tooltip: S.of(context).playbackOptions,
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    showDragHandle: true,
+                    isScrollControlled: true,
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<PlaybackCubit>(),
+                      child: const SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: PlaybackRepeatOptions(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Expanded(
-                  child: Text(
-                    target != null
-                        ? s.ayah_label(
-                            target!.surah.toString(),
-                            target!.ayah.toString())
-                        : '',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleSmall,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        target != null
+                            ? s.ayah_label(
+                                target!.surah.toString(),
+                                target!.ayah.toString())
+                            : '',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      BlocBuilder<PlaybackCubit, PlaybackState>(
+                        buildWhen: (a, b) =>
+                            a.currentAyahPlayCount != b.currentAyahPlayCount ||
+                            a.eachAyahRepeat != b.eachAyahRepeat ||
+                            a.infiniteRepeat != b.infiniteRepeat,
+                        builder: (context, p) {
+                          if (p.eachAyahRepeat <= 1 && !p.infiniteRepeat) {
+                            return const SizedBox.shrink();
+                          }
+                          final txt = p.infiniteRepeat
+                              ? '∞'
+                              : '${p.currentAyahPlayCount}/${p.eachAyahRepeat}';
+                          return Text('↻ $txt',
+                              textAlign: TextAlign.center,
+                              style:
+                                  Theme.of(context).textTheme.labelSmall);
+                        },
+                      ),
+                    ],
                   ),
                 ),
                 _ReciterChip(),
@@ -218,7 +262,15 @@ class _PlayPauseButton extends StatelessWidget {
               } else if (isResumable) {
                 cubit.resume();
               } else {
-                cubit.playSelected(target!);
+                final t = target!;
+                final start = t.ayah == 0
+                    ? AyahIdentifier(surah: t.surah, ayah: 1)
+                    : t;
+                cubit.playRange(
+                  start: start,
+                  end: AyahIdentifier(
+                      surah: t.surah, ayah: q.getVerseCount(t.surah)),
+                );
               }
             },
     );
