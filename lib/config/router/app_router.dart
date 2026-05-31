@@ -15,6 +15,7 @@ import 'package:quran_app/features/splash/pages/splash_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/pages/surah_list/surah_list_page.dart';
 
@@ -114,10 +115,17 @@ abstract class AppRouter {
         path: mushafPath,
         pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) {
-            final int pageNo = (state.extra as int?) ?? 1;
+            final args = _mushafArgsFrom(state.extra);
             return BlocProvider(
-              create: (_) => sl<MushafCubit>(param1: pageNo),
-              child: MushafPage(initialPage: pageNo),
+              create: (_) {
+                final cubit = sl<MushafCubit>(param1: args.page);
+                final focus = args.focusAyah;
+                if (focus != null && focus.ayah > 0) {
+                  cubit.toggleHighlight(focus);
+                }
+                return cubit;
+              },
+              child: MushafPage(initialPage: args.page),
             );
           },
         ),
@@ -126,10 +134,17 @@ abstract class AppRouter {
         path: mushafImagePath,
         pageBuilder: GoTransitions.fade.withScale.build(
           builder: (context, state) {
-            final int pageNo = (state.extra as int?) ?? 1;
+            final args = _mushafArgsFrom(state.extra);
             return BlocProvider(
-              create: (_) => sl<MushafCubit>(param1: pageNo),
-              child: MushafPage(initialPage: pageNo),
+              create: (_) {
+                final cubit = sl<MushafCubit>(param1: args.page);
+                final focus = args.focusAyah;
+                if (focus != null && focus.ayah > 0) {
+                  cubit.toggleHighlight(focus);
+                }
+                return cubit;
+              },
+              child: MushafPage(initialPage: args.page),
             );
           },
         ),
@@ -156,4 +171,10 @@ abstract class AppRouter {
       ),
     ],
   );
+}
+
+MushafArgs _mushafArgsFrom(Object? extra) {
+  if (extra is MushafArgs) return extra;
+  if (extra is int) return MushafArgs(page: extra);
+  return const MushafArgs(page: 1);
 }

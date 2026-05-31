@@ -39,6 +39,7 @@ class _MushafPageState extends State<MushafPage> {
     _lastReadCubit = context.read<LastReadCubit>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_mushafCubit.state.highlightedAyah != null) return; // focus ayah already set
       final last = _lastReadCubit.state;
       if (last?.ayah == null) return;
       if (last!.page != widget.initialPage) return;
