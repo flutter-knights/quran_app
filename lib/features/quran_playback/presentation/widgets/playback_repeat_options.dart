@@ -143,6 +143,9 @@ class _Counter extends StatelessWidget {
         ],
       ),
     );
+    // Schedule dispose after the dialog's close animation has completed so
+    // the framework never touches a disposed controller during tear-down.
+    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     if (result != null) onChanged(result);
   }
 

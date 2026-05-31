@@ -16,7 +16,10 @@ class _MockPlaybackCubit extends MockCubit<PlaybackState>
 void main() {
   late _MockPlaybackCubit cubit;
 
-  setUpAll(() => registerFallbackValue(const AyahIdentifier(surah: 1, ayah: 1)));
+  setUpAll(() {
+    registerFallbackValue(const AyahIdentifier(surah: 1, ayah: 1));
+    registerFallbackValue(RepeatTarget.range);
+  });
 
   setUp(() {
     cubit = _MockPlaybackCubit();
@@ -64,5 +67,50 @@ void main() {
     await tester.tap(plus);
     await tester.pump();
     verify(() => cubit.setEachAyahRepeat(4)).called(1); // 3 + 1
+  });
+
+  testWidgets(
+      'tapping infinite toggle calls setInfiniteRepeat(true, range) when off',
+      (tester) async {
+    // State already has infiniteRepeat: false (default)
+    when(() => cubit.setInfiniteRepeat(any(), any())).thenReturn(null);
+    await tester.pumpWidget(host());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('repeat-infinite')));
+    await tester.pump();
+
+    verify(() => cubit.setInfiniteRepeat(true, RepeatTarget.range)).called(1);
+  });
+
+  testWidgets(
+      'non-numeric dialog input does not call setRangeRepeat',
+      (tester) async {
+    when(() => cubit.setRangeRepeat(any())).thenReturn(null);
+    await tester.pumpWidget(host());
+    await tester.pumpAndSettle();
+
+    // Tap the value text inside the repeat-range counter to open the dialog
+    final valueText = find.descendant(
+      of: find.byKey(const ValueKey('repeat-range')),
+      matching: find.text('1'),
+    );
+    await tester.tap(valueText);
+    await tester.pumpAndSettle();
+
+    // The dialog text field should be visible
+    final textField = find.byKey(const ValueKey('counter-text-field'));
+    expect(textField, findsOneWidget);
+
+    // Enter a non-numeric string
+    await tester.enterText(textField, 'abc');
+
+    // Tap the confirm button
+    final applyButton = find.text(S.current.filter_apply);
+    await tester.tap(applyButton);
+    await tester.pumpAndSettle();
+
+    // Null parse → revert → setRangeRepeat must NOT be called
+    verifyNever(() => cubit.setRangeRepeat(any()));
   });
 }
