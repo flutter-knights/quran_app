@@ -10,6 +10,7 @@ import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/surah/domain/entities/last_read.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
+import 'package:quran_app/features/surah/presentation/pages/surah_list/widgets/surah_reading_progress.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 /// Last-read card. Hides itself when no last-read exists; [maybeBuild] returns
@@ -27,7 +28,8 @@ class LastReadCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
-    final percent = ((last.page / 604) * 100).round();
+    final progress = computeSurahProgress(last);
+    final percent = (progress.fraction * 100).round();
     return SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       radius: 14,
@@ -35,7 +37,6 @@ class LastReadCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 padding: const EdgeInsetsDirectional.symmetric(
@@ -58,6 +59,15 @@ class LastReadCard extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  progress.surahArabicName,
+                  style: TS.bold14.cairo.copyWith(color: scheme.onSurface),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
               Text(
                 S.of(context).progress_complete(percent.toLocalized(context)),
                 style: TextStyle(
@@ -72,7 +82,7 @@ class LastReadCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: percent / 100,
+              value: progress.fraction,
               minHeight: 3,
               backgroundColor: scheme.onSurface.withValues(alpha: 0.06),
               valueColor: AlwaysStoppedAnimation(scheme.secondary),
@@ -84,11 +94,13 @@ class LastReadCard extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  last.ayah == null
-                      ? S.of(context).page_label(last.page.toLocalized(context))
-                      : S.of(context).ayah_label(
-                            last.ayah!.surah.toLocalized(context),
-                            last.ayah!.ayah.toLocalized(context),
+                  progress.ayahBased
+                      ? S.of(context).surah_ayah_label(
+                            progress.surahArabicName,
+                            progress.ayahCurrent!.toLocalized(context),
+                          )
+                      : S.of(context).page_label(
+                            last.page.toLocalized(context),
                           ),
                   style: TS.bold14.cairo.copyWith(color: scheme.onSurface),
                   overflow: TextOverflow.ellipsis,
