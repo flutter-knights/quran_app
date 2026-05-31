@@ -88,6 +88,13 @@ void main() {
       });
       expect(m.pageBrightness, 1.0);
       expect(m.readingMode, MushafReadingMode.page);
+
+      final low = SettingsModel.fromMap({
+        'isArabic': true,
+        'isFormat12Hours': false,
+        'pageBrightness': 0.0,
+      });
+      expect(low.pageBrightness, 0.3);
     });
   });
 }
