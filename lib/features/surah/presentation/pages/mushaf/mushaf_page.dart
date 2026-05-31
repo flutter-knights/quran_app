@@ -106,14 +106,18 @@ class _MushafPageState extends State<MushafPage> {
                 child: BlocBuilder<MushafCubit, MushafState>(
                   buildWhen: (a, b) =>
                       a.highlightedAyah != b.highlightedAyah ||
+                      a.highlightedAyahCenterY != b.highlightedAyahCenterY ||
                       a.isOverlayPinned != b.isOverlayPinned,
                   builder: (context, state) {
                     final playerVisible =
                         state.highlightedAyah != null || state.isOverlayPinned;
+                    final centerY = state.highlightedAyahCenterY;
+                    final anchorTop = centerY != null && centerY > 0.5;
                     return AnimatedPadding(
                       duration: const Duration(milliseconds: 400),
                       curve: Curves.easeOutCubic,
-                      padding: EdgeInsets.only(bottom: playerVisible ? 132 : 0),
+                      padding: EdgeInsets.only(
+                          bottom: playerVisible && !anchorTop ? 132 : 0),
                       child: Directionality(
                         textDirection: TextDirection.rtl,
                         child: PageView.builder(
