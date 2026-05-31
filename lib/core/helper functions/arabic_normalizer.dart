@@ -4,12 +4,17 @@
 /// strips harakat + superscript alef, removes tatweel, unifies alef forms
 /// (أ إ آ ٱ → ا), maps ى → ي and ة → ه, lowercases Latin, and collapses
 /// whitespace. Pure Dart — no Flutter imports (safe for the domain layer).
+/// Scope: the Quran search feature. (The hadith search path has its own
+/// normalizer in AhadithHelpers.cleanArabicQuery; the two are intentionally
+/// separate.)
 String normalizeArabic(String input) {
   final buffer = StringBuffer();
   for (final rune in input.runes) {
-    // Harakat / Quranic marks (064B–065F) and superscript alef (0670): drop.
+    // Harakat & extended Arabic combining marks (064B–065F) + superscript alef (0670): drop.
     if (rune >= 0x064B && rune <= 0x065F) continue;
     if (rune == 0x0670) continue;
+    // Quranic annotation marks / small high signs (06D6–06ED): drop.
+    if (rune >= 0x06D6 && rune <= 0x06ED) continue;
     // Tatweel (kashida): drop.
     if (rune == 0x0640) continue;
     switch (rune) {

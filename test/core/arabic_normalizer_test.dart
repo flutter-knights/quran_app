@@ -11,6 +11,7 @@ void main() {
       expect(normalizeArabic('أحمد'), 'احمد');
       expect(normalizeArabic('إيمان'), 'ايمان');
       expect(normalizeArabic('آدم'), 'ادم');
+      expect(normalizeArabic('ٱلرَّحْمَـٰنِ'), 'الرحمن');
     });
     test('maps ى to ي and ة to ه', () {
       expect(normalizeArabic('إلى'), 'الي');
