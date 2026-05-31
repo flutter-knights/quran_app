@@ -29,72 +29,76 @@ class ReadingSettingsSheet extends StatelessWidget {
       builder: (context, state) {
         final model = state.settingsModel;
         final cubit = context.read<SettingsCubit>();
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(s.readingSettings,
-                  style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 16),
-              Text(s.paper, style: Theme.of(context).textTheme.labelMedium),
-              const SizedBox(height: 8),
-              Row(
-                children: MushafPaper.values.map((p) {
-                  final selected = p == model.mushafPaper;
-                  return Expanded(
-                    child: GestureDetector(
-                      key: ValueKey('reading-paper-${p.name}'),
-                      onTap: () => cubit.updateMushafPaper(p),
-                      child: Container(
-                        height: 54,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: p.colors.background,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: selected
-                                ? scheme.primary
-                                : scheme.onSurface.withValues(alpha: 0.12),
-                            width: selected ? 2 : 1,
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(s.readingSettings,
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 16),
+                Text(s.paper, style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 8),
+                Row(
+                  children: MushafPaper.values.map((p) {
+                    final selected = p == model.mushafPaper;
+                    return Expanded(
+                      child: GestureDetector(
+                        key: ValueKey('reading-paper-${p.name}'),
+                        onTap: () => cubit.updateMushafPaper(p),
+                        child: Container(
+                          height: 54,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            color: p.colors.background,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: selected
+                                  ? scheme.primary
+                                  : scheme.onSurface.withValues(alpha: 0.12),
+                              width: selected ? 2 : 1,
+                            ),
                           ),
                         ),
                       ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+                Text(s.brightness,
+                    style: Theme.of(context).textTheme.labelMedium),
+                Slider(
+                  key: const ValueKey('reading-brightness-slider'),
+                  min: 0.3,
+                  max: 1.0,
+                  value: model.pageBrightness,
+                  onChanged: cubit.updatePageBrightness,
+                ),
+                const SizedBox(height: 8),
+                Text(s.readingMode,
+                    style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 8),
+                SegmentedButton<MushafReadingMode>(
+                  key: const ValueKey('reading-mode-toggle'),
+                  segments: [
+                    ButtonSegment(
+                      value: MushafReadingMode.page,
+                      label: Text(s.pageByPage),
                     ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-              Text(s.brightness, style: Theme.of(context).textTheme.labelMedium),
-              Slider(
-                key: const ValueKey('reading-brightness-slider'),
-                min: 0.3,
-                max: 1.0,
-                value: model.pageBrightness,
-                onChanged: cubit.updatePageBrightness,
-              ),
-              const SizedBox(height: 8),
-              Text(s.readingMode,
-                  style: Theme.of(context).textTheme.labelMedium),
-              const SizedBox(height: 8),
-              SegmentedButton<MushafReadingMode>(
-                key: const ValueKey('reading-mode-toggle'),
-                segments: [
-                  ButtonSegment(
-                    value: MushafReadingMode.page,
-                    label: Text(s.pageByPage),
-                  ),
-                  ButtonSegment(
-                    value: MushafReadingMode.scroll,
-                    label: Text(s.continuousScroll),
-                  ),
-                ],
-                selected: {model.readingMode},
-                onSelectionChanged: (set) =>
-                    cubit.updateReadingMode(set.first),
-              ),
-            ],
+                    ButtonSegment(
+                      value: MushafReadingMode.scroll,
+                      label: Text(s.continuousScroll),
+                    ),
+                  ],
+                  selected: {model.readingMode},
+                  onSelectionChanged: (set) =>
+                      cubit.updateReadingMode(set.first),
+                ),
+              ],
+            ),
           ),
         );
       },

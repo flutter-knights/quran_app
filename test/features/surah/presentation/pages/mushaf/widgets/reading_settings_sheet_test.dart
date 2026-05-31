@@ -23,6 +23,7 @@ void main() {
   testWidgets('tapping the night swatch updates the paper setting',
       (tester) async {
     final cubit = SettingsCubit();
+    addTearDown(cubit.close);
     await tester.pumpWidget(MaterialApp(
       localizationsDelegates: const [
         S.delegate,
