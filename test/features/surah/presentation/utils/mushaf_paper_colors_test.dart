@@ -21,6 +21,13 @@ void main() {
     expect(c.ink, const Color(0xFFE8D9A8));
   });
 
+  test('remaining themes use their tuned backgrounds', () {
+    expect(MushafPaper.sepia.colors.background, const Color(0xFFEDE0C4));
+    expect(MushafPaper.green.colors.background, const Color(0xFFE2EBE2));
+    expect(MushafPaper.gray.colors.background, const Color(0xFFE8E6E1));
+    expect(MushafPaper.slateNight.colors.background, const Color(0xFF10141A));
+  });
+
   test('every theme exposes a non-empty Arabic label', () {
     for (final p in MushafPaper.values) {
       expect(p.label, isNotEmpty, reason: p.name);
