@@ -7,9 +7,9 @@ void main() {
     test('strips tashkil (harakat)', () {
       expect(normalizeArabic('مُحَمَّدٌ'), 'محمد');
     });
-    test('unifies alef forms أ إ آ ٱ to ا', () {
+    test('unifies alef forms and keeps only word-initial alef', () {
       expect(normalizeArabic('أحمد'), 'احمد');
-      expect(normalizeArabic('إيمان'), 'ايمان');
+      expect(normalizeArabic('إيمان'), 'ايمن'); // medial alef dropped
       expect(normalizeArabic('آدم'), 'ادم');
       expect(normalizeArabic('ٱلرَّحْمَـٰنِ'), 'الرحمن');
     });
@@ -26,6 +26,12 @@ void main() {
     });
     test('empty stays empty', () {
       expect(normalizeArabic('   '), '');
+    });
+    test('is alef-tolerant: plene and conventional spellings collapse equally', () {
+      expect(normalizeArabic('الرحمان'), 'الرحمن');
+      expect(normalizeArabic('الرحمن'), 'الرحمن');
+      expect(normalizeArabic('العالمين'), 'العلمين');
+      expect(normalizeArabic('العلمين'), 'العلمين');
     });
   });
 }
