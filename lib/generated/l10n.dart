@@ -1051,10 +1051,10 @@ class S {
     );
   }
 
-  /// `Surahs`
+  /// `Mushaf`
   String get surahs_appbar_title {
     return Intl.message(
-      'Surahs',
+      'Mushaf',
       name: 'surahs_appbar_title',
       desc: '',
       args: [],

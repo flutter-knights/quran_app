@@ -262,7 +262,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "sunan_nasai": MessageLookupByLibrary.simpleMessage("سنن النسائي"),
         "sunrise": MessageLookupByLibrary.simpleMessage("الشروق"),
         "surah_ayah_label": m13,
-        "surahs_appbar_title": MessageLookupByLibrary.simpleMessage("السور"),
+        "surahs_appbar_title": MessageLookupByLibrary.simpleMessage("المصحف"),
         "surahs_count": m14,
         "tab_juz": MessageLookupByLibrary.simpleMessage("الأجزاء"),
         "tab_pages": MessageLookupByLibrary.simpleMessage("الصفحات"),
