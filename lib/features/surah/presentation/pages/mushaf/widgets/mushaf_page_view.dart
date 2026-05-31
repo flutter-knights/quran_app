@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 
@@ -66,10 +65,7 @@ class _MushafPageViewState extends State<MushafPageView>
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsCubit>().state.settingsModel;
-    final paperColors = settings.mushafPaper.colors(
-      Theme.of(context).colorScheme,
-      mushafBg: settings.palette.mushafBg,
-    );
+    final paperColors = settings.mushafPaper.colors;
     return FutureBuilder<MushafPageEntity>(
       future: _entityFuture,
       builder: (context, snapshot) {

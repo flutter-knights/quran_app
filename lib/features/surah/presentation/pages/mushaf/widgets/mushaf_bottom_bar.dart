@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
@@ -54,14 +53,12 @@ class _PaperSwatches extends StatelessWidget {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, settingsState) {
         final scheme = Theme.of(context).colorScheme;
-        final palette = settingsState.settingsModel.palette;
         final current = settingsState.settingsModel.mushafPaper;
 
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: MushafPaper.values.map((p) {
-            final bgColor =
-                p.colors(scheme, mushafBg: palette.mushafBg).background;
+            final bgColor = p.colors.background;
             final isActive = p == current;
 
             return Tooltip(

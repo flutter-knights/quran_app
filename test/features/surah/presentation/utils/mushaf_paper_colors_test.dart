@@ -4,23 +4,26 @@ import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 
 void main() {
-  const scheme = ColorScheme.light(
-    surface: Color(0xFFF4F4F4),
-    onSurface: Color(0xFF141414),
-    secondary: Color(0xFF5C8070),
-  );
-
-  test('parchment has fixed colors', () {
-    final c = MushafPaper.parchment.colors(scheme, mushafBg: const Color(0xFFFFFCF5));
-    expect(c.background, const Color(0xFFF0E6D2));
-    expect(c.ink, const Color(0xFF3A2A14));
-    expect(c.accent, const Color(0xFF8A6D3B));
+  test('there are exactly six paper themes', () {
+    expect(MushafPaper.values.length, 6);
   });
 
-  test('default follows the app scheme + mushaf bg', () {
-    final c = MushafPaper.defaultPaper.colors(scheme, mushafBg: const Color(0xFFFFFCF5));
-    expect(c.background, const Color(0xFFFFFCF5));
-    expect(c.ink, scheme.onSurface);
-    expect(c.accent, scheme.secondary);
+  test('cream is the eye-tuned default day paper', () {
+    final c = MushafPaper.cream.colors;
+    expect(c.background, const Color(0xFFFBF4E3));
+    expect(c.ink, const Color(0xFF2A2419));
+    expect(c.accent, const Color(0xFF2E5244));
+  });
+
+  test('night uses an off-black background and warm ink (no halation)', () {
+    final c = MushafPaper.night.colors;
+    expect(c.background, const Color(0xFF14161A));
+    expect(c.ink, const Color(0xFFE8D9A8));
+  });
+
+  test('every theme exposes a non-empty Arabic label', () {
+    for (final p in MushafPaper.values) {
+      expect(p.label, isNotEmpty, reason: p.name);
+    }
   });
 }

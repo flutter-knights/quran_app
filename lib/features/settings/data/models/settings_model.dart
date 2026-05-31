@@ -61,7 +61,7 @@ class SettingsModel extends Settings {
       ),
       mushafPaper: MushafPaper.values.firstWhere(
         (p) => p.name == (map['mushafPaper'] as String?),
-        orElse: () => MushafPaper.defaultPaper,
+        orElse: () => MushafPaper.cream,
       ),
       playbackSpeed: (map['playbackSpeed'] as num?)?.toDouble() ?? 1.0,
       defaultReciter: Reciter.values.firstWhere(

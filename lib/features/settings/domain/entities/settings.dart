@@ -46,7 +46,7 @@ class Settings extends Equatable {
     required this.isFormat12Hours,
     required this.isArabic,
     this.palette = ColorPalette.neutralDark,
-    this.mushafPaper = MushafPaper.defaultPaper,
+    this.mushafPaper = MushafPaper.cream,
     this.playbackSpeed = 1.0,
     this.defaultReciter = Reciter.alafasy,
     this.isPrayerStripPinned = false,

@@ -9,8 +9,8 @@ void main() {
     expect(back.mushafPaper, MushafPaper.night);
   });
 
-  test('missing mushafPaper defaults to defaultPaper', () {
+  test('missing mushafPaper defaults to cream', () {
     final back = SettingsModel.fromMap({'isArabic': true});
-    expect(back.mushafPaper, MushafPaper.defaultPaper);
+    expect(back.mushafPaper, MushafPaper.cream);
   });
 }
