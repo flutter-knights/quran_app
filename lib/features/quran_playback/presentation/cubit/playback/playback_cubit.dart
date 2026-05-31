@@ -11,6 +11,66 @@ import '../../../domain/services/aya_sequence_service.dart';
 import '../../../domain/services/quran_page_service.dart';
 import 'playback_state.dart';
 
+enum PlaybackStepKind { repeatAyah, advance, restartRange, stop }
+
+class PlaybackStep {
+  const PlaybackStep(this.kind,
+      {this.ayah, this.nextPlayCount = 1, this.nextPass = 1});
+  final PlaybackStepKind kind;
+  final AyahIdentifier? ayah;
+  final int nextPlayCount;
+  final int nextPass;
+}
+
+/// Pure decision: given the current state, what plays next when the current
+/// ayah's audio completes? No side effects — the cubit applies the result.
+PlaybackStep nextPlaybackStep(PlaybackState s, AyahSequenceService seq) {
+  final current = s.currentAyah;
+  if (current == null) return const PlaybackStep(PlaybackStepKind.stop);
+
+  // 1) Repeat the same ayah if more plays remain (or each-ayah is infinite).
+  final eachInfinite =
+      s.infiniteRepeat && s.infiniteTarget == RepeatTarget.eachAyah;
+  if (eachInfinite || s.currentAyahPlayCount < s.eachAyahRepeat) {
+    return PlaybackStep(
+      PlaybackStepKind.repeatAyah,
+      ayah: current,
+      nextPlayCount: s.currentAyahPlayCount + 1,
+      nextPass: s.currentRangePass,
+    );
+  }
+
+  // 2) Try to advance within the range.
+  final next = seq.getNextAyah(
+    current: current,
+    endSurah: s.rangeEnd?.surah,
+    endAyah: s.rangeEnd?.ayah,
+  );
+  if (next != null) {
+    return PlaybackStep(
+      PlaybackStepKind.advance,
+      ayah: next,
+      nextPlayCount: 1,
+      nextPass: s.currentRangePass,
+    );
+  }
+
+  // 3) Hit the range end. Loop the range if repeats remain (or infinite range).
+  final rangeInfinite =
+      s.infiniteRepeat && s.infiniteTarget == RepeatTarget.range;
+  if (rangeInfinite || s.currentRangePass < s.rangeRepeat) {
+    final start = s.rangeStart ?? current;
+    return PlaybackStep(
+      PlaybackStepKind.restartRange,
+      ayah: start,
+      nextPlayCount: 1,
+      nextPass: s.currentRangePass + 1,
+    );
+  }
+
+  return const PlaybackStep(PlaybackStepKind.stop);
+}
+
 class PlaybackCubit extends Cubit<PlaybackState> {
   final AyahSequenceService ayahSequenceService;
   final QuranPlaybackRepo repository;
@@ -62,8 +122,34 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     }
     _endSurah = null;
     _endAyah = null;
-    emit(state.copyWith(isAutoPlaying: true, isLoading: true));
+    emit(state.copyWith(
+      clearRange: true,
+      currentAyahPlayCount: 1,
+      currentRangePass: 1,
+      isAutoPlaying: true,
+      isLoading: true,
+    ));
     await _playAyah(ayah);
+  }
+
+  /// Plays [start]..[end] (single surah) with the current repeat settings.
+  Future<void> playRange({
+    required AyahIdentifier start,
+    required AyahIdentifier end,
+  }) async {
+    _endSurah = end.surah;
+    _endAyah = end.ayah;
+    emit(state.copyWith(
+      rangeStart: start,
+      rangeEnd: end,
+      isAutoPlaying: true,
+      isLoading: true,
+      currentAyahPlayCount: 1,
+      currentRangePass: 1,
+    ));
+    await _playAyah(start.ayah == 0
+        ? AyahIdentifier(surah: start.surah, ayah: 1)
+        : start);
   }
 
   Future<void> _playAyah(AyahIdentifier ayah) async {
@@ -137,16 +223,30 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   void _handleNextAyah() {
     if (!state.isAutoPlaying || state.currentAyah == null) return;
-    final next = ayahSequenceService.getNextAyah(
-      current: state.currentAyah!,
-      endSurah: _endSurah,
-      endAyah: _endAyah,
-    );
-    if (next == null) {
-      stop();
-      return;
+    final step = nextPlaybackStep(state, ayahSequenceService);
+    switch (step.kind) {
+      case PlaybackStepKind.stop:
+        stop();
+        return;
+      case PlaybackStepKind.repeatAyah:
+        emit(state.copyWith(currentAyahPlayCount: step.nextPlayCount));
+        _playAyah(step.ayah!);
+        return;
+      case PlaybackStepKind.advance:
+        emit(state.copyWith(
+          currentAyahPlayCount: step.nextPlayCount,
+          currentRangePass: step.nextPass,
+        ));
+        _playAyah(step.ayah!);
+        return;
+      case PlaybackStepKind.restartRange:
+        emit(state.copyWith(
+          currentAyahPlayCount: step.nextPlayCount,
+          currentRangePass: step.nextPass,
+        ));
+        _playAyah(step.ayah!);
+        return;
     }
-    _playAyah(next);
   }
 
   Future<void> _preloadNextAyahs(AyahIdentifier current) async {
@@ -207,6 +307,21 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     emit(state.copyWith(speed: speed));
     await repository.setSpeed(speed);
     settingsCubit.updatePlaybackSpeed(speed);
+  }
+
+  void setEachAyahRepeat(int value) =>
+      emit(state.copyWith(eachAyahRepeat: value));
+
+  void setRangeRepeat(int value) => emit(state.copyWith(rangeRepeat: value));
+
+  void setInfiniteRepeat(bool value, RepeatTarget target) =>
+      emit(state.copyWith(infiniteRepeat: value, infiniteTarget: target));
+
+  /// Updates the active range end live (used by the expanded panel).
+  void setRangeEnd(AyahIdentifier end) {
+    _endSurah = end.surah;
+    _endAyah = end.ayah;
+    emit(state.copyWith(rangeEnd: end));
   }
 
   Future<void> setReciter(Reciter reciter) async {
