@@ -34,4 +34,17 @@ void main() {
     expect(r.results.length, lessThanOrEqualTo(5));
     expect(r.total, greaterThanOrEqualTo(r.results.length));
   });
+
+  test('standard short spelling الرحمن now matches (alef-tolerant)', () {
+    final r = index.searchAyahText(normalizeArabic('الرحمن'));
+    expect(r.total, greaterThan(0));
+  });
+
+  test('ayah result carries diacritized display text from quran_text', () {
+    final r = index.searchAyahText(normalizeArabic('الرحمان'), limit: 1000);
+    final fatiha1 = r.results.firstWhere((a) => a.surah == 1 && a.ayah == 1);
+    // The diacritized basmala contains a kasra (ِ, U+0650); the simplified
+    // corpus text does not.
+    expect(fatiha1.text.contains('ِ'), isTrue);
+  });
 }

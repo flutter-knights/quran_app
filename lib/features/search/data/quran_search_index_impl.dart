@@ -1,5 +1,6 @@
 // lib/features/search/data/quran_search_index_impl.dart
 import 'package:quran/quran.dart' as quran;
+import 'package:quran/quran_text.dart' as display_text;
 import 'package:quran/quran_text_normal.dart' as corpus;
 import 'package:quran_app/core/helper%20functions/arabic_normalizer.dart';
 
@@ -31,7 +32,8 @@ class QuranSearchIndexImpl implements QuranSearchIndex {
       final s = e['surah_number'] as int;
       final a = e['verse_number'] as int;
       final t = e['content'] as String;
-      ayahs.add(_IndexedAyah(s, a, t, normalizeArabic(t)));
+      final display = display_text.quranData[s]?[a] ?? t;
+      ayahs.add(_IndexedAyah(s, a, display, normalizeArabic(t)));
     }
 
     final surahs = <SurahResult>[];
