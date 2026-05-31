@@ -211,7 +211,11 @@ class _ReadingSettingsRow extends StatelessWidget {
       height: 52,
       child: Row(
         children: [
-          Icon(Icons.menu_book_outlined, color: scheme.onSurface, size: 20),
+          HugeIcon(
+            icon: HugeIcons.strokeRoundedBookOpen01,
+            color: scheme.onSurface,
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
