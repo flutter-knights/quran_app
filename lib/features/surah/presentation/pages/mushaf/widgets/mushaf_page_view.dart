@@ -12,6 +12,7 @@ import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 import 'ayah_action_popover.dart';
 import 'ayah_highlight_painter.dart';
+import 'mushaf_printed_chrome.dart';
 
 class MushafPageView extends StatefulWidget {
   const MushafPageView({super.key, required this.pageNumber});
@@ -161,6 +162,14 @@ class _MushafPageViewState extends State<MushafPageView>
                         ),
                       ),
                     ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: MushafPrintedChrome(
+                        pageNumber: widget.pageNumber,
+                        colors: paperColors,
+                      ),
+                    ),
+                  ),
                 ],
               );
             },

@@ -10,9 +10,8 @@ import '../../cubit/mushaf/mushaf_cubit.dart';
 import '../../cubit/mushaf/mushaf_state.dart';
 import 'auto_swap_helper.dart';
 import 'widgets/ayah_playback_overlay.dart';
-import 'widgets/mushaf_bottom_bar.dart';
+import 'widgets/mushaf_action_dock.dart';
 import 'widgets/mushaf_page_view.dart';
-import 'widgets/mushaf_top_bar.dart';
 
 class MushafPage extends StatefulWidget {
   const MushafPage({super.key, required this.initialPage});
@@ -115,47 +114,28 @@ class _MushafPageState extends State<MushafPage> {
                   ),
                 ),
               ),
-              // TOP chrome
-              BlocBuilder<MushafCubit, MushafState>(
-                buildWhen: (a, b) =>
-                    a.chromeVisible != b.chromeVisible ||
-                    a.currentPage != b.currentPage,
-                builder: (context, state) => Align(
-                  alignment: Alignment.topCenter,
-                  child: AnimatedSlide(
-                    offset: state.chromeVisible
-                        ? Offset.zero
-                        : const Offset(0, -1),
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedOpacity(
-                      opacity: state.chromeVisible ? 1 : 0,
-                      duration: const Duration(milliseconds: 180),
-                      child: IgnorePointer(
-                        ignoring: !state.chromeVisible,
-                        child: MushafTopBar(pageNumber: state.currentPage),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // BOTTOM chrome
+              // Floating action dock (chrome toggled by tap).
               BlocBuilder<MushafCubit, MushafState>(
                 buildWhen: (a, b) => a.chromeVisible != b.chromeVisible,
-                builder: (context, state) => Align(
-                  alignment: Alignment.bottomCenter,
-                  child: AnimatedSlide(
-                    offset: state.chromeVisible
-                        ? Offset.zero
-                        : const Offset(0, 1),
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedOpacity(
-                      opacity: state.chromeVisible ? 1 : 0,
-                      duration: const Duration(milliseconds: 180),
-                      child: IgnorePointer(
-                        ignoring: !state.chromeVisible,
-                        child: const MushafBottomBar(),
+                builder: (context, state) => SafeArea(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: AnimatedSlide(
+                      offset: state.chromeVisible
+                          ? Offset.zero
+                          : const Offset(0, 2),
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      child: AnimatedOpacity(
+                        opacity: state.chromeVisible ? 1 : 0,
+                        duration: const Duration(milliseconds: 180),
+                        child: IgnorePointer(
+                          ignoring: !state.chromeVisible,
+                          child: const Padding(
+                            padding: EdgeInsets.only(bottom: 16),
+                            child: MushafActionDock(),
+                          ),
+                        ),
                       ),
                     ),
                   ),
