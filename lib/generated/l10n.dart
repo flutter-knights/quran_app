@@ -1810,6 +1810,86 @@ class S {
       args: [],
     );
   }
+
+  /// `Repeat`
+  String get repeat {
+    return Intl.message(
+      'Repeat',
+      name: 'repeat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Range`
+  String get range {
+    return Intl.message(
+      'Range',
+      name: 'range',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From`
+  String get fromAyah {
+    return Intl.message(
+      'From',
+      name: 'fromAyah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To`
+  String get toAyah {
+    return Intl.message(
+      'To',
+      name: 'toAyah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Each ayah`
+  String get eachAyah {
+    return Intl.message(
+      'Each ayah',
+      name: 'eachAyah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Range`
+  String get wholeRange {
+    return Intl.message(
+      'Range',
+      name: 'wholeRange',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `∞`
+  String get infinite {
+    return Intl.message(
+      '∞',
+      name: 'infinite',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Playback options`
+  String get playbackOptions {
+    return Intl.message(
+      'Playback options',
+      name: 'playbackOptions',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

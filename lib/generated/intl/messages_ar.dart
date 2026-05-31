@@ -121,6 +121,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "death_nasai": MessageLookupByLibrary.simpleMessage("٣٠٣ هـ"),
         "death_tirmidhi": MessageLookupByLibrary.simpleMessage("٢٧٩ هـ"),
         "dhuhr": MessageLookupByLibrary.simpleMessage("الظهر"),
+        "eachAyah": MessageLookupByLibrary.simpleMessage("كل آية"),
         "fajr": MessageLookupByLibrary.simpleMessage("الفجر"),
         "filter_all_chapters":
             MessageLookupByLibrary.simpleMessage("كل الأبواب"),
@@ -129,6 +130,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "filter_clear": MessageLookupByLibrary.simpleMessage("مسح"),
         "filter_status_label": MessageLookupByLibrary.simpleMessage("الدرجة"),
         "filters_title": MessageLookupByLibrary.simpleMessage("تصفية"),
+        "fromAyah": MessageLookupByLibrary.simpleMessage("من آية"),
         "full_title_abu_dawood":
             MessageLookupByLibrary.simpleMessage("سنن أبي داود"),
         "full_title_albani":
@@ -159,6 +161,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("إجمالي الأحاديث"),
         "hijriDateWithDay": m6,
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("سنن ابن ماجه"),
+        "infinite": MessageLookupByLibrary.simpleMessage("∞"),
         "isha": MessageLookupByLibrary.simpleMessage("العشاء"),
         "jump_to_page_header":
             MessageLookupByLibrary.simpleMessage("انتقل إلى صفحة"),
@@ -216,6 +219,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "playTestAdhan":
             MessageLookupByLibrary.simpleMessage("تشغيل أذان تجريبي"),
         "play_surah": MessageLookupByLibrary.simpleMessage("تشغيل السورة"),
+        "playbackOptions":
+            MessageLookupByLibrary.simpleMessage("خيارات التشغيل"),
         "playback_close": MessageLookupByLibrary.simpleMessage("إغلاق"),
         "playback_next": MessageLookupByLibrary.simpleMessage("الآية التالية"),
         "playback_pause": MessageLookupByLibrary.simpleMessage("إيقاف مؤقت"),
@@ -231,6 +236,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("القرآن الكريم"),
         "quran_search_no_results":
             MessageLookupByLibrary.simpleMessage("لا توجد نتائج"),
+        "range": MessageLookupByLibrary.simpleMessage("النطاق"),
         "readingMode": MessageLookupByLibrary.simpleMessage("وضع القراءة"),
         "readingSettings":
             MessageLookupByLibrary.simpleMessage("إعدادات القراءة"),
@@ -239,6 +245,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "reminderLabel": MessageLookupByLibrary.simpleMessage("ذكرني"),
         "reminderMinutesBefore": m11,
         "reminderOff": MessageLookupByLibrary.simpleMessage("لا"),
+        "repeat": MessageLookupByLibrary.simpleMessage("التكرار"),
         "sahih_bukhari": MessageLookupByLibrary.simpleMessage("صحيح البخاري"),
         "sahih_muslim": MessageLookupByLibrary.simpleMessage("صحيح مسلم"),
         "search_hadith_hint":
@@ -283,9 +290,11 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("القرآن الكريم"),
         "time_format_12h": MessageLookupByLibrary.simpleMessage("١٢"),
         "time_format_24h": MessageLookupByLibrary.simpleMessage("٢٤"),
+        "toAyah": MessageLookupByLibrary.simpleMessage("إلى آية"),
         "translation": MessageLookupByLibrary.simpleMessage("ترجمة"),
         "translation_label": MessageLookupByLibrary.simpleMessage("الترجمة"),
         "twentyFourHourFormat":
-            MessageLookupByLibrary.simpleMessage("تنسيق 24 ساعة")
+            MessageLookupByLibrary.simpleMessage("تنسيق 24 ساعة"),
+        "wholeRange": MessageLookupByLibrary.simpleMessage("النطاق")
       };
 }

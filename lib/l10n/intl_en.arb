@@ -213,5 +213,14 @@
   "brightness": "Brightness",
   "readingMode": "Reading mode",
   "pageByPage": "Page",
-  "continuousScroll": "Scroll"
+  "continuousScroll": "Scroll",
+
+  "repeat": "Repeat",
+  "range": "Range",
+  "fromAyah": "From",
+  "toAyah": "To",
+  "eachAyah": "Each ayah",
+  "wholeRange": "Range",
+  "infinite": "∞",
+  "playbackOptions": "Playback options"
 }

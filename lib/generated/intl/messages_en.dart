@@ -127,6 +127,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "death_nasai": MessageLookupByLibrary.simpleMessage("303 AH"),
         "death_tirmidhi": MessageLookupByLibrary.simpleMessage("279 AH"),
         "dhuhr": MessageLookupByLibrary.simpleMessage("Dhuhr"),
+        "eachAyah": MessageLookupByLibrary.simpleMessage("Each ayah"),
         "fajr": MessageLookupByLibrary.simpleMessage("Fajr"),
         "filter_all_chapters":
             MessageLookupByLibrary.simpleMessage("All chapters"),
@@ -135,6 +136,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "filter_clear": MessageLookupByLibrary.simpleMessage("Clear"),
         "filter_status_label": MessageLookupByLibrary.simpleMessage("Status"),
         "filters_title": MessageLookupByLibrary.simpleMessage("Filters"),
+        "fromAyah": MessageLookupByLibrary.simpleMessage("From"),
         "full_title_abu_dawood":
             MessageLookupByLibrary.simpleMessage("Sunan Abi Dawood"),
         "full_title_ahmad": MessageLookupByLibrary.simpleMessage(
@@ -169,6 +171,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Total Ahadith"),
         "hijriDateWithDay": m6,
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn Majah"),
+        "infinite": MessageLookupByLibrary.simpleMessage("∞"),
         "isha": MessageLookupByLibrary.simpleMessage("Isha"),
         "jump_to_page_header":
             MessageLookupByLibrary.simpleMessage("Go to page"),
@@ -227,6 +230,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "playTestAdhan":
             MessageLookupByLibrary.simpleMessage("Play test adhan"),
         "play_surah": MessageLookupByLibrary.simpleMessage("Play surah"),
+        "playbackOptions":
+            MessageLookupByLibrary.simpleMessage("Playback options"),
         "playback_close": MessageLookupByLibrary.simpleMessage("Close"),
         "playback_next": MessageLookupByLibrary.simpleMessage("Next ayah"),
         "playback_pause": MessageLookupByLibrary.simpleMessage("Pause"),
@@ -241,6 +246,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "quran_screen_title": MessageLookupByLibrary.simpleMessage("Quran"),
         "quran_search_no_results":
             MessageLookupByLibrary.simpleMessage("No results"),
+        "range": MessageLookupByLibrary.simpleMessage("Range"),
         "readingMode": MessageLookupByLibrary.simpleMessage("Reading mode"),
         "readingSettings": MessageLookupByLibrary.simpleMessage("Reading"),
         "reciter_label": MessageLookupByLibrary.simpleMessage("Reciter"),
@@ -248,6 +254,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "reminderLabel": MessageLookupByLibrary.simpleMessage("Remind me"),
         "reminderMinutesBefore": m11,
         "reminderOff": MessageLookupByLibrary.simpleMessage("Off"),
+        "repeat": MessageLookupByLibrary.simpleMessage("Repeat"),
         "sahih_bukhari":
             MessageLookupByLibrary.simpleMessage("Sahih al-Bukhari"),
         "sahih_muslim": MessageLookupByLibrary.simpleMessage("Sahih Muslim"),
@@ -293,10 +300,12 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("The Noble Qur\'an"),
         "time_format_12h": MessageLookupByLibrary.simpleMessage("12h"),
         "time_format_24h": MessageLookupByLibrary.simpleMessage("24h"),
+        "toAyah": MessageLookupByLibrary.simpleMessage("To"),
         "translation": MessageLookupByLibrary.simpleMessage("Translation"),
         "translation_label":
             MessageLookupByLibrary.simpleMessage("Translation"),
         "twentyFourHourFormat":
-            MessageLookupByLibrary.simpleMessage("24-Hour Format")
+            MessageLookupByLibrary.simpleMessage("24-Hour Format"),
+        "wholeRange": MessageLookupByLibrary.simpleMessage("Range")
       };
 }

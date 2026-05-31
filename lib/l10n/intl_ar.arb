@@ -205,5 +205,14 @@
   "brightness": "السطوع",
   "readingMode": "وضع القراءة",
   "pageByPage": "صفحة",
-  "continuousScroll": "تمرير"
+  "continuousScroll": "تمرير",
+
+  "repeat": "التكرار",
+  "range": "النطاق",
+  "fromAyah": "من آية",
+  "toAyah": "إلى آية",
+  "eachAyah": "كل آية",
+  "wholeRange": "النطاق",
+  "infinite": "∞",
+  "playbackOptions": "خيارات التشغيل"
 }
