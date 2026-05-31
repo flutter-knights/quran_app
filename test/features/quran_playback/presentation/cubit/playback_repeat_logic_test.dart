@@ -100,5 +100,38 @@ void main() {
       final step = nextPlaybackStep(s, seq);
       expect(step.kind, PlaybackStepKind.repeatAyah);
     });
+
+    test(
+        'each-ayah exhausted exactly at range end triggers restartRange at rangeStart',
+        () {
+      // eachAyahRepeat=3, currentAyahPlayCount=3 → each-ayah repeats are done.
+      // current == rangeEnd, rangeRepeat=2, pass=1 → one more pass remains.
+      final s = base(
+        current: const AyahIdentifier(surah: 2, ayah: 7),
+        eachAyahRepeat: 3,
+        playCount: 3,
+        rangeRepeat: 2,
+        pass: 1,
+        start: const AyahIdentifier(surah: 2, ayah: 5),
+        end: const AyahIdentifier(surah: 2, ayah: 7),
+      );
+      final step = nextPlaybackStep(s, seq);
+      expect(step.kind, PlaybackStepKind.restartRange);
+      expect(step.ayah, const AyahIdentifier(surah: 2, ayah: 5));
+      expect(step.nextPass, 2);
+    });
+
+    test('infinite range increments pass on each restart', () {
+      final s = base(
+        current: const AyahIdentifier(surah: 2, ayah: 7),
+        rangeRepeat: 1,
+        pass: 9,
+        infinite: true,
+        target: RepeatTarget.range,
+      );
+      final step = nextPlaybackStep(s, seq);
+      expect(step.kind, PlaybackStepKind.restartRange);
+      expect(step.nextPass, s.currentRangePass + 1);
+    });
   });
 }

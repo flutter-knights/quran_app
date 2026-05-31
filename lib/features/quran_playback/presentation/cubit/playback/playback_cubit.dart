@@ -137,19 +137,21 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     required AyahIdentifier start,
     required AyahIdentifier end,
   }) async {
+    // (surah, 0) is the basmala header — normalize to ayah 1 before storing as
+    // rangeStart so that restartRange also uses the valid ayah number.
+    final normStart =
+        start.ayah == 0 ? AyahIdentifier(surah: start.surah, ayah: 1) : start;
     _endSurah = end.surah;
     _endAyah = end.ayah;
     emit(state.copyWith(
-      rangeStart: start,
+      rangeStart: normStart,
       rangeEnd: end,
       isAutoPlaying: true,
       isLoading: true,
       currentAyahPlayCount: 1,
       currentRangePass: 1,
     ));
-    await _playAyah(start.ayah == 0
-        ? AyahIdentifier(surah: start.surah, ayah: 1)
-        : start);
+    await _playAyah(normStart);
   }
 
   Future<void> _playAyah(AyahIdentifier ayah) async {
