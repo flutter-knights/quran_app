@@ -171,6 +171,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "maghrib": MessageLookupByLibrary.simpleMessage("المغرب"),
         "makkiyya": MessageLookupByLibrary.simpleMessage("مكية"),
         "mishkat": MessageLookupByLibrary.simpleMessage("مشكاة المصابيح"),
+        "mushaf_section": MessageLookupByLibrary.simpleMessage("المصحف"),
         "musnad_ahmad": MessageLookupByLibrary.simpleMessage("مسند أحمد"),
         "narrator_label": MessageLookupByLibrary.simpleMessage("الراوي"),
         "next_hadith": MessageLookupByLibrary.simpleMessage("التالي"),

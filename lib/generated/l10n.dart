@@ -1191,6 +1191,16 @@ class S {
     );
   }
 
+  /// `Mushaf`
+  String get mushaf_section {
+    return Intl.message(
+      'Mushaf',
+      name: 'mushaf_section',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `12h`
   String get time_format_12h {
     return Intl.message(

@@ -13,6 +13,7 @@ import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/settings/presentation/pages/widgets/palette_picker_widget.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reading_settings_sheet.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -111,6 +112,18 @@ class SettingsPage extends StatelessWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      AppSectionHeader(label: S.of(context).mushaf_section),
+                      const SizedBox(height: 10),
+                      SurfaceCard(
+                        key: const ValueKey('settings-open-reading'),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        onTap: () => ReadingSettingsSheet.show(context),
+                        child: _ReadingSettingsRow(
+                          title: S.of(context).readingSettings,
+                          subtitle: S.of(context).paper,
+                        ),
+                      ),
                       if (FeatureFlags.pinnedPrayerStripUi) ...[
                         const SizedBox(height: 24),
                         AppSectionHeader(label: S.current.notifications),
@@ -178,6 +191,44 @@ class _SelectorRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(child: Text(label, style: TS.regular16.cairo)),
           selector,
+        ],
+      ),
+    );
+  }
+}
+
+/// Two-line row for the Mushaf reading-settings entry.
+class _ReadingSettingsRow extends StatelessWidget {
+  const _ReadingSettingsRow({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    return SizedBox(
+      height: 52,
+      child: Row(
+        children: [
+          Icon(Icons.menu_book_outlined, color: scheme.onSurface, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TS.regular16.cairo),
+                Text(
+                  subtitle,
+                  style: TS.regular14.cairo.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
         ],
       ),
     );
