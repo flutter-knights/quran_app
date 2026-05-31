@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
@@ -11,6 +12,8 @@ class SettingsModel extends Settings {
     required super.isArabic,
     super.palette,
     super.mushafPaper,
+    super.pageBrightness,
+    super.readingMode,
     super.playbackSpeed,
     super.defaultReciter,
     super.isPrayerStripPinned,
@@ -26,6 +29,8 @@ class SettingsModel extends Settings {
     bool? isArabic,
     ColorPalette? palette,
     MushafPaper? mushafPaper,
+    double? pageBrightness,
+    MushafReadingMode? readingMode,
     double? playbackSpeed,
     Reciter? defaultReciter,
     bool? isPrayerStripPinned,
@@ -39,6 +44,8 @@ class SettingsModel extends Settings {
       isFormat12Hours: isFormat12Hours ?? this.isFormat12Hours,
       palette: palette ?? this.palette,
       mushafPaper: mushafPaper ?? this.mushafPaper,
+      pageBrightness: pageBrightness ?? this.pageBrightness,
+      readingMode: readingMode ?? this.readingMode,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
       isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
@@ -63,6 +70,11 @@ class SettingsModel extends Settings {
         (p) => p.name == (map['mushafPaper'] as String?),
         orElse: () => MushafPaper.cream,
       ),
+      pageBrightness: _readBrightness(map['pageBrightness']),
+      readingMode: MushafReadingMode.values.firstWhere(
+        (m) => m.name == (map['readingMode'] as String?),
+        orElse: () => MushafReadingMode.page,
+      ),
       playbackSpeed: (map['playbackSpeed'] as num?)?.toDouble() ?? 1.0,
       defaultReciter: Reciter.values.firstWhere(
         (r) => r.name == (map['defaultReciter'] as String?),
@@ -85,6 +97,8 @@ class SettingsModel extends Settings {
       'isFormat12Hours': isFormat12Hours,
       'palette': palette.name,
       'mushafPaper': mushafPaper.name,
+      'pageBrightness': pageBrightness,
+      'readingMode': readingMode.name,
       'playbackSpeed': playbackSpeed,
       'defaultReciter': defaultReciter.name,
       'isPrayerStripPinned': isPrayerStripPinned,
@@ -97,6 +111,12 @@ class SettingsModel extends Settings {
       'hasCompletedOnboarding': hasCompletedOnboarding,
       'showSplashOnLaunch': showSplashOnLaunch,
     };
+  }
+
+  static double _readBrightness(dynamic raw) {
+    final v = (raw as num?)?.toDouble();
+    if (v == null) return 1.0;
+    return v.clamp(Settings.minPageBrightness, 1.0);
   }
 
   static Map<PrayerName, bool> _readEnabledMap(dynamic raw) {

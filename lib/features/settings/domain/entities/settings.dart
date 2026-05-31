@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import '../../../quran_playback/domain/entities/reciter.dart';
 
@@ -9,6 +10,8 @@ class Settings extends Equatable {
   final bool isArabic;
   final ColorPalette palette;
   final MushafPaper mushafPaper;
+  final double pageBrightness;
+  final MushafReadingMode readingMode;
   final double playbackSpeed;
   final Reciter defaultReciter;
   final bool isPrayerStripPinned;
@@ -42,11 +45,15 @@ class Settings extends Equatable {
 
   static const List<int> validReminderMinutes = [0, 5, 10, 15];
 
+  static const double minPageBrightness = 0.3;
+
   const Settings({
     required this.isFormat12Hours,
     required this.isArabic,
     this.palette = ColorPalette.neutralDark,
     this.mushafPaper = MushafPaper.cream,
+    this.pageBrightness = 1.0,
+    this.readingMode = MushafReadingMode.page,
     this.playbackSpeed = 1.0,
     this.defaultReciter = Reciter.alafasy,
     this.isPrayerStripPinned = false,
@@ -61,6 +68,8 @@ class Settings extends Equatable {
     bool? isArabic,
     ColorPalette? palette,
     MushafPaper? mushafPaper,
+    double? pageBrightness,
+    MushafReadingMode? readingMode,
     double? playbackSpeed,
     Reciter? defaultReciter,
     bool? isPrayerStripPinned,
@@ -74,6 +83,8 @@ class Settings extends Equatable {
       isFormat12Hours: isFormat12Hours ?? this.isFormat12Hours,
       palette: palette ?? this.palette,
       mushafPaper: mushafPaper ?? this.mushafPaper,
+      pageBrightness: pageBrightness ?? this.pageBrightness,
+      readingMode: readingMode ?? this.readingMode,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
       isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
@@ -90,6 +101,8 @@ class Settings extends Equatable {
         isFormat12Hours,
         palette,
         mushafPaper,
+        pageBrightness,
+        readingMode,
         playbackSpeed,
         defaultReciter,
         isPrayerStripPinned,
