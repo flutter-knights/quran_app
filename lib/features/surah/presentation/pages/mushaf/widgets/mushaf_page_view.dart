@@ -94,6 +94,17 @@ class _MushafPageViewState extends State<MushafPageView>
                     filterQuality: FilterQuality.medium,
                     fit: BoxFit.fill,
                   ),
+                  if (settings.pageBrightness < 1.0)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: ColoredBox(
+                          key: const ValueKey('page-brightness-scrim'),
+                          color: Colors.black.withValues(
+                            alpha: 1.0 - settings.pageBrightness,
+                          ),
+                        ),
+                      ),
+                    ),
                   if (entity != null)
                     BlocBuilder<MushafCubit, MushafState>(
                       buildWhen: (a, b) =>
