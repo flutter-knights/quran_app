@@ -80,7 +80,7 @@ class _SurahListPageBodyState extends State<SurahListPageBody> {
                       slivers: [
                         if (!search.isActive)
                           SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                            padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
                             sliver: SliverToBoxAdapter(
                               child: LastReadCard.maybeBuild(context) ??
                                   const StartReadingCard(),
@@ -121,7 +121,7 @@ class _SurahListPageBodyState extends State<SurahListPageBody> {
     }
     return [
       SliverPadding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
         sliver: SliverToBoxAdapter(
           child: AppSectionHeader(
             label: S.of(context).all_surahs,
