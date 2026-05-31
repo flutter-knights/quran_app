@@ -108,12 +108,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "bookmarks_title": MessageLookupByLibrary.simpleMessage("Bookmarks"),
         "books_count": m3,
         "books_section": MessageLookupByLibrary.simpleMessage("Books"),
+        "brightness": MessageLookupByLibrary.simpleMessage("Brightness"),
         "chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
         "collections_label":
             MessageLookupByLibrary.simpleMessage("Collections"),
         "coming_soon": MessageLookupByLibrary.simpleMessage("Coming soon"),
         "continue_reading":
             MessageLookupByLibrary.simpleMessage("Continue reading"),
+        "continuousScroll": MessageLookupByLibrary.simpleMessage("Scroll"),
         "darkMode": MessageLookupByLibrary.simpleMessage("Dark Mode"),
         "death_abu_dawood": MessageLookupByLibrary.simpleMessage("275 AH"),
         "death_ahmad": MessageLookupByLibrary.simpleMessage("241 AH"),
@@ -213,7 +215,9 @@ class MessageLookup extends MessageLookupByLibrary {
             "The Noble Qur\'an, in your hands"),
         "onb_welcome_subtitle": MessageLookupByLibrary.simpleMessage(
             "Read, listen, and reflect — with your prayer times in one place."),
+        "pageByPage": MessageLookupByLibrary.simpleMessage("Page"),
         "page_label": m8,
+        "paper": MessageLookupByLibrary.simpleMessage("Paper"),
         "pinnedPrayerTimes":
             MessageLookupByLibrary.simpleMessage("Pinned prayer times"),
         "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
@@ -236,6 +240,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "quran_screen_title": MessageLookupByLibrary.simpleMessage("Quran"),
         "quran_search_no_results":
             MessageLookupByLibrary.simpleMessage("No results"),
+        "readingMode": MessageLookupByLibrary.simpleMessage("Reading mode"),
+        "readingSettings": MessageLookupByLibrary.simpleMessage("Reading"),
         "reciter_label": MessageLookupByLibrary.simpleMessage("Reciter"),
         "remainingTimeLabel": m10,
         "reminderLabel": MessageLookupByLibrary.simpleMessage("Remind me"),

@@ -198,5 +198,11 @@
   "@surah_ayah_label": {
     "placeholders": { "surah": { "type": "Object" }, "ayah": { "type": "Object" } }
   },
-  "bookmarks_title": "العلامات المرجعية"
+  "bookmarks_title": "العلامات المرجعية",
+  "readingSettings": "إعدادات القراءة",
+  "paper": "الورق",
+  "brightness": "السطوع",
+  "readingMode": "وضع القراءة",
+  "pageByPage": "صفحة",
+  "continuousScroll": "تمرير"
 }

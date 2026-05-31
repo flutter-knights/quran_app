@@ -1740,6 +1740,66 @@ class S {
       args: [],
     );
   }
+
+  /// `Reading`
+  String get readingSettings {
+    return Intl.message(
+      'Reading',
+      name: 'readingSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paper`
+  String get paper {
+    return Intl.message(
+      'Paper',
+      name: 'paper',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Brightness`
+  String get brightness {
+    return Intl.message(
+      'Brightness',
+      name: 'brightness',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reading mode`
+  String get readingMode {
+    return Intl.message(
+      'Reading mode',
+      name: 'readingMode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Page`
+  String get pageByPage {
+    return Intl.message(
+      'Page',
+      name: 'pageByPage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scroll`
+  String get continuousScroll {
+    return Intl.message(
+      'Scroll',
+      name: 'continuousScroll',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

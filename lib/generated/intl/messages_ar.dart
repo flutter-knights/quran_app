@@ -104,11 +104,13 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("العلامات المرجعية"),
         "books_count": m3,
         "books_section": MessageLookupByLibrary.simpleMessage("الكتب"),
+        "brightness": MessageLookupByLibrary.simpleMessage("السطوع"),
         "chapter_label": MessageLookupByLibrary.simpleMessage("باب"),
         "collections_label": MessageLookupByLibrary.simpleMessage("المجموعات"),
         "coming_soon": MessageLookupByLibrary.simpleMessage("قريبًا"),
         "continue_reading":
             MessageLookupByLibrary.simpleMessage("متابعة التلاوة"),
+        "continuousScroll": MessageLookupByLibrary.simpleMessage("تمرير"),
         "darkMode": MessageLookupByLibrary.simpleMessage("الوضع الداكن"),
         "death_abu_dawood": MessageLookupByLibrary.simpleMessage("٢٧٥ هـ"),
         "death_albani": MessageLookupByLibrary.simpleMessage("١٤٢٠ هـ"),
@@ -202,7 +204,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("القرآن الكريم بين يديك"),
         "onb_welcome_subtitle": MessageLookupByLibrary.simpleMessage(
             "اقرأ، استمع، وتدبّر — مع مواقيت صلاتك في مكان واحد."),
+        "pageByPage": MessageLookupByLibrary.simpleMessage("صفحة"),
         "page_label": m8,
+        "paper": MessageLookupByLibrary.simpleMessage("الورق"),
         "pinnedPrayerTimes":
             MessageLookupByLibrary.simpleMessage("أوقات الصلاة المثبتة"),
         "pinnedPrayerTimesSubtitle": MessageLookupByLibrary.simpleMessage(
@@ -226,6 +230,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("القرآن الكريم"),
         "quran_search_no_results":
             MessageLookupByLibrary.simpleMessage("لا توجد نتائج"),
+        "readingMode": MessageLookupByLibrary.simpleMessage("وضع القراءة"),
+        "readingSettings":
+            MessageLookupByLibrary.simpleMessage("إعدادات القراءة"),
         "reciter_label": MessageLookupByLibrary.simpleMessage("القارئ"),
         "remainingTimeLabel": m10,
         "reminderLabel": MessageLookupByLibrary.simpleMessage("ذكرني"),

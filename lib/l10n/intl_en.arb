@@ -206,5 +206,11 @@
   "@surah_ayah_label": {
     "placeholders": { "surah": { "type": "Object" }, "ayah": { "type": "Object" } }
   },
-  "bookmarks_title": "Bookmarks"
+  "bookmarks_title": "Bookmarks",
+  "readingSettings": "Reading",
+  "paper": "Paper",
+  "brightness": "Brightness",
+  "readingMode": "Reading mode",
+  "pageByPage": "Page",
+  "continuousScroll": "Scroll"
 }
