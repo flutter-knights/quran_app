@@ -71,10 +71,13 @@ const String _headerPlaceholder = '​\n';
 const String _frameGlyph = 'ò';
 // Downward nudge so the surah name sits vertically centred in the frame.
 const double _nameDyOffset = 12;
-// Oval centres (manually picked) as fractions of width / header-band height,
+// Oval centres (manually picked) as fractions of frame width / header-band height,
 // and a downward nudge for the label+number block within the oval.
 const double _ovalLeftX = 0.2055;
 const double _ovalRightX = 0.7918;
+// Frame fills this fraction of the page width, centred. Narrower than 100%
+// so it doesn't overhang the text content on either side.
+const double _frameWidthFraction = 0.88;
 const double _ovalY = 0.4831;
 const double _ovalBlockDy = 8;
 
@@ -269,7 +272,9 @@ Future<void> _renderPage(int pageNumber) async {
   )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
   _frameInk ??= await _measureInk(framePainter);
   final ink = _frameInk!;
-  final frameSx = _renderWidth / ink.width;
+  final frameWidth = _renderWidth * _frameWidthFraction;
+  final frameOffsetX = (_renderWidth - frameWidth) / 2;
+  final frameSx = frameWidth / ink.width;
   final frameSy = lineHeight / ink.height;
 
   // ---- BODY layer: painter + surah name + oval metadata ----
@@ -293,9 +298,9 @@ Future<void> _renderPage(int pageNumber) async {
       if (h.surah > 0) {
         final cy = headerY + _ovalY * lineHeight;
         _ovalMeta(canvas, 'ترتيبها', _arabicNumber(h.surah),
-            _ovalRightX * _renderWidth, cy, fontSize);
+            frameOffsetX + _ovalRightX * frameWidth, cy, fontSize);
         _ovalMeta(canvas, 'آياتها', _arabicNumber(quran.getVerseCount(h.surah)),
-            _ovalLeftX * _renderWidth, cy, fontSize);
+            frameOffsetX + _ovalLeftX * frameWidth, cy, fontSize);
       }
     }
   });
@@ -306,7 +311,7 @@ Future<void> _renderPage(int pageNumber) async {
     for (final h in headerPlaceholders) {
       final headerY = topMargin + h.lineIndex * lineHeight;
       canvas.save();
-      canvas.translate(0, headerY);
+      canvas.translate(frameOffsetX, headerY);
       canvas.scale(frameSx, frameSy);
       canvas.translate(-ink.left, -ink.top);
       framePainter.paint(canvas, Offset.zero);
