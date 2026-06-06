@@ -39,7 +39,7 @@ class MushafPrintedChrome extends StatelessWidget {
         // the ornament; footerPaddingBottom keeps it off the very edge.
         final footerFontSize = (h * 0.014).clamp(9.0, 12.0);
         final footerPaddingBottom = (h * 0.010).clamp(4.0, 8.0);
-        final hPad = (w * 0.036).clamp(8.0, 20.0);
+        final hPad = (w * 0.04).clamp(8.0, 22.0);
 
         return Directionality(
           textDirection: TextDirection.rtl,
