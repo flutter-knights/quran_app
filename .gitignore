@@ -50,5 +50,8 @@ Quran App.html
 
 # FVM Version Cache
 .fvm/
+
+# Rendered Quran page images (large binary assets, kept locally only)
+assets/mushaf/pages/
 # Superpowers brainstorm companion (local mockups)
 .superpowers/
