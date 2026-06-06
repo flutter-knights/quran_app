@@ -319,6 +319,15 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   void setInfiniteRepeat(bool value, RepeatTarget target) =>
       emit(state.copyWith(infiniteRepeat: value, infiniteTarget: target));
 
+  /// Seeds the range without starting audio. Used to pre-populate the options
+  /// sheet when an ayah is selected but playback hasn't started yet, so the
+  /// sheet shows the correct surah instead of defaulting to Al-Fatiha.
+  void setRange({required AyahIdentifier start, required AyahIdentifier end}) {
+    _endSurah = end.surah;
+    _endAyah = end.ayah;
+    emit(state.copyWith(rangeStart: start, rangeEnd: end));
+  }
+
   /// Updates the active range end live (used by the expanded panel).
   void setRangeEnd(AyahIdentifier end) {
     _endSurah = end.surah;

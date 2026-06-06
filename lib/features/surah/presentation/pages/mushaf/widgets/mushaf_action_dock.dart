@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/core/di/dependency_injection.dart';
@@ -43,6 +44,14 @@ class MushafActionDock extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               _DockButton(
+                keyValue: 'dock-rotate',
+                icon: MediaQuery.of(context).orientation == Orientation.portrait
+                    ? Icons.stay_current_landscape
+                    : Icons.stay_current_portrait,
+                onTap: () => _onRotate(context),
+              ),
+              const SizedBox(width: 10),
+              _DockButton(
                 keyValue: 'dock-bookmark',
                 icon: Icons.bookmark_outline,
                 onTap: () {}, // existing bookmark flow wired in Phase 2
@@ -51,6 +60,16 @@ class MushafActionDock extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _onRotate(BuildContext context) {
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    SystemChrome.setPreferredOrientations(
+      isPortrait
+          ? [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]
+          : [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
     );
   }
 
