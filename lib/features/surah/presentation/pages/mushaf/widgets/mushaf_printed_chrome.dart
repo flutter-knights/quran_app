@@ -32,13 +32,12 @@ class MushafPrintedChrome extends StatelessWidget {
         // Reduced height so the text hugs the top with less dead space below.
         final headerH = (h * 0.055).clamp(24.0, 58.0);
         final surahFontSize = (h * 0.028).clamp(11.0, 24.0);
-        final juzFontSize = (h * 0.022).clamp(10.0, 20.0);
+        final juzFontSize = (h * 0.028).clamp(10.0, 24.0);
 
         // Footer ornament: small pill centered in the 4.5% bottom band.
         // footerPaddingTop adds breathing room between the last text line and
         // the ornament; footerPaddingBottom keeps it off the very edge.
         final footerFontSize = (h * 0.014).clamp(9.0, 12.0);
-        final footerPaddingTop = (h * 0.012).clamp(4.0, 10.0);
         final footerPaddingBottom = (h * 0.010).clamp(4.0, 8.0);
         final hPad = (w * 0.036).clamp(8.0, 20.0);
 
@@ -86,10 +85,7 @@ class MushafPrintedChrome extends StatelessWidget {
               // Bottom page-number ornament — opaque background so it stays
               // readable even when it slightly overlaps the last text line.
               Padding(
-                padding: EdgeInsets.only(
-                  top: footerPaddingTop,
-                  bottom: footerPaddingBottom,
-                ),
+                padding: EdgeInsets.only(top: 0, bottom: footerPaddingBottom),
                 child: Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: hPad,

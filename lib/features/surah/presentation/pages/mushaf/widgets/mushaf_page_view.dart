@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 
@@ -39,8 +40,7 @@ class _MushafPageViewState extends State<MushafPageView>
     super.initState();
     _entityFuture = sl<GetMushafPage>()(widget.pageNumber).then((e) {
       return e.fold<MushafPageEntity>(
-        (f) => throw StateError(
-            'failed to load page ${widget.pageNumber}: $f'),
+        (f) => throw StateError('failed to load page ${widget.pageNumber}: $f'),
         (right) => right,
       );
     });
@@ -79,7 +79,9 @@ class _MushafPageViewState extends State<MushafPageView>
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  Positioned.fill(child: ColoredBox(color: paperColors.background)),
+                  Positioned.fill(
+                    child: ColoredBox(color: paperColors.background),
+                  ),
                   Image.asset(
                     _imagePath,
                     color: paperColors.ink,
@@ -126,7 +128,10 @@ class _MushafPageViewState extends State<MushafPageView>
                             _controller.forward(from: 0);
                           }
                           _publishHighlightBounds(
-                              context, _shownHighlightedAyah, entity.ayahs);
+                            context,
+                            _shownHighlightedAyah,
+                            entity.ayahs,
+                          );
                         }
                         return AnimatedBuilder(
                           animation: _controller,
@@ -163,14 +168,17 @@ class _MushafPageViewState extends State<MushafPageView>
                         ),
                       ),
                     ),
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: MushafPrintedChrome(
-                        pageNumber: widget.pageNumber,
-                        colors: paperColors,
+                  // Hide chrome in scroll mode — multiple pages are visible
+                  // simultaneously so per-page headers/numbers add clutter.
+                  if (_isPageMode(context, settings.readingMode))
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: MushafPrintedChrome(
+                          pageNumber: widget.pageNumber,
+                          colors: paperColors,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               );
             },
@@ -180,8 +188,20 @@ class _MushafPageViewState extends State<MushafPageView>
     );
   }
 
-  void _publishHighlightBounds(BuildContext context,
-      AyahIdentifier? ayah, List<AyahBoundEntity> ayahs) {
+  // Chrome (surah header + page number) is shown only in page-flip mode.
+  // Landscape always forces scroll mode (mirrors MushafPage logic).
+  bool _isPageMode(BuildContext context, MushafReadingMode readingMode) {
+    if (MediaQuery.of(context).orientation == Orientation.landscape) {
+      return false;
+    }
+    return readingMode == MushafReadingMode.page;
+  }
+
+  void _publishHighlightBounds(
+    BuildContext context,
+    AyahIdentifier? ayah,
+    List<AyahBoundEntity> ayahs,
+  ) {
     if (ayah == null) return;
     AyahBoundEntity? bound;
     for (final b in ayahs) {
@@ -201,7 +221,10 @@ class _MushafPageViewState extends State<MushafPageView>
   }
 
   AyahIdentifier? _hitTest(
-      Offset local, BoxConstraints c, List<AyahBoundEntity> ayahs) {
+    Offset local,
+    BoxConstraints c,
+    List<AyahBoundEntity> ayahs,
+  ) {
     final nx = local.dx / c.maxWidth;
     final ny = local.dy / c.maxHeight;
     for (final bound in ayahs) {
@@ -214,8 +237,12 @@ class _MushafPageViewState extends State<MushafPageView>
     return null;
   }
 
-  void _handleLongPress(BuildContext context, Offset local, BoxConstraints c,
-      List<AyahBoundEntity> ayahs) {
+  void _handleLongPress(
+    BuildContext context,
+    Offset local,
+    BoxConstraints c,
+    List<AyahBoundEntity> ayahs,
+  ) {
     final hit = _hitTest(local, c, ayahs);
     if (hit == null) return;
 
@@ -253,8 +280,12 @@ class _MushafPageViewState extends State<MushafPageView>
     );
   }
 
-  void _handleTap(BuildContext context, Offset local, BoxConstraints c,
-      List<AyahBoundEntity> ayahs) {
+  void _handleTap(
+    BuildContext context,
+    Offset local,
+    BoxConstraints c,
+    List<AyahBoundEntity> ayahs,
+  ) {
     final cubit = context.read<MushafCubit>();
     if (!cubit.state.chromeVisible) {
       cubit.setChrome(true);
@@ -262,7 +293,9 @@ class _MushafPageViewState extends State<MushafPageView>
     }
     final hit = _hitTest(local, c, ayahs);
     if (hit != null) {
-      cubit.toggleHighlight(hit); // opens the playback overlay via existing plumbing
+      cubit.toggleHighlight(
+        hit,
+      ); // opens the playback overlay via existing plumbing
     } else {
       cubit.setChrome(false);
       // Also dismiss the mini-player when no audio is active, so the screen

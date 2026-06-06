@@ -7,7 +7,10 @@ import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
+import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reading_settings_sheet.dart';
 
 /// Glassy floating control dock shown when chrome is visible. Surah/juz/page
@@ -51,11 +54,7 @@ class MushafActionDock extends StatelessWidget {
                 onTap: () => _onRotate(context),
               ),
               const SizedBox(width: 10),
-              _DockButton(
-                keyValue: 'dock-bookmark',
-                icon: Icons.bookmark_outline,
-                onTap: () {}, // existing bookmark flow wired in Phase 2
-              ),
+              const _BookmarkDockButton(),
             ],
           ),
         ),
@@ -95,6 +94,41 @@ class MushafActionDock extends StatelessWidget {
     }
     // Dismiss the dock so only the mini-player is visible.
     mushafCubit.setChrome(false);
+  }
+}
+
+// Bookmark button that reacts to both page changes and bookmark state.
+// Bookmarks the first ayah of the current page so the user can return to it.
+class _BookmarkDockButton extends StatelessWidget {
+  const _BookmarkDockButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MushafCubit, MushafState>(
+      buildWhen: (a, b) => a.currentPage != b.currentPage,
+      builder: (context, mushafState) {
+        final ayah = sl<QuranPageService>()
+            .getFirstAyahOfPage(mushafState.currentPage);
+        if (ayah == null) {
+          return _DockButton(
+            keyValue: 'dock-bookmark',
+            icon: Icons.bookmark_outline,
+            onTap: () {},
+          );
+        }
+        return BlocBuilder<BookmarkCubit, BookmarkState>(
+          buildWhen: (a, b) => a.contains(ayah) != b.contains(ayah),
+          builder: (context, bookmarkState) {
+            final saved = bookmarkState.contains(ayah);
+            return _DockButton(
+              keyValue: 'dock-bookmark',
+              icon: saved ? Icons.bookmark : Icons.bookmark_outline,
+              onTap: () => context.read<BookmarkCubit>().toggle(ayah),
+            );
+          },
+        );
+      },
+    );
   }
 }
 

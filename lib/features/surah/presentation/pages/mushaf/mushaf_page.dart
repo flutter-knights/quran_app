@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/constants/mushaf_reading_mode.dart';
+import '../../utils/mushaf_paper_colors.dart';
 import '../../../../../core/di/dependency_injection.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
 import '../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -38,7 +39,11 @@ class _MushafPageState extends State<MushafPage> {
   late final LastReadCubit _lastReadCubit;
 
   // Gap between pages in scroll mode (logical pixels).
-  static const double _scrollPageGap = 16.0;
+  static const double _scrollPageGap = 4.0;
+
+  // Tracks which mode was rendered last so _buildReadingArea can detect a
+  // real mode switch vs. a rebuild caused by an unrelated settings change.
+  MushafReadingMode? _lastBuiltMode;
 
   // Height of one Mushaf page in scroll mode. Derived from the available
   // width × the fixed 1:1.82 aspect ratio. Updated in didChangeDependencies.
@@ -224,7 +229,7 @@ class _MushafPageState extends State<MushafPage> {
             children: [
               // Reading area.
               Positioned.fill(
-                child: _buildReadingArea(effectiveMode),
+                child: _buildReadingArea(context, effectiveMode),
               ),
 
               // Floating action dock — lifts above the mini-player when visible.
@@ -274,29 +279,57 @@ class _MushafPageState extends State<MushafPage> {
     );
   }
 
-  Widget _buildReadingArea(MushafReadingMode mode) {
+  Widget _buildReadingArea(BuildContext context, MushafReadingMode mode) {
+    final modeChanged = _lastBuiltMode != mode;
+    _lastBuiltMode = mode;
+
     if (mode == MushafReadingMode.scroll) {
-      // itemExtent tells the ListView the exact height of every item up front
-      // so it can compute the total scroll extent and position items without
-      // building them. Combined with the pre-positioned ScrollController, this
-      // means the correct page is visible on the very first frame.
-      return ListView.builder(
-        controller: _scrollController,
-        itemCount: 604,
-        itemExtent: _scrollPageHeight + _scrollPageGap,
-        itemBuilder: (_, i) => Padding(
-          padding: const EdgeInsets.only(bottom: _scrollPageGap),
-          child: MushafPageView(pageNumber: i + 1),
+      // On a real mode switch (page → scroll), sync the scroll controller to
+      // wherever the user currently is. Unrelated rebuilds (brightness change,
+      // paper theme, etc.) skip this so we never interrupt the user's scroll.
+      if (modeChanged) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted ||
+              !_scrollController.hasClients ||
+              _scrollPageHeight == 0) {
+            return;
+          }
+          _scrollController
+              .jumpTo(_scrollOffsetFor(_mushafCubit.state.currentPage));
+        });
+      }
+
+      final separatorColor = context
+          .read<SettingsCubit>()
+          .state
+          .settingsModel
+          .mushafPaper
+          .colors
+          .accent
+          .withValues(alpha: 0.35);
+
+      return ColoredBox(
+        color: separatorColor,
+        child: ListView.builder(
+          controller: _scrollController,
+          itemCount: 604,
+          itemExtent: _scrollPageHeight + _scrollPageGap,
+          itemBuilder: (_, i) => Padding(
+            padding: const EdgeInsets.only(bottom: _scrollPageGap),
+            child: MushafPageView(pageNumber: i + 1),
+          ),
         ),
       );
     }
 
-    // Page mode — if returning from scroll mode the PageController may be at
-    // the wrong position; restore it after the widget attaches.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_pageController.hasClients) return;
-      _pageController.jumpToPage(_mushafCubit.state.currentPage - 1);
-    });
+    // Page mode — on a real mode switch (scroll → page) the PageController
+    // may still point to where it was before scroll mode started; correct it.
+    if (modeChanged) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_pageController.hasClients) return;
+        _pageController.jumpToPage(_mushafCubit.state.currentPage - 1);
+      });
+    }
     return Directionality(
       textDirection: TextDirection.rtl,
       child: PageView.builder(
