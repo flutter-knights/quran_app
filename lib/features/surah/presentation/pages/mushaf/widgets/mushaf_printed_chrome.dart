@@ -28,16 +28,16 @@ class MushafPrintedChrome extends StatelessWidget {
         final h = constraints.maxHeight;
         final w = constraints.maxWidth;
 
-        // Header band: ~6.2% of page height, matching the decorative frame zone.
-        final headerH = (h * 0.062).clamp(28.0, 72.0);
-        final surahFontSize = (h * 0.030).clamp(13.0, 26.0);
-        final juzFontSize = (h * 0.024).clamp(11.0, 22.0);
+        // Header band: 6.8% of page height — matches _topMarginFraction in the
+        // asset generator, so the Chrome sits in the blank top band of the image.
+        final headerH = (h * 0.068).clamp(30.0, 76.0);
+        final surahFontSize = (h * 0.032).clamp(13.0, 28.0);
+        final juzFontSize = (h * 0.026).clamp(11.0, 23.0);
 
-        // Footer ornament: sized to fit in the ~1.1% footer band of the page
-        // image (15 text lines × lineHeight leaves h×(0.02/1.82) ≈ 13 px blank).
-        // A solid background keeps the number legible when it clips the last line.
-        final footerFontSize = (h * 0.013).clamp(9.0, 14.0);
-        final footerPaddingBottom = (h * 0.005).clamp(2.0, 6.0);
+        // Footer ornament: 4.5% bottom band (_bottomMarginFraction = 0.045).
+        // Opaque background ensures legibility even with fractional overlap.
+        final footerFontSize = (h * 0.022).clamp(11.0, 18.0);
+        final footerPaddingBottom = (h * 0.016).clamp(6.0, 16.0);
         final hPad = (w * 0.036).clamp(8.0, 20.0);
 
         return Directionality(

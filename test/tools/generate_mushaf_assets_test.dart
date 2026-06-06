@@ -54,6 +54,11 @@ import 'mushaf_page_builder.dart';
 const double _renderWidth = 1536;
 const double _aspect = 1.82;
 const double _fontSizeFactor = 0.82;
+// Fraction of page height reserved as blank bands for the Chrome overlay.
+// Top band: Chrome header (surah name + juz). Bottom band: page-number ornament.
+// The 15 text lines are compressed into the remaining (1 - top - bottom) area.
+const double _topMarginFraction = 0.068;
+const double _bottomMarginFraction = 0.045;
 const String _outputPagesDir = 'assets/mushaf/pages';
 const String _outputBoundsDir = 'assets/mushaf/bounds';
 const String _headerFontFamily = 'QCF_P000';
@@ -116,9 +121,12 @@ Future<void> _renderPage(int pageNumber) async {
 
   final page = buildMushafPage(pageNumber);
 
-  final fontSize = _renderWidth / 15 * _fontSizeFactor;
-  final lineHeight = _renderWidth / 15 * 1.8;
   final pageHeight = _renderWidth * _aspect;
+  final topMargin = pageHeight * _topMarginFraction;
+  // Compress 15 lines into the content band between the two Chrome margins.
+  final contentHeight = pageHeight * (1.0 - _topMarginFraction - _bottomMarginFraction);
+  final lineHeight = contentHeight / 15;
+  final fontSize = lineHeight * _fontSizeFactor / 1.8;
 
   TextStyle verse(Color c) => TextStyle(
         fontFamily: pageFontFamily,
@@ -266,9 +274,9 @@ Future<void> _renderPage(int pageNumber) async {
 
   // ---- BODY layer: painter + surah name + oval metadata ----
   final bodyImage = await _toImage(pageHeight, (canvas) {
-    bodyPainter.paint(canvas, Offset.zero);
+    bodyPainter.paint(canvas, Offset(0, topMargin));
     for (final h in headerPlaceholders) {
-      final headerY = h.lineIndex * lineHeight;
+      final headerY = topMargin + h.lineIndex * lineHeight;
       final namePainter = TextPainter(
         text: TextSpan(
             text: h.name,
@@ -294,9 +302,9 @@ Future<void> _renderPage(int pageNumber) async {
 
   // ---- ACCENT layer: painter (rosettes) + frame glyph ----
   final accentImage = await _toImage(pageHeight, (canvas) {
-    accentPainter.paint(canvas, Offset.zero);
+    accentPainter.paint(canvas, Offset(0, topMargin));
     for (final h in headerPlaceholders) {
-      final headerY = h.lineIndex * lineHeight;
+      final headerY = topMargin + h.lineIndex * lineHeight;
       canvas.save();
       canvas.translate(0, headerY);
       canvas.scale(frameSx, frameSy);
@@ -355,7 +363,7 @@ Future<void> _renderPage(int pageNumber) async {
       'lines': rects
           .map((r) => {
                 'x': double.parse((r.left / _renderWidth).toStringAsFixed(5)),
-                'y': double.parse((r.top / pageHeight).toStringAsFixed(5)),
+                'y': double.parse(((r.top + topMargin) / pageHeight).toStringAsFixed(5)),
                 'w': double.parse((r.width / _renderWidth).toStringAsFixed(5)),
                 'h': double.parse((r.height / pageHeight).toStringAsFixed(5)),
               })
