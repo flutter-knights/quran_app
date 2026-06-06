@@ -28,18 +28,15 @@ class MushafPrintedChrome extends StatelessWidget {
         final h = constraints.maxHeight;
         final w = constraints.maxWidth;
 
-        // Header band: sits within the 6.8% top blank margin of the page image.
-        // Reduced height so the text hugs the top with less dead space below.
-        final headerH = (h * 0.055).clamp(24.0, 58.0);
-        final surahFontSize = (h * 0.028).clamp(11.0, 24.0);
-        final juzFontSize = (h * 0.022).clamp(10.0, 20.0);
+        // Header band: sits within the 5.8% top blank margin of the page image.
+        final headerH = (h * 0.050).clamp(22.0, 52.0);
+        final surahFontSize = (h * 0.026).clamp(10.0, 22.0);
+        final juzFontSize = (h * 0.020).clamp(9.0, 18.0);
 
-        // Footer ornament: small pill centered in the 4.5% bottom band.
-        // footerPaddingTop adds breathing room between the last text line and
-        // the ornament; footerPaddingBottom keeps it off the very edge.
-        final footerFontSize = (h * 0.014).clamp(9.0, 12.0);
-        final footerPaddingTop = (h * 0.012).clamp(4.0, 10.0);
-        final footerPaddingBottom = (h * 0.010).clamp(4.0, 8.0);
+        // Footer ornament: small pill centered in the 3.3% bottom band.
+        final footerFontSize = (h * 0.013).clamp(9.0, 11.0);
+        final footerPaddingTop = (h * 0.006).clamp(3.0, 6.0);
+        final footerPaddingBottom = (h * 0.006).clamp(3.0, 6.0);
         final hPad = (w * 0.036).clamp(8.0, 20.0);
 
         return Directionality(
@@ -50,11 +47,10 @@ class MushafPrintedChrome extends StatelessWidget {
               SizedBox(
                 height: headerH,
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(
-                      hPad, headerH * 0.10, hPad, 0),
+                  padding: EdgeInsetsDirectional.fromSTEB(hPad, 0.0, hPad, 0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
                         data.surahGlyphName,
@@ -86,16 +82,20 @@ class MushafPrintedChrome extends StatelessWidget {
                     top: footerPaddingTop, bottom: footerPaddingBottom),
                 child: Container(
                   padding: EdgeInsets.symmetric(
-                      horizontal: hPad, vertical: h * 0.002),
+                    horizontal: hPad,
+                    vertical: h * 0.002,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.background,
-                    border:
-                        Border.all(color: colors.accent.withValues(alpha: 0.6)),
+                    border: Border.all(
+                      color: colors.accent.withValues(alpha: 0.6),
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '﴿ ${_ar(pageNumber)} ﴾',
                     key: const ValueKey('printed-chrome-page'),
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: footerFontSize,
                       fontWeight: FontWeight.w700,

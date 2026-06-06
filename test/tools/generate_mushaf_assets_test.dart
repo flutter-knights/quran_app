@@ -57,8 +57,8 @@ const double _fontSizeFactor = 0.82;
 // Fraction of page height reserved as blank bands for the Chrome overlay.
 // Top band: Chrome header (surah name + juz). Bottom band: page-number ornament.
 // The 15 text lines are compressed into the remaining (1 - top - bottom) area.
-const double _topMarginFraction = 0.068;
-const double _bottomMarginFraction = 0.045;
+const double _topMarginFraction = 0.058;
+const double _bottomMarginFraction = 0.033;
 const String _outputPagesDir = 'assets/mushaf/pages';
 const String _outputBoundsDir = 'assets/mushaf/bounds';
 const String _headerFontFamily = 'QCF_P000';
@@ -77,7 +77,7 @@ const double _ovalLeftX = 0.2055;
 const double _ovalRightX = 0.7918;
 // Frame fills this fraction of the page width, centred. Narrower than 100%
 // so it doesn't overhang the text content on either side.
-const double _frameWidthFraction = 0.88;
+const double _frameWidthFraction = 0.80;
 const double _ovalY = 0.4831;
 const double _ovalBlockDy = 8;
 
