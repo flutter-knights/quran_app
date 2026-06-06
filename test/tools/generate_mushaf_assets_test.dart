@@ -54,8 +54,6 @@ import 'mushaf_page_builder.dart';
 const double _renderWidth = 1536;
 const double _aspect = 1.82;
 const double _fontSizeFactor = 0.82;
-// Line-height ratio: lineHeight / fontSize. Lower = tighter spacing + bigger glyphs.
-const double _lineHeightRatio = 1.65;
 // Fraction of page height reserved as blank bands for the Chrome overlay.
 // Top band: Chrome header (surah name + juz). Bottom band: page-number ornament.
 // The 15 text lines are compressed into the remaining (1 - top - bottom) area.
@@ -79,7 +77,7 @@ const double _ovalLeftX = 0.2055;
 const double _ovalRightX = 0.7918;
 // Frame fills this fraction of the page width, centred. Narrower than 100%
 // so it doesn't overhang the text content on either side.
-const double _frameWidthFraction = 0.85;
+const double _frameWidthFraction = 0.80;
 const double _ovalY = 0.4831;
 const double _ovalBlockDy = 8;
 
@@ -92,16 +90,7 @@ const double _horizontalSnapTolerancePx = 60;
 const double _verticalSnapTolerancePx = 6;
 
 const List<String> _arabicDigits = [
-  '٠',
-  '١',
-  '٢',
-  '٣',
-  '٤',
-  '٥',
-  '٦',
-  '٧',
-  '٨',
-  '٩',
+  '٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩',
 ];
 String _arabicNumber(int n) =>
     n.toString().split('').map((d) => _arabicDigits[int.parse(d)]).join();
@@ -138,25 +127,24 @@ Future<void> _renderPage(int pageNumber) async {
   final pageHeight = _renderWidth * _aspect;
   final topMargin = pageHeight * _topMarginFraction;
   // Compress 15 lines into the content band between the two Chrome margins.
-  final contentHeight =
-      pageHeight * (1.0 - _topMarginFraction - _bottomMarginFraction);
+  final contentHeight = pageHeight * (1.0 - _topMarginFraction - _bottomMarginFraction);
   final lineHeight = contentHeight / 15;
-  final fontSize = lineHeight * _fontSizeFactor / _lineHeightRatio;
+  final fontSize = lineHeight * _fontSizeFactor / 1.8;
 
   TextStyle verse(Color c) => TextStyle(
-    fontFamily: pageFontFamily,
-    fontSize: fontSize,
-    height: lineHeight / fontSize,
-    color: c,
-    locale: const Locale('ar'),
-  );
+        fontFamily: pageFontFamily,
+        fontSize: fontSize,
+        height: lineHeight / fontSize,
+        color: c,
+        locale: const Locale('ar'),
+      );
   TextStyle basmala(Color c) => TextStyle(
-    fontFamily: _headerFontFamily,
-    fontSize: fontSize,
-    height: lineHeight / fontSize,
-    color: c,
-    locale: const Locale('ar'),
-  );
+        fontFamily: _headerFontFamily,
+        fontSize: fontSize,
+        height: lineHeight / fontSize,
+        color: c,
+        locale: const Locale('ar'),
+      );
 
   final headerIndexes = page.surahHeadersIndexes.toSet();
   final basmalaIndexes = page.basmalaIndexes.toSet();
@@ -253,46 +241,32 @@ Future<void> _renderPage(int pageNumber) async {
   TextStyle styleFor(String role, Color c) =>
       role == 'basmala' ? basmala(c) : verse(c);
   List<InlineSpan> spans(Map<String, Color> colors) => [
-    for (final d in descriptors)
-      TextSpan(text: d.text, style: styleFor(d.role, colors[d.role]!)),
-  ];
+        for (final d in descriptors)
+          TextSpan(text: d.text, style: styleFor(d.role, colors[d.role]!)),
+      ];
   TextPainter layeredPainter(Map<String, Color> colors) => TextPainter(
-    text: TextSpan(children: spans(colors)),
-    textDirection: TextDirection.rtl,
-    textAlign: TextAlign.center,
-    maxLines: 15,
-  )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
+        text: TextSpan(children: spans(colors)),
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.center,
+        maxLines: 15,
+      )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
 
-  final bodyPainter = layeredPainter(const {
-    'body': _opaque,
-    'basmala': _opaque,
-    'rosette': _clear,
-  });
-  final accentPainter = layeredPainter(const {
-    'body': _clear,
-    'basmala': _clear,
-    'rosette': _opaque,
-  });
+  final bodyPainter = layeredPainter(
+      const {'body': _opaque, 'basmala': _opaque, 'rosette': _clear});
+  final accentPainter = layeredPainter(
+      const {'body': _clear, 'basmala': _clear, 'rosette': _opaque});
 
-  expect(
-    bodyPainter.didExceedMaxLines,
-    isFalse,
-    reason:
-        'page $pageNumber exceeded 15-line budget '
-        '(${bodyPainter.computeLineMetrics().length} lines, '
-        '${page.surahHeadersIndexes.length} headers)',
-  );
+  expect(bodyPainter.didExceedMaxLines, isFalse,
+      reason: 'page $pageNumber exceeded 15-line budget '
+          '(${bodyPainter.computeLineMetrics().length} lines, '
+          '${page.surahHeadersIndexes.length} headers)');
 
   // Frame glyph geometry: map its ink rect onto the full header box.
   final framePainter = TextPainter(
     text: TextSpan(
-      text: _frameGlyph,
-      style: TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: fontSize,
-        color: _opaque,
-      ),
-    ),
+        text: _frameGlyph,
+        style: TextStyle(
+            fontFamily: _headerFontFamily, fontSize: fontSize, color: _opaque)),
     textDirection: TextDirection.rtl,
     textAlign: TextAlign.center,
   )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
@@ -310,42 +284,23 @@ Future<void> _renderPage(int pageNumber) async {
       final headerY = topMargin + h.lineIndex * lineHeight;
       final namePainter = TextPainter(
         text: TextSpan(
-          text: h.name,
-          style: TextStyle(
-            fontFamily: _headerFontFamily,
-            fontSize: fontSize * 1.4,
-            color: _opaque,
-            locale: const Locale('ar'),
-          ),
-        ),
+            text: h.name,
+            style: TextStyle(
+                fontFamily: _headerFontFamily,
+                fontSize: fontSize * 1.4,
+                color: _opaque,
+                locale: const Locale('ar'))),
         textDirection: TextDirection.rtl,
         textAlign: TextAlign.center,
       )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
-      namePainter.paint(
-        canvas,
-        Offset(
-          0,
-          headerY + (lineHeight - namePainter.height) / 2 + _nameDyOffset,
-        ),
-      );
+      namePainter.paint(canvas,
+          Offset(0, headerY + (lineHeight - namePainter.height) / 2 + _nameDyOffset));
       if (h.surah > 0) {
         final cy = headerY + _ovalY * lineHeight;
-        _ovalMeta(
-          canvas,
-          'ترتيبها',
-          _arabicNumber(h.surah),
-          frameOffsetX + _ovalRightX * frameWidth,
-          cy,
-          fontSize,
-        );
-        _ovalMeta(
-          canvas,
-          'آياتها',
-          _arabicNumber(quran.getVerseCount(h.surah)),
-          frameOffsetX + _ovalLeftX * frameWidth,
-          cy,
-          fontSize,
-        );
+        _ovalMeta(canvas, 'ترتيبها', _arabicNumber(h.surah),
+            frameOffsetX + _ovalRightX * frameWidth, cy, fontSize);
+        _ovalMeta(canvas, 'آياتها', _arabicNumber(quran.getVerseCount(h.surah)),
+            frameOffsetX + _ovalLeftX * frameWidth, cy, fontSize);
       }
     }
   });
@@ -371,22 +326,13 @@ Future<void> _renderPage(int pageNumber) async {
   await accentFile.writeAsBytes(await _png(accentImage));
 
   final bodyLen = bodyFile.lengthSync();
-  expect(
-    bodyLen,
-    greaterThan(10 * 1024),
-    reason: 'page $pageNumber body PNG too small ($bodyLen bytes)',
-  );
+  expect(bodyLen, greaterThan(10 * 1024),
+      reason: 'page $pageNumber body PNG too small ($bodyLen bytes)');
   final accentLen = accentFile.lengthSync();
-  expect(
-    accentLen,
-    greaterThan(0),
-    reason: 'page $pageNumber accent PNG empty',
-  );
-  expect(
-    accentLen,
-    lessThan(bodyLen),
-    reason: 'page $pageNumber accent PNG unexpectedly large ($accentLen)',
-  );
+  expect(accentLen, greaterThan(0),
+      reason: 'page $pageNumber accent PNG empty');
+  expect(accentLen, lessThan(bodyLen),
+      reason: 'page $pageNumber accent PNG unexpectedly large ($accentLen)');
 
   // --- Bounds: gather, snap, normalize, write JSON (from body geometry) ---
   final unitBoxes = <List<ui.TextBox>>[];
@@ -395,23 +341,14 @@ Future<void> _renderPage(int pageNumber) async {
       TextSelection(baseOffset: u.start, extentOffset: u.end),
       boxHeightStyle: ui.BoxHeightStyle.includeLineSpacingMiddle,
     );
-    expect(
-      boxes,
-      isNotEmpty,
-      reason:
-          'page $pageNumber unit surah=${u.surah} ayah=${u.ayah} has no rects',
-    );
+    expect(boxes, isNotEmpty,
+        reason:
+            'page $pageNumber unit surah=${u.surah} ayah=${u.ayah} has no rects');
     if (u.ayah == 0) {
       final corrected = boxes
-          .map(
-            (b) => ui.TextBox.fromLTRBD(
-              b.left,
-              b.top,
-              _renderWidth - b.left,
-              b.bottom,
-              b.direction,
-            ),
-          )
+          .map((b) => ui.TextBox.fromLTRBD(
+                b.left, b.top, _renderWidth - b.left, b.bottom, b.direction,
+              ))
           .toList();
       unitBoxes.add(corrected);
     } else {
@@ -429,51 +366,40 @@ Future<void> _renderPage(int pageNumber) async {
       'surah': u.surah,
       'ayah': u.ayah,
       'lines': rects
-          .map(
-            (r) => {
-              'x': double.parse((r.left / _renderWidth).toStringAsFixed(5)),
-              'y': double.parse(
-                ((r.top + topMargin) / pageHeight).toStringAsFixed(5),
-              ),
-              'w': double.parse((r.width / _renderWidth).toStringAsFixed(5)),
-              'h': double.parse((r.height / pageHeight).toStringAsFixed(5)),
-            },
-          )
+          .map((r) => {
+                'x': double.parse((r.left / _renderWidth).toStringAsFixed(5)),
+                'y': double.parse(((r.top + topMargin) / pageHeight).toStringAsFixed(5)),
+                'w': double.parse((r.width / _renderWidth).toStringAsFixed(5)),
+                'h': double.parse((r.height / pageHeight).toStringAsFixed(5)),
+              })
           .toList(),
     });
   }
   expect(bounds, isNotEmpty, reason: 'page $pageNumber has no units');
 
   final jsonFile = File('$_outputBoundsDir/page_$pad.json');
-  await jsonFile.writeAsString(
-    jsonEncode({'page': pageNumber, 'ayahs': bounds}),
-  );
+  await jsonFile.writeAsString(jsonEncode({
+    'page': pageNumber,
+    'ayahs': bounds,
+  }));
 }
 
 // Stacked Arabic label (small) above a number, centred at (cx, cy) and nudged
 // down by `_ovalBlockDy`. `height: 1.0` keeps the two lines tight.
 void _ovalMeta(
-  Canvas canvas,
-  String label,
-  String number,
-  double cx,
-  double cy,
-  double fontSize,
-) {
+    Canvas canvas, String label, String number, double cx, double cy, double fontSize) {
   TextPainter line(String t, double size) => TextPainter(
-    text: TextSpan(
-      text: t,
-      style: TextStyle(
-        fontFamily: _metaFontFamily,
-        fontSize: size,
-        height: 1.0,
-        color: _opaque,
-        locale: const Locale('ar'),
-      ),
-    ),
-    textDirection: TextDirection.rtl,
-    textAlign: TextAlign.center,
-  )..layout();
+        text: TextSpan(
+            text: t,
+            style: TextStyle(
+                fontFamily: _metaFontFamily,
+                fontSize: size,
+                height: 1.0,
+                color: _opaque,
+                locale: const Locale('ar'))),
+        textDirection: TextDirection.rtl,
+        textAlign: TextAlign.center,
+      )..layout();
   final lp = line(label, fontSize * 0.30 + 2);
   final np = line(number, fontSize * 0.36 + 2);
   const gap = 8.0;
@@ -491,9 +417,8 @@ Future<Rect> _measureInk(TextPainter p) async {
   final rec = ui.PictureRecorder();
   p.paint(Canvas(rec), Offset.zero);
   final img = await rec.endRecording().toImage(w, h);
-  final data = (await img.toByteData(
-    format: ui.ImageByteFormat.rawRgba,
-  ))!.buffer.asUint8List();
+  final data =
+      (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer.asUint8List();
   var minX = w, minY = h, maxX = -1, maxY = -1;
   for (var y = 0; y < h; y++) {
     for (var x = 0; x < w; x++) {
@@ -506,11 +431,7 @@ Future<Rect> _measureInk(TextPainter p) async {
     }
   }
   return Rect.fromLTRB(
-    minX.toDouble(),
-    minY.toDouble(),
-    (maxX + 1).toDouble(),
-    (maxY + 1).toDouble(),
-  );
+      minX.toDouble(), minY.toDouble(), (maxX + 1).toDouble(), (maxY + 1).toDouble());
 }
 
 Future<ui.Image> _toImage(double pageHeight, void Function(Canvas) draw) async {
