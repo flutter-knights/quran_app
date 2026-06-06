@@ -7,7 +7,9 @@ String _ar(int n) =>
     n.toString().split('').map((d) => _arabicDigits[int.parse(d)]).join();
 
 /// Printed header band (surah + juz QCF glyphs) and a bottom page-number
-/// ornament, drawn as part of the mushaf page. Always visible in page mode.
+/// ornament, drawn as part of the mushaf page. Sizes are proportional to the
+/// rendered page height so they stay within the decorative band areas of the
+/// page art on any screen size.
 class MushafPrintedChrome extends StatelessWidget {
   const MushafPrintedChrome({
     super.key,
@@ -21,64 +23,88 @@ class MushafPrintedChrome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = resolvePrintedChrome(pageNumber);
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Column(
-        children: [
-          // Header band — sits over the accent frame already in the page art.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
-            child: SizedBox(
-              height: 34,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    data.surahGlyphName,
-                    key: const ValueKey('printed-chrome-surah'),
-                    style: TextStyle(
-                      fontFamily: 'QCF2BSML',
-                      fontSize: 22,
-                      color: colors.accent,
-                    ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final h = constraints.maxHeight;
+        final w = constraints.maxWidth;
+
+        // Header band: ~6.2% of page height, matching the decorative frame zone.
+        final headerH = (h * 0.062).clamp(28.0, 72.0);
+        final surahFontSize = (h * 0.030).clamp(13.0, 26.0);
+        final juzFontSize = (h * 0.024).clamp(11.0, 22.0);
+
+        // Footer ornament: sized to fit in the ~1.1% footer band of the page
+        // image (15 text lines × lineHeight leaves h×(0.02/1.82) ≈ 13 px blank).
+        // A solid background keeps the number legible when it clips the last line.
+        final footerFontSize = (h * 0.013).clamp(9.0, 14.0);
+        final footerPaddingBottom = (h * 0.005).clamp(2.0, 6.0);
+        final hPad = (w * 0.036).clamp(8.0, 20.0);
+
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Column(
+            children: [
+              // Header band
+              SizedBox(
+                height: headerH,
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                      hPad, headerH * 0.18, hPad, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        data.surahGlyphName,
+                        key: const ValueKey('printed-chrome-surah'),
+                        style: TextStyle(
+                          fontFamily: 'QCF2BSML',
+                          fontSize: surahFontSize,
+                          color: colors.accent,
+                        ),
+                      ),
+                      Text(
+                        data.juzGlyphName,
+                        key: const ValueKey('printed-chrome-juz'),
+                        style: TextStyle(
+                          fontFamily: 'QCF2BSML',
+                          fontSize: juzFontSize,
+                          color: colors.accent,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    data.juzGlyphName,
-                    key: const ValueKey('printed-chrome-juz'),
-                    style: TextStyle(
-                      fontFamily: 'QCF2BSML',
-                      fontSize: 18,
-                      color: colors.accent,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Spacer(),
-          // Bottom page-number ornament.
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-              decoration: BoxDecoration(
-                border: Border.all(color: colors.accent.withValues(alpha: 0.5)),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '﴿ ${_ar(pageNumber)} ﴾',
-                key: const ValueKey('printed-chrome-page'),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: colors.accent,
                 ),
               ),
-            ),
+              const Spacer(),
+              // Bottom page-number ornament — opaque background so it stays
+              // readable even when it slightly overlaps the last text line.
+              Padding(
+                padding: EdgeInsets.only(bottom: footerPaddingBottom),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: hPad, vertical: h * 0.003),
+                  decoration: BoxDecoration(
+                    color: colors.background,
+                    border:
+                        Border.all(color: colors.accent.withValues(alpha: 0.6)),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '﴿ ${_ar(pageNumber)} ﴾',
+                    key: const ValueKey('printed-chrome-page'),
+                    style: TextStyle(
+                      fontSize: footerFontSize,
+                      fontWeight: FontWeight.w700,
+                      color: colors.accent,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

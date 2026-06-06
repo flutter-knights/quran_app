@@ -74,6 +74,8 @@ class MushafActionDock extends StatelessWidget {
     } else {
       mushafCubit.pinOverlay();
     }
+    // Dismiss the dock so only the mini-player is visible.
+    mushafCubit.setChrome(false);
   }
 }
 

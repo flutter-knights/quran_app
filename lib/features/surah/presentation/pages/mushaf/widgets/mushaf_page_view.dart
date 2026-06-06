@@ -5,6 +5,7 @@ import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.
 
 import '../../../../../../core/di/dependency_injection.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../domain/entities/ayah_bound_entity.dart';
 import '../../../../domain/entities/mushaf_page_entity.dart';
 import '../../../../domain/usecases/get_mushaf_page.dart';
@@ -264,6 +265,12 @@ class _MushafPageViewState extends State<MushafPageView>
       cubit.toggleHighlight(hit); // opens the playback overlay via existing plumbing
     } else {
       cubit.setChrome(false);
+      // Also dismiss the mini-player when no audio is active, so the screen
+      // is completely clean while reading.
+      final p = context.read<PlaybackCubit>().state;
+      if (!p.isPlaying && !p.isPaused) {
+        cubit.unpinOverlay();
+      }
     }
   }
 }

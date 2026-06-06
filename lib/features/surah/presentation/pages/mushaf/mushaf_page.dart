@@ -101,64 +101,57 @@ class _MushafPageState extends State<MushafPage> {
         body: SafeArea(
           child: Stack(
             children: [
-              // PAGE — scales into the safe area above the player when active.
+              // PAGE — fills the full safe area; the player floats on top.
               Positioned.fill(
-                child: BlocBuilder<MushafCubit, MushafState>(
-                  buildWhen: (a, b) =>
-                      a.highlightedAyah != b.highlightedAyah ||
-                      a.highlightedAyahCenterY != b.highlightedAyahCenterY ||
-                      a.isOverlayPinned != b.isOverlayPinned,
-                  builder: (context, state) {
-                    final playerVisible =
-                        state.highlightedAyah != null || state.isOverlayPinned;
-                    final centerY = state.highlightedAyahCenterY;
-                    final anchorTop = centerY != null && centerY > 0.5;
-                    return AnimatedPadding(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOutCubic,
-                      padding: EdgeInsets.only(
-                          bottom: playerVisible && !anchorTop ? 132 : 0),
-                      child: Directionality(
-                        textDirection: TextDirection.rtl,
-                        child: PageView.builder(
-                          controller: _controller,
-                          itemCount: 604,
-                          onPageChanged: (i) =>
-                              _mushafCubit.setPage(_pageNumberFor(i)),
-                          itemBuilder: (_, i) =>
-                              MushafPageView(pageNumber: _pageNumberFor(i)),
-                        ),
-                      ),
-                    );
-                  },
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: PageView.builder(
+                    controller: _controller,
+                    itemCount: 604,
+                    onPageChanged: (i) =>
+                        _mushafCubit.setPage(_pageNumberFor(i)),
+                    itemBuilder: (_, i) =>
+                        MushafPageView(pageNumber: _pageNumberFor(i)),
+                  ),
                 ),
               ),
-              // Floating action dock (chrome toggled by tap).
+              // Floating action dock — lifts above the mini-player when visible.
               BlocBuilder<MushafCubit, MushafState>(
-                buildWhen: (a, b) => a.chromeVisible != b.chromeVisible,
-                builder: (context, state) => SafeArea(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: AnimatedSlide(
-                      offset: state.chromeVisible
-                          ? Offset.zero
-                          : const Offset(0, 2),
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOutCubic,
-                      child: AnimatedOpacity(
-                        opacity: state.chromeVisible ? 1 : 0,
-                        duration: const Duration(milliseconds: 180),
-                        child: IgnorePointer(
-                          ignoring: !state.chromeVisible,
-                          child: const Padding(
-                            padding: EdgeInsets.only(bottom: 16),
-                            child: MushafActionDock(),
+                buildWhen: (a, b) =>
+                    a.chromeVisible != b.chromeVisible ||
+                    a.highlightedAyah != b.highlightedAyah ||
+                    a.isOverlayPinned != b.isOverlayPinned,
+                builder: (context, state) {
+                  final miniPlayerVisible =
+                      state.highlightedAyah != null || state.isOverlayPinned;
+                  return SafeArea(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: AnimatedSlide(
+                        offset: state.chromeVisible
+                            ? Offset.zero
+                            : const Offset(0, 2),
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        child: AnimatedOpacity(
+                          opacity: state.chromeVisible ? 1 : 0,
+                          duration: const Duration(milliseconds: 180),
+                          child: IgnorePointer(
+                            ignoring: !state.chromeVisible,
+                            child: AnimatedPadding(
+                              duration: const Duration(milliseconds: 280),
+                              curve: Curves.easeOutCubic,
+                              padding: EdgeInsets.only(
+                                bottom: miniPlayerVisible ? 76.0 : 16.0,
+                              ),
+                              child: const MushafActionDock(),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
               const AyahPlaybackOverlay(),
             ],
