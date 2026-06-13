@@ -12,45 +12,47 @@ void main() {
     PrayerName.isha: '21:16',
   };
 
-  group('NextPrayerResolver.resolve', () {
+  group('NextPrayerResolver.resolve (5 prayers, sunrise excluded)', () {
     test('before Fajr → Fajr', () {
-      final r = NextPrayerResolver.resolve(
-        timings: timings,
-        now: DateTime(2026, 5, 23, 3, 30),
+      expect(
+        NextPrayerResolver.resolve(timings: timings, now: DateTime(2026, 5, 23, 3, 30)),
+        PrayerName.fajr,
       );
-      expect(r, PrayerName.fajr);
     });
 
-    test('between Sunrise and Dhuhr → Dhuhr', () {
-      final r = NextPrayerResolver.resolve(
-        timings: timings,
-        now: DateTime(2026, 5, 23, 8, 0),
+    test('after Fajr, before Dhuhr → Dhuhr (sunrise is not a target)', () {
+      expect(
+        NextPrayerResolver.resolve(timings: timings, now: DateTime(2026, 5, 23, 5, 30)),
+        PrayerName.dhuhr,
       );
-      expect(r, PrayerName.dhuhr);
+    });
+
+    test('between Fajr and Sunrise → Dhuhr (the sunrise-exclusion regression case)', () {
+      expect(
+        NextPrayerResolver.resolve(timings: timings, now: DateTime(2026, 5, 23, 4, 30)),
+        PrayerName.dhuhr,
+      );
     });
 
     test('between Maghrib and Isha → Isha', () {
-      final r = NextPrayerResolver.resolve(
-        timings: timings,
-        now: DateTime(2026, 5, 23, 20, 0),
+      expect(
+        NextPrayerResolver.resolve(timings: timings, now: DateTime(2026, 5, 23, 20, 0)),
+        PrayerName.isha,
       );
-      expect(r, PrayerName.isha);
     });
 
     test('after Isha → Fajr (wraps to tomorrow\'s first)', () {
-      final r = NextPrayerResolver.resolve(
-        timings: timings,
-        now: DateTime(2026, 5, 23, 23, 30),
+      expect(
+        NextPrayerResolver.resolve(timings: timings, now: DateTime(2026, 5, 23, 23, 30)),
+        PrayerName.fajr,
       );
-      expect(r, PrayerName.fajr);
     });
 
-    test('empty / missing timings → Fajr (sane default)', () {
-      final r = NextPrayerResolver.resolve(
-        timings: const {},
-        now: DateTime(2026, 5, 23, 12, 0),
+    test('empty timings → Fajr (sane default)', () {
+      expect(
+        NextPrayerResolver.resolve(timings: const {}, now: DateTime(2026, 5, 23, 12, 0)),
+        PrayerName.fajr,
       );
-      expect(r, PrayerName.fajr);
     });
   });
 }

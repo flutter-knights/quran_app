@@ -7,7 +7,6 @@ class NextPrayerResolver {
 
   static const _order = <PrayerName>[
     PrayerName.fajr,
-    PrayerName.sunrise,
     PrayerName.dhuhr,
     PrayerName.asr,
     PrayerName.maghrib,
