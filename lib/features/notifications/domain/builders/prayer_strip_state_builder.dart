@@ -4,10 +4,10 @@ import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
 
-/// Fixed Fajr→Isha render order. Independent of localization.
+/// Fixed Fajr→Isha render order (5 prayers; sunrise is excluded).
+/// Independent of localization.
 const _renderOrder = <PrayerName>[
   PrayerName.fajr,
-  PrayerName.sunrise,
   PrayerName.dhuhr,
   PrayerName.asr,
   PrayerName.maghrib,
@@ -16,7 +16,6 @@ const _renderOrder = <PrayerName>[
 
 const _labelsAr = <PrayerName, String>{
   PrayerName.fajr: 'الفجر',
-  PrayerName.sunrise: 'الشروق',
   PrayerName.dhuhr: 'الظهر',
   PrayerName.asr: 'العصر',
   PrayerName.maghrib: 'المغرب',
@@ -25,7 +24,6 @@ const _labelsAr = <PrayerName, String>{
 
 const _labelsEn = <PrayerName, String>{
   PrayerName.fajr: 'Fajr',
-  PrayerName.sunrise: 'Sunrise',
   PrayerName.dhuhr: 'Dhuhr',
   PrayerName.asr: 'Asr',
   PrayerName.maghrib: 'Maghrib',
@@ -64,7 +62,11 @@ class PrayerStripStateBuilder {
       final time = use24Hour
           ? raw.toIndicNumerals(localeCode)
           : _format12Hour(raw, localeCode);
-      return PrayerCell(label: label, timeFormatted: time);
+      return PrayerCell(
+        label: label,
+        timeFormatted: time,
+        minutes: _parseMinutes(raw),
+      );
     }).toList();
 
     final nextIndex = _renderOrder.indexOf(nextPrayer);
@@ -80,12 +82,23 @@ class PrayerStripStateBuilder {
     return PrayerStripState(
       cells: cells,
       nextPrayerIndex: nextIndex < 0 ? 0 : nextIndex,
+      dateKey: prayerTimes.date.gregorianDate,
       hijriDateLabel: hijriLabel,
       weekdayLabel: weekdayLabel,
       localeCode: localeCode,
       isFriday: isFriday,
       accentColor: accentColor,
     );
+  }
+
+  /// Parses a `HH:mm` 24-hour string to minutes-from-midnight. Returns 0 on a
+  /// malformed input (the cell still renders; it just sorts to the top).
+  static int _parseMinutes(String hhmm) {
+    final parts = hhmm.split(':');
+    if (parts.length != 2) return 0;
+    final h = int.tryParse(parts[0]) ?? 0;
+    final m = int.tryParse(parts[1]) ?? 0;
+    return h * 60 + m;
   }
 
   /// Converts a `HH:mm` 24-hour string into a 12-hour string without an
