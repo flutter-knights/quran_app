@@ -11,6 +11,7 @@ import 'package:quran_app/features/notifications/data/repositories/notifications
 import 'package:quran_app/features/notifications/domain/entities/adhan_audio_settings.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 
 class _MockNative extends Mock implements NotificationsNativeDataSource {}
 
@@ -21,14 +22,17 @@ void main() {
   late _MockLegacyScheduler scheduler;
   late NotificationsRepositoryImpl repo;
 
-  final state = PrayerStripState(
-    cells: const [PrayerCell(label: 'Fajr', timeFormatted: '4:15')],
-    nextPrayerIndex: 0,
-    hijriDateLabel: '5 Dhul-Hijjah',
-    weekdayLabel: '',
-    localeCode: 'en',
-    isFriday: false,
-  );
+  final window = PrayerStripWindow(days: [
+    const PrayerStripState(
+      cells: [PrayerCell(label: 'Fajr', timeFormatted: '04:15', minutes: 255)],
+      nextPrayerIndex: 0,
+      dateKey: '22-05-2026',
+      hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: '',
+      localeCode: 'en',
+      isFriday: false,
+    ),
+  ]);
 
   final pt = PrayerTimes(
     key: '22-05-2026',
@@ -55,14 +59,14 @@ void main() {
     native = _MockNative();
     scheduler = _MockLegacyScheduler();
     repo = NotificationsRepositoryImpl(native: native, legacyScheduler: scheduler);
-    registerFallbackValue(state);
+    registerFallbackValue(window);
     registerFallbackValue(pt);
   });
 
   group('enableStrip', () {
     test('returns Right(unit) when native call succeeds', () async {
       when(() => native.enableStrip(any())).thenAnswer((_) async {});
-      final r = await repo.enableStrip(state);
+      final r = await repo.enableStrip(window);
       expect(r, const Right(unit));
     });
 
@@ -70,7 +74,7 @@ void main() {
         () async {
       when(() => native.enableStrip(any()))
           .thenThrow(const PlatformNotImplementedException('enableStrip'));
-      final r = await repo.enableStrip(state);
+      final r = await repo.enableStrip(window);
       expect(r.isLeft(), true);
       r.fold((f) => expect(f, isA<PlatformNotSupportedFailure>()), (_) {});
     });
@@ -78,7 +82,7 @@ void main() {
     test('returns Left(UnknownNotificationFailure) on unknown exception',
         () async {
       when(() => native.enableStrip(any())).thenThrow(Exception('boom'));
-      final r = await repo.enableStrip(state);
+      final r = await repo.enableStrip(window);
       r.fold((f) => expect(f, isA<UnknownNotificationFailure>()), (_) {});
     });
   });

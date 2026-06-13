@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 
 /// Thrown when the native side has not registered a handler for a channel
 /// method. The repository maps this to `PlatformNotSupportedFailure`.
@@ -12,9 +12,9 @@ class PlatformNotImplementedException implements Exception {
 }
 
 abstract class NotificationsNativeDataSource {
-  Future<void> enableStrip(PrayerStripState state);
+  Future<void> enableStrip(PrayerStripWindow window);
   Future<void> disableStrip();
-  Future<void> refreshStrip(PrayerStripState state);
+  Future<void> refreshStrip(PrayerStripWindow window);
   Future<void> scheduleDailyAdhans({
     required Map<String, String> timingsByPrayer,
     required Map<String, String> clipAssetByPrayer,
@@ -50,15 +50,15 @@ class NotificationsNativeDataSourceImpl
   }
 
   @override
-  Future<void> enableStrip(PrayerStripState state) =>
-      _invoke('enableStrip', state.toJson());
+  Future<void> enableStrip(PrayerStripWindow window) =>
+      _invoke('enableStrip', window.toJson());
 
   @override
   Future<void> disableStrip() => _invoke('disableStrip');
 
   @override
-  Future<void> refreshStrip(PrayerStripState state) =>
-      _invoke('refreshStrip', state.toJson());
+  Future<void> refreshStrip(PrayerStripWindow window) =>
+      _invoke('refreshStrip', window.toJson());
 
   @override
   Future<void> scheduleDailyAdhans({

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/features/notifications/data/datasources/notifications_native_data_source.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -11,14 +12,17 @@ void main() {
   late List<MethodCall> calls;
   late NotificationsNativeDataSourceImpl ds;
 
-  final state = PrayerStripState(
-    cells: const [PrayerCell(label: 'Fajr', timeFormatted: '4:15')],
-    nextPrayerIndex: 0,
-    hijriDateLabel: '5 Dhul-Hijjah',
-    weekdayLabel: '',
-    localeCode: 'en',
-    isFriday: false,
-  );
+  final window = PrayerStripWindow(days: [
+    const PrayerStripState(
+      cells: [PrayerCell(label: 'Fajr', timeFormatted: '04:15', minutes: 255)],
+      nextPrayerIndex: 0,
+      dateKey: '22-05-2026',
+      hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: '',
+      localeCode: 'en',
+      isFriday: false,
+    ),
+  ]);
 
   setUp(() {
     calls = [];
@@ -35,14 +39,16 @@ void main() {
         .setMockMethodCallHandler(channel, null);
   });
 
-  test('enableStrip invokes the channel with the right method + state JSON',
-      () async {
-    await ds.enableStrip(state);
+  test('enableStrip invokes the channel with the days payload', () async {
+    await ds.enableStrip(window);
     expect(calls.length, 1);
     expect(calls.single.method, 'enableStrip');
     final args = calls.single.arguments as Map;
-    expect(args['nextPrayerIndex'], 0);
-    expect(args['localeCode'], 'en');
+    final days = (args['days'] as List).cast<Map>();
+    expect(days.length, 1);
+    expect(days[0]['dateKey'], '22-05-2026');
+    final cells = (days[0]['cells'] as List).cast<Map>();
+    expect(cells[0]['minutes'], 255);
   });
 
   test('disableStrip invokes the channel', () async {
@@ -50,9 +56,10 @@ void main() {
     expect(calls.single.method, 'disableStrip');
   });
 
-  test('refreshStrip invokes the channel', () async {
-    await ds.refreshStrip(state);
+  test('refreshStrip invokes the channel with the days payload', () async {
+    await ds.refreshStrip(window);
     expect(calls.single.method, 'refreshStrip');
+    expect((calls.single.arguments as Map)['days'], isA<List>());
   });
 
   test('scheduleDailyAdhans invokes the channel with timings + audio map',

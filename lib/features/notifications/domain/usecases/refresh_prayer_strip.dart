@@ -1,12 +1,12 @@
 import 'package:dartz/dartz.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/usecases/usecase.dart';
-import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/repositories/notifications_repository.dart';
 
 class RefreshPrayerStripParams {
-  final PrayerStripState state;
-  const RefreshPrayerStripParams({required this.state});
+  final PrayerStripWindow window;
+  const RefreshPrayerStripParams({required this.window});
 }
 
 class RefreshPrayerStrip
@@ -16,5 +16,5 @@ class RefreshPrayerStrip
 
   @override
   Future<Either<Failure, Unit>> call(RefreshPrayerStripParams params) =>
-      repository.refreshStrip(params.state);
+      repository.refreshStrip(params.window);
 }

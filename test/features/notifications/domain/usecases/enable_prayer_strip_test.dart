@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/repositories/notifications_repository.dart';
 import 'package:quran_app/features/notifications/domain/usecases/enable_prayer_strip.dart';
 
@@ -12,27 +13,28 @@ void main() {
   late _MockRepo repo;
   late EnablePrayerStrip useCase;
 
-  final state = PrayerStripState(
-    cells: const [PrayerCell(label: 'Fajr', timeFormatted: '4:15')],
-    nextPrayerIndex: 0,
-    hijriDateLabel: '5 Dhul-Hijjah',
-    weekdayLabel: '',
-    localeCode: 'en',
-    isFriday: false,
-  );
+  final window = PrayerStripWindow(days: [
+    const PrayerStripState(
+      cells: [PrayerCell(label: 'Fajr', timeFormatted: '04:15', minutes: 255)],
+      nextPrayerIndex: 0,
+      dateKey: '22-05-2026',
+      hijriDateLabel: '5 Dhul-Hijjah',
+      weekdayLabel: '',
+      localeCode: 'en',
+      isFriday: false,
+    ),
+  ]);
 
   setUp(() {
     repo = _MockRepo();
     useCase = EnablePrayerStrip(repository: repo);
-    registerFallbackValue(state);
+    registerFallbackValue(window);
   });
 
-  test('delegates to repository.enableStrip with given state', () async {
-    when(() => repo.enableStrip(any()))
-        .thenAnswer((_) async => const Right(unit));
-    final result =
-        await useCase.call(EnablePrayerStripParams(state: state));
-    expect(result.isRight(), true);
-    verify(() => repo.enableStrip(state)).called(1);
+  test('delegates to repository.enableStrip with the given window', () async {
+    when(() => repo.enableStrip(any())).thenAnswer((_) async => const Right(unit));
+    final result = await useCase.call(EnablePrayerStripParams(window: window));
+    expect(result, const Right(unit));
+    verify(() => repo.enableStrip(window)).called(1);
   });
 }

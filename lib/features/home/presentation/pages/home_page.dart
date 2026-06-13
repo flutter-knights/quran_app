@@ -10,8 +10,7 @@ import 'package:quran_app/features/home/domain/usecases/pre_cache_prayer_times.d
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_view.dart';
-import 'package:quran_app/features/notifications/domain/builders/prayer_strip_state_builder.dart';
-import 'package:quran_app/features/notifications/domain/services/next_prayer_resolver.dart';
+import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/usecases/disable_prayer_strip.dart';
 import 'package:quran_app/features/notifications/domain/usecases/enable_prayer_strip.dart';
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
@@ -183,38 +182,27 @@ void _enableOrRefreshStrip(
   final settings = context.read<SettingsCubit>().state.settingsModel;
   if (!settings.isPrayerStripPinned) return;
 
-  // Posting the prayer-strip notification can throw (notification/foreground-
-  // service/exact-alarm failures). A failure here must never crash the app —
-  // it's a best-effort side effect of (re)building the strip.
-  try {
-    final now = DateTime.now();
-    final nextPrayer = NextPrayerResolver.resolve(
-      timings: loaded.dailyPrayerContext.prayerTimes.timings,
-      now: now,
-    );
-    final stripState = PrayerStripStateBuilder.build(
-      prayerTimes: loaded.dailyPrayerContext.prayerTimes,
-      nextPrayer: nextPrayer,
-      localeCode: settings.isArabic ? 'ar' : 'en',
-      isFriday: now.weekday == DateTime.friday,
-      use24Hour: settings.is24HourFormat,
-      // Drive the next-prayer pill from the live palette accent so the
-      // notification tracks the in-app theme (single source of truth).
-      accentColor: settings.palette.primary.toARGB32(),
-    );
-    unawaited(
-      sl<EnablePrayerStrip>()
-          .call(EnablePrayerStripParams(state: stripState))
-          .then(
-            (r) => r.fold(
-              (f) => debugPrint('[prayer-strip] enable failed: ${f.message}'),
-              (_) {},
-            ),
-          ),
-    );
-  } catch (e, st) {
-    debugPrint('refresh prayer strip failed: $e\n$st');
-  }
+  // Best-effort side effect — must never crash the app.
+  unawaited(() async {
+    try {
+      final window = await sl<BuildPrayerStripWindow>().call(
+        BuildPrayerStripWindowParams(
+          localeCode: settings.isArabic ? 'ar' : 'en',
+          use24Hour: settings.is24HourFormat,
+          accentColor: settings.palette.primary.toARGB32(),
+        ),
+      );
+      if (window == null) return; // nothing cached yet
+      final r = await sl<EnablePrayerStrip>()
+          .call(EnablePrayerStripParams(window: window));
+      r.fold(
+        (f) => debugPrint('[prayer-strip] enable failed: ${f.message}'),
+        (_) {},
+      );
+    } catch (e, st) {
+      debugPrint('refresh prayer strip failed: $e\n$st');
+    }
+  }());
 }
 
 /// Watches the app lifecycle and re-asserts the pinned strip on resume, so it

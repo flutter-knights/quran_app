@@ -6,7 +6,7 @@ import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart'
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/data/datasources/notifications_native_data_source.dart';
 import 'package:quran_app/features/notifications/domain/entities/adhan_audio_settings.dart';
-import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/repositories/notifications_repository.dart';
 
 class NotificationsRepositoryImpl implements NotificationsRepository {
@@ -50,16 +50,16 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> enableStrip(PrayerStripState state) =>
-      _run(() => native.enableStrip(state));
+  Future<Either<Failure, Unit>> enableStrip(PrayerStripWindow window) =>
+      _run(() => native.enableStrip(window));
 
   @override
   Future<Either<Failure, Unit>> disableStrip() =>
       _run(() => native.disableStrip());
 
   @override
-  Future<Either<Failure, Unit>> refreshStrip(PrayerStripState state) =>
-      _run(() => native.refreshStrip(state));
+  Future<Either<Failure, Unit>> refreshStrip(PrayerStripWindow window) =>
+      _run(() => native.refreshStrip(window));
 
   @override
   Future<Either<Failure, Unit>> scheduleDailyAdhans({
