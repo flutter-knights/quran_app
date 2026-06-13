@@ -13,4 +13,9 @@ abstract class PrayerTimesRepository {
     required int year,
     required int month,
   });
+
+  /// Reads the cached prayer times for [date] from local storage only — never
+  /// hits the network. Returns null when that day is not cached. Used to build
+  /// the multi-day pinned-strip window from the already pre-cached month.
+  Future<PrayerTimes?> getCachedForDate(DateTime date);
 }

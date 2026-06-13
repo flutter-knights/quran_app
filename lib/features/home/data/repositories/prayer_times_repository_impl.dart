@@ -75,6 +75,11 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
   }
 
   @override
+  Future<PrayerTimes?> getCachedForDate(DateTime date) async {
+    return prayerTimesLocalDataSource.getCached(date: date);
+  }
+
+  @override
   Future<void> preCacheMonth({
     required Location location,
     required int year,
