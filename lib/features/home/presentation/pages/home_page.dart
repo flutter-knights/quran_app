@@ -197,9 +197,7 @@ void _enableOrRefreshStrip(
       nextPrayer: nextPrayer,
       localeCode: settings.isArabic ? 'ar' : 'en',
       isFriday: now.weekday == DateTime.friday,
-      // `isFormat12Hours` is named opposite to its meaning — `true` means
-      // the user enabled the "24-hour format" toggle in settings.
-      use24Hour: settings.isFormat12Hours,
+      use24Hour: settings.is24HourFormat,
       // Drive the next-prayer pill from the live palette accent so the
       // notification tracks the in-app theme (single source of truth).
       accentColor: settings.palette.primary.toARGB32(),

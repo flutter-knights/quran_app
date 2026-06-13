@@ -47,6 +47,11 @@ class Settings extends Equatable {
 
   static const double minPageBrightness = 0.3;
 
+  /// Clearer alias for the misnamed [isFormat12Hours] field: it is `true` when
+  /// the user has the **24-hour** format enabled. Use this at call sites so the
+  /// inverted name stops being a bug-trap. Persisted field name is unchanged.
+  bool get is24HourFormat => isFormat12Hours;
+
   const Settings({
     required this.isFormat12Hours,
     required this.isArabic,
