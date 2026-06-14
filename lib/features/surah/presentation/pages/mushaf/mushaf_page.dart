@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as quran;
@@ -17,6 +19,7 @@ import '../../cubit/mushaf/mushaf_cubit.dart';
 import '../../cubit/mushaf/mushaf_state.dart';
 import '../../utils/printed_chrome_resolver.dart';
 import 'auto_swap_helper.dart';
+import 'last_read_saver.dart';
 import 'widgets/ayah_playback_overlay.dart';
 import 'widgets/mushaf_browse_bar.dart';
 import 'widgets/mushaf_page_view.dart';
@@ -32,7 +35,7 @@ class MushafPage extends StatefulWidget {
   State<MushafPage> createState() => _MushafPageState();
 }
 
-class _MushafPageState extends State<MushafPage> {
+class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   late final PageController _pageController;
 
   // Not `final` — recreated in didChangeDependencies when the screen width
@@ -44,6 +47,9 @@ class _MushafPageState extends State<MushafPage> {
   late final MushafCubit _mushafCubit;
   late final PlaybackCubit _playbackCubit;
   late final LastReadCubit _lastReadCubit;
+
+  late final LastReadSaver _lastReadSaver;
+  StreamSubscription<int>? _pageSub;
 
   // Gap between pages in scroll mode (logical pixels).
   static const double _scrollPageGap = 4.0;
@@ -69,6 +75,24 @@ class _MushafPageState extends State<MushafPage> {
     _mushafCubit = context.read<MushafCubit>();
     _playbackCubit = context.read<PlaybackCubit>();
     _lastReadCubit = context.read<LastReadCubit>();
+
+    _lastReadSaver = LastReadSaver(
+      readCurrent: () {
+        final s = _mushafCubit.state;
+        return LastRead(
+          page: s.currentPage,
+          ayah: s.highlightedAyah ?? _playbackCubit.state.currentAyah,
+        );
+      },
+      persist: (v) => _lastReadCubit.save(v).catchError((_) {}),
+    );
+    WidgetsBinding.instance.addObserver(this);
+    _pageSub = _mushafCubit.stream
+        .map((s) => s.currentPage)
+        .distinct()
+        .listen((_) {
+      if (mounted) _lastReadSaver.schedule();
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -115,18 +139,24 @@ class _MushafPageState extends State<MushafPage> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _lastReadSaver.flush();
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.removeListener(_precacheFromPageController);
     _pageController.dispose();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
 
-    final mushafState = _mushafCubit.state;
-    final ayah =
-        mushafState.highlightedAyah ?? _playbackCubit.state.currentAyah;
-    _lastReadCubit
-        .save(LastRead(page: mushafState.currentPage, ayah: ayah))
-        .catchError((_) {});
+    _lastReadSaver.flush();
+    _lastReadSaver.dispose();
+    _pageSub?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     _playbackCubit.stop();
 
     super.dispose();
