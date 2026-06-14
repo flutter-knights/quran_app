@@ -18,6 +18,8 @@ import 'package:quran_app/features/ahadith/presentation/cubit/hadith_bookmark_st
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/books_list_view.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/utils/page_description.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -62,7 +64,14 @@ class _BookmarksView extends StatelessWidget {
                             ? a.bookSlug.compareTo(b.bookSlug)
                             : a.hadithNumber.compareTo(b.hadithNumber));
 
-                      if (ayahs.isEmpty && hadiths.isEmpty) {
+                      final pages = context
+                          .watch<PageBookmarkCubit>()
+                          .state
+                          .pages
+                          .toList()
+                        ..sort();
+
+                      if (ayahs.isEmpty && hadiths.isEmpty && pages.isEmpty) {
                         return Center(
                           child: Text(
                             S.of(context).no_bookmarks_yet,
@@ -74,6 +83,17 @@ class _BookmarksView extends StatelessWidget {
                       return ListView(
                         padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
                         children: [
+                          if (pages.isNotEmpty) ...[
+                            AppSectionHeader(
+                              label: S.of(context).bookmarks_pages_section,
+                            ),
+                            const SizedBox(height: 10),
+                            for (final p in pages) ...[
+                              _PageBookmarkTile(page: p),
+                              const SizedBox(height: 10),
+                            ],
+                            const SizedBox(height: 4),
+                          ],
                           if (ayahs.isNotEmpty) ...[
                             AppSectionHeader(
                               label: S.of(context).bookmarks_quran_section,
@@ -145,6 +165,57 @@ class _QuranBookmarkTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '${ayah.surah.toLocalized(context)} : ${ayah.ayah.toLocalized(context)}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowRight01,
+            color: scheme.onSurfaceVariant,
+            size: 16,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PageBookmarkTile extends StatelessWidget {
+  const _PageBookmarkTile({required this.page});
+  final int page;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    final desc = describePage(page, localeCode: context.isArabic ? 'ar' : 'en');
+    return SurfaceCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      radius: 12,
+      onTap: () => context.push(AppRouter.mushafPath, extra: page),
+      child: Row(
+        children: [
+          HugeIcon(
+            icon: HugeIcons.strokeRoundedBookmark02,
+            color: scheme.secondary,
+            size: 18,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  desc,
+                  style: TS.bold16.copyWith(fontSize: 14, color: scheme.onSurface),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${S.of(context).pageByPage} ${page.toLocalized(context)}',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,

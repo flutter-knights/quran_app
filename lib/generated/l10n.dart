@@ -1920,6 +1920,16 @@ class S {
       args: [],
     );
   }
+
+  /// `Pages`
+  String get bookmarks_pages_section {
+    return Intl.message(
+      'Pages',
+      name: 'bookmarks_pages_section',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

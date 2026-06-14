@@ -225,5 +225,6 @@
   "playbackOptions": "Playback options",
   "goToPage": "Go to page",
   "undo": "Undo",
-  "pageRemovedFromBookmarks": "Removed from bookmarks"
+  "pageRemovedFromBookmarks": "Removed from bookmarks",
+  "bookmarks_pages_section": "Pages"
 }

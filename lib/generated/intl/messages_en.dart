@@ -101,6 +101,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Couldn\'t save bookmark"),
         "bookmarks_ahadith_section":
             MessageLookupByLibrary.simpleMessage("Ahadith"),
+        "bookmarks_pages_section":
+            MessageLookupByLibrary.simpleMessage("Pages"),
         "bookmarks_quran_section":
             MessageLookupByLibrary.simpleMessage("Quran"),
         "bookmarks_screen_title":

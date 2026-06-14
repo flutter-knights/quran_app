@@ -217,5 +217,6 @@
   "playbackOptions": "خيارات التشغيل",
   "goToPage": "اذهب إلى صفحة",
   "undo": "تراجع",
-  "pageRemovedFromBookmarks": "أزيلت من المحفوظات"
+  "pageRemovedFromBookmarks": "أزيلت من المحفوظات",
+  "bookmarks_pages_section": "الصفحات"
 }

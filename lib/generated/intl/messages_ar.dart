@@ -96,6 +96,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("تعذّر حفظ المرجعية"),
         "bookmarks_ahadith_section":
             MessageLookupByLibrary.simpleMessage("الأحاديث"),
+        "bookmarks_pages_section":
+            MessageLookupByLibrary.simpleMessage("الصفحات"),
         "bookmarks_quran_section":
             MessageLookupByLibrary.simpleMessage("القرآن"),
         "bookmarks_screen_title":
