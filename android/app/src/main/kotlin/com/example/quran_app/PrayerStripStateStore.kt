@@ -15,10 +15,10 @@ class PrayerStripStateStore(context: Context) {
             .apply()
     }
 
-    fun load(): PrayerStripState? {
+    fun load(): PrayerStripWindow? {
         if (!prefs.getBoolean(KEY_ENABLED, false)) return null
         val raw = prefs.getString(KEY_STATE_JSON, null) ?: return null
-        return runCatching { PrayerStripState.fromJsonString(raw) }.getOrNull()
+        return runCatching { PrayerStripWindow.fromJsonString(raw) }.getOrNull()
     }
 
     fun clear() {
