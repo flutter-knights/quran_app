@@ -70,4 +70,44 @@ void main() {
     await tester.pump();
     expect(cubit.state.settingsModel.readingMode, MushafReadingMode.scroll);
   });
+
+  testWidgets('dragging brightness fades the sheet body, restores on end',
+      (tester) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
+      home: BlocProvider.value(
+        value: cubit,
+        child: const Scaffold(body: ReadingSettingsSheet()),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    AnimatedOpacity body() => tester.widget<AnimatedOpacity>(
+        find.byKey(const ValueKey('reading-sheet-body')));
+    final slider = tester.widget<Slider>(
+        find.byKey(const ValueKey('reading-brightness-slider')));
+
+    expect(body().opacity, 1.0);
+
+    slider.onChangeStart!(0.8);
+    await tester.pump();
+    expect(body().opacity, lessThan(0.5));
+
+    slider.onChanged!(0.6); // still updates the live brightness
+    await tester.pump();
+    expect(cubit.state.settingsModel.pageBrightness, 0.6);
+
+    slider.onChangeEnd!(0.6);
+    await tester.pump();
+    expect(body().opacity, 1.0);
+  });
 }
