@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 
 /**
  * Foreground service that plays one adhan and shows an ongoing notification.
@@ -33,6 +34,7 @@ class AdhanPlaybackService : Service() {
 
     private var mediaPlayer: MediaPlayer? = null
     private var currentPrayer: String? = null
+    private var currentLocale: String = "en"
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -52,6 +54,7 @@ class AdhanPlaybackService : Service() {
         val prayer = intent.getStringExtra(EXTRA_PRAYER) ?: "fajr"
         val clipName = intent.getStringExtra(EXTRA_CLIP) ?: "normal_adhan"
         val localeCode = intent.getStringExtra(EXTRA_LOCALE) ?: "en"
+        currentLocale = localeCode
 
         ensureChannel()
 
@@ -62,14 +65,14 @@ class AdhanPlaybackService : Service() {
         // notification for the prayer that's actually playing.
         if (mediaPlayer != null) {
             Log.w(TAG, "handlePlay: adhan already playing ($currentPrayer); ignoring $prayer")
-            startForeground(NOTIFICATION_ID, buildNotification(currentPrayer ?: prayer, localeCode))
+            startForeground(NOTIFICATION_ID, buildNotification(currentPrayer ?: prayer, localeCode, ongoing = false))
             return
         }
 
         currentPrayer = prayer
         Log.i(TAG, "onStartCommand action=ACTION_PLAY prayer=$prayer clip=$clipName")
 
-        val notif = buildNotification(prayer, localeCode)
+        val notif = buildNotification(prayer, localeCode, ongoing = false)
         startForeground(NOTIFICATION_ID, notif)
 
         startMediaPlayer(clipName)
@@ -103,10 +106,17 @@ class AdhanPlaybackService : Service() {
                 return
             }
             setOnCompletionListener {
-                Log.i(TAG, "MediaPlayer onCompletion (released, notification kept)")
+                Log.i(TAG, "MediaPlayer onCompletion (released; notification kept, now dismissible)")
                 it.release()
                 mediaPlayer = null
-                // Notification + service stay alive; user must Stop or swipe.
+                // Detach from the foreground service so the notification can be
+                // swiped on every Android version; the swipe fires the delete
+                // intent → ACTION_STOP, which tears the service down.
+                stopForeground(STOP_FOREGROUND_DETACH)
+                NotificationManagerCompat.from(this@AdhanPlaybackService).notify(
+                    NOTIFICATION_ID,
+                    buildNotification(currentPrayer ?: "fajr", currentLocale, ongoing = false),
+                )
             }
             setOnErrorListener { _, what, extra ->
                 Log.e(TAG, "MediaPlayer onError what=$what extra=$extra")
@@ -153,7 +163,7 @@ class AdhanPlaybackService : Service() {
         manager.createNotificationChannel(channel)
     }
 
-    private fun buildNotification(prayer: String, localeCode: String): android.app.Notification {
+    private fun buildNotification(prayer: String, localeCode: String, ongoing: Boolean): android.app.Notification {
         val ctx = localizedContext(localeCode)
 
         val titleResId = ctx.resources.getIdentifier(
@@ -186,7 +196,7 @@ class AdhanPlaybackService : Service() {
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(body)
-            .setOngoing(true)
+            .setOngoing(ongoing)
             .setAutoCancel(false)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
