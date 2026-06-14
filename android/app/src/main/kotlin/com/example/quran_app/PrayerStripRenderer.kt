@@ -35,13 +35,11 @@ class PrayerStripRenderer(private val context: Context) {
         manager.createNotificationChannel(channel)
     }
 
-    fun build(state: PrayerStripState): Notification {
-        // Collapsed and expanded layouts are identical (6-cell strip).
-        // Bind both with the same cell data.
+    fun build(day: PrayerStripDay, nextIndex: Int): Notification {
         val collapsed = RemoteViews(context.packageName, R.layout.prayer_strip_collapsed)
         val expanded = RemoteViews(context.packageName, R.layout.prayer_strip_expanded)
-        bindCells(collapsed, state)
-        bindCells(expanded, state)
+        bindCells(collapsed, day, nextIndex)
+        bindCells(expanded, day, nextIndex)
 
         val launchPI = PendingIntent.getActivity(
             context, 0,
@@ -63,44 +61,36 @@ class PrayerStripRenderer(private val context: Context) {
             .build()
     }
 
-    private fun bindCells(views: RemoteViews, state: PrayerStripState) {
+    private fun bindCells(views: RemoteViews, day: PrayerStripDay, nextIndex: Int) {
         val labelIds = intArrayOf(
             R.id.cell_0_label, R.id.cell_1_label, R.id.cell_2_label,
-            R.id.cell_3_label, R.id.cell_4_label, R.id.cell_5_label
+            R.id.cell_3_label, R.id.cell_4_label
         )
         val timeIds = intArrayOf(
             R.id.cell_0_time, R.id.cell_1_time, R.id.cell_2_time,
-            R.id.cell_3_time, R.id.cell_4_time, R.id.cell_5_time
+            R.id.cell_3_time, R.id.cell_4_time
         )
 
-        // Color tokens resolved through the app's resources — values/colors.xml +
-        // values-night/colors.xml provide light/dark variants automatically.
         val primary = context.resources.getColor(R.color.strip_text_primary, null)
         val muted = context.resources.getColor(R.color.strip_text_muted, null)
         val dim = context.resources.getColor(R.color.strip_text_dim, null)
-        // Pill text is always light for contrast on both themes.
         val pillText = context.resources.getColor(R.color.strip_pill_text, null)
-        // Accent comes from the app's palette; fall back to the static resource
-        // for older payloads that don't carry one.
-        val accent = state.accentColor
+        val accent = day.accentColor
             ?: context.resources.getColor(R.color.strip_accent, null)
 
-        for (i in 0 until 6) {
-            val cell = state.cells.getOrNull(i) ?: continue
+        for (i in 0 until 5) {
+            val cell = day.cells.getOrNull(i) ?: continue
             views.setTextViewText(labelIds[i], cell.label)
             views.setTextViewText(timeIds[i], cell.time)
 
             when {
-                i == state.nextPrayerIndex -> {
-                    // Heavier weight on the active prayer's label so it stands
-                    // out from the semibold neighbours (synthetic bold over the
-                    // Cairo font — RemoteViews can't swap fontFamily per-state).
+                i == nextIndex -> {
                     views.setTextViewText(labelIds[i], boldLabel(cell.label))
                     views.setTextColor(labelIds[i], primary)
                     views.setTextColor(timeIds[i], pillText)
                     applyAccentPill(views, timeIds[i], accent)
                 }
-                i < state.nextPrayerIndex -> {
+                i < nextIndex -> {
                     views.setTextColor(labelIds[i], dim)
                     views.setTextColor(timeIds[i], dim)
                     views.setInt(timeIds[i], "setBackgroundResource", 0)
