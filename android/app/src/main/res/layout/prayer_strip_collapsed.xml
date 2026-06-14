@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:weightSum="6"
+    android:weightSum="5"
     android:layoutDirection="locale">
 
     <LinearLayout android:id="@+id/cell_0"
@@ -85,23 +85,6 @@
             android:fontFamily="@font/cairo_bold"
             android:maxLines="1" android:ellipsize="end" />
         <TextView android:id="@+id/cell_4_time"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_muted" android:textSize="12sp"
-            android:fontFamily="@font/cairo_semibold"
-            android:layout_marginTop="2dp" />
-    </LinearLayout>
-
-    <LinearLayout android:id="@+id/cell_5"
-        android:layout_width="0dp" android:layout_height="wrap_content"
-        android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-        android:paddingTop="0dp" android:paddingBottom="0dp"
-        android:paddingStart="4dp" android:paddingEnd="4dp">
-        <TextView android:id="@+id/cell_5_label"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="14sp"
-            android:fontFamily="@font/cairo_bold"
-            android:maxLines="1" android:ellipsize="end" />
-        <TextView android:id="@+id/cell_5_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:textColor="@color/strip_text_muted" android:textSize="12sp"
             android:fontFamily="@font/cairo_semibold"
