@@ -210,6 +210,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "onb_welcome_subtitle": MessageLookupByLibrary.simpleMessage(
             "اقرأ، استمع، وتدبّر — مع مواقيت صلاتك في مكان واحد."),
         "pageByPage": MessageLookupByLibrary.simpleMessage("صفحة"),
+        "pageRemovedFromBookmarks":
+            MessageLookupByLibrary.simpleMessage("أزيلت من المحفوظات"),
         "page_label": m8,
         "paper": MessageLookupByLibrary.simpleMessage("الورق"),
         "pinnedPrayerTimes":
@@ -296,6 +298,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "translation_label": MessageLookupByLibrary.simpleMessage("الترجمة"),
         "twentyFourHourFormat":
             MessageLookupByLibrary.simpleMessage("تنسيق 24 ساعة"),
+        "undo": MessageLookupByLibrary.simpleMessage("تراجع"),
         "wholeRange": MessageLookupByLibrary.simpleMessage("النطاق")
       };
 }

@@ -215,5 +215,7 @@
   "wholeRange": "النطاق",
   "infinite": "∞",
   "playbackOptions": "خيارات التشغيل",
-  "goToPage": "اذهب إلى صفحة"
+  "goToPage": "اذهب إلى صفحة",
+  "undo": "تراجع",
+  "pageRemovedFromBookmarks": "أزيلت من المحفوظات"
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_state.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
+import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../../core/di/dependency_injection.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
@@ -14,6 +17,7 @@ import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 import 'ayah_action_popover.dart';
 import 'ayah_highlight_painter.dart';
+import 'mushaf_page_ribbon.dart';
 import 'mushaf_printed_chrome.dart';
 
 class MushafPageView extends StatefulWidget {
@@ -168,6 +172,20 @@ class _MushafPageViewState extends State<MushafPageView>
                         ),
                       ),
                     ),
+                  BlocBuilder<PageBookmarkCubit, PageBookmarkState>(
+                    buildWhen: (a, b) =>
+                        a.contains(widget.pageNumber) !=
+                        b.contains(widget.pageNumber),
+                    builder: (context, pb) {
+                      if (!pb.contains(widget.pageNumber)) {
+                        return const SizedBox.shrink();
+                      }
+                      return MushafPageRibbon(
+                        color: paperColors.accent,
+                        onTap: () => _onRibbonTap(context),
+                      );
+                    },
+                  ),
                   // Hide chrome in scroll mode — multiple pages are visible
                   // simultaneously so per-page headers/numbers add clutter.
                   if (_isPageMode(context, settings.readingMode))
@@ -305,5 +323,21 @@ class _MushafPageViewState extends State<MushafPageView>
         cubit.unpinOverlay();
       }
     }
+  }
+
+  void _onRibbonTap(BuildContext context) {
+    final cubit = context.read<PageBookmarkCubit>();
+    cubit.toggle(widget.pageNumber);
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(S.of(context).pageRemovedFromBookmarks),
+        action: SnackBarAction(
+          label: S.of(context).undo,
+          onPressed: () => cubit.toggle(widget.pageNumber),
+        ),
+      ),
+    );
   }
 }

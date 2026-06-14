@@ -221,6 +221,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "onb_welcome_subtitle": MessageLookupByLibrary.simpleMessage(
             "Read, listen, and reflect — with your prayer times in one place."),
         "pageByPage": MessageLookupByLibrary.simpleMessage("Page"),
+        "pageRemovedFromBookmarks":
+            MessageLookupByLibrary.simpleMessage("Removed from bookmarks"),
         "page_label": m8,
         "paper": MessageLookupByLibrary.simpleMessage("Paper"),
         "pinnedPrayerTimes":
@@ -307,6 +309,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Translation"),
         "twentyFourHourFormat":
             MessageLookupByLibrary.simpleMessage("24-Hour Format"),
+        "undo": MessageLookupByLibrary.simpleMessage("Undo"),
         "wholeRange": MessageLookupByLibrary.simpleMessage("Range")
       };
 }

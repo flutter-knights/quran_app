@@ -1900,6 +1900,26 @@ class S {
       args: [],
     );
   }
+
+  /// `Undo`
+  String get undo {
+    return Intl.message(
+      'Undo',
+      name: 'undo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Removed from bookmarks`
+  String get pageRemovedFromBookmarks {
+    return Intl.message(
+      'Removed from bookmarks',
+      name: 'pageRemovedFromBookmarks',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

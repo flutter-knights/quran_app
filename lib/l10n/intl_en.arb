@@ -223,5 +223,7 @@
   "wholeRange": "Range",
   "infinite": "∞",
   "playbackOptions": "Playback options",
-  "goToPage": "Go to page"
+  "goToPage": "Go to page",
+  "undo": "Undo",
+  "pageRemovedFromBookmarks": "Removed from bookmarks"
 }
