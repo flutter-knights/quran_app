@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reading_settings_sheet.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -42,5 +43,31 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('reading-paper-night')));
     await tester.pump();
     expect(cubit.state.settingsModel.mushafPaper, MushafPaper.night);
+  });
+
+  testWidgets('tapping the Scroll segment updates the reading mode',
+      (tester) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await tester.pumpWidget(MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
+      home: BlocProvider.value(
+        value: cubit,
+        child: const Scaffold(body: ReadingSettingsSheet()),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(cubit.state.settingsModel.readingMode, MushafReadingMode.page);
+    await tester.tap(find.text('Scroll'));
+    await tester.pump();
+    expect(cubit.state.settingsModel.readingMode, MushafReadingMode.scroll);
   });
 }

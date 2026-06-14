@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
+import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -81,21 +82,21 @@ class ReadingSettingsSheet extends StatelessWidget {
                 Text(s.readingMode,
                     style: Theme.of(context).textTheme.labelMedium),
                 const SizedBox(height: 8),
-                SegmentedButton<MushafReadingMode>(
+                AppSegmentedSelector<MushafReadingMode>(
                   key: const ValueKey('reading-mode-toggle'),
-                  segments: [
-                    ButtonSegment(
+                  selected: model.readingMode,
+                  expand: true,
+                  onChanged: cubit.updateReadingMode,
+                  options: [
+                    SegmentOption(
                       value: MushafReadingMode.page,
-                      label: Text(s.pageByPage),
+                      label: s.pageByPage,
                     ),
-                    ButtonSegment(
+                    SegmentOption(
                       value: MushafReadingMode.scroll,
-                      label: Text(s.continuousScroll),
+                      label: s.continuousScroll,
                     ),
                   ],
-                  selected: {model.readingMode},
-                  onSelectionChanged: (set) =>
-                      cubit.updateReadingMode(set.first),
                 ),
               ],
             ),
