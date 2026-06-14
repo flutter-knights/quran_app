@@ -45,9 +45,9 @@ class _PageJumpSheetState extends State<PageJumpSheet> {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
+        padding: EdgeInsetsDirectional.only(
+          start: 16,
+          end: 16,
           top: 8,
           bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
         ),

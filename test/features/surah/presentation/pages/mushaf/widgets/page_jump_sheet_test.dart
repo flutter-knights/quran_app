@@ -42,7 +42,11 @@ void main() {
     expect(await openAndReturn(tester, '999'), 604);
   });
 
-  testWidgets('ignores non-numeric / empty input (returns null)', (tester) async {
+  testWidgets('returns null for empty input (non-digits are filtered by the formatter)', (tester) async {
     expect(await openAndReturn(tester, 'abc'), isNull);
+  });
+
+  testWidgets('clamps below 1 to 1', (tester) async {
+    expect(await openAndReturn(tester, '0'), 1);
   });
 }
