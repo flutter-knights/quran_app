@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran/quran.dart' as quran;
 
 import '../../../../../core/constants/mushaf_reading_mode.dart';
 import '../../utils/mushaf_paper_colors.dart';
 import '../../../../../core/di/dependency_injection.dart';
+import '../../../../bookmarks/presentation/cubit/bookmark_cubit.dart';
+import '../../../../bookmarks/presentation/cubit/bookmark_state.dart';
+import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
 import '../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../settings/presentation/cubit/settings_cubit.dart';
@@ -12,10 +15,14 @@ import '../../../domain/entities/last_read.dart';
 import '../../cubit/last_read/last_read_cubit.dart';
 import '../../cubit/mushaf/mushaf_cubit.dart';
 import '../../cubit/mushaf/mushaf_state.dart';
+import '../../utils/printed_chrome_resolver.dart';
 import 'auto_swap_helper.dart';
 import 'widgets/ayah_playback_overlay.dart';
-import 'widgets/mushaf_action_dock.dart';
+import 'widgets/mushaf_browse_bar.dart';
 import 'widgets/mushaf_page_view.dart';
+import 'widgets/mushaf_top_bar.dart';
+import 'widgets/page_jump_sheet.dart';
+import 'widgets/reading_settings_sheet.dart';
 
 class MushafPage extends StatefulWidget {
   const MushafPage({super.key, required this.initialPage});
@@ -114,10 +121,6 @@ class _MushafPageState extends State<MushafPage> {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
 
-    // Release any orientation lock set by the rotate button so the rest of
-    // the app is free to follow the sensor again.
-    SystemChrome.setPreferredOrientations([]);
-
     final mushafState = _mushafCubit.state;
     final ayah =
         mushafState.highlightedAyah ?? _playbackCubit.state.currentAyah;
@@ -208,6 +211,47 @@ class _MushafPageState extends State<MushafPage> {
     return context.read<SettingsCubit>().state.settingsModel.readingMode;
   }
 
+  // Plays the current page from its first ayah to the end of that surah,
+  // selecting the first ayah so the player surfaces. Lifted from the old dock.
+  void _onPlayPage() {
+    var firstAyah =
+        sl<QuranPageService>().getFirstAyahOfPage(_mushafCubit.state.currentPage);
+    if (firstAyah == null) {
+      _mushafCubit.pinOverlay();
+      return;
+    }
+    if (firstAyah.ayah == 1 && firstAyah.surah != 1 && firstAyah.surah != 9) {
+      firstAyah = AyahIdentifier(surah: firstAyah.surah, ayah: 0);
+    }
+    _mushafCubit.toggleHighlight(firstAyah);
+    final surah = firstAyah.surah;
+    final start = firstAyah.ayah == 0
+        ? AyahIdentifier(surah: surah, ayah: 1)
+        : firstAyah;
+    _playbackCubit.playRange(
+      start: start,
+      end: AyahIdentifier(surah: surah, ayah: quran.getVerseCount(surah)),
+    );
+  }
+
+  Future<void> _onJumpToPage(BuildContext context) async {
+    final page = await PageJumpSheet.show(context);
+    if (page == null || !context.mounted) return;
+    final mode = _effectiveMode(context);
+    if (mode == MushafReadingMode.page) {
+      if (_pageController.hasClients) _pageController.jumpToPage(page - 1);
+    } else {
+      if (_scrollController.hasClients && _scrollPageHeight != 0) {
+        _scrollController.jumpTo(_scrollOffsetFor(page));
+      }
+    }
+    _mushafCubit.setPage(page);
+  }
+
+  // The page's first ayah, used by the (Phase-1) carried-over ayah bookmark.
+  AyahIdentifier? _savableAyah() =>
+      sl<QuranPageService>().getFirstAyahOfPage(_mushafCubit.state.currentPage);
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -232,22 +276,29 @@ class _MushafPageState extends State<MushafPage> {
                 child: _buildReadingArea(context, effectiveMode),
               ),
 
-              // Floating action dock — lifts above the mini-player when visible.
+              // Top bar — visible whenever chrome is visible (even during
+              // playback, so back / page-jump stay reachable).
               BlocBuilder<MushafCubit, MushafState>(
                 buildWhen: (a, b) =>
                     a.chromeVisible != b.chromeVisible ||
-                    a.highlightedAyah != b.highlightedAyah ||
-                    a.isOverlayPinned != b.isOverlayPinned,
+                    a.currentPage != b.currentPage,
                 builder: (context, state) {
-                  final miniPlayerVisible =
-                      state.highlightedAyah != null || state.isOverlayPinned;
+                  final isArabic = context
+                      .read<SettingsCubit>()
+                      .state
+                      .settingsModel
+                      .isArabic;
+                  final chrome = resolvePrintedChrome(state.currentPage);
+                  final surahName = isArabic
+                      ? quran.getSurahNameArabic(chrome.surahNumber)
+                      : quran.getSurahName(chrome.surahNumber);
                   return SafeArea(
                     child: Align(
-                      alignment: Alignment.bottomCenter,
+                      alignment: Alignment.topCenter,
                       child: AnimatedSlide(
                         offset: state.chromeVisible
                             ? Offset.zero
-                            : const Offset(0, 2),
+                            : const Offset(0, -2),
                         duration: const Duration(milliseconds: 220),
                         curve: Curves.easeOutCubic,
                         child: AnimatedOpacity(
@@ -255,13 +306,72 @@ class _MushafPageState extends State<MushafPage> {
                           duration: const Duration(milliseconds: 180),
                           child: IgnorePointer(
                             ignoring: !state.chromeVisible,
-                            child: AnimatedPadding(
-                              duration: const Duration(milliseconds: 280),
-                              curve: Curves.easeOutCubic,
-                              padding: EdgeInsets.only(
-                                bottom: miniPlayerVisible ? 76.0 : 16.0,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                              child: MushafTopBar(
+                                surahName: surahName,
+                                pageNumber: state.currentPage,
+                                localeCode: isArabic ? 'ar' : 'en',
+                                onBack: () => Navigator.of(context).maybePop(),
+                                onJump: () => _onJumpToPage(context),
                               ),
-                              child: const MushafActionDock(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              // Browse bar — only when chrome is visible AND the player is not.
+              BlocBuilder<MushafCubit, MushafState>(
+                buildWhen: (a, b) =>
+                    a.chromeVisible != b.chromeVisible ||
+                    a.highlightedAyah != b.highlightedAyah ||
+                    a.isOverlayPinned != b.isOverlayPinned ||
+                    a.currentPage != b.currentPage,
+                builder: (context, state) {
+                  final playerVisible =
+                      state.highlightedAyah != null || state.isOverlayPinned;
+                  final visible = state.chromeVisible && !playerVisible;
+                  final savable = _savableAyah();
+                  return SafeArea(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: AnimatedSlide(
+                        offset: visible ? Offset.zero : const Offset(0, 2),
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        child: AnimatedOpacity(
+                          opacity: visible ? 1 : 0,
+                          duration: const Duration(milliseconds: 180),
+                          child: IgnorePointer(
+                            ignoring: !visible,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: BlocBuilder<BookmarkCubit, BookmarkState>(
+                                buildWhen: (a, b) => savable == null
+                                    ? false
+                                    : a.contains(savable) != b.contains(savable),
+                                builder: (context, bm) {
+                                  final isSaved =
+                                      savable != null && bm.contains(savable);
+                                  return MushafBrowseBar(
+                                    isSaved: isSaved,
+                                    onSettings: () =>
+                                        ReadingSettingsSheet.show(context),
+                                    onPlay: _onPlayPage,
+                                    onToggleSave: () {
+                                      if (savable != null) {
+                                        context
+                                            .read<BookmarkCubit>()
+                                            .toggle(savable);
+                                      }
+                                    },
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ),
