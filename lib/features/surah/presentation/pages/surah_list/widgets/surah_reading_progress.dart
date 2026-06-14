@@ -25,10 +25,11 @@ class SurahProgress {
 }
 
 SurahProgress computeSurahProgress(LastRead last) {
-  final surah = last.ayah?.surah ?? _firstSurahOfPage(last.page);
+  final hasAyah = last.ayah != null && last.ayah!.ayah > 0;
+  final surah = hasAyah ? last.ayah!.surah : _firstSurahOfPage(last.page);
   final total = quran.getVerseCount(surah);
 
-  if (last.ayah != null) {
+  if (hasAyah) {
     final current = last.ayah!.ayah.clamp(1, total);
     return SurahProgress(
       surahNumber: surah,
