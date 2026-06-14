@@ -1,7 +1,6 @@
 package com.example.quran_app
 
 import android.content.Context
-import android.content.Intent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -9,8 +8,8 @@ import io.flutter.plugin.common.MethodChannel
 /**
  * Handles the `quran_app/notifications` MethodChannel.
  *
- * Strip routes (unchanged): enableStrip / refreshStrip / disableStrip → PrayerStripService.
- * Adhan routes (NEW):       scheduleDailyAdhans / cancelAllAdhans / scheduleTestAdhan → AdhanScheduler.
+ * Strip routes: enableStrip / refreshStrip / disableStrip → PrayerStripController.
+ * Adhan routes: scheduleDailyAdhans / cancelAllAdhans / scheduleTestAdhan → AdhanScheduler.
  */
 class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
@@ -52,22 +51,15 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     ) {
         val json = serializeStripArgs(call.arguments)
         if (json == null) {
-            result.error("BAD_ARGS", "Expected Map state, got ${call.arguments}", null)
+            result.error("BAD_ARGS", "Expected {days:[...]} state, got ${call.arguments}", null)
             return
         }
-        val intent = Intent(ctx, PrayerStripService::class.java).apply {
-            action = PrayerStripService.ACTION_SHOW_STRIP
-            putExtra(PrayerStripService.EXTRA_STATE_JSON, json)
-        }
-        ctx.startForegroundService(intent)
+        PrayerStripController.show(ctx, json)
         result.success(null)
     }
 
     private fun handleDisableStrip(ctx: Context, result: MethodChannel.Result) {
-        val intent = Intent(ctx, PrayerStripService::class.java).apply {
-            action = PrayerStripService.ACTION_HIDE_STRIP
-        }
-        ctx.startForegroundService(intent)
+        PrayerStripController.hide(ctx)
         result.success(null)
     }
 
@@ -134,27 +126,32 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     private fun serializeStripArgs(args: Any?): String? {
         if (args !is Map<*, *>) return null
-        val obj = org.json.JSONObject()
-        val cellsRaw = args["cells"] as? List<*> ?: return null
-        val arr = org.json.JSONArray()
-        for (c in cellsRaw) {
-            val cm = c as? Map<*, *> ?: return null
-            arr.put(
-                org.json.JSONObject()
-                    .put("label", cm["label"] as? String ?: return null)
-                    .put("time", cm["time"] as? String ?: return null)
-            )
+        val daysRaw = args["days"] as? List<*> ?: return null
+        val daysArr = org.json.JSONArray()
+        for (d in daysRaw) {
+            val dm = d as? Map<*, *> ?: return null
+            val cellsRaw = dm["cells"] as? List<*> ?: return null
+            val cellsArr = org.json.JSONArray()
+            for (c in cellsRaw) {
+                val cm = c as? Map<*, *> ?: return null
+                cellsArr.put(
+                    org.json.JSONObject()
+                        .put("label", cm["label"] as? String ?: return null)
+                        .put("time", cm["time"] as? String ?: return null)
+                        .put("minutes", (cm["minutes"] as? Int) ?: return null)
+                )
+            }
+            val dObj = org.json.JSONObject()
+                .put("dateKey", dm["dateKey"] as? String ?: return null)
+                .put("cells", cellsArr)
+                .put("hijriDateLabel", dm["hijriDateLabel"] as? String ?: return null)
+                .put("weekdayLabel", dm["weekdayLabel"] as? String ?: return null)
+                .put("localeCode", dm["localeCode"] as? String ?: return null)
+                .put("isFriday", dm["isFriday"] as? Boolean ?: return null)
+            (dm["accentColor"] as? String)?.let { dObj.put("accentColor", it) }
+            daysArr.put(dObj)
         }
-        obj.put("cells", arr)
-        obj.put("nextPrayerIndex", (args["nextPrayerIndex"] as? Int) ?: return null)
-        obj.put("hijriDateLabel", (args["hijriDateLabel"] as? String) ?: return null)
-        obj.put("weekdayLabel", (args["weekdayLabel"] as? String) ?: return null)
-        obj.put("localeCode", (args["localeCode"] as? String) ?: return null)
-        obj.put("isFriday", (args["isFriday"] as? Boolean) ?: return null)
-        // Optional: a `#AARRGGBB` accent for the next-prayer pill. Older callers
-        // may omit it, in which case the renderer uses its resource fallback.
-        (args["accentColor"] as? String)?.let { obj.put("accentColor", it) }
-        return obj.toString()
+        return org.json.JSONObject().put("days", daysArr).toString()
     }
 
     companion object {
