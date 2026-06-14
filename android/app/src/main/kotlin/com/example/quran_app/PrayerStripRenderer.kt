@@ -15,7 +15,7 @@ import android.text.style.StyleSpan
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 
-/** Builds the ongoing prayer-strip notification from a [PrayerStripState] snapshot. */
+/** Builds the ongoing prayer-strip notification for a single [PrayerStripDay]. */
 class PrayerStripRenderer(private val context: Context) {
 
     fun ensureChannel() {
