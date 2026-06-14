@@ -1890,6 +1890,16 @@ class S {
       args: [],
     );
   }
+
+  /// `Go to page`
+  String get goToPage {
+    return Intl.message(
+      'Go to page',
+      name: 'goToPage',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

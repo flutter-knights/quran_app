@@ -156,6 +156,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "full_title_tirmidhi":
             MessageLookupByLibrary.simpleMessage("Jami\' al-Tirmidhi"),
         "general_section": MessageLookupByLibrary.simpleMessage("General"),
+        "goToPage": MessageLookupByLibrary.simpleMessage("Go to page"),
         "go_to_juz": m4,
         "go_to_page": m5,
         "hadith_books_appbar_title":

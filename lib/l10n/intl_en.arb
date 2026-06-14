@@ -222,5 +222,6 @@
   "eachAyah": "Each ayah",
   "wholeRange": "Range",
   "infinite": "∞",
-  "playbackOptions": "Playback options"
+  "playbackOptions": "Playback options",
+  "goToPage": "Go to page"
 }
