@@ -17,7 +17,7 @@ class LastReadRepositoryImpl implements LastReadRepository {
   }
 
   LastReadHiveModel _to(LastRead v) => LastReadHiveModel(
-        page: v.page,
+        page: v.page.clamp(1, 604),
         surah: v.ayah?.surah,
         ayah: v.ayah?.ayah,
       );

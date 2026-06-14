@@ -61,4 +61,34 @@ void main() {
     expect(emissions, isNotEmpty);
     expect(emissions.last, const LastRead(page: 1));
   });
+
+  test('save clamps a too-low page up to 1', () async {
+    await repo.save(const LastRead(page: 0));
+    final got = await repo.get();
+    expect(got!.page, 1);
+  });
+
+  test('save clamps a too-high page down to 604', () async {
+    await repo.save(const LastRead(page: 700));
+    final got = await repo.get();
+    expect(got!.page, 604);
+  });
+
+  test('save leaves a valid page unchanged', () async {
+    await repo.save(const LastRead(page: 300));
+    final got = await repo.get();
+    expect(got!.page, 300);
+  });
+
+  test('save leaves page 1 unchanged', () async {
+    await repo.save(const LastRead(page: 1));
+    final got = await repo.get();
+    expect(got!.page, 1);
+  });
+
+  test('save leaves page 604 unchanged', () async {
+    await repo.save(const LastRead(page: 604));
+    final got = await repo.get();
+    expect(got!.page, 604);
+  });
 }
