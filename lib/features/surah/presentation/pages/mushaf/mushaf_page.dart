@@ -5,8 +5,8 @@ import 'package:quran/quran.dart' as quran;
 import '../../../../../core/constants/mushaf_reading_mode.dart';
 import '../../utils/mushaf_paper_colors.dart';
 import '../../../../../core/di/dependency_injection.dart';
-import '../../../../bookmarks/presentation/cubit/bookmark_cubit.dart';
-import '../../../../bookmarks/presentation/cubit/bookmark_state.dart';
+import '../../../../bookmarks/presentation/cubit/page_bookmark_cubit.dart';
+import '../../../../bookmarks/presentation/cubit/page_bookmark_state.dart';
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
 import '../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -248,10 +248,6 @@ class _MushafPageState extends State<MushafPage> {
     _mushafCubit.setPage(page);
   }
 
-  // The page's first ayah, used by the (Phase-1) carried-over ayah bookmark.
-  AyahIdentifier? _savableAyah() =>
-      sl<QuranPageService>().getFirstAyahOfPage(_mushafCubit.state.currentPage);
-
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -335,7 +331,6 @@ class _MushafPageState extends State<MushafPage> {
                   final playerVisible =
                       state.highlightedAyah != null || state.isOverlayPinned;
                   final visible = state.chromeVisible && !playerVisible;
-                  final savable = _savableAyah();
                   return SafeArea(
                     child: Align(
                       alignment: Alignment.bottomCenter,
@@ -350,25 +345,20 @@ class _MushafPageState extends State<MushafPage> {
                             ignoring: !visible,
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 16),
-                              child: BlocBuilder<BookmarkCubit, BookmarkState>(
-                                buildWhen: (a, b) => savable == null
-                                    ? false
-                                    : a.contains(savable) != b.contains(savable),
-                                builder: (context, bm) {
-                                  final isSaved =
-                                      savable != null && bm.contains(savable);
+                              child: BlocBuilder<PageBookmarkCubit, PageBookmarkState>(
+                                buildWhen: (a, b) =>
+                                    a.contains(state.currentPage) !=
+                                    b.contains(state.currentPage),
+                                builder: (context, pb) {
+                                  final isSaved = pb.contains(state.currentPage);
                                   return MushafBrowseBar(
                                     isSaved: isSaved,
                                     onSettings: () =>
                                         ReadingSettingsSheet.show(context),
                                     onPlay: _onPlayPage,
-                                    onToggleSave: () {
-                                      if (savable != null) {
-                                        context
-                                            .read<BookmarkCubit>()
-                                            .toggle(savable);
-                                      }
-                                    },
+                                    onToggleSave: () => context
+                                        .read<PageBookmarkCubit>()
+                                        .toggle(state.currentPage),
                                   );
                                 },
                               ),
