@@ -10,7 +10,7 @@ Before creating ANY widget, check this list. If a match exists, use it. A core w
 ## Design kit (`core/widgets/design/`)
 - **SurfaceCard**: surface card with a soft shadow, light mode only; no border (`child, padding, radius, accentColor, onTap`). The default card for any grouped content.
 - **LabelledAccentCard**: uppercase label in an accent colour over body text (`label, body, accentColor`).
-- **ArabicQuoteBlock**: `SurfaceCard` with a leading accent and Amiri Quran text (`text, fontSize`). For ayah, hadith and du'a text.
+- **ArabicQuoteBlock**: `SurfaceCard` with a leading accent and Scheherazade New text (`text, fontSize`). For ayah, hadith and du'a text.
 - **AppScreenAppBar**: back chip, centred title with optional eyebrow label, optional trailing action (`title, label, trailing, onBack`). The standard screen header.
 - **AppBarCenterTitle**: small uppercase label over the title (`label, title`).
 - **IconChip**: 38×38 app-bar icon button (`icon, onPressed, size, iconSize`).
