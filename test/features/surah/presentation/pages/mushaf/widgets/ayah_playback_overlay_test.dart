@@ -35,7 +35,8 @@ class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   @override
   void setChrome(bool visible) {}
   @override
-  ValueNotifier<AyahIdentifier?> get debugNotifier => throw UnimplementedError();
+  ValueNotifier<AyahIdentifier?> get debugNotifier =>
+      throw UnimplementedError();
 }
 
 class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
@@ -46,6 +47,15 @@ class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   bool stopped = false;
   bool paused = false;
   double? speedSet;
+  bool skippedPrevious = false;
+  @override
+  void setRange({required AyahIdentifier start, required AyahIdentifier end}) {}
+
+  @override
+  Future<void> skipPrevious() async {
+    skippedPrevious = true;
+  }
+
   @override
   Future<void> playSelected(AyahIdentifier a) async {
     lastPlay = a;
@@ -78,7 +88,9 @@ class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   @override
   Future<void> stop() async {
     stopped = true;
-    emit(state.copyWith(isPlaying: false, isPaused: false, clearCurrentAyah: true));
+    emit(
+      state.copyWith(isPlaying: false, isPaused: false, clearCurrentAyah: true),
+    );
   }
 
   @override
@@ -108,9 +120,7 @@ Widget _wrap({required _FakeMushaf m, required _FakePlayback p}) {
           BlocProvider<MushafCubit>.value(value: m),
           BlocProvider<PlaybackCubit>.value(value: p),
         ],
-        child: const Stack(
-          children: [AyahPlaybackOverlay()],
-        ),
+        child: const Stack(children: [AyahPlaybackOverlay()]),
       ),
     ),
   );
@@ -121,12 +131,22 @@ void main() {
     final m = _FakeMushaf(const MushafState(currentPage: 1));
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
-    expect(find.byIcon(Icons.play_arrow), findsNothing);
+    await tester.pumpAndSettle();
+    final overlay = find.byType(AyahPlaybackOverlay);
+    final opacity = tester.widget<AnimatedOpacity>(
+      find.descendant(of: overlay, matching: find.byType(AnimatedOpacity)),
+    );
+    final pointer = tester.widget<IgnorePointer>(
+      find.descendant(of: overlay, matching: find.byType(IgnorePointer)).first,
+    );
+    expect(opacity.opacity, 0);
+    expect(pointer.ignoring, isTrue);
   });
 
   testWidgets('shows label + play button when highlighted', (tester) async {
     final m = _FakeMushaf(
-        const MushafState(currentPage: 1, highlightedAyah: _target));
+      const MushafState(currentPage: 1, highlightedAyah: _target),
+    );
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
     await tester.pumpAndSettle();
@@ -134,10 +154,12 @@ void main() {
     expect(find.byIcon(Icons.play_arrow), findsOneWidget);
   });
 
-  testWidgets('tapping play calls PlaybackCubit.playRange to end of surah',
-      (tester) async {
+  testWidgets('tapping play calls PlaybackCubit.playRange to end of surah', (
+    tester,
+  ) async {
     final m = _FakeMushaf(
-        const MushafState(currentPage: 1, highlightedAyah: _target));
+      const MushafState(currentPage: 1, highlightedAyah: _target),
+    );
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
     await tester.pumpAndSettle();
@@ -148,15 +170,19 @@ void main() {
     expect(p.lastRangeEnd, const AyahIdentifier(surah: 2, ayah: 286));
   });
 
-  testWidgets('paused on same target → tap play calls resume (not restart)',
-      (tester) async {
+  testWidgets('paused on same target → tap play calls resume (not restart)', (
+    tester,
+  ) async {
     final m = _FakeMushaf(
-        const MushafState(currentPage: 1, highlightedAyah: _target));
-    final p = _FakePlayback(const PlaybackState(
-      currentAyah: _target,
-      isPlaying: false,
-      isPaused: true,
-    ));
+      const MushafState(currentPage: 1, highlightedAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(
+        currentAyah: _target,
+        isPlaying: false,
+        isPaused: true,
+      ),
+    );
     await tester.pumpWidget(_wrap(m: m, p: p));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.play_arrow));
@@ -167,20 +193,25 @@ void main() {
 
   testWidgets('shows pause icon while playing', (tester) async {
     final m = _FakeMushaf(
-        const MushafState(currentPage: 1, highlightedAyah: _target));
+      const MushafState(currentPage: 1, highlightedAyah: _target),
+    );
     final p = _FakePlayback(
-        const PlaybackState(currentAyah: _target, isPlaying: true));
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
     await tester.pumpWidget(_wrap(m: m, p: p));
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.pause), findsOneWidget);
   });
 
-  testWidgets('close button clears highlight but leaves playback running',
-      (tester) async {
+  testWidgets('close button clears highlight but leaves playback running', (
+    tester,
+  ) async {
     final m = _FakeMushaf(
-        const MushafState(currentPage: 1, highlightedAyah: _target));
+      const MushafState(currentPage: 1, highlightedAyah: _target),
+    );
     final p = _FakePlayback(
-        const PlaybackState(currentAyah: _target, isPlaying: true));
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
     await tester.pumpWidget(_wrap(m: m, p: p));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.expand_more));
@@ -190,21 +221,26 @@ void main() {
   });
 
   testWidgets('skip-prev disabled at (1,1)', (tester) async {
-    final m1 = _FakeMushaf(const MushafState(
+    final m1 = _FakeMushaf(
+      const MushafState(
         currentPage: 1,
-        highlightedAyah: AyahIdentifier(surah: 1, ayah: 1)));
+        highlightedAyah: AyahIdentifier(surah: 1, ayah: 1),
+      ),
+    );
     final p1 = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m1, p: p1));
     await tester.pumpAndSettle();
-    final prevBtn = tester
-        .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.skip_previous));
-    expect(prevBtn.onPressed, isNull);
+    await tester.tap(find.byIcon(Icons.skip_previous));
+    await tester.pump();
+    expect(p1.skippedPrevious, isFalse);
   });
 
-  testWidgets('loading state shows a spinner instead of play icon',
-      (tester) async {
+  testWidgets('loading state shows a spinner instead of play icon', (
+    tester,
+  ) async {
     final m = _FakeMushaf(
-        const MushafState(currentPage: 1, highlightedAyah: _target));
+      const MushafState(currentPage: 1, highlightedAyah: _target),
+    );
     final p = _FakePlayback(const PlaybackState(isLoading: true));
     await tester.pumpWidget(_wrap(m: m, p: p));
     // CircularProgressIndicator animates infinitely — use pump() not pumpAndSettle()
@@ -213,10 +249,12 @@ void main() {
     expect(find.byIcon(Icons.play_arrow), findsNothing);
   });
 
-  testWidgets('overlay always shows expand_more (never close icon)',
-      (tester) async {
+  testWidgets('overlay always shows expand_more (never close icon)', (
+    tester,
+  ) async {
     final m = _FakeMushaf(
-        const MushafState(currentPage: 1, highlightedAyah: _target));
+      const MushafState(currentPage: 1, highlightedAyah: _target),
+    );
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
     await tester.pumpAndSettle();
@@ -225,44 +263,47 @@ void main() {
   });
 
   testWidgets(
-      'pinned overlay: expand_more tap calls unpinOverlay and dismisses',
-      (tester) async {
-    final m = _FakeMushaf(const MushafState(
-      currentPage: 1,
-      isOverlayPinned: true,
-    ));
-    final p = _FakePlayback(
-        const PlaybackState(currentAyah: _target, isPlaying: true));
-    await tester.pumpWidget(_wrap(m: m, p: p));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.expand_more));
-    await tester.pumpAndSettle();
-    // After unpinning, isOverlayPinned becomes false
-    expect(m.state.isOverlayPinned, isFalse);
-  });
+    'pinned overlay: expand_more tap calls unpinOverlay and dismisses',
+    (tester) async {
+      final m = _FakeMushaf(
+        const MushafState(currentPage: 1, isOverlayPinned: true),
+      );
+      final p = _FakePlayback(
+        const PlaybackState(currentAyah: _target, isPlaying: true),
+      );
+      await tester.pumpWidget(_wrap(m: m, p: p));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
+      // After unpinning, isOverlayPinned becomes false
+      expect(m.state.isOverlayPinned, isFalse);
+    },
+  );
 
-  testWidgets('pinned overlay falls back to PlaybackCubit.currentAyah as label',
-      (tester) async {
-    final m = _FakeMushaf(const MushafState(
-      currentPage: 1,
-      isOverlayPinned: true,
-    ));
-    final p = _FakePlayback(const PlaybackState(currentAyah: _target));
-    await tester.pumpWidget(_wrap(m: m, p: p));
-    await tester.pumpAndSettle();
-    // Label should show the currentAyah from playback since no highlight
-    expect(find.textContaining('Surah 2, Ayah 5'), findsOneWidget);
-  });
+  testWidgets(
+    'pinned overlay falls back to PlaybackCubit.currentAyah as label',
+    (tester) async {
+      final m = _FakeMushaf(
+        const MushafState(currentPage: 1, isOverlayPinned: true),
+      );
+      final p = _FakePlayback(const PlaybackState(currentAyah: _target));
+      await tester.pumpWidget(_wrap(m: m, p: p));
+      await tester.pumpAndSettle();
+      // Label should show the currentAyah from playback since no highlight
+      expect(find.textContaining('Surah 2, Ayah 5'), findsOneWidget);
+    },
+  );
 
-  testWidgets('speed chip opens menu; selecting calls setSpeed', (tester) async {
+  testWidgets('options sheet speed chip calls setSpeed', (tester) async {
     final m = _FakeMushaf(
-        const MushafState(currentPage: 1, highlightedAyah: _target));
+      const MushafState(currentPage: 1, highlightedAyah: _target),
+    );
     final p = _FakePlayback(const PlaybackState(speed: 1.0));
     await tester.pumpWidget(_wrap(m: m, p: p));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('1.0x'));
+    await tester.tap(find.byIcon(Icons.tune));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('1.5x').last);
+    await tester.tap(find.text('1.5x'));
     await tester.pumpAndSettle();
     expect(p.speedSet, 1.5);
   });
