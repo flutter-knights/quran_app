@@ -1,4 +1,4 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import '../../core/di/dependency_injection.dart';
 import 'data/datasources/last_read_local_data_source.dart';

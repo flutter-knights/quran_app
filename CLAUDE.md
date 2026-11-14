@@ -8,8 +8,8 @@ settings.
 
 ## Build & Run Commands
 
-Flutter is pinned to **3.38.1 via FVM** (`.fvmrc`). `hive_generator` caps `analyzer` below 7.0.0,
-so `pub get` fails on Flutter 3.44+. Prefix every command with `fvm`:
+Flutter is pinned to **3.50.0 via FVM** (`.fvmrc`). Hive is `hive_ce` (adapters from `hive_ce_generator`,
+registered through `lib/hive_registrar.g.dart`). Prefix every command with `fvm`:
 
 ```bash
 fvm flutter pub get

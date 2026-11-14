@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart'; // Change to standard hive for annotations
+import 'package:hive_ce/hive.dart'; // Change to standard hive for annotations
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 

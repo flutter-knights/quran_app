@@ -8,7 +8,7 @@ part of 'last_read_hive_model.dart';
 
 class LastReadHiveModelAdapter extends TypeAdapter<LastReadHiveModel> {
   @override
-  final int typeId = 5;
+  final typeId = 5;
 
   @override
   LastReadHiveModel read(BinaryReader reader) {
@@ -17,9 +17,9 @@ class LastReadHiveModelAdapter extends TypeAdapter<LastReadHiveModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return LastReadHiveModel(
-      page: fields[0] as int,
-      surah: fields[1] as int?,
-      ayah: fields[2] as int?,
+      page: (fields[0] as num).toInt(),
+      surah: (fields[1] as num?)?.toInt(),
+      ayah: (fields[2] as num?)?.toInt(),
     );
   }
 

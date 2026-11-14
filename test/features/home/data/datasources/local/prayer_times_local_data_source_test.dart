@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
 import 'package:quran_app/features/home/data/models/prayer_times_hive_model.dart';

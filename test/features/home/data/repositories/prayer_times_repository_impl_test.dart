@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/features/home/data/datasources/local/prayer_config_signature.dart';

@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 /// Builds a stable string describing every input that determines prayer times.
 /// Coordinates are rounded to 1 decimal place (~11 km) so ordinary commuting

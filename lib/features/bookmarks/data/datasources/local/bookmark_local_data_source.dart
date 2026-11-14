@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 import '../../../../../core/errors/exceptions.dart';
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';

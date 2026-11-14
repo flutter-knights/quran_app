@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/data/datasources/last_read_local_data_source.dart';
 import 'package:quran_app/features/surah/data/models/last_read_hive_model.dart';

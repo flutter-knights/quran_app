@@ -8,7 +8,7 @@ part of 'hadith_hive_model.dart';
 
 class HadithHiveModelAdapter extends TypeAdapter<HadithHiveModel> {
   @override
-  final int typeId = 4;
+  final typeId = 4;
 
   @override
   HadithHiveModel read(BinaryReader reader) {
@@ -24,9 +24,9 @@ class HadithHiveModelAdapter extends TypeAdapter<HadithHiveModel> {
       arabicHeader: fields[4] as String,
       englishHeader: fields[3] as String,
       status: fields[6] as String,
-      pageNumber: fields[7] as int,
+      pageNumber: (fields[7] as num).toInt(),
       bookSlug: fields[8] as String,
-      chapterId: fields[9] as int,
+      chapterId: (fields[9] as num).toInt(),
     );
   }
 

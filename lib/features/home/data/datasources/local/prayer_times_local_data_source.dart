@@ -1,4 +1,4 @@
-import 'package:hive_flutter/adapters.dart';
+import 'package:hive_ce_flutter/adapters.dart';
 import 'package:quran_app/features/home/data/models/prayer_times_hive_model.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 

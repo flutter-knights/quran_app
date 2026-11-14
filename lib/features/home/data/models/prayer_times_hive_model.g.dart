@@ -8,7 +8,7 @@ part of 'prayer_times_hive_model.dart';
 
 class PrayerTimesHiveModelAdapter extends TypeAdapter<PrayerTimesHiveModel> {
   @override
-  final int typeId = 0;
+  final typeId = 0;
 
   @override
   PrayerTimesHiveModel read(BinaryReader reader) {

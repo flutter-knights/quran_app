@@ -1,5 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler_impl.dart';
