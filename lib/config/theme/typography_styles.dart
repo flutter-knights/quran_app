@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 extension TypographyStylesExtension on TextStyle {
-  TextStyle get amiriQuran => GoogleFonts.amiriQuran(textStyle: this);
-  TextStyle get cairo => GoogleFonts.cairo(textStyle: this);
-  TextStyle get amiri => GoogleFonts.amiri(textStyle: this);
-  TextStyle get scheherazade => GoogleFonts.scheherazadeNew(textStyle: this);
+  TextStyle get cairo => copyWith(fontFamily: 'Cairo');
+  TextStyle get amiri => copyWith(fontFamily: 'Amiri');
+  TextStyle get scheherazade => copyWith(fontFamily: 'ScheherazadeNew');
 }
 
 typedef TS = TypographyStyles;
@@ -49,12 +47,11 @@ abstract class TypographyStyles {
     FontWeight weight, [
     double spacing = 0.0,
   ]) {
-    return GoogleFonts.cairo(
-      textStyle: TextStyle(
-        fontSize: size,
-        fontWeight: weight,
-        letterSpacing: spacing,
-      ),
+    return TextStyle(
+      fontFamily: 'Cairo',
+      fontSize: size,
+      fontWeight: weight,
+      letterSpacing: spacing,
     );
   }
 }
