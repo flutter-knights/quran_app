@@ -10,32 +10,32 @@ paths: ["lib/**/*.dart"]
 - **Domain** → no imports from data/, config/, or presentation/. No Flutter framework imports.
   - ❌ No `package:flutter/*`, no `dart:ui`, no `generated/l10n.dart` (pulls Flutter transitively), no `config/theme/*`.
   - ✅ Pure Dart only: entities, abstract repos, use cases, enums, value objects.
-  - Any extension that uses `S.context`, `Color`, `BuildContext`, or widgets belongs in **`presentation/`**, never in `domain/entities/extensions/`.
-- **Data** → can import domain/ and config/ (for router, theme, hive init, etc.). No imports from presentation/.
+  - Any extension that uses `S`, `Color`, `BuildContext`, or widgets belongs in **`presentation/`**, never in `domain/entities/extensions/`.
+  - Canonical home for enum presentation extensions (`.localized()`, `.color`): `features/<feature>/presentation/utils/`, e.g. `enum_localization.dart` and `enum_colors.dart` side by side.
+- **Data** → can import domain/ and config/ (hive init, etc.). No imports from presentation/.
 - **Presentation** → can import domain/, config/, and core/. Never import data/ directly.
 
 ## Dependency injection
 
-- Dependency Injection is managed via `GetIt` (alias `sl`).
-- Data sources & Repositories: **LazySingleton**
-- Use Cases: **LazySingleton**
-- Cubits: **Factory** (new instance per screen generally, unless it is a global App-level cubit like SettingsCubit)
-- Register feature dependencies in `features/<feature>/<feature>_di.dart` (e.g. `initSurah()`), and call it from `core/di/dependency_injection.dart`.
+- GetIt, aliased `sl`.
+- Data sources, repositories, use cases: **LazySingleton**.
+- Cubits: **Factory**, a new instance per screen.
+  - Except app-wide cubits that must share one instance. `main.dart`'s `MultiBlocProvider` provides `SettingsCubit` (`registerSingleton`), `BookmarkCubit`, `PageBookmarkCubit`, `LastReadCubit`, `PlaybackCubit` and `DownloadBookCubit` (`registerLazySingleton`). `HadithBookmarkCubit` is a lazy singleton handed to each screen with `BlocProvider.value(value: sl<HadithBookmarkCubit>())`. Add a singleton only when two screens must see the same instance.
+- Register in `features/<feature>/<feature>_di.dart`, called from `core/di/dependency_injection.dart`.
 
 ## Caching
 
-- Data caching is implemented using `Hive`.
-- Hive Models (e.g. `LocationHiveModel`) must be in `data/models/` and not leak into the `domain/` or `presentation/` layers. Ensure proper TypeAdapter registration in `config/hive_config.dart`.
+- Hive. Hive models (`LocationHiveModel`, `HadithHiveModel`…) live in `data/models/`, are named `*_model.dart` (the only files `build.yaml` generates adapters for), and never leak into domain/ or presentation/. Register each adapter in `config/hive_config.dart`.
 
 ## Naming conventions
 
-- Use cases: verb + noun (`GetPrayerTimes`, `GetSurahDetails`, `GetAhadith`)
-- Cubits: noun + `Cubit` (`MushafCubit`, `PrayerCountdownCubit`)
-- Data sources: `<Entity>RemoteDataSource` (abstract) + `<Entity>RemoteDataSourceImpl` or `<Entity>LocalDataSource`.
-- Repositories: `<Entity>Repository` (abstract in domain/) + `<Entity>RepositoryImpl` (in data/)
-- Models: `<Entity>Model` or `<Entity>HiveModel` extending or implementing domain `<Entity>`
+- Use cases: verb + noun (`GetPrayerTimes`, `GetSurahDetails`, `GetAhadith`).
+- Cubits: noun + `Cubit` (`MushafCubit`, `PrayerCountdownCubit`).
+- Data sources: `<Entity>RemoteDataSource` (abstract) + `<Entity>RemoteDataSourceImpl`, or `<Entity>LocalDataSource`.
+- Repositories: `<Entity>Repository` (abstract in domain/) + `<Entity>RepositoryImpl` (in data/).
+- Models: `<Entity>Model` or `<Entity>HiveModel`, extending or mapping to the domain `<Entity>`.
 
-## Error Handling
+## Error handling
 
-- Use the `dartz` package for `Either<Failure, T>` return types in Repositories and UseCases.
-- Map exceptions (e.g. `ServerException`, `CacheException`) to `Failure` instances (`ServerFailure`, `CacheFailure`) within the Repository layer.
+- Repositories and use cases return `Either<Failure, T>` (dartz).
+- Map exceptions to `Failure` in the repository: `Failure.fromException(e)` routes `DioException` to `DioErrorHandler` and `LocationException` to `GeolocatorErrorHandler`, anything else to `UnknownFailure`. Catch `CacheException` yourself and return `CacheFailure`. Never let an exception escape a repository.

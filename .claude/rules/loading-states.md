@@ -1,3 +1,8 @@
+---
+description: Loading states — skeletons via skeletonizer, never a bare spinner
+paths: ["lib/**/*.dart"]
+---
+
 # Loading States
 
 **Always skeletonize loading.** Whenever the UI is waiting on data (initial load, pagination/"load more", search, refetch after a filter change, a detail screen fetching its content), show a **shimmer skeleton** that mirrors the real content's layout — never a bare `CircularProgressIndicator`/`LinearProgressIndicator` as the primary loading state.

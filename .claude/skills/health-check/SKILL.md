@@ -2,12 +2,12 @@
 name: health-check
 description: Run a full codebase health audit — finds tech debt, duplication, pattern violations, and quality regressions across all layers. Auto-fixes low-risk issues.
 user-invocable: true
-argument-hint: "[scope] — optional: feature name (crm), branch name (feature-xyz), or omit for full codebase"
+argument-hint: "[scope] — optional: feature name (surah), branch name (feature-xyz), or omit for full codebase"
 ---
 
 # Codebase Health Check
 
-Periodic full-codebase audit for the Wakil App. Dispatches 4 parallel audit agents, confidence-scores every finding, applies safe fixes automatically, writes a report, and prints a summary.
+Periodic full-codebase audit for the Quran App. Dispatches 4 parallel audit agents, confidence-scores every finding, applies safe fixes automatically, writes a report, and prints a summary.
 
 ## Scope Modes
 
@@ -16,7 +16,7 @@ Parse the argument to determine audit scope:
 | Invocation | Scope | Files scanned |
 |------------|-------|---------------|
 | `/health-check` | Full codebase | All of `lib/` |
-| `/health-check crm` | Single feature | `lib/features/crm/` + its imports from `lib/core/` |
+| `/health-check surah` | Single feature | `lib/features/surah/` + its imports from `lib/core/` |
 | `/health-check feature-search-sort-filter` | Branch diff | Only files changed on this branch vs `master` (via `git diff --name-only master...HEAD` or `git diff --name-only master...<branch>`) |
 
 **How to detect the mode:**
@@ -53,11 +53,11 @@ Launch **4 Sonnet agents in parallel**, each with the context bundle from Step 1
 Scan `lib/features/*/`, `lib/core/di/`, `lib/core/usecase/` for:
 
 - **Layer violations:** `data/` importing from `presentation/`, `domain/` importing from `data/` or `presentation/`
-- **Flutter in domain:** `domain/` files importing `package:flutter/*`, `dart:ui`, `generated/l10n.dart`, `app/theme/*`, or anything that transitively pulls Flutter (per `rules/architecture.md`)
+- **Flutter in domain:** `domain/` files importing `package:flutter/*`, `dart:ui`, `generated/l10n.dart`, `config/theme/*`, or anything that transitively pulls Flutter (per `rules/architecture.md`)
 - **Legacy enum extension path:** Any `.localized()` / `.color` enum extension file under `features/*/domain/entities/extensions/` — must be moved to `features/*/presentation/utils/enum_localization.dart` and `enum_colors.dart` (per `rules/feature-widgets.md`, `rules/localization.md`)
-- **DI registration:** Cubits must be `registerFactory`. Data sources, repos, use cases must be `registerLazySingleton`
+- **DI registration:** Screen cubits must be `registerFactory`; only the app-wide cubits listed in `rules/architecture.md` may be singletons. Data sources, repos, use cases must be `registerLazySingleton`
 - **State pattern:** Prefer `sealed class` + `final class` for state types over `abstract class`. Flag pre-existing `abstract class` states at **Suggestion** severity only — do NOT flag as Critical/Warning unless the cubit is newly added on this branch.
-- **guard() usage:** Every repository impl method that makes an async call must wrap it in `guard()`
+- **Repository error mapping:** Every repository impl method that makes an async call catches exceptions and returns `Left(Failure)` (`Failure.fromException`, `CacheFailure`); no exception escapes a repository
 - **isClosed check:** Every cubit must check `if (isClosed) return;` before every `emit()`
 - **UseCase SRP:** Each use case has exactly one `call()` method
 - **Repo contract:** Every abstract repository method has a matching implementation
@@ -125,7 +125,7 @@ Scan `lib/features/**/presentation/`, `lib/core/widgets/` for:
 - **RTL breakage:** `EdgeInsets.only(left:/right:)` or `Padding` with `left:`/`right:` must be `EdgeInsetsDirectional.only(start:/end:)`. Remove any `context.isArabic` ternaries that exist solely for layout spacing (keep `context.isArabic` only for locale-specific content logic like conditional text or formatting)
 - **Rebuild scoping — `BlocBuilder` without `buildWhen`** on cubits with 3+ state fields or multiple sealed variants. Should use `BlocSelector<C, S, T>` on a narrow slice, or add `buildWhen`.
 - **Rebuild scoping — wide `BlocBuilder` subtree:** builder returning >30 lines or wrapping >5 direct children — rebuild scope too broad; extract the reactive leaf into its own widget so siblings stay `const`.
-- **Side effects in `builder`:** `BlocBuilder`/`BlocConsumer.builder` that calls `showSnackBar`, `Navigator.push`, `showDialog`, `CustomSnackBar.*`, or any method with a side effect. Must move to `BlocListener`.
+- **Side effects in `builder`:** `BlocBuilder`/`BlocConsumer.builder` that calls `showSnackBar`, `Navigator.push`, `showDialog`, `showModalBottomSheet`, `context.push`, or any method with a side effect. Must move to `BlocListener`.
 - **`BlocConsumer` with trivial builder:** `BlocConsumer` where the builder ignores state or returns a `const`/static widget — should be plain `BlocListener`.
 - **Missing state equality:** State classes that don't extend `Equatable` (or omit fields from `props`) — breaks `buildWhen`/`BlocSelector` because every emit looks "changed".
 - **Non-`const` leaves inside `BlocBuilder`:** Widgets inside a reactive subtree whose args are all compile-time constants but aren't marked `const` — they rebuild on every emit for no reason.
@@ -158,17 +158,17 @@ Return findings as JSON array:
 
 **Agent #4: Convention & Consistency**
 
-Scan `lib/features/`, `lib/app/routes/`, `lib/core/` for:
+Scan `lib/features/`, `lib/config/router/`, `lib/core/` for:
 
 - **Naming mismatches:** File name doesn't match the primary class it contains (e.g., `contact_cubit.dart` should contain `ContactCubit`)
-- **Folder structure deviations:** Features missing required subdirectories: `data/datasources/remote/`, `data/models/`, `data/repositories/`, `domain/entities/`, `domain/repositories/`, `domain/usecases/`, `presentation/manager/`, `presentation/pages/`
+- **Folder structure deviations:** Features with data missing `data/datasources/`, `data/repositories/`, `domain/repositories/`, `domain/usecases/`, `presentation/cubit/`, `presentation/pages/`
 - **Enum localization:** Every enum used in UI must have a `.localized()` extension
 - **Enum colors:** Every status/type enum displayed in badges must have a `.color` getter
-- **Hardcoded routes:** Route strings must use `AppRoutes.*` constants, no inline `'/crm'` etc.
-- **resolveDisplay():** Nullable display values must use `resolveDisplay()`, not inline `?? ''` or `?? 'N/A'`
-- **Error display:** User-facing errors must use `CustomSnackBar`, not `ScaffoldMessenger` directly
-- **Localization access:** Must use `S.current` (not `S.of(context)`). Flag any Arabic/English user-facing string literals in dart files that should use `S.current`.
-- **Model serialization:** `fromJson`/`toJson` must be manual, no code generation annotations
+- **Hardcoded routes:** Route strings must use `AppRouter.*Path` constants, no inline `'/mushaf'` etc. Every `GoRoute` uses `pageBuilder: GoTransitions…`
+- **Loading states:** Primary loading states use a skeleton (`AppListSkeleton`, `HomeSkeleton`, `Skeletonizer`), not a bare `CircularProgressIndicator` (per `rules/loading-states.md`)
+- **Hex colours:** No `Color(0x…)` outside `config/theme/` and `mushaf_paper_colors.dart` (per `rules/theming.md`)
+- **Localization access:** Inside `build`, use `S.of(context)`; `S.current` only where there is no `BuildContext` or inside callbacks (per `rules/localization.md`). Flag any Arabic/English user-facing string literals that should be localized.
+- **Model serialization:** `fromJson`/`toJson` are manual; the only code generation is Hive adapters for `*_model.dart` in `data/models/`
 
 Return findings as JSON array:
 ```json
@@ -269,15 +269,14 @@ If an agent marks `autoFixable: true` for a rule not in the list, treat it as `a
 - `EdgeInsets.only(left: X, right: Y)` --> `EdgeInsetsDirectional.only(start: X, end: Y)`
 - Remove `context.isArabic` ternaries that only guard layout spacing
 - Add missing `if (isClosed) return;` before `emit()`
-- Replace `S.of(context)` with `S.current`
-- Replace hardcoded route strings with `AppRoutes.*`
-- Replace `?? ''` on display values with `resolveDisplay()`
+- Replace `S.current` inside a `build` method with `S.of(context)`
+- Replace hardcoded route strings with `AppRouter.*Path`
 - Convert `BlocConsumer` with trivial/ignored builder --> `BlocListener`
 
 **Ask approval first** — structural, high-risk, or requiring judgement:
 - Convert `BlocBuilder` --> `BlocSelector` (requires picking the slice and verifying rebuild intent)
 - Split a wide `BlocBuilder` into narrower `BlocBuilder`s / `BlocSelector`s
-- Move side-effect calls (`CustomSnackBar.*`, `Navigator.push`, `showDialog`) out of `BlocBuilder.builder` into a sibling `BlocListener` — requires picking the correct `listenWhen` predicate; wrong predicate = snackbar fires on every rebuild or never fires
+- Move side-effect calls (`showSnackBar`, `context.push`, `showDialog`, `showModalBottomSheet`) out of `BlocBuilder.builder` into a sibling `BlocListener` — requires picking the correct `listenWhen` predicate; wrong predicate = snackbar fires on every rebuild or never fires
 - Swap `context.watch` --> `context.read` inside callbacks — subtle correctness risk (stale closure, missed rebuild); needs case-by-case review
 - Extract a reactive subtree into a new named widget in `features/<name>/presentation/widgets/`
 - Promote a feature widget --> `core/widgets/` (only on verified second-feature usage, zero feature-specific imports)
@@ -350,7 +349,7 @@ Always use the full `lib/...` path in the link target, even when the display tex
 ### 🔥 Hotspot files (most findings)
 | # | File | Findings | Top severity |
 |---|------|----------|--------------|
-| 1 | [`lib/features/crm/.../file.dart`](../../lib/features/crm/.../file.dart) | N | 🔴 |
+| 1 | [`lib/features/surah/.../file.dart`](../../lib/features/surah/.../file.dart) | N | 🔴 |
 | 2 | ... | ... | ... |
 | 3 | ... | ... | ... |
 | 4 | ... | ... | ... |
@@ -403,7 +402,7 @@ Always use the full `lib/...` path in the link target, even when the display tex
 | File | Line | Rule applied |
 |------|------|--------------|
 | [`lib/path/to/file.dart`](../../lib/path/to/file.dart) | L | `const` added on reactive leaf |
-| [`lib/path/to/file.dart`](../../lib/path/to/file.dart) | L | `S.of(context)` → `S.current` |
+| [`lib/path/to/file.dart`](../../lib/path/to/file.dart) | L | `S.current` → `S.of(context)` |
 | ...    | ... | ... |
 
 ---

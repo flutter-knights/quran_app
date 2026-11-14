@@ -13,11 +13,11 @@ When adding a new use case to an existing feature, touch these files in order:
 
 ```dart
 import 'package:dartz/dartz.dart';
-import 'package:quran_app/core/errors/failures.dart';
+import 'package:quran_app/core/errors/failure.dart';
 
 class GetExampleData {
   final FeatureRepository repository;
-  
+
   const GetExampleData({required this.repository});
 
   Future<Either<Failure, String>> call() async {
@@ -48,7 +48,7 @@ class GetExampleData {
 ## 3. Data — Add method to remote or local data source (abstract + impl)
 
 ## 4. Data — Implement in repository impl
-Ensure that exceptions (e.g. `ServerException`, `HiveError`) are caught and mapped to `Failure` (e.g. `ServerFailure`, `CacheFailure`).
+Catch exceptions and map them to `Failure`: `Failure.fromException(e)` for Dio and location errors, `CacheFailure` for `CacheException`/`HiveError`. Never let one escape the repository.
 
 ## 5. DI — Register the use case
 ```dart

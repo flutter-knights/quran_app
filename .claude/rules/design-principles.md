@@ -1,13 +1,20 @@
 ---
-description: High-level design principles for the app
+description: KISS, DRY, separation of concerns, and the app-level design principles
 paths: ["lib/**/*.dart"]
 ---
 
 # Design Principles
 
-1. **Clean Architecture**: Strictly maintain the separation of Domain, Data, and Presentation layers as described in `architecture.md`.
-2. **State Management**: Use `flutter_bloc` (specifically `Cubit`). Keep business logic in Cubits, pure UI rendering in Views/Widgets.
-3. **Dependency Injection**: Leverage `GetIt` for providing DataSources, Repositories, UseCases, and Cubits.
-4. **Offline First/Caching**: Use `Hive` for storing user data like prayer times and location offline so the app remains functional.
-5. **Localization & RTL First**: The Quran app has strong Arabic usage. Ensure layouts work seamlessly in RTL modes.
-6. **Theming**: Dark and Light themes are managed centrally via `config/theme`. Access colors through standard `Theme.of(context)` properties or custom ThemeExtensions if defined.
+Every code change MUST follow:
+
+- **KISS**: no over-engineering, no speculative abstractions.
+- **DRY**: reuse existing helpers, base classes, and shared widgets before writing new ones. Check `core-widgets.md`, `feature-widgets.md` and `core-utilities.md` first.
+- **Separation of concerns**: one responsibility per layer and class. No API or Hive calls in widgets, no UI logic in repositories.
+
+App-level principles:
+
+1. **Clean Architecture**: Domain, Data and Presentation stay separate, per `architecture.md`.
+2. **State**: business logic in Cubits, rendering in widgets, per `state-management-patterns.md`.
+3. **Offline first**: prayer times, location, hadith pages and reading position are cached in Hive so the app works without a network.
+4. **Arabic and RTL first**: every layout must work in RTL, per `localization.md`.
+5. **Theming**: colours come from the palette and `context.colorScheme`, per `theming.md`.

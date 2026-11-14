@@ -12,7 +12,6 @@ Place cubit files at: `lib/features/<feature>/presentation/cubit/`
 ## Cubit Class
 
 ```dart
-// <name>_cubit.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -41,7 +40,6 @@ class ExampleCubit extends Cubit<ExampleState> {
 ## State file
 
 ```dart
-// <name>_state.dart
 part of '<name>_cubit.dart';
 
 sealed class ExampleState extends Equatable {

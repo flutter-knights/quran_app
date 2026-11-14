@@ -38,7 +38,7 @@ import '../../domain/entities/example.dart';
 
 part 'example_hive_model.g.dart';
 
-@HiveType(typeId: 10) // Make sure to use a unique typeId
+@HiveType(typeId: 10)
 class ExampleHiveModel extends Example {
   @HiveField(0)
   final int hiveId;
@@ -50,8 +50,6 @@ class ExampleHiveModel extends Example {
     required this.hiveId,
     required this.hiveName,
   }) : super(id: hiveId, name: hiveName);
-  
-  // Optionally fromJson/toJson if it also comes from API
 }
 ```
 

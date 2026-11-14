@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; d=\"$CLAUDE_PROJECT_DIR/.fvm/flutter_sdk/bin/dart\"; case \"$f\" in */lib/generated/*) ;; *.dart) if [ -x \"$d\" ]; then \"$d\" format \"$f\"; else fvm dart format \"$f\"; fi;; esac; } >/dev/null 2>&1 || true",
+            "timeout": 15,
+            "statusMessage": "dart format"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Bash(git push* --force*)",
+      "Bash(git push* -f*)",
+      "Bash(git push* --mirror*)",
+      "Bash(git push* --delete*)",
+      "Bash(git push* :*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(git checkout -- *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -r *)",
+      "Bash(sudo *)",
+      "Bash(curl * | bash*)",
+      "Bash(wget * | bash*)"
+    ]
+  }
+}

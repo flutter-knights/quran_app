@@ -1,10 +1,29 @@
 ---
-description: Core utility rules
-paths: ["lib/core/utils/**/*.dart", "lib/core/helper_functions/**/*.dart"]
+description: Core utilities, helpers, constants, and base classes — always reuse before writing new ones
+paths: ["lib/**/*.dart"]
 ---
 
-# Core Utilities
+# Core Utilities & Infrastructure
 
-- General utility functions and helpers reside in `lib/core/utils` or `lib/core/helper_functions`.
-- These include Date/Time formatters, extension methods (e.g. for Strings, DateTimes), input validators, and general helpers.
-- They must remain pure or solely rely on standard dart libraries or stable third-party packages. Avoid injecting UI logic or complex dependencies into core utilities.
+Check here before writing a helper. Keep these pure: no widgets, no feature imports.
+
+## Helper functions (`core/helper functions/`, with a space; imported as `helper%20functions`)
+- **`normalizeArabic(String)`** (`arabic_normalizer.dart`): strips diacritics and folds letter variants for Quran search; apply it to both the query and the index. Pure Dart, safe in domain.
+- **`AhadithHelpers`**: `cleanArabicQuery` (hadith search's own normalizer, kept separate on purpose), `sortHadiths`, `isArabic(text)`.
+- **`String.toIndicNumerals(localeCode)`** (`numeral_helpers.dart`) and **`Object.toLocalized(context)`** (`locale_helpers.dart`): ASCII → Arabic-Indic digits when the locale is Arabic. Use one of them for every number shown in Arabic; never hand-roll the digit map again.
+- **`context.isArabic`**, **`context.langCode`** (`locale_helpers.dart`).
+- **`DateTime.to24hTime()`**, **`DateTime.format12h(context)`**, **`String.parse24hTime()`**, `removeTimeZone()`, `gregorianDate()` (`time_helpers.dart`).
+- **`Duration.toDigitalClock()`** (`duration_helpers.dart`).
+
+## Constants (`core/constants/`)
+- **`AssetsDir`**: `fontsDir`, `imagesDir`, `iconsDir`, `jsonDir`. Never hardcode an `assets/` path.
+- **`DeviceSize`** on `BuildContext`: `context.height`, `context.width`, `context.aspectRatio`, `context.fontScaler`, `context.responsiveFont(size)`.
+- **`ColorPalette`**, **`MushafPaper`**, **`MushafReadingMode`**, **`PrayerName`**, **`FeatureFlags`**, **`HadithPagination`**.
+
+## Base classes
+- **`UseCase<T, P>`** (`core/usecases/usecase.dart`): `Future<T> call(P params)`. **`StreamUseCase<T, Params>`** for streams. **`NoParams`** for parameterless calls.
+- **`Failure`** (`core/errors/failure.dart`) and its subclasses; `Failure.fromException(e)`.
+- **`DioErrorHandler.handle`**, **`GeolocatorErrorHandler.handle`** (`core/utils/`): exception → `Failure`.
+
+## Services
+- **`PrayerNotificationScheduler`** (`core/notifications/`): schedules adhan notifications; `init()` runs in `main()`.

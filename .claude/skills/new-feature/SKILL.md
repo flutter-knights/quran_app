@@ -21,17 +21,13 @@ After all sub-skills complete, finish with:
 import 'package:quran_app/core/di/dependency_injection.dart';
 
 void initFeatureName() {
-  // Data sources
   sl.registerLazySingleton<FeatureRemoteDataSource>(
     () => FeatureRemoteDataSourceImpl(dio: sl()),
   );
-  // Repository
   sl.registerLazySingleton<FeatureRepository>(
     () => FeatureRepositoryImpl(remoteDataSource: sl()),
   );
-  // Use cases
   sl.registerLazySingleton(() => GetItems(repository: sl()));
-  // Cubits (Factory, not Singleton)
   sl.registerFactory(() => ItemsCubit(getItems: sl()));
 }
 ```

@@ -7,60 +7,71 @@ argument-hint: "<screen-name>"
 
 # Add New Screen
 
+Read `routing-and-navigation.md`, `state-management-patterns.md`, `loading-states.md` and `core-widgets.md` first.
+
 ## 1. Create the page file
 
-Place it at: `lib/features/<feature>/presentation/pages/<view_name>_page.dart`
+`lib/features/<feature>/presentation/pages/<view_name>_page.dart`. Widgets only this screen uses go in `pages/widgets/`.
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/widgets/design/app_list_skeleton.dart';
+import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
+import 'package:quran_app/generated/l10n.dart';
 
 class ExamplePage extends StatelessWidget {
   const ExamplePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ExampleCubit>()..loadData(),
-      child: const _ExamplePageBody(),
-    );
-  }
-}
-
-class _ExamplePageBody extends StatelessWidget {
-  const _ExamplePageBody();
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(S.of(context).example_title)),
-      body: BlocBuilder<ExampleCubit, ExampleState>(
-        builder: (context, state) {
-          if (state is ExampleLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is ExampleLoaded) {
-            return Text(state.data);
-          } else if (state is ExampleError) {
-            return Center(child: Text(state.message));
-          }
-          return const SizedBox.shrink();
-        },
+      body: SafeArea(
+        child: Column(
+          children: [
+            AppScreenAppBar(title: S.of(context).example_title),
+            Expanded(
+              child: BlocBuilder<ExampleCubit, ExampleState>(
+                builder: (context, state) => switch (state) {
+                  ExampleLoading() || ExampleInitial() => const AppListSkeleton(),
+                  ExampleLoaded(:final data) => ExampleList(data: data),
+                  ExampleError(:final message) => Center(child: Text(message)),
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 ```
 
-## 2. Add route to go_router
+- Loading is a skeleton (`AppListSkeleton`, or a `Skeletonizer` over placeholder content shaped like the loaded layout), never a spinner.
+- Snackbars, navigation and sheets go in a `BlocListener`, never in `builder`.
 
-In `lib/config/router/app_router.dart`, add:
+## 2. Add the route
+
+In `lib/config/router/app_router.dart`, add a path constant and a route that provides the cubit:
+
+```dart
+static const String examplePath = "/example";
+```
+
 ```dart
 GoRoute(
-  path: '/example',
-  builder: (context, state) => const ExamplePage(),
+  path: examplePath,
+  pageBuilder: GoTransitions.fade.withScale.build(
+    builder: (context, state) => BlocProvider(
+      create: (_) => sl<ExampleCubit>()..loadData(),
+      child: const ExamplePage(),
+    ),
+  ),
 ),
 ```
 
-## 3. All user-facing strings must use `S.of(context).key_name`
-Update `intl_en.arb` and `intl_ar.arb` with the new keys.
+Params go in `extra` with a typed cast (`state.extra as int`). Navigate with `context.push(AppRouter.examplePath)`.
+
+## 3. Strings
+
+`S.of(context).key` inside `build`. Add every key to both `lib/l10n/intl_en.arb` and `lib/l10n/intl_ar.arb`; the IDE extension regenerates `lib/generated/`.
