@@ -22,6 +22,7 @@ Future<void> initHive() async {
   await Hive.openBox<List>('page_bookmarks');
   Hive.registerAdapter(LastReadHiveModelAdapter());
   await Hive.openBox<LastReadHiveModel>('last_read');
+  await Hive.openBox('prayerConfig');
 }
 
 /// Opens a box that only holds re-fetchable cached data. If the on-disk records

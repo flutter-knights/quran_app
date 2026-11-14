@@ -41,6 +41,16 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             Log.i(TAG, "cancelled reminder notif id=$reminderId for $prayer")
         }
 
+        // If POST_NOTIFICATIONS is not granted, the foreground-service
+        // notification is suppressed by the OS but the MediaPlayer would still
+        // play — adhan audio with no card and no Stop control. Gate here (before
+        // startForegroundService) rather than inside the service, so we never
+        // start-then-bail (which crashes with ForegroundServiceDidNotStartInTime).
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            Log.w(TAG, "onReceive: notifications disabled — skipping adhan for $prayer")
+            return
+        }
+
         val serviceIntent = Intent(context, AdhanPlaybackService::class.java).apply {
             action = AdhanPlaybackService.ACTION_PLAY
             putExtra(AdhanPlaybackService.EXTRA_PRAYER, prayer)

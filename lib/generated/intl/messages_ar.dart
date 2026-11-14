@@ -41,15 +41,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m9(percent) => "${percent}% مكتمل";
 
-  static String m10(time, prayerName) => "متبقي ${time} على صلاة ${prayerName}";
+  static String m10(deg) => "اتجه نحو ${deg}° من الشمال لمواجهة القبلة.";
 
-  static String m11(minutes) => "قبل ${minutes} د";
+  static String m11(km) => "${km} كم";
 
-  static String m12(count) => "+${count} أخرى — حدّد بحثك";
+  static String m12(time, prayerName) => "متبقي ${time} على صلاة ${prayerName}";
 
-  static String m13(surah, ayah) => "${surah} · آية ${ayah}";
+  static String m13(minutes) => "قبل ${minutes} د";
 
-  static String m14(count) => "${count} سورة";
+  static String m14(count) => "+${count} أخرى — حدّد بحثك";
+
+  static String m15(surah, ayah) => "${surah} · آية ${ayah}";
+
+  static String m16(count) => "${count} سورة";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -70,6 +74,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "arabicLanguage": MessageLookupByLibrary.simpleMessage("اللغة العربية"),
         "arabic_label": MessageLookupByLibrary.simpleMessage("العربية"),
         "asr": MessageLookupByLibrary.simpleMessage("العصر"),
+        "asrSchool_hanafi": MessageLookupByLibrary.simpleMessage("الحنفي"),
+        "asrSchool_shafi": MessageLookupByLibrary.simpleMessage(
+            "الافتراضي (الشافعي، المالكي، الحنبلي)"),
         "author_abu_dawood":
             MessageLookupByLibrary.simpleMessage("الإمام أبو داود السجستاني"),
         "author_albani":
@@ -107,9 +114,50 @@ class MessageLookup extends MessageLookupByLibrary {
         "books_count": m3,
         "books_section": MessageLookupByLibrary.simpleMessage("الكتب"),
         "brightness": MessageLookupByLibrary.simpleMessage("السطوع"),
+        "calculationMethod_auto":
+            MessageLookupByLibrary.simpleMessage("تلقائي (حسب المنطقة)"),
+        "calculationMethod_egypt": MessageLookupByLibrary.simpleMessage(
+            "الهيئة المصرية العامة للمساحة"),
+        "calculationMethod_france":
+            MessageLookupByLibrary.simpleMessage("فرنسا"),
+        "calculationMethod_gulf":
+            MessageLookupByLibrary.simpleMessage("منطقة الخليج"),
+        "calculationMethod_isna": MessageLookupByLibrary.simpleMessage(
+            "الجمعية الإسلامية لأمريكا الشمالية"),
+        "calculationMethod_karachi": MessageLookupByLibrary.simpleMessage(
+            "جامعة العلوم الإسلامية، كراتشي"),
+        "calculationMethod_kuwait":
+            MessageLookupByLibrary.simpleMessage("الكويت"),
+        "calculationMethod_methodLabel":
+            MessageLookupByLibrary.simpleMessage("الطريقة"),
+        "calculationMethod_mwl":
+            MessageLookupByLibrary.simpleMessage("رابطة العالم الإسلامي"),
+        "calculationMethod_qatar": MessageLookupByLibrary.simpleMessage("قطر"),
+        "calculationMethod_russia":
+            MessageLookupByLibrary.simpleMessage("روسيا"),
+        "calculationMethod_schoolLabel":
+            MessageLookupByLibrary.simpleMessage("مذهب حساب العصر"),
+        "calculationMethod_section":
+            MessageLookupByLibrary.simpleMessage("طريقة حساب أوقات الصلاة"),
+        "calculationMethod_singapore":
+            MessageLookupByLibrary.simpleMessage("سنغافورة"),
+        "calculationMethod_tehran":
+            MessageLookupByLibrary.simpleMessage("معهد الجيوفيزياء، طهران"),
+        "calculationMethod_turkey":
+            MessageLookupByLibrary.simpleMessage("تركيا (ديانت)"),
+        "calculationMethod_ummAlQura":
+            MessageLookupByLibrary.simpleMessage("أم القرى (مكة)"),
         "chapter_label": MessageLookupByLibrary.simpleMessage("باب"),
         "collections_label": MessageLookupByLibrary.simpleMessage("المجموعات"),
         "coming_soon": MessageLookupByLibrary.simpleMessage("قريبًا"),
+        "compass_rose_e": MessageLookupByLibrary.simpleMessage("شرق"),
+        "compass_rose_n": MessageLookupByLibrary.simpleMessage("شمال"),
+        "compass_rose_ne": MessageLookupByLibrary.simpleMessage("شمال شرق"),
+        "compass_rose_nw": MessageLookupByLibrary.simpleMessage("شمال غرب"),
+        "compass_rose_s": MessageLookupByLibrary.simpleMessage("جنوب"),
+        "compass_rose_se": MessageLookupByLibrary.simpleMessage("جنوب شرق"),
+        "compass_rose_sw": MessageLookupByLibrary.simpleMessage("جنوب غرب"),
+        "compass_rose_w": MessageLookupByLibrary.simpleMessage("غرب"),
         "continue_reading":
             MessageLookupByLibrary.simpleMessage("متابعة التلاوة"),
         "continuousScroll": MessageLookupByLibrary.simpleMessage("تمرير"),
@@ -163,6 +211,17 @@ class MessageLookup extends MessageLookupByLibrary {
         "hadith_total_label":
             MessageLookupByLibrary.simpleMessage("إجمالي الأحاديث"),
         "hijriDateWithDay": m6,
+        "home_locationCard_body": MessageLookupByLibrary.simpleMessage(
+            "نستخدمه فقط لحساب مواقيت صلاة دقيقة."),
+        "home_locationCard_enable":
+            MessageLookupByLibrary.simpleMessage("تفعيل الموقع"),
+        "home_locationCard_openSettings":
+            MessageLookupByLibrary.simpleMessage("فتح الإعدادات"),
+        "home_locationCard_title": MessageLookupByLibrary.simpleMessage(
+            "تحتاج مواقيت الصلاة إلى موقعك"),
+        "home_notifHint_allow": MessageLookupByLibrary.simpleMessage("السماح"),
+        "home_notifHint_text":
+            MessageLookupByLibrary.simpleMessage("فعّل الإشعارات لسماع الأذان"),
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("سنن ابن ماجه"),
         "infinite": MessageLookupByLibrary.simpleMessage("∞"),
         "isha": MessageLookupByLibrary.simpleMessage("العشاء"),
@@ -183,6 +242,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "next_hadith": MessageLookupByLibrary.simpleMessage("التالي"),
         "no_bookmarks_yet":
             MessageLookupByLibrary.simpleMessage("لا توجد إشارات مرجعية بعد"),
+        "notifSettings_disabledBanner_action":
+            MessageLookupByLibrary.simpleMessage("فتح الإعدادات"),
+        "notifSettings_disabledBanner_text":
+            MessageLookupByLibrary.simpleMessage(
+                "الإشعارات متوقفة — لن تسمع الأذان."),
         "notifications": MessageLookupByLibrary.simpleMessage("الإشعارات"),
         "notificationsScreenSubtitle":
             MessageLookupByLibrary.simpleMessage("إدارة إشعارات أوقات الصلاة."),
@@ -236,6 +300,27 @@ class MessageLookup extends MessageLookupByLibrary {
         "prayers": MessageLookupByLibrary.simpleMessage("الصلوات"),
         "previous_hadith": MessageLookupByLibrary.simpleMessage("السابق"),
         "progress_complete": m9,
+        "qibla_align_manually": m10,
+        "qibla_aligned":
+            MessageLookupByLibrary.simpleMessage("في اتجاه القبلة"),
+        "qibla_app_bar_label":
+            MessageLookupByLibrary.simpleMessage("اتجاه القبلة"),
+        "qibla_bearing_suffix":
+            MessageLookupByLibrary.simpleMessage("اتجاه القبلة"),
+        "qibla_calibrate_hint": MessageLookupByLibrary.simpleMessage(
+            "حرّك هاتفك على شكل ٨ لمعايرة البوصلة"),
+        "qibla_distance_km": m11,
+        "qibla_no_compass_title":
+            MessageLookupByLibrary.simpleMessage("لا يوجد بوصلة في هذا الجهاز"),
+        "qibla_point_to_kaaba":
+            MessageLookupByLibrary.simpleMessage("وجِّه هاتفك نحو الكعبة"),
+        "qibla_recalibrate":
+            MessageLookupByLibrary.simpleMessage("إعادة المعايرة"),
+        "qibla_screen_title": MessageLookupByLibrary.simpleMessage("القبلة"),
+        "qibla_to_makkah":
+            MessageLookupByLibrary.simpleMessage("إلى مكة المكرمة"),
+        "qibla_your_location":
+            MessageLookupByLibrary.simpleMessage("موقعك الحالي"),
         "quickAccess": MessageLookupByLibrary.simpleMessage("الوصول السريع"),
         "quran_screen_title":
             MessageLookupByLibrary.simpleMessage("القرآن الكريم"),
@@ -246,16 +331,16 @@ class MessageLookup extends MessageLookupByLibrary {
         "readingSettings":
             MessageLookupByLibrary.simpleMessage("إعدادات القراءة"),
         "reciter_label": MessageLookupByLibrary.simpleMessage("القارئ"),
-        "remainingTimeLabel": m10,
+        "remainingTimeLabel": m12,
         "reminderLabel": MessageLookupByLibrary.simpleMessage("ذكرني"),
-        "reminderMinutesBefore": m11,
+        "reminderMinutesBefore": m13,
         "reminderOff": MessageLookupByLibrary.simpleMessage("لا"),
         "repeat": MessageLookupByLibrary.simpleMessage("التكرار"),
         "sahih_bukhari": MessageLookupByLibrary.simpleMessage("صحيح البخاري"),
         "sahih_muslim": MessageLookupByLibrary.simpleMessage("صحيح مسلم"),
         "search_hadith_hint":
             MessageLookupByLibrary.simpleMessage("ابحث في هذا الكتاب…"),
-        "search_more_results": m12,
+        "search_more_results": m14,
         "search_no_results":
             MessageLookupByLibrary.simpleMessage("لا توجد أحاديث مطابقة"),
         "search_quran_hint": MessageLookupByLibrary.simpleMessage(
@@ -281,9 +366,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "status_sahih": MessageLookupByLibrary.simpleMessage("صحيح"),
         "sunan_nasai": MessageLookupByLibrary.simpleMessage("سنن النسائي"),
         "sunrise": MessageLookupByLibrary.simpleMessage("الشروق"),
-        "surah_ayah_label": m13,
+        "surah_ayah_label": m15,
         "surahs_appbar_title": MessageLookupByLibrary.simpleMessage("المصحف"),
-        "surahs_count": m14,
+        "surahs_count": m16,
         "tab_juz": MessageLookupByLibrary.simpleMessage("الأجزاء"),
         "tab_pages": MessageLookupByLibrary.simpleMessage("الصفحات"),
         "tab_surahs": MessageLookupByLibrary.simpleMessage("السور"),

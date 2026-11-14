@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
@@ -274,4 +275,19 @@ void main() {
       throwsA(isA<AssertionError>()),
     );
   });
+
+  blocTest<SettingsCubit, SettingsState>(
+    'updateCalculationMethod emits new method',
+    build: () => SettingsCubit(),
+    act: (c) => c.updateCalculationMethod(CalculationMethod.egypt),
+    verify: (c) =>
+        expect(c.state.settingsModel.calculationMethod, CalculationMethod.egypt),
+  );
+
+  blocTest<SettingsCubit, SettingsState>(
+    'updateAsrSchool emits new school',
+    build: () => SettingsCubit(),
+    act: (c) => c.updateAsrSchool(AsrSchool.hanafi),
+    verify: (c) => expect(c.state.settingsModel.asrSchool, AsrSchool.hanafi),
+  );
 }

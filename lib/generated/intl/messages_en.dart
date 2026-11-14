@@ -41,15 +41,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m9(percent) => "${percent}% complete";
 
-  static String m10(time, prayerName) => "${time} remaining for ${prayerName}";
+  static String m10(deg) => "Face ${deg}° from North to face the Qibla.";
 
-  static String m11(minutes) => "${minutes} min before";
+  static String m11(km) => "${km} km";
 
-  static String m12(count) => "+${count} more — refine your search";
+  static String m12(time, prayerName) => "${time} remaining for ${prayerName}";
 
-  static String m13(surah, ayah) => "${surah} · Ayah ${ayah}";
+  static String m13(minutes) => "${minutes} min before";
 
-  static String m14(count) => "${count} surahs";
+  static String m14(count) => "+${count} more — refine your search";
+
+  static String m15(surah, ayah) => "${surah} · Ayah ${ayah}";
+
+  static String m16(count) => "${count} surahs";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -73,6 +77,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Arabic Language"),
         "arabic_label": MessageLookupByLibrary.simpleMessage("Arabic"),
         "asr": MessageLookupByLibrary.simpleMessage("Asr"),
+        "asrSchool_hanafi": MessageLookupByLibrary.simpleMessage("Hanafi"),
+        "asrSchool_shafi": MessageLookupByLibrary.simpleMessage(
+            "Standard (Shafiʿi, Maliki, Hanbali)"),
         "author_abu_dawood": MessageLookupByLibrary.simpleMessage(
             "Imam Abu Dawood al-Sijistani"),
         "author_ahmad":
@@ -111,10 +118,52 @@ class MessageLookup extends MessageLookupByLibrary {
         "books_count": m3,
         "books_section": MessageLookupByLibrary.simpleMessage("Books"),
         "brightness": MessageLookupByLibrary.simpleMessage("Brightness"),
+        "calculationMethod_auto":
+            MessageLookupByLibrary.simpleMessage("Automatic (by region)"),
+        "calculationMethod_egypt":
+            MessageLookupByLibrary.simpleMessage("Egyptian General Authority"),
+        "calculationMethod_france":
+            MessageLookupByLibrary.simpleMessage("France"),
+        "calculationMethod_gulf":
+            MessageLookupByLibrary.simpleMessage("Gulf Region"),
+        "calculationMethod_isna":
+            MessageLookupByLibrary.simpleMessage("ISNA (North America)"),
+        "calculationMethod_karachi": MessageLookupByLibrary.simpleMessage(
+            "University of Islamic Sciences, Karachi"),
+        "calculationMethod_kuwait":
+            MessageLookupByLibrary.simpleMessage("Kuwait"),
+        "calculationMethod_methodLabel":
+            MessageLookupByLibrary.simpleMessage("Method"),
+        "calculationMethod_mwl":
+            MessageLookupByLibrary.simpleMessage("Muslim World League"),
+        "calculationMethod_qatar":
+            MessageLookupByLibrary.simpleMessage("Qatar"),
+        "calculationMethod_russia":
+            MessageLookupByLibrary.simpleMessage("Russia"),
+        "calculationMethod_schoolLabel":
+            MessageLookupByLibrary.simpleMessage("Asr (juristic) method"),
+        "calculationMethod_section":
+            MessageLookupByLibrary.simpleMessage("Calculation method"),
+        "calculationMethod_singapore":
+            MessageLookupByLibrary.simpleMessage("Singapore"),
+        "calculationMethod_tehran": MessageLookupByLibrary.simpleMessage(
+            "Institute of Geophysics, Tehran"),
+        "calculationMethod_turkey":
+            MessageLookupByLibrary.simpleMessage("Turkey (Diyanet)"),
+        "calculationMethod_ummAlQura":
+            MessageLookupByLibrary.simpleMessage("Umm al-Qura (Makkah)"),
         "chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
         "collections_label":
             MessageLookupByLibrary.simpleMessage("Collections"),
         "coming_soon": MessageLookupByLibrary.simpleMessage("Coming soon"),
+        "compass_rose_e": MessageLookupByLibrary.simpleMessage("East"),
+        "compass_rose_n": MessageLookupByLibrary.simpleMessage("North"),
+        "compass_rose_ne": MessageLookupByLibrary.simpleMessage("North-East"),
+        "compass_rose_nw": MessageLookupByLibrary.simpleMessage("North-West"),
+        "compass_rose_s": MessageLookupByLibrary.simpleMessage("South"),
+        "compass_rose_se": MessageLookupByLibrary.simpleMessage("South-East"),
+        "compass_rose_sw": MessageLookupByLibrary.simpleMessage("South-West"),
+        "compass_rose_w": MessageLookupByLibrary.simpleMessage("West"),
         "continue_reading":
             MessageLookupByLibrary.simpleMessage("Continue reading"),
         "continuousScroll": MessageLookupByLibrary.simpleMessage("Scroll"),
@@ -136,7 +185,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "filter_apply": MessageLookupByLibrary.simpleMessage("Apply"),
         "filter_chapter_label": MessageLookupByLibrary.simpleMessage("Chapter"),
         "filter_clear": MessageLookupByLibrary.simpleMessage("Clear"),
-        "filter_status_label": MessageLookupByLibrary.simpleMessage("Status"),
+        "filter_status_label": MessageLookupByLibrary.simpleMessage("Grade"),
         "filters_title": MessageLookupByLibrary.simpleMessage("Filters"),
         "fromAyah": MessageLookupByLibrary.simpleMessage("From"),
         "full_title_abu_dawood":
@@ -173,6 +222,17 @@ class MessageLookup extends MessageLookupByLibrary {
         "hadith_total_label":
             MessageLookupByLibrary.simpleMessage("Total Ahadith"),
         "hijriDateWithDay": m6,
+        "home_locationCard_body": MessageLookupByLibrary.simpleMessage(
+            "We use it only to compute accurate prayer times."),
+        "home_locationCard_enable":
+            MessageLookupByLibrary.simpleMessage("Enable location"),
+        "home_locationCard_openSettings":
+            MessageLookupByLibrary.simpleMessage("Open settings"),
+        "home_locationCard_title": MessageLookupByLibrary.simpleMessage(
+            "Prayer times need your location"),
+        "home_notifHint_allow": MessageLookupByLibrary.simpleMessage("Allow"),
+        "home_notifHint_text": MessageLookupByLibrary.simpleMessage(
+            "Turn on notifications to hear the adhan"),
         "ibn_e_majah": MessageLookupByLibrary.simpleMessage("Sunan Ibn Majah"),
         "infinite": MessageLookupByLibrary.simpleMessage("∞"),
         "isha": MessageLookupByLibrary.simpleMessage("Isha"),
@@ -193,6 +253,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "next_hadith": MessageLookupByLibrary.simpleMessage("Next"),
         "no_bookmarks_yet":
             MessageLookupByLibrary.simpleMessage("No bookmarks yet"),
+        "notifSettings_disabledBanner_action":
+            MessageLookupByLibrary.simpleMessage("Open settings"),
+        "notifSettings_disabledBanner_text":
+            MessageLookupByLibrary.simpleMessage(
+                "Notifications are off — you won\'t hear the adhan."),
         "notifications": MessageLookupByLibrary.simpleMessage("Notifications"),
         "notificationsScreenSubtitle": MessageLookupByLibrary.simpleMessage(
             "Manage prayer-time notifications."),
@@ -247,6 +312,26 @@ class MessageLookup extends MessageLookupByLibrary {
         "prayers": MessageLookupByLibrary.simpleMessage("Prayers"),
         "previous_hadith": MessageLookupByLibrary.simpleMessage("Previous"),
         "progress_complete": m9,
+        "qibla_align_manually": m10,
+        "qibla_aligned":
+            MessageLookupByLibrary.simpleMessage("Aligned with the Qibla"),
+        "qibla_app_bar_label":
+            MessageLookupByLibrary.simpleMessage("Qibla Direction"),
+        "qibla_bearing_suffix":
+            MessageLookupByLibrary.simpleMessage("Qibla bearing"),
+        "qibla_calibrate_hint": MessageLookupByLibrary.simpleMessage(
+            "Wave your phone in a figure-8 to calibrate"),
+        "qibla_distance_km": m11,
+        "qibla_no_compass_title":
+            MessageLookupByLibrary.simpleMessage("No compass on this device"),
+        "qibla_point_to_kaaba": MessageLookupByLibrary.simpleMessage(
+            "Point your phone toward the Kaaba"),
+        "qibla_recalibrate":
+            MessageLookupByLibrary.simpleMessage("Recalibrate"),
+        "qibla_screen_title": MessageLookupByLibrary.simpleMessage("Qibla"),
+        "qibla_to_makkah": MessageLookupByLibrary.simpleMessage("To Makkah"),
+        "qibla_your_location":
+            MessageLookupByLibrary.simpleMessage("Your location"),
         "quickAccess": MessageLookupByLibrary.simpleMessage("Quick Access"),
         "quran_screen_title": MessageLookupByLibrary.simpleMessage("Quran"),
         "quran_search_no_results":
@@ -255,9 +340,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "readingMode": MessageLookupByLibrary.simpleMessage("Reading mode"),
         "readingSettings": MessageLookupByLibrary.simpleMessage("Reading"),
         "reciter_label": MessageLookupByLibrary.simpleMessage("Reciter"),
-        "remainingTimeLabel": m10,
+        "remainingTimeLabel": m12,
         "reminderLabel": MessageLookupByLibrary.simpleMessage("Remind me"),
-        "reminderMinutesBefore": m11,
+        "reminderMinutesBefore": m13,
         "reminderOff": MessageLookupByLibrary.simpleMessage("Off"),
         "repeat": MessageLookupByLibrary.simpleMessage("Repeat"),
         "sahih_bukhari":
@@ -265,7 +350,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "sahih_muslim": MessageLookupByLibrary.simpleMessage("Sahih Muslim"),
         "search_hadith_hint":
             MessageLookupByLibrary.simpleMessage("Search this book…"),
-        "search_more_results": m12,
+        "search_more_results": m14,
         "search_no_results":
             MessageLookupByLibrary.simpleMessage("No matching ahadith"),
         "search_quran_hint": MessageLookupByLibrary.simpleMessage(
@@ -291,9 +376,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "status_sahih": MessageLookupByLibrary.simpleMessage("Sahih"),
         "sunan_nasai": MessageLookupByLibrary.simpleMessage("Sunan an-Nasa\'i"),
         "sunrise": MessageLookupByLibrary.simpleMessage("Sunrise"),
-        "surah_ayah_label": m13,
+        "surah_ayah_label": m15,
         "surahs_appbar_title": MessageLookupByLibrary.simpleMessage("Mushaf"),
-        "surahs_count": m14,
+        "surahs_count": m16,
         "tab_juz": MessageLookupByLibrary.simpleMessage("Juzʼ"),
         "tab_pages": MessageLookupByLibrary.simpleMessage("Pages"),
         "tab_surahs": MessageLookupByLibrary.simpleMessage("Surahs"),

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
@@ -79,10 +80,29 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
     );
   }
 
+  /// Permanently dismisses the Home notification hint.
+  void dismissNotificationHint() {
+    if (state.settingsModel.notificationHintDismissed) return;
+    emit(
+      SettingsState(
+        state.settingsModel.copyWith(notificationHintDismissed: true),
+      ),
+    );
+  }
+
   void updateShowSplashOnLaunch(bool value) {
     emit(
       SettingsState(state.settingsModel.copyWith(showSplashOnLaunch: value)),
     );
+  }
+
+  void updateCalculationMethod(CalculationMethod method) {
+    emit(SettingsState(
+        state.settingsModel.copyWith(calculationMethod: method)));
+  }
+
+  void updateAsrSchool(AsrSchool school) {
+    emit(SettingsState(state.settingsModel.copyWith(asrSchool: school)));
   }
 
   void updateAdhanEnabled(PrayerName prayer, bool enabled) {

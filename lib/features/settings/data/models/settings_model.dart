@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
@@ -21,6 +22,9 @@ class SettingsModel extends Settings {
     super.reminderMinutesByPrayer,
     super.hasCompletedOnboarding,
     super.showSplashOnLaunch,
+    super.notificationHintDismissed,
+    super.calculationMethod,
+    super.asrSchool,
   });
 
   @override
@@ -38,6 +42,9 @@ class SettingsModel extends Settings {
     Map<PrayerName, int>? reminderMinutesByPrayer,
     bool? hasCompletedOnboarding,
     bool? showSplashOnLaunch,
+    bool? notificationHintDismissed,
+    CalculationMethod? calculationMethod,
+    AsrSchool? asrSchool,
   }) {
     return SettingsModel(
       isArabic: isArabic ?? this.isArabic,
@@ -54,6 +61,10 @@ class SettingsModel extends Settings {
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       showSplashOnLaunch: showSplashOnLaunch ?? this.showSplashOnLaunch,
+      notificationHintDismissed:
+          notificationHintDismissed ?? this.notificationHintDismissed,
+      calculationMethod: calculationMethod ?? this.calculationMethod,
+      asrSchool: asrSchool ?? this.asrSchool,
     );
   }
 
@@ -88,6 +99,15 @@ class SettingsModel extends Settings {
       // back through onboarding, so absence reads as "already onboarded".
       hasCompletedOnboarding: map['hasCompletedOnboarding'] ?? true,
       showSplashOnLaunch: map['showSplashOnLaunch'] ?? true,
+      notificationHintDismissed: map['notificationHintDismissed'] ?? false,
+      calculationMethod: CalculationMethod.values.firstWhere(
+        (m) => m.name == (map['calculationMethod'] as String?),
+        orElse: () => CalculationMethod.auto,
+      ),
+      asrSchool: AsrSchool.values.firstWhere(
+        (sch) => sch.name == (map['asrSchool'] as String?),
+        orElse: () => AsrSchool.shafi,
+      ),
     );
   }
 
@@ -110,6 +130,9 @@ class SettingsModel extends Settings {
       },
       'hasCompletedOnboarding': hasCompletedOnboarding,
       'showSplashOnLaunch': showSplashOnLaunch,
+      'notificationHintDismissed': notificationHintDismissed,
+      'calculationMethod': calculationMethod.name,
+      'asrSchool': asrSchool.name,
     };
   }
 

@@ -1281,10 +1281,10 @@ class S {
     );
   }
 
-  /// `Status`
+  /// `Grade`
   String get filter_status_label {
     return Intl.message(
-      'Status',
+      'Grade',
       name: 'filter_status_label',
       desc: '',
       args: [],
@@ -1926,6 +1926,476 @@ class S {
     return Intl.message(
       'Pages',
       name: 'bookmarks_pages_section',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Prayer times need your location`
+  String get home_locationCard_title {
+    return Intl.message(
+      'Prayer times need your location',
+      name: 'home_locationCard_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We use it only to compute accurate prayer times.`
+  String get home_locationCard_body {
+    return Intl.message(
+      'We use it only to compute accurate prayer times.',
+      name: 'home_locationCard_body',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable location`
+  String get home_locationCard_enable {
+    return Intl.message(
+      'Enable location',
+      name: 'home_locationCard_enable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open settings`
+  String get home_locationCard_openSettings {
+    return Intl.message(
+      'Open settings',
+      name: 'home_locationCard_openSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turn on notifications to hear the adhan`
+  String get home_notifHint_text {
+    return Intl.message(
+      'Turn on notifications to hear the adhan',
+      name: 'home_notifHint_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allow`
+  String get home_notifHint_allow {
+    return Intl.message(
+      'Allow',
+      name: 'home_notifHint_allow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notifications are off — you won't hear the adhan.`
+  String get notifSettings_disabledBanner_text {
+    return Intl.message(
+      'Notifications are off — you won\'t hear the adhan.',
+      name: 'notifSettings_disabledBanner_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open settings`
+  String get notifSettings_disabledBanner_action {
+    return Intl.message(
+      'Open settings',
+      name: 'notifSettings_disabledBanner_action',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Qibla`
+  String get qibla_screen_title {
+    return Intl.message(
+      'Qibla',
+      name: 'qibla_screen_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Qibla Direction`
+  String get qibla_app_bar_label {
+    return Intl.message(
+      'Qibla Direction',
+      name: 'qibla_app_bar_label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Point your phone toward the Kaaba`
+  String get qibla_point_to_kaaba {
+    return Intl.message(
+      'Point your phone toward the Kaaba',
+      name: 'qibla_point_to_kaaba',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Aligned with the Qibla`
+  String get qibla_aligned {
+    return Intl.message(
+      'Aligned with the Qibla',
+      name: 'qibla_aligned',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Qibla bearing`
+  String get qibla_bearing_suffix {
+    return Intl.message(
+      'Qibla bearing',
+      name: 'qibla_bearing_suffix',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To Makkah`
+  String get qibla_to_makkah {
+    return Intl.message(
+      'To Makkah',
+      name: 'qibla_to_makkah',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your location`
+  String get qibla_your_location {
+    return Intl.message(
+      'Your location',
+      name: 'qibla_your_location',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{km} km`
+  String qibla_distance_km(Object km) {
+    return Intl.message(
+      '$km km',
+      name: 'qibla_distance_km',
+      desc: '',
+      args: [km],
+    );
+  }
+
+  /// `No compass on this device`
+  String get qibla_no_compass_title {
+    return Intl.message(
+      'No compass on this device',
+      name: 'qibla_no_compass_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Face {deg}° from North to face the Qibla.`
+  String qibla_align_manually(Object deg) {
+    return Intl.message(
+      'Face $deg° from North to face the Qibla.',
+      name: 'qibla_align_manually',
+      desc: '',
+      args: [deg],
+    );
+  }
+
+  /// `Wave your phone in a figure-8 to calibrate`
+  String get qibla_calibrate_hint {
+    return Intl.message(
+      'Wave your phone in a figure-8 to calibrate',
+      name: 'qibla_calibrate_hint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recalibrate`
+  String get qibla_recalibrate {
+    return Intl.message(
+      'Recalibrate',
+      name: 'qibla_recalibrate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `North`
+  String get compass_rose_n {
+    return Intl.message(
+      'North',
+      name: 'compass_rose_n',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `North-East`
+  String get compass_rose_ne {
+    return Intl.message(
+      'North-East',
+      name: 'compass_rose_ne',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `East`
+  String get compass_rose_e {
+    return Intl.message(
+      'East',
+      name: 'compass_rose_e',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `South-East`
+  String get compass_rose_se {
+    return Intl.message(
+      'South-East',
+      name: 'compass_rose_se',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `South`
+  String get compass_rose_s {
+    return Intl.message(
+      'South',
+      name: 'compass_rose_s',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `South-West`
+  String get compass_rose_sw {
+    return Intl.message(
+      'South-West',
+      name: 'compass_rose_sw',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `West`
+  String get compass_rose_w {
+    return Intl.message(
+      'West',
+      name: 'compass_rose_w',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `North-West`
+  String get compass_rose_nw {
+    return Intl.message(
+      'North-West',
+      name: 'compass_rose_nw',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calculation method`
+  String get calculationMethod_section {
+    return Intl.message(
+      'Calculation method',
+      name: 'calculationMethod_section',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Method`
+  String get calculationMethod_methodLabel {
+    return Intl.message(
+      'Method',
+      name: 'calculationMethod_methodLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Asr (juristic) method`
+  String get calculationMethod_schoolLabel {
+    return Intl.message(
+      'Asr (juristic) method',
+      name: 'calculationMethod_schoolLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatic (by region)`
+  String get calculationMethod_auto {
+    return Intl.message(
+      'Automatic (by region)',
+      name: 'calculationMethod_auto',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Muslim World League`
+  String get calculationMethod_mwl {
+    return Intl.message(
+      'Muslim World League',
+      name: 'calculationMethod_mwl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ISNA (North America)`
+  String get calculationMethod_isna {
+    return Intl.message(
+      'ISNA (North America)',
+      name: 'calculationMethod_isna',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Egyptian General Authority`
+  String get calculationMethod_egypt {
+    return Intl.message(
+      'Egyptian General Authority',
+      name: 'calculationMethod_egypt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Umm al-Qura (Makkah)`
+  String get calculationMethod_ummAlQura {
+    return Intl.message(
+      'Umm al-Qura (Makkah)',
+      name: 'calculationMethod_ummAlQura',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `University of Islamic Sciences, Karachi`
+  String get calculationMethod_karachi {
+    return Intl.message(
+      'University of Islamic Sciences, Karachi',
+      name: 'calculationMethod_karachi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Institute of Geophysics, Tehran`
+  String get calculationMethod_tehran {
+    return Intl.message(
+      'Institute of Geophysics, Tehran',
+      name: 'calculationMethod_tehran',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Gulf Region`
+  String get calculationMethod_gulf {
+    return Intl.message(
+      'Gulf Region',
+      name: 'calculationMethod_gulf',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kuwait`
+  String get calculationMethod_kuwait {
+    return Intl.message(
+      'Kuwait',
+      name: 'calculationMethod_kuwait',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Qatar`
+  String get calculationMethod_qatar {
+    return Intl.message(
+      'Qatar',
+      name: 'calculationMethod_qatar',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Singapore`
+  String get calculationMethod_singapore {
+    return Intl.message(
+      'Singapore',
+      name: 'calculationMethod_singapore',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `France`
+  String get calculationMethod_france {
+    return Intl.message(
+      'France',
+      name: 'calculationMethod_france',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Turkey (Diyanet)`
+  String get calculationMethod_turkey {
+    return Intl.message(
+      'Turkey (Diyanet)',
+      name: 'calculationMethod_turkey',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Russia`
+  String get calculationMethod_russia {
+    return Intl.message(
+      'Russia',
+      name: 'calculationMethod_russia',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Standard (Shafiʿi, Maliki, Hanbali)`
+  String get asrSchool_shafi {
+    return Intl.message(
+      'Standard (Shafiʿi, Maliki, Hanbali)',
+      name: 'asrSchool_shafi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hanafi`
+  String get asrSchool_hanafi {
+    return Intl.message(
+      'Hanafi',
+      name: 'asrSchool_hanafi',
       desc: '',
       args: [],
     );

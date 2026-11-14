@@ -139,6 +139,22 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
   }
 
   @override
+  Future<bool> areNotificationsEnabled() async {
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    if (androidPlugin != null) {
+      return await androidPlugin.areNotificationsEnabled() ?? false;
+    }
+    final iosPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>();
+    final granted =
+        await iosPlugin?.checkPermissions().then((p) => p?.isAlertEnabled);
+    return granted ?? false;
+  }
+
+  @override
   Future<void> init() async {
     tz.initializeTimeZones();
     final timezoneInfo = await FlutterTimezone.getLocalTimezone();
@@ -147,9 +163,9 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     const initSettings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(
-        requestAlertPermission: true,
+        requestAlertPermission: false,
         requestBadgePermission: false,
-        requestSoundPermission: true,
+        requestSoundPermission: false,
       ),
     );
     await _plugin.initialize(settings: initSettings);
@@ -162,9 +178,6 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     await androidPlugin?.deleteNotificationChannel(channelId: _legacyChannelId);
     await androidPlugin?.createNotificationChannel(_fajrChannel);
     await androidPlugin?.createNotificationChannel(_standardChannel);
-
-    await androidPlugin?.requestExactAlarmsPermission();
-    await androidPlugin?.requestNotificationsPermission();
 
     _initialized = true;
     debugPrint('[PrayerNotif] init complete, tz=${tz.local.name}');

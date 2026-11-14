@@ -4,6 +4,7 @@ import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler_impl.dart';
 import 'package:quran_app/features/home/data/datasources/local/location_local_data_source.dart';
+import 'package:quran_app/features/home/data/datasources/local/prayer_config_signature.dart';
 import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/remote/location_remote_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/remote/prayer_time_remote_data_source.dart';
@@ -43,6 +44,7 @@ void initHome() {
     () => PrayerTimesRepositoryImpl(
       prayerTimeRemoteDataSource: sl(),
       prayerTimesLocalDataSource: sl(),
+      signatureStore: PrayerConfigSignatureStore(box: Hive.box('prayerConfig')),
     ),
   );
 

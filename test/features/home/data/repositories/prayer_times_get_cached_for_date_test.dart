@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
+import 'package:quran_app/features/home/data/datasources/local/prayer_config_signature.dart';
 import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
 import 'package:quran_app/features/home/data/datasources/remote/prayer_time_remote_data_source.dart';
 import 'package:quran_app/features/home/data/repositories/prayer_times_repository_impl.dart';
@@ -8,6 +10,7 @@ import 'package:quran_app/features/home/domain/entities/location.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 
 class _MockLocal extends Mock implements PrayerTimesLocalDataSource {}
+
 class _MockRemote extends Mock implements PrayerTimeRemoteDataSource {}
 
 void main() {
@@ -23,17 +26,27 @@ void main() {
     key: '23-05-2026',
     timings: const {PrayerName.fajr: '04:14'},
     date: Date(
-      month: '', weekDay: '', day: '6', year: '1447',
-      enMonth: '', enWeekDay: '', gregorianDate: '23-05-2026',
+      month: '',
+      weekDay: '',
+      day: '6',
+      year: '1447',
+      enMonth: '',
+      enWeekDay: '',
+      gregorianDate: '23-05-2026',
     ),
   );
 
-  setUp(() {
+  setUp(() async {
+    Hive.init(
+      './.dart_tool/hive_test_${DateTime.now().microsecondsSinceEpoch}',
+    );
+    final box = await Hive.openBox('prayerConfig_test');
     local = _MockLocal();
     remote = _MockRemote();
     repo = PrayerTimesRepositoryImpl(
       prayerTimeRemoteDataSource: remote,
       prayerTimesLocalDataSource: local,
+      signatureStore: PrayerConfigSignatureStore(box: box),
     );
   });
 
@@ -42,7 +55,15 @@ void main() {
     when(() => local.getCached(date: date)).thenReturn(pt);
     final result = await repo.getCachedForDate(date);
     expect(result, pt);
-    verifyNever(() => remote.getPrayerTimesList(any()));
+    verifyNever(
+      () => remote.getPrayerTimesList(
+        any(),
+        year: any(named: 'year'),
+        month: any(named: 'month'),
+        method: any(named: 'method'),
+        school: any(named: 'school'),
+      ),
+    );
   });
 
   test('returns null on a cache miss', () async {
