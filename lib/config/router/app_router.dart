@@ -14,7 +14,6 @@ import 'package:quran_app/features/settings/presentation/pages/settings_page.dar
 import 'package:quran_app/features/splash/pages/splash_page.dart';
 import 'package:quran_app/features/search/presentation/cubit/search_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
-import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
@@ -106,7 +105,6 @@ abstract class AppRouter {
           builder: (context, state) => MultiBlocProvider(
             providers: [
               BlocProvider(create: (_) => sl<SurahCubit>()..fetchSurahs()),
-              BlocProvider(create: (_) => sl<LastReadCubit>()),
               BlocProvider(create: (_) => sl<SearchCubit>()),
             ],
             child: SurahListPage(),
