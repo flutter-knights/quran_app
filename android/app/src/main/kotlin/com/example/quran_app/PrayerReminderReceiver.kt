@@ -121,5 +121,6 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         const val EXTRA_NOTIFICATION_ID = "notif_id"
         const val EXTRA_LOCALE = "locale"
         const val EXTRA_OFFSET_MINUTES = "offset_minutes"
+        const val EXTRA_REMINDER_SOUND = "reminderSound"
     }
 }

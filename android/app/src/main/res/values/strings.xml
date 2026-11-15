@@ -29,4 +29,13 @@
     <string name="reminder_body_asr">Asr prayer is coming up</string>
     <string name="reminder_body_maghrib">Maghrib prayer is coming up</string>
     <string name="reminder_body_isha">Isha prayer is coming up</string>
+
+    <string name="prayer_late_title">%1$s began %2$s ago</string>
+    <plurals name="prayer_late_minutes">
+        <item quantity="one">%1$s minute</item>
+        <item quantity="other">%1$s minutes</item>
+    </plurals>
+    <string name="prayer_late_body">The alert was late; battery saving may be the cause.</string>
+    <string name="prayer_late_fix">Fix</string>
+    <string name="channel_alert_silent">Prayer alerts (silent)</string>
 </resources>

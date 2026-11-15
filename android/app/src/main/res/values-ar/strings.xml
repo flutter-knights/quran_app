@@ -28,4 +28,16 @@
     <string name="reminder_body_asr">اقتربت صلاة العصر</string>
     <string name="reminder_body_maghrib">اقتربت صلاة المغرب</string>
     <string name="reminder_body_isha">اقتربت صلاة العشاء</string>
+
+    <string name="prayer_late_title">حان وقت %1$s منذ %2$s</string>
+    <plurals name="prayer_late_minutes">
+        <item quantity="one">دقيقة واحدة</item>
+        <item quantity="two">دقيقتين</item>
+        <item quantity="few">%1$s دقائق</item>
+        <item quantity="many">%1$s دقيقة</item>
+        <item quantity="other">%1$s دقيقة</item>
+    </plurals>
+    <string name="prayer_late_body">تأخّر التنبيه، وقد يكون السبب توفير البطارية.</string>
+    <string name="prayer_late_fix">إصلاح</string>
+    <string name="channel_alert_silent">تنبيهات الصلاة (بدون صوت)</string>
 </resources>

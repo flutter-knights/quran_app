@@ -79,6 +79,10 @@
             android:exported="false" />
 
         <receiver
+            android:name=".AdhanHealReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".AdhanBootReceiver"
             android:exported="true"
             android:enabled="true">

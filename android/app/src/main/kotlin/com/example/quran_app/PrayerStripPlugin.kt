@@ -1,6 +1,8 @@
 package com.example.quran_app
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -72,47 +74,28 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             result.error("BAD_ARGS", "Expected Map", null)
             return
         }
-
-        // Parse multi-day payload: args["days"] is a List of {date:String, timings:Map}
-        val daysRaw = args["days"] as? List<*> ?: emptyList<Any?>()
-        val days = daysRaw.mapNotNull { e ->
-            val m = e as? Map<*, *> ?: return@mapNotNull null
-            val date = m["date"] as? String ?: return@mapNotNull null
-            val timingsRaw = m["timings"] as? Map<*, *>
-            val timings = timingsRaw.orEmpty()
-                .entries
-                .mapNotNull { (k, v) ->
-                    val ks = k as? String ?: return@mapNotNull null
-                    val vs = v as? String ?: return@mapNotNull null
-                    ks to vs
-                }
-                .toMap()
-            AdhanScheduler.DaySchedule(date, timings)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        val clips = (args["clips"] as? Map<String, String>) ?: emptyMap()
-        val localeCode = (args["localeCode"] as? String) ?: "en"
-
-        if (days.isEmpty()) {
-            Log.w(TAG, "handleScheduleDailyAdhans: no valid days in payload")
-        }
-        AdhanScheduler.armDays(ctx, days, clips, localeCode)
-        result.success(null)
+        val alerts = (args["alerts"] as? Map<*, *>).orEmpty().entries.mapNotNull { (k, v) ->
+            val prayer = k as? String ?: return@mapNotNull null
+            val m = v as? Map<*, *> ?: return@mapNotNull null
+            prayer to AlertPlanner.AdhanSpec(m["sound"] as? String ?: "adhan", m["ringInSilent"] as? Boolean ?: false)
+        }.toMap()
+        val snapshot = AlertPlanner.AdhanSnapshot(parseDays(args), alerts, localeOf(args), legacy = false)
+        runInStore(ctx, result) { AdhanScheduler.sync(it, snapshot) }
     }
 
     private fun handleCancelAllAdhans(ctx: Context, result: MethodChannel.Result) {
-        AdhanScheduler.cancelAll(ctx)
-        result.success(null)
+        runInStore(ctx, result) { AdhanScheduler.cancelAll(it) }
     }
 
     private fun handleScheduleTestAdhan(
         ctx: Context, call: MethodCall, result: MethodChannel.Result
     ) {
         val args = call.arguments as? Map<*, *>
-        val delay = (args?.get("delaySeconds") as? Int) ?: 30
+        val delay = (args?.get("delaySeconds") as? Number)?.toInt() ?: 30
         val localeCode = (args?.get("localeCode") as? String) ?: "en"
-        AdhanScheduler.armTest(ctx, delay, localeCode)
+        val sound = (args?.get("sound") as? String) ?: "adhan"
+        val ringInSilent = (args?.get("ringInSilent") as? Boolean) ?: false
+        AdhanScheduler.armTest(ctx, delay, localeCode, sound, ringInSilent)
         result.success(null)
     }
 
@@ -124,41 +107,53 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             result.error("BAD_ARGS", "Expected Map", null)
             return
         }
-
-        // Parse multi-day payload: args["days"] is a List of {date:String, timings:Map}
-        val daysRaw = args["days"] as? List<*> ?: emptyList<Any?>()
-        val days = daysRaw.mapNotNull { e ->
-            val m = e as? Map<*, *> ?: return@mapNotNull null
-            val date = m["date"] as? String ?: return@mapNotNull null
-            val timingsRaw = m["timings"] as? Map<*, *>
-            val timings = timingsRaw.orEmpty()
-                .entries
-                .mapNotNull { (k, v) ->
-                    val ks = k as? String ?: return@mapNotNull null
-                    val vs = v as? String ?: return@mapNotNull null
-                    ks to vs
-                }
-                .toMap()
-            AdhanScheduler.DaySchedule(date, timings)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        val remindersByPrayer = (args["remindersByPrayer"] as? Map<String, Int>)
-            ?: emptyMap()
-        val localeCode = (args["localeCode"] as? String) ?: "en"
-
-        if (days.isEmpty()) {
-            Log.w(TAG, "handleSchedulePrayerReminders: no valid days in payload")
-        }
-        PrayerReminderScheduler.armDays(ctx, days, remindersByPrayer, localeCode)
-        result.success(null)
+        val reminders = (args["reminders"] as? Map<*, *>).orEmpty().entries.mapNotNull { (k, v) ->
+            val prayer = k as? String ?: return@mapNotNull null
+            val m = v as? Map<*, *> ?: return@mapNotNull null
+            val minutes = (m["minutes"] as? Number)?.toInt() ?: return@mapNotNull null
+            prayer to AlertPlanner.ReminderSpec(minutes, m["reminderSound"] as? String ?: "vibrate")
+        }.toMap()
+        val snapshot = AlertPlanner.ReminderSnapshot(parseDays(args), reminders, localeOf(args), legacy = false)
+        runInStore(ctx, result) { PrayerReminderScheduler.sync(it, snapshot) }
     }
 
     private fun handleCancelAllReminders(
         ctx: Context, result: MethodChannel.Result,
     ) {
-        PrayerReminderScheduler.cancelAll(ctx)
-        result.success(null)
+        runInStore(ctx, result) { PrayerReminderScheduler.cancelAll(it) }
+    }
+
+    private fun parseDays(args: Map<*, *>): List<AlertPlanner.Day> {
+        val days = (args["days"] as? List<*>).orEmpty().mapNotNull { e ->
+            val m = e as? Map<*, *> ?: return@mapNotNull null
+            val date = m["date"] as? String ?: return@mapNotNull null
+            val timings = (m["timings"] as? Map<*, *>).orEmpty().entries.mapNotNull { (k, v) ->
+                val ks = k as? String ?: return@mapNotNull null
+                val vs = v as? String ?: return@mapNotNull null
+                ks to vs
+            }.toMap()
+            AlertPlanner.Day(date, timings)
+        }
+        if (days.isEmpty()) Log.w(TAG, "parseDays: no valid days in payload")
+        return days
+    }
+
+    private fun localeOf(args: Map<*, *>) = (args["localeCode"] as? String) ?: "en"
+
+    private fun runInStore(ctx: Context, result: MethodChannel.Result, block: (Context) -> Unit) {
+        val main = Handler(Looper.getMainLooper())
+        AlertStore.post(ctx) {
+            val error = try {
+                block(it)
+                null
+            } catch (e: Exception) {
+                Log.e(TAG, "runInStore: failed", e)
+                e
+            }
+            main.post {
+                if (error == null) result.success(null) else result.error("NATIVE_ERROR", error.message, null)
+            }
+        }
     }
 
     private fun serializeStripArgs(args: Any?): String? {
