@@ -14,6 +14,7 @@ import 'package:quran_app/features/notifications/domain/usecases/open_system_set
 import 'package:quran_app/features/notifications/domain/usecases/preview_alert_sound.dart';
 import 'package:quran_app/features/notifications/domain/usecases/schedule_test_adhan.dart';
 import 'package:quran_app/features/notifications/domain/usecases/stop_alert_preview.dart';
+import 'package:quran_app/features/notifications/domain/usecases/watch_preview_ended.dart';
 
 class _MockRepo extends Mock implements NotificationsRepository {}
 
@@ -86,5 +87,14 @@ void main() {
     verify(
       () => repo.scheduleTestAdhan(alert: alert, localeCode: 'ar'),
     ).called(1);
+  });
+
+  test('WatchPreviewEnded forwards the repository stream', () async {
+    when(
+      () => repo.previewEnded(),
+    ).thenAnswer((_) => Stream.value(PreviewSound.tone));
+    expect(await WatchPreviewEnded(repository: repo)(NoParams()).toList(), [
+      PreviewSound.tone,
+    ]);
   });
 }

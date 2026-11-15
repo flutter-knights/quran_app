@@ -17,6 +17,7 @@ import 'package:quran_app/features/notifications/domain/entities/reliability_sta
 import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import 'package:quran_app/features/notifications/domain/usecases/preview_alert_sound.dart';
 import 'package:quran_app/features/notifications/domain/usecases/stop_alert_preview.dart';
+import 'package:quran_app/features/notifications/domain/usecases/watch_preview_ended.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/sound_preview_cubit.dart';
@@ -36,6 +37,8 @@ class _MockToday extends MockCubit<PrayerTimes?>
 class _MockPreview extends Mock implements PreviewAlertSound {}
 
 class _MockStop extends Mock implements StopAlertPreview {}
+
+class _MockWatchEnded extends Mock implements WatchPreviewEnded {}
 
 void main() {
   late SettingsCubit settings;
@@ -71,8 +74,10 @@ void main() {
     final preview = _MockPreview();
     final stop = _MockStop();
     when(() => preview(any())).thenAnswer((_) async => const Right(unit));
+    final watchEnded = _MockWatchEnded();
     when(() => stop(any())).thenAnswer((_) async => const Right(unit));
-    sl.registerFactory(() => SoundPreviewCubit(preview, stop));
+    when(() => watchEnded(any())).thenAnswer((_) => const Stream.empty());
+    sl.registerFactory(() => SoundPreviewCubit(preview, stop, watchEnded));
   });
   tearDown(() async {
     await sl.unregister<SoundPreviewCubit>();

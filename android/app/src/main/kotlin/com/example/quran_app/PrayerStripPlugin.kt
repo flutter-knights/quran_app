@@ -157,7 +157,9 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             result.error("BAD_ARGS", "Expected {sound, prayer}", null)
             return
         }
-        SoundPreviewPlayer.play(ctx, sound, prayer)
+        SoundPreviewPlayer.play(ctx, sound, prayer) { ended ->
+            channel?.invokeMethod("previewEnded", mapOf("sound" to ended))
+        }
         result.success(null)
     }
 

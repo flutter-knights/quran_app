@@ -688,6 +688,26 @@ void main() {
       ).called(1);
     });
 
+    test(
+      'Android: previewEnded maps native names and drops unknown ones',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        when(
+          () => native.previewEnded,
+        ).thenAnswer((_) => Stream.fromIterable(['tone', 'bogus', 'adhan']));
+        expect(await repo.previewEnded().toList(), [
+          PreviewSound.tone,
+          PreviewSound.adhan,
+        ]);
+      },
+    );
+
+    test('iOS: previewEnded is empty and never touches native', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      expect(await repo.previewEnded().toList(), isEmpty);
+      verifyNever(() => native.previewEnded);
+    });
+
     test('Android: openSystemSettings failure is a Left', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       when(() => native.openSystemSettings(any())).thenThrow(Exception('boom'));

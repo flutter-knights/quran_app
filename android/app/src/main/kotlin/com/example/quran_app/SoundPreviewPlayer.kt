@@ -4,15 +4,19 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.RingtoneManager
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 
 object SoundPreviewPlayer {
 
     private const val TAG = "SoundPreview"
     private var player: MediaPlayer? = null
+    private var onEnded: ((String) -> Unit)? = null
+    private val main = Handler(Looper.getMainLooper())
 
     @Synchronized
-    fun play(context: Context, sound: String, prayer: String) {
+    fun play(context: Context, sound: String, prayer: String, onEnded: (String) -> Unit) {
         stop()
         val attrs = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -34,17 +38,19 @@ object SoundPreviewPlayer {
                 }
                 else -> throw IllegalArgumentException("no preview for $sound")
             }
-            mp.setOnCompletionListener { release(it) }
+            mp.setOnCompletionListener { finish(it, sound) }
             mp.setOnErrorListener { p, _, _ ->
-                release(p)
+                finish(p, sound)
                 true
             }
             mp.prepare()
             mp.start()
             player = mp
+            this.onEnded = onEnded
         } catch (e: Exception) {
             Log.w(TAG, "play failed sound=$sound prayer=$prayer", e)
             mp.release()
+            main.post { onEnded(sound) }
         }
     }
 
@@ -58,11 +64,16 @@ object SoundPreviewPlayer {
             it.release()
         }
         player = null
+        onEnded = null
     }
 
     @Synchronized
-    private fun release(mp: MediaPlayer) {
+    private fun finish(mp: MediaPlayer, sound: String) {
         mp.release()
-        if (player === mp) player = null
+        if (player !== mp) return
+        player = null
+        val callback = onEnded ?: return
+        onEnded = null
+        main.post { callback(sound) }
     }
 }

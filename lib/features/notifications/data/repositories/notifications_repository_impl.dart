@@ -225,6 +225,13 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   Future<Either<Failure, Unit>> stopPreview() =>
       _runAndroidOnly(native.stopPreview);
 
+  @override
+  Stream<PreviewSound> previewEnded() {
+    if (!_isAndroid) return const Stream.empty();
+    final byName = PreviewSound.values.asNameMap();
+    return native.previewEnded.expand((name) => [?byName[name]]);
+  }
+
   List<Map<String, dynamic>> _daysPayload(List<PrayerTimes> days) => [
     for (final pt in days)
       {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 
@@ -40,12 +42,27 @@ abstract class NotificationsNativeDataSource {
   Future<void> openSystemSettings(String target);
   Future<void> previewSound({required String sound, required String prayer});
   Future<void> stopPreview();
+  Stream<String> get previewEnded;
 }
 
 class NotificationsNativeDataSourceImpl
     implements NotificationsNativeDataSource {
   static const channelName = 'quran_app/notifications';
   static const MethodChannel _channel = MethodChannel(channelName);
+
+  StreamController<String>? _previewEnded;
+
+  @override
+  Stream<String> get previewEnded {
+    final controller = _previewEnded;
+    if (controller != null) return controller.stream;
+    final created = _previewEnded = StreamController<String>.broadcast();
+    _channel.setMethodCallHandler((call) async {
+      final sound = (call.arguments as Map?)?['sound'];
+      if (call.method == 'previewEnded' && sound is String) created.add(sound);
+    });
+    return created.stream;
+  }
 
   Future<void> _invoke(String method, [Object? arguments]) async {
     try {

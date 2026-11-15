@@ -45,4 +45,5 @@ abstract class NotificationsRepository {
     required PrayerName prayer,
   });
   Future<Either<Failure, Unit>> stopPreview();
+  Stream<PreviewSound> previewEnded();
 }

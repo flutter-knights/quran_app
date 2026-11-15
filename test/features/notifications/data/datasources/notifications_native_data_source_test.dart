@@ -218,4 +218,38 @@ void main() {
     await ds.cancelAllReminders();
     expect(calls.single.method, 'cancelAllReminders');
   });
+
+  test('previewEnded emits the sound the native side reports', () async {
+    final events = <String>[];
+    final sub = ds.previewEnded.listen(events.add);
+    final replies = <ByteData?>[];
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          NotificationsNativeDataSourceImpl.channelName,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('previewEnded', {'sound': 'adhan'}),
+          ),
+          replies.add,
+        );
+    await pumpEventQueue();
+    expect(events, ['adhan']);
+    expect(replies, hasLength(1));
+    await sub.cancel();
+  });
+
+  test('previewEnded ignores other native calls', () async {
+    final events = <String>[];
+    final sub = ds.previewEnded.listen(events.add);
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          NotificationsNativeDataSourceImpl.channelName,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('somethingElse', {'sound': 'adhan'}),
+          ),
+          (_) {},
+        );
+    await pumpEventQueue();
+    expect(events, isEmpty);
+    await sub.cancel();
+  });
 }

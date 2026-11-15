@@ -15,6 +15,7 @@ import 'package:quran_app/features/notifications/domain/usecases/refresh_prayer_
 import 'package:quran_app/features/notifications/domain/usecases/schedule_test_adhan.dart';
 import 'package:quran_app/features/notifications/domain/usecases/stop_alert_preview.dart';
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
+import 'package:quran_app/features/notifications/domain/usecases/watch_preview_ended.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/sound_preview_cubit.dart';
@@ -43,6 +44,7 @@ void initNotifications() {
   sl.registerLazySingleton(() => PreviewAlertSound(repository: sl()));
   sl.registerLazySingleton(() => StopAlertPreview(repository: sl()));
   sl.registerLazySingleton(() => ScheduleTestAdhan(repository: sl()));
+  sl.registerLazySingleton(() => WatchPreviewEnded(repository: sl()));
   sl.registerLazySingleton(() => BuildPrayerStripWindow());
   sl.registerLazySingleton(
     () => GetCachedPrayerDays(prayerTimesRepository: sl()),
@@ -58,6 +60,6 @@ void initNotifications() {
     ),
   );
   sl.registerFactory(() => ReliabilityCubit(sl(), sl(), sl()));
-  sl.registerFactory(() => SoundPreviewCubit(sl(), sl()));
+  sl.registerFactory(() => SoundPreviewCubit(sl(), sl(), sl()));
   sl.registerFactory(() => TodayPrayerTimesCubit(sl()));
 }

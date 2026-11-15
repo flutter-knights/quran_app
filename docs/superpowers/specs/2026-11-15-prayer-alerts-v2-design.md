@@ -230,6 +230,8 @@ The reminder sets `setTimeoutAfter(prayerTime − now)` (API 26+), and the recei
 
 `previewSound(sound, prayer)` / `stopPreview()` play one `MediaPlayer` (adhan clip or default notification ringtone) on `USAGE_MEDIA`. `vibrate` and `silent` have no preview (no ▶ on those rows), so no new permission is needed. Starting a new preview stops the old one.
 
+When a preview ends without an explicit `stopPreview()` (the clip completes, `MediaPlayer` reports an error, or `play` throws), native calls `previewEnded` with `{sound: 'adhan'|'tone'}` back on the same channel, on the main thread. Dart's data source owns the channel's only method-call handler and exposes the events as a stream; the repository maps them to `Stream<PreviewSound>` (empty on iOS), `WatchPreviewEnded` carries them to `SoundPreviewCubit`, which clears its state when the ended sound is the one playing.
+
 ### Strip
 
 - Window JSON gains `style`: expanded, countdown, highlightDay/Night (ARGB), pillTextDay/Night, backgroundDay/Night (ARGB or absent), and shape.
@@ -259,6 +261,7 @@ The reminder sets `setTimeoutAfter(prayerTime − now)` (API 26+), and the recei
   - `ackMissedAlerts(upTo: DateTime)` (the newest `at` among the missed and late items shown)
   - `openSystemSettings(SystemSettingsTarget)`
   - `previewSound(PrayerSound|ReminderSound, PrayerName)` / `stopPreview()`
+  - `previewEnded()`: a `Stream<PreviewSound>` of previews that ended on their own (native → Dart)
 - On iOS each call returns `Right`: `getReliabilityStatus` gives `notificationsEnabled` from the plugin's permission check, `exactAlarmsAllowed` and `batteryUnrestricted` true, `isXiaomi` false, `scheduledUntil` the last scheduled iOS adhan and no misses; the other calls are no-ops. No `Failure` reaches the UI for an unsupported call.
 - Scheduling moves out of HomePage's listeners into `AlertsSyncCubit` (notifications feature, factory, created in HomePage's `MultiBlocProvider`). It owns the debounce timer (cancelled in `close()`), the day collection and the calls to `SyncDailyAdhans` and the strip use cases, and it is their only caller. HomePage's listeners only call `requestSync()`, on:
   - the prayer-times context loading (location and month timings ready)
