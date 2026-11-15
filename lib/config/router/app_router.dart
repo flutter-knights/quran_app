@@ -82,7 +82,10 @@ abstract class AppRouter {
               settings: const GoTransitionSettings(
                 duration: Duration(milliseconds: 450),
               ),
-              builder: (context, state) => const OnboardingPage(),
+              builder: (context, state) => BlocProvider(
+                create: (_) => sl<ReliabilityCubit>(),
+                child: const OnboardingPage(),
+              ),
             ),
       ),
       GoRoute(
