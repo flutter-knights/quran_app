@@ -17,6 +17,9 @@ class PrayerAlert extends Equatable {
   static const minReminderMinutes = 1;
   static const maxReminderMinutes = 60;
 
+  static int clampMinutes(int minutes) =>
+      minutes.clamp(minReminderMinutes, maxReminderMinutes);
+
   final bool enabled;
   final PrayerSound sound;
   final bool ringInSilent;

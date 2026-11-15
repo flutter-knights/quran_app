@@ -176,11 +176,6 @@ class SettingsModel extends Settings {
   static bool _readBool(Object? raw, [bool fallback = false]) =>
       raw is bool ? raw : fallback;
 
-  static int _clampReminder(int minutes) => minutes.clamp(
-    PrayerAlert.minReminderMinutes,
-    PrayerAlert.maxReminderMinutes,
-  );
-
   static T _readEnum<T extends Enum>(List<T> values, Object? raw, T fallback) =>
       values.firstWhereOrNull((e) => e.name == raw) ?? fallback;
 
@@ -207,7 +202,7 @@ class SettingsModel extends Settings {
     return PrayerAlert(
       enabled: _readBool(enabled, true),
       reminderEnabled: m > 0,
-      reminderMinutes: m > 0 ? _clampReminder(m) : 10,
+      reminderMinutes: m > 0 ? PrayerAlert.clampMinutes(m) : 10,
     );
   }
 
@@ -221,7 +216,7 @@ class SettingsModel extends Settings {
       ringInSilent: _readBool(raw['ringInSilent'], d.ringInSilent),
       reminderEnabled: _readBool(raw['reminderEnabled'], d.reminderEnabled),
       reminderMinutes: minutes is int
-          ? _clampReminder(minutes)
+          ? PrayerAlert.clampMinutes(minutes)
           : d.reminderMinutes,
       reminderSound: _readEnum(
         ReminderSound.values,

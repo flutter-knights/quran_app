@@ -170,10 +170,7 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
   }
 
   static PrayerAlert _clamped(PrayerAlert alert) => alert.copyWith(
-    reminderMinutes: alert.reminderMinutes.clamp(
-      PrayerAlert.minReminderMinutes,
-      PrayerAlert.maxReminderMinutes,
-    ),
+    reminderMinutes: PrayerAlert.clampMinutes(alert.reminderMinutes),
   );
 
   @override

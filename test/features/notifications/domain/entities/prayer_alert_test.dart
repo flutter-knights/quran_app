@@ -68,4 +68,11 @@ void main() {
       const StripStyle(shape: StripShape.pill),
     );
   });
+
+  test('clampMinutes keeps reminder minutes within 1..60', () {
+    expect(PrayerAlert.clampMinutes(0), 1);
+    expect(PrayerAlert.clampMinutes(-3), 1);
+    expect(PrayerAlert.clampMinutes(42), 42);
+    expect(PrayerAlert.clampMinutes(120), 60);
+  });
 }
