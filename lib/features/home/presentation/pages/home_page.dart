@@ -1,21 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
-import 'package:quran_app/core/usecases/usecase.dart';
-import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
-import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/home/domain/usecases/pre_cache_prayer_times.dart';
 import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_cubit.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_view.dart';
-import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
-import 'package:quran_app/features/notifications/domain/usecases/disable_prayer_strip.dart';
-import 'package:quran_app/features/notifications/domain/usecases/enable_prayer_strip.dart';
-import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 class HomePage extends StatelessWidget {
@@ -35,6 +27,7 @@ class HomePage extends StatelessWidget {
           },
         ),
         BlocProvider(create: (_) => PrayerCountdownCubit()),
+        BlocProvider(create: (_) => sl<AlertsSyncCubit>()),
       ],
       child: MultiBlocListener(
         listeners: [
@@ -53,24 +46,6 @@ class HomePage extends StatelessWidget {
               );
             },
           ),
-          // Advance the strip's highlighted pill as prayers pass through the
-          // day. Without this the strip is only re-pushed on context load or a
-          // settings change, so the pill goes stale — which looked like a
-          // "12h format doesn't track the current prayer" bug (toggling the
-          // format merely forced a refresh that happened to correct it).
-          BlocListener<PrayerCountdownCubit, PrayerCountdownState>(
-            listenWhen: (prev, curr) =>
-                prev is PrayerCountdownTick &&
-                curr is PrayerCountdownTick &&
-                prev.prayerCountdown.nextPrayer !=
-                    curr.prayerCountdown.nextPrayer,
-            listener: (context, _) {
-              final ctxState = context.read<DailyPrayerContextCubit>().state;
-              if (ctxState is DailyPrayerContextLoaded) {
-                _enableOrRefreshStrip(context, ctxState);
-              }
-            },
-          ),
           BlocListener<DailyPrayerContextCubit, DailyPrayerContextState>(
             listenWhen: (_, s) => s is DailyPrayerContextLoaded,
             listener: (context, state) {
@@ -79,103 +54,41 @@ class HomePage extends StatelessWidget {
                   .read<SettingsCubit>()
                   .state
                   .settingsModel;
+              context.read<AlertsSyncCubit>().requestSync();
               unawaited(
-                sl<PreCachePrayerTimes>().call(
+                sl<PreCachePrayerTimes>()(
                   PreCachePrayerTimesParams(
                     location: loaded.dailyPrayerContext.location,
                     method: settings.calculationMethod,
                     school: settings.asrSchool,
                   ),
-                ),
+                ).then((_) {
+                  if (context.mounted) {
+                    context.read<AlertsSyncCubit>().requestSync();
+                  }
+                }),
               );
-              final locale = settings.isArabic ? 'ar' : 'en';
-              final local = sl<PrayerTimesLocalDataSource>();
-              final today = DateTime.now();
-              final days = <PrayerTimes>[loaded.dailyPrayerContext.prayerTimes];
-              for (var i = 1; i <= 2; i++) {
-                final d = local.getCached(date: today.add(Duration(days: i)));
-                if (d != null) days.add(d);
-              }
-              unawaited(
-                sl<SyncDailyAdhans>().call(
-                  SyncDailyAdhansParams(
-                    days: days,
-                    alerts: settings.prayerAlerts,
-                    localeCode: locale,
-                  ),
-                ),
-              );
-              _enableOrRefreshStrip(context, loaded);
             },
           ),
           BlocListener<SettingsCubit, SettingsState>(
-            listenWhen: (prev, curr) {
-              final p = prev.settingsModel;
-              final c = curr.settingsModel;
-              return p.isPrayerStripPinned != c.isPrayerStripPinned ||
-                  p.isArabic != c.isArabic ||
-                  p.palette != c.palette ||
-                  p.isFormat12Hours != c.isFormat12Hours ||
-                  !mapEquals(p.prayerAlerts, c.prayerAlerts) ||
-                  p.calculationMethod != c.calculationMethod ||
-                  p.asrSchool != c.asrSchool;
-            },
-            listener: (context, settings) {
-              // Settings changes (theme/language/format) re-sync the prayer
-              // strip + adhans. None of that notification/foreground-service
-              // work should ever be able to crash the app on a setting change.
-              try {
-                final ctxState = context.read<DailyPrayerContextCubit>().state;
-                // Only refresh the strip while it's pinned; disabling is
-                // handled by a dedicated listener on the pin transition, so we
-                // don't spin up the service on every unrelated settings change.
-                if (settings.settingsModel.isPrayerStripPinned &&
-                    ctxState is DailyPrayerContextLoaded) {
-                  _enableOrRefreshStrip(context, ctxState);
-                }
-
-                // Re-sync adhans + reminders when relevant settings change.
-                if (ctxState is DailyPrayerContextLoaded) {
-                  final locale = settings.settingsModel.isArabic ? 'ar' : 'en';
-                  final local = sl<PrayerTimesLocalDataSource>();
-                  final today = DateTime.now();
-                  final days = <PrayerTimes>[
-                    ctxState.dailyPrayerContext.prayerTimes,
-                  ];
-                  for (var i = 1; i <= 2; i++) {
-                    final d = local.getCached(
-                      date: today.add(Duration(days: i)),
-                    );
-                    if (d != null) days.add(d);
-                  }
-                  unawaited(
-                    sl<SyncDailyAdhans>().call(
-                      SyncDailyAdhansParams(
-                        days: days,
-                        alerts: settings.settingsModel.prayerAlerts,
-                        localeCode: locale,
-                      ),
-                    ),
-                  );
-                }
-                context.read<DailyPrayerContextCubit>().fetchDailyPrayerContext(
-                  silent: true,
-                  method: settings.settingsModel.calculationMethod,
-                  school: settings.settingsModel.asrSchool,
-                );
-              } catch (e, st) {
-                debugPrint('settings-change strip/adhan sync failed: $e\n$st');
-              }
-            },
+            listenWhen: (prev, curr) => AlertsSyncCubit.listensTo(
+              prev.settingsModel,
+              curr.settingsModel,
+            ),
+            listener: (context, _) =>
+                context.read<AlertsSyncCubit>().requestSync(),
           ),
-          // Disable the strip only when the user actually turns the pin OFF —
-          // not on every theme/language/format change while it's already off.
           BlocListener<SettingsCubit, SettingsState>(
             listenWhen: (prev, curr) =>
-                prev.settingsModel.isPrayerStripPinned &&
-                !curr.settingsModel.isPrayerStripPinned,
-            listener: (context, _) {
-              unawaited(sl<DisablePrayerStrip>().call(NoParams()));
+                prev.settingsModel.calculationMethod !=
+                    curr.settingsModel.calculationMethod ||
+                prev.settingsModel.asrSchool != curr.settingsModel.asrSchool,
+            listener: (context, settings) {
+              context.read<DailyPrayerContextCubit>().fetchDailyPrayerContext(
+                silent: true,
+                method: settings.settingsModel.calculationMethod,
+                school: settings.settingsModel.asrSchool,
+              );
             },
           ),
         ],
@@ -186,40 +99,6 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-}
-
-/// (Re)builds and pushes the strip from the loaded prayer context, honouring
-/// the user's pin toggle. Top-level so both the bloc listeners and the
-/// lifecycle guard can share it.
-void _enableOrRefreshStrip(
-  BuildContext context,
-  DailyPrayerContextLoaded loaded,
-) {
-  final settings = context.read<SettingsCubit>().state.settingsModel;
-  if (!settings.isPrayerStripPinned) return;
-
-  // Best-effort side effect — must never crash the app.
-  unawaited(() async {
-    try {
-      final window = await sl<BuildPrayerStripWindow>().call(
-        BuildPrayerStripWindowParams(
-          localeCode: settings.isArabic ? 'ar' : 'en',
-          use24Hour: settings.is24HourFormat,
-          accentColor: settings.palette.primary.toARGB32(),
-        ),
-      );
-      if (window == null) return; // nothing cached yet
-      final r = await sl<EnablePrayerStrip>().call(
-        EnablePrayerStripParams(window: window),
-      );
-      r.fold(
-        (f) => debugPrint('[prayer-strip] enable failed: ${f.message}'),
-        (_) {},
-      );
-    } catch (e, st) {
-      debugPrint('refresh prayer strip failed: $e\n$st');
-    }
-  }());
 }
 
 /// Watches the app lifecycle and re-asserts the pinned strip on resume, so it
@@ -258,10 +137,7 @@ class _StripResumeGuardState extends State<_StripResumeGuard>
       method: s.calculationMethod,
       school: s.asrSchool,
     );
-    final ctxState = context.read<DailyPrayerContextCubit>().state;
-    if (ctxState is DailyPrayerContextLoaded) {
-      _enableOrRefreshStrip(context, ctxState);
-    }
+    context.read<AlertsSyncCubit>().requestSync();
   }
 
   @override

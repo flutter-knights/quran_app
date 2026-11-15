@@ -1,3 +1,4 @@
+import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/home/domain/repositories/prayer_times_repository.dart';
 import 'package:quran_app/features/notifications/domain/builders/prayer_strip_state_builder.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
@@ -10,6 +11,7 @@ class BuildPrayerStripWindowParams {
   final int? accentColor;
   final DateTime? now;
   final int days;
+  final List<PrayerTimes>? cachedDays;
 
   const BuildPrayerStripWindowParams({
     required this.localeCode,
@@ -17,6 +19,7 @@ class BuildPrayerStripWindowParams {
     this.accentColor,
     this.now,
     this.days = 7,
+    this.cachedDays,
   });
 }
 
@@ -35,23 +38,30 @@ class BuildPrayerStripWindow {
 
     for (var i = 0; i < params.days; i++) {
       final date = DateTime(today.year, today.month, today.day + i);
-      final pt = await prayerTimesRepository.getCachedForDate(date);
+      final cached = params.cachedDays;
+      final pt = cached != null
+          ? (i < cached.length ? cached[i] : null)
+          : await prayerTimesRepository.getCachedForDate(date);
       if (pt == null) break; // stop at the first gap
 
       // Today resolves "next" against the live clock; future days against
       // their own start so they open on Fajr.
       final resolveAt = i == 0 ? now : date;
-      final nextPrayer =
-          NextPrayerResolver.resolve(timings: pt.timings, now: resolveAt);
+      final nextPrayer = NextPrayerResolver.resolve(
+        timings: pt.timings,
+        now: resolveAt,
+      );
 
-      states.add(PrayerStripStateBuilder.build(
-        prayerTimes: pt,
-        nextPrayer: nextPrayer,
-        localeCode: params.localeCode,
-        isFriday: date.weekday == DateTime.friday,
-        use24Hour: params.use24Hour,
-        accentColor: params.accentColor,
-      ));
+      states.add(
+        PrayerStripStateBuilder.build(
+          prayerTimes: pt,
+          nextPrayer: nextPrayer,
+          localeCode: params.localeCode,
+          isFriday: date.weekday == DateTime.friday,
+          use24Hour: params.use24Hour,
+          accentColor: params.accentColor,
+        ),
+      );
     }
 
     if (states.isEmpty) return null;

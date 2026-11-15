@@ -7,6 +7,7 @@ import 'package:quran_app/features/notifications/domain/usecases/ack_missed_aler
 import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/usecases/disable_prayer_strip.dart';
 import 'package:quran_app/features/notifications/domain/usecases/enable_prayer_strip.dart';
+import 'package:quran_app/features/notifications/domain/usecases/get_cached_prayer_days.dart';
 import 'package:quran_app/features/notifications/domain/usecases/get_reliability_status.dart';
 import 'package:quran_app/features/notifications/domain/usecases/open_system_settings.dart';
 import 'package:quran_app/features/notifications/domain/usecases/preview_alert_sound.dart';
@@ -14,6 +15,7 @@ import 'package:quran_app/features/notifications/domain/usecases/refresh_prayer_
 import 'package:quran_app/features/notifications/domain/usecases/schedule_test_adhan.dart';
 import 'package:quran_app/features/notifications/domain/usecases/stop_alert_preview.dart';
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 
 /// Registers Dart-side dependencies for the notifications feature.
 /// The legacy `PrayerNotificationScheduler` must already be registered
@@ -40,5 +42,18 @@ void initNotifications() {
   sl.registerLazySingleton(() => ScheduleTestAdhan(repository: sl()));
   sl.registerLazySingleton(
     () => BuildPrayerStripWindow(prayerTimesRepository: sl()),
+  );
+  sl.registerLazySingleton(
+    () => GetCachedPrayerDays(prayerTimesRepository: sl()),
+  );
+  sl.registerFactory(
+    () => AlertsSyncCubit(
+      settingsCubit: sl(),
+      getCachedPrayerDays: sl(),
+      syncDailyAdhans: sl(),
+      buildPrayerStripWindow: sl(),
+      enablePrayerStrip: sl(),
+      disablePrayerStrip: sl(),
+    ),
   );
 }

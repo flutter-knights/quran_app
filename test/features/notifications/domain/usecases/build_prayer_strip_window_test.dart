@@ -8,20 +8,25 @@ import 'package:quran_app/features/notifications/domain/usecases/build_prayer_st
 class _MockRepo extends Mock implements PrayerTimesRepository {}
 
 PrayerTimes _pt(String dateKey) => PrayerTimes(
-      key: dateKey,
-      timings: const {
-        PrayerName.fajr: '04:15',
-        PrayerName.sunrise: '05:07',
-        PrayerName.dhuhr: '12:52',
-        PrayerName.asr: '16:28',
-        PrayerName.maghrib: '19:46',
-        PrayerName.isha: '21:16',
-      },
-      date: Date(
-        month: 'ذو الحجة', weekDay: 'الجمعة', day: '5', year: '1447',
-        enMonth: 'Dhul-Hijjah', enWeekDay: 'Friday', gregorianDate: dateKey,
-      ),
-    );
+  key: dateKey,
+  timings: const {
+    PrayerName.fajr: '04:15',
+    PrayerName.sunrise: '05:07',
+    PrayerName.dhuhr: '12:52',
+    PrayerName.asr: '16:28',
+    PrayerName.maghrib: '19:46',
+    PrayerName.isha: '21:16',
+  },
+  date: Date(
+    month: 'ذو الحجة',
+    weekDay: 'الجمعة',
+    day: '5',
+    year: '1447',
+    enMonth: 'Dhul-Hijjah',
+    enWeekDay: 'Friday',
+    gregorianDate: dateKey,
+  ),
+);
 
 void main() {
   setUpAll(() => registerFallbackValue(DateTime(2026)));
@@ -43,9 +48,14 @@ void main() {
       return _pt(key);
     });
 
-    final window = await useCase.call(BuildPrayerStripWindowParams(
-      localeCode: 'en', use24Hour: true, now: now, days: 3,
-    ));
+    final window = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'en',
+        use24Hour: true,
+        now: now,
+        days: 3,
+      ),
+    );
 
     expect(window, isNotNull);
     expect(window!.days.length, 3);
@@ -64,18 +74,54 @@ void main() {
       return _pt(key);
     });
 
-    final window = await useCase.call(BuildPrayerStripWindowParams(
-      localeCode: 'en', use24Hour: true, now: now, days: 7,
-    ));
+    final window = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'en',
+        use24Hour: true,
+        now: now,
+        days: 7,
+      ),
+    );
 
     expect(window!.days.length, 2); // 22nd, 23rd
   });
 
+  test('cachedDays bypasses the repository', () async {
+    final w = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'ar',
+        use24Hour: true,
+        now: DateTime(2026, 11, 15, 9),
+        cachedDays: [_pt('15-11-2026'), _pt('16-11-2026')],
+      ),
+    );
+    expect(w!.days.length, 2);
+    verifyNever(() => repo.getCachedForDate(any()));
+  });
+
+  test('empty cachedDays returns null without the repository', () async {
+    final w = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'ar',
+        use24Hour: true,
+        now: DateTime(2026, 11, 15, 9),
+        cachedDays: const [],
+      ),
+    );
+    expect(w, isNull);
+    verifyNever(() => repo.getCachedForDate(any()));
+  });
+
   test('returns null when today is not cached', () async {
     when(() => repo.getCachedForDate(any())).thenAnswer((_) async => null);
-    final window = await useCase.call(BuildPrayerStripWindowParams(
-      localeCode: 'en', use24Hour: true, now: DateTime(2026, 5, 22), days: 7,
-    ));
+    final window = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'en',
+        use24Hour: true,
+        now: DateTime(2026, 5, 22),
+        days: 7,
+      ),
+    );
     expect(window, isNull);
   });
 }
