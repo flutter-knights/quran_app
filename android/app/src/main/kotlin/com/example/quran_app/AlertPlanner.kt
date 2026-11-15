@@ -12,7 +12,6 @@ import kotlin.math.abs
 object AlertPlanner {
 
     const val MAX_DAYS = 7
-    const val JUMUAH = "jumuah"
     const val CODE_DAYS = MAX_DAYS + 1
     const val ADHAN_BASE = 200
     const val REMINDER_BASE = 300
@@ -25,6 +24,7 @@ object AlertPlanner {
     const val PRUNE_MS = 48 * 60 * 60_000L
     const val ISHA_FALLBACK_MS = 6 * 60 * 60_000L
     val PRAYERS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
+    const val JUMUAH = "jumuah"
     const val PLAYBACK_CHANNEL = "prayer_adhan_channel"
     const val ALERT_TONE_CHANNEL = "prayer_alert_tone_v2"
     const val ALERT_VIBRATE_CHANNEL = "prayer_alert_vibrate_v2"
