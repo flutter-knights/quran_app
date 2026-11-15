@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
-import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/usecases/usecase.dart';
 import 'package:quran_app/features/home/data/datasources/local/prayer_times_local_data_source.dart';
@@ -28,11 +28,10 @@ class HomePage extends StatelessWidget {
         BlocProvider(
           create: (context) {
             final s = context.read<SettingsCubit>().state.settingsModel;
-            return sl<DailyPrayerContextCubit>()
-              ..fetchDailyPrayerContext(
-                method: s.calculationMethod,
-                school: s.asrSchool,
-              );
+            return sl<DailyPrayerContextCubit>()..fetchDailyPrayerContext(
+              method: s.calculationMethod,
+              school: s.asrSchool,
+            );
           },
         ),
         BlocProvider(create: (_) => PrayerCountdownCubit()),
@@ -43,13 +42,15 @@ class HomePage extends StatelessWidget {
             listenWhen: (_, s) => s is PrayerCountdownRequestRefresh,
             listener: (context, state) {
               final s = state as PrayerCountdownRequestRefresh;
-              final settings =
-                  context.read<SettingsCubit>().state.settingsModel;
+              final settings = context
+                  .read<SettingsCubit>()
+                  .state
+                  .settingsModel;
               context.read<DailyPrayerContextCubit>().fetchDailyPrayerContext(
-                    silent: s.silent,
-                    method: settings.calculationMethod,
-                    school: settings.asrSchool,
-                  );
+                silent: s.silent,
+                method: settings.calculationMethod,
+                school: settings.asrSchool,
+              );
             },
           ),
           // Advance the strip's highlighted pill as prayers pass through the
@@ -74,7 +75,10 @@ class HomePage extends StatelessWidget {
             listenWhen: (_, s) => s is DailyPrayerContextLoaded,
             listener: (context, state) {
               final loaded = state as DailyPrayerContextLoaded;
-              final settings = context.read<SettingsCubit>().state.settingsModel;
+              final settings = context
+                  .read<SettingsCubit>()
+                  .state
+                  .settingsModel;
               unawaited(
                 sl<PreCachePrayerTimes>().call(
                   PreCachePrayerTimesParams(
@@ -87,21 +91,23 @@ class HomePage extends StatelessWidget {
               final locale = settings.isArabic ? 'ar' : 'en';
               final local = sl<PrayerTimesLocalDataSource>();
               final today = DateTime.now();
-              final days = <PrayerTimes>[
-                loaded.dailyPrayerContext.prayerTimes,
-              ];
+              final days = <PrayerTimes>[loaded.dailyPrayerContext.prayerTimes];
               for (var i = 1; i <= 2; i++) {
-                final d = local.getCached(
-                  date: today.add(Duration(days: i)),
-                );
+                final d = local.getCached(date: today.add(Duration(days: i)));
                 if (d != null) days.add(d);
               }
               unawaited(
                 sl<SyncDailyAdhans>().call(
                   SyncDailyAdhansParams(
                     days: days,
-                    enabledByPrayer: settings.adhanEnabledByPrayer,
-                    reminderMinutesByPrayer: settings.reminderMinutesByPrayer,
+                    enabledByPrayer: {
+                      for (final e in settings.prayerAlerts.entries)
+                        e.key: e.value.enabled,
+                    },
+                    reminderMinutesByPrayer: {
+                      for (final e in settings.prayerAlerts.entries)
+                        e.key: e.value.effectiveReminderMinutes ?? 0,
+                    },
                     localeCode: locale,
                   ),
                 ),
@@ -117,10 +123,7 @@ class HomePage extends StatelessWidget {
                   p.isArabic != c.isArabic ||
                   p.palette != c.palette ||
                   p.isFormat12Hours != c.isFormat12Hours ||
-                  !_mapBoolEq(p.adhanEnabledByPrayer, c.adhanEnabledByPrayer) ||
-                  !_mapIntEq(
-                    p.reminderMinutesByPrayer, c.reminderMinutesByPrayer,
-                  ) ||
+                  !mapEquals(p.prayerAlerts, c.prayerAlerts) ||
                   p.calculationMethod != c.calculationMethod ||
                   p.asrSchool != c.asrSchool;
             },
@@ -129,8 +132,7 @@ class HomePage extends StatelessWidget {
               // strip + adhans. None of that notification/foreground-service
               // work should ever be able to crash the app on a setting change.
               try {
-                final ctxState =
-                    context.read<DailyPrayerContextCubit>().state;
+                final ctxState = context.read<DailyPrayerContextCubit>().state;
                 // Only refresh the strip while it's pinned; disabling is
                 // handled by a dedicated listener on the pin transition, so we
                 // don't spin up the service on every unrelated settings change.
@@ -141,8 +143,7 @@ class HomePage extends StatelessWidget {
 
                 // Re-sync adhans + reminders when relevant settings change.
                 if (ctxState is DailyPrayerContextLoaded) {
-                  final locale =
-                      settings.settingsModel.isArabic ? 'ar' : 'en';
+                  final locale = settings.settingsModel.isArabic ? 'ar' : 'en';
                   final local = sl<PrayerTimesLocalDataSource>();
                   final today = DateTime.now();
                   final days = <PrayerTimes>[
@@ -158,20 +159,26 @@ class HomePage extends StatelessWidget {
                     sl<SyncDailyAdhans>().call(
                       SyncDailyAdhansParams(
                         days: days,
-                        enabledByPrayer:
-                            settings.settingsModel.adhanEnabledByPrayer,
-                        reminderMinutesByPrayer:
-                            settings.settingsModel.reminderMinutesByPrayer,
+                        enabledByPrayer: {
+                          for (final e
+                              in settings.settingsModel.prayerAlerts.entries)
+                            e.key: e.value.enabled,
+                        },
+                        reminderMinutesByPrayer: {
+                          for (final e
+                              in settings.settingsModel.prayerAlerts.entries)
+                            e.key: e.value.effectiveReminderMinutes ?? 0,
+                        },
                         localeCode: locale,
                       ),
                     ),
                   );
                 }
                 context.read<DailyPrayerContextCubit>().fetchDailyPrayerContext(
-                      silent: true,
-                      method: settings.settingsModel.calculationMethod,
-                      school: settings.settingsModel.asrSchool,
-                    );
+                  silent: true,
+                  method: settings.settingsModel.calculationMethod,
+                  school: settings.settingsModel.asrSchool,
+                );
               } catch (e, st) {
                 debugPrint('settings-change strip/adhan sync failed: $e\n$st');
               }
@@ -194,22 +201,6 @@ class HomePage extends StatelessWidget {
         child: _StripResumeGuard(child: HomeView()),
       ),
     );
-  }
-
-  static bool _mapBoolEq(Map<PrayerName, bool> a, Map<PrayerName, bool> b) {
-    if (a.length != b.length) return false;
-    for (final e in a.entries) {
-      if (b[e.key] != e.value) return false;
-    }
-    return true;
-  }
-
-  static bool _mapIntEq(Map<PrayerName, int> a, Map<PrayerName, int> b) {
-    if (a.length != b.length) return false;
-    for (final e in a.entries) {
-      if (b[e.key] != e.value) return false;
-    }
-    return true;
   }
 }
 
@@ -234,8 +225,9 @@ void _enableOrRefreshStrip(
         ),
       );
       if (window == null) return; // nothing cached yet
-      final r = await sl<EnablePrayerStrip>()
-          .call(EnablePrayerStripParams(window: window));
+      final r = await sl<EnablePrayerStrip>().call(
+        EnablePrayerStripParams(window: window),
+      );
       r.fold(
         (f) => debugPrint('[prayer-strip] enable failed: ${f.message}'),
         (_) {},
@@ -278,10 +270,10 @@ class _StripResumeGuardState extends State<_StripResumeGuard>
     // avoid a skeleton flash when data is already showing.
     final s = context.read<SettingsCubit>().state.settingsModel;
     context.read<DailyPrayerContextCubit>().fetchDailyPrayerContext(
-          silent: true,
-          method: s.calculationMethod,
-          school: s.asrSchool,
-        );
+      silent: true,
+      method: s.calculationMethod,
+      school: s.asrSchool,
+    );
     final ctxState = context.read<DailyPrayerContextCubit>().state;
     if (ctxState is DailyPrayerContextLoaded) {
       _enableOrRefreshStrip(context, ctxState);

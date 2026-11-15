@@ -5,6 +5,7 @@ import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/reminder_offset_dropdown.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -22,12 +23,18 @@ class PerPrayerAdhanTile extends StatelessWidget {
 
   String _localizedName(BuildContext context) {
     switch (prayer) {
-      case PrayerName.fajr: return S.of(context).fajr;
-      case PrayerName.dhuhr: return S.of(context).dhuhr;
-      case PrayerName.asr: return S.of(context).asr;
-      case PrayerName.maghrib: return S.of(context).maghrib;
-      case PrayerName.isha: return S.of(context).isha;
-      case PrayerName.sunrise: return '';
+      case PrayerName.fajr:
+        return S.of(context).fajr;
+      case PrayerName.dhuhr:
+        return S.of(context).dhuhr;
+      case PrayerName.asr:
+        return S.of(context).asr;
+      case PrayerName.maghrib:
+        return S.of(context).maghrib;
+      case PrayerName.isha:
+        return S.of(context).isha;
+      case PrayerName.sunrise:
+        return '';
     }
   }
 
@@ -36,8 +43,13 @@ class PerPrayerAdhanTile extends StatelessWidget {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
         final s = state.settingsModel;
-        final adhanOn = s.adhanEnabledByPrayer[prayer] ?? true;
-        final reminderMinutes = s.reminderMinutesByPrayer[prayer] ?? 0;
+        final alert = s.prayerAlerts[prayer] ?? const PrayerAlert();
+        final adhanOn = alert.enabled;
+        final reminderMinutes =
+            alert.reminderEnabled &&
+                const [5, 10, 15].contains(alert.reminderMinutes)
+            ? alert.reminderMinutes
+            : 0;
 
         return Column(
           children: [
@@ -63,8 +75,10 @@ class PerPrayerAdhanTile extends StatelessWidget {
                       ),
                       Switch(
                         value: adhanOn,
-                        onChanged: (v) =>
-                            sl<SettingsCubit>().updateAdhanEnabled(prayer, v),
+                        onChanged: (v) => sl<SettingsCubit>().updatePrayerAlert(
+                          prayer,
+                          alert.copyWith(enabled: v),
+                        ),
                       ),
                     ],
                   ),
@@ -81,8 +95,13 @@ class PerPrayerAdhanTile extends StatelessWidget {
                       ReminderOffsetDropdown(
                         value: reminderMinutes,
                         enabled: adhanOn,
-                        onChanged: (v) => sl<SettingsCubit>()
-                            .updateReminderMinutes(prayer, v),
+                        onChanged: (v) => sl<SettingsCubit>().updatePrayerAlert(
+                          prayer,
+                          alert.copyWith(
+                            reminderEnabled: v > 0,
+                            reminderMinutes: v > 0 ? v : alert.reminderMinutes,
+                          ),
+                        ),
                       ),
                     ],
                   ),

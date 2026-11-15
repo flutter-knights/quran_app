@@ -4,6 +4,8 @@ import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import '../../../quran_playback/domain/entities/reciter.dart';
 
 class Settings extends Equatable {
@@ -16,8 +18,11 @@ class Settings extends Equatable {
   final double playbackSpeed;
   final Reciter defaultReciter;
   final bool isPrayerStripPinned;
-  final Map<PrayerName, bool> adhanEnabledByPrayer;
-  final Map<PrayerName, int> reminderMinutesByPrayer;
+  final Map<PrayerName, PrayerAlert> prayerAlerts;
+  final StripStyle stripStyle;
+  final bool alertsIntroSeen;
+  final bool xiaomiAutostartConfirmed;
+  final bool xiaomiBatteryConfirmed;
 
   /// Whether the first-run onboarding (landing page) has been completed.
   /// Defaults to `false` for brand-new installs so they see the landing; the
@@ -39,23 +44,13 @@ class Settings extends Equatable {
   /// The Asr juristic school. Defaults to [AsrSchool.shafi].
   final AsrSchool asrSchool;
 
-  static const Map<PrayerName, bool> defaultAdhanEnabled = {
-    PrayerName.fajr: true,
-    PrayerName.dhuhr: true,
-    PrayerName.asr: true,
-    PrayerName.maghrib: true,
-    PrayerName.isha: true,
+  static const Map<PrayerName, PrayerAlert> defaultPrayerAlerts = {
+    PrayerName.fajr: PrayerAlert(),
+    PrayerName.dhuhr: PrayerAlert(),
+    PrayerName.asr: PrayerAlert(),
+    PrayerName.maghrib: PrayerAlert(),
+    PrayerName.isha: PrayerAlert(),
   };
-
-  static const Map<PrayerName, int> defaultReminderMinutes = {
-    PrayerName.fajr: 0,
-    PrayerName.dhuhr: 0,
-    PrayerName.asr: 0,
-    PrayerName.maghrib: 0,
-    PrayerName.isha: 0,
-  };
-
-  static const List<int> validReminderMinutes = [0, 5, 10, 15];
 
   static const double minPageBrightness = 0.3;
 
@@ -63,6 +58,9 @@ class Settings extends Equatable {
   /// the user has the **24-hour** format enabled. Use this at call sites so the
   /// inverted name stops being a bug-trap. Persisted field name is unchanged.
   bool get is24HourFormat => isFormat12Hours;
+
+  int get enabledAlertCount =>
+      prayerAlerts.values.where((a) => a.enabled).length;
 
   const Settings({
     required this.isFormat12Hours,
@@ -74,8 +72,11 @@ class Settings extends Equatable {
     this.playbackSpeed = 1.0,
     this.defaultReciter = Reciter.alafasy,
     this.isPrayerStripPinned = false,
-    this.adhanEnabledByPrayer = defaultAdhanEnabled,
-    this.reminderMinutesByPrayer = defaultReminderMinutes,
+    this.prayerAlerts = defaultPrayerAlerts,
+    this.stripStyle = const StripStyle(),
+    this.alertsIntroSeen = false,
+    this.xiaomiAutostartConfirmed = false,
+    this.xiaomiBatteryConfirmed = false,
     this.hasCompletedOnboarding = false,
     this.showSplashOnLaunch = true,
     this.notificationHintDismissed = false,
@@ -93,8 +94,11 @@ class Settings extends Equatable {
     double? playbackSpeed,
     Reciter? defaultReciter,
     bool? isPrayerStripPinned,
-    Map<PrayerName, bool>? adhanEnabledByPrayer,
-    Map<PrayerName, int>? reminderMinutesByPrayer,
+    Map<PrayerName, PrayerAlert>? prayerAlerts,
+    StripStyle? stripStyle,
+    bool? alertsIntroSeen,
+    bool? xiaomiAutostartConfirmed,
+    bool? xiaomiBatteryConfirmed,
     bool? hasCompletedOnboarding,
     bool? showSplashOnLaunch,
     bool? notificationHintDismissed,
@@ -111,11 +115,18 @@ class Settings extends Equatable {
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
       isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
-      adhanEnabledByPrayer: adhanEnabledByPrayer ?? this.adhanEnabledByPrayer,
-      reminderMinutesByPrayer: reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
-      hasCompletedOnboarding: hasCompletedOnboarding ?? this.hasCompletedOnboarding,
+      prayerAlerts: prayerAlerts ?? this.prayerAlerts,
+      stripStyle: stripStyle ?? this.stripStyle,
+      alertsIntroSeen: alertsIntroSeen ?? this.alertsIntroSeen,
+      xiaomiAutostartConfirmed:
+          xiaomiAutostartConfirmed ?? this.xiaomiAutostartConfirmed,
+      xiaomiBatteryConfirmed:
+          xiaomiBatteryConfirmed ?? this.xiaomiBatteryConfirmed,
+      hasCompletedOnboarding:
+          hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       showSplashOnLaunch: showSplashOnLaunch ?? this.showSplashOnLaunch,
-      notificationHintDismissed: notificationHintDismissed ?? this.notificationHintDismissed,
+      notificationHintDismissed:
+          notificationHintDismissed ?? this.notificationHintDismissed,
       calculationMethod: calculationMethod ?? this.calculationMethod,
       asrSchool: asrSchool ?? this.asrSchool,
     );
@@ -123,21 +134,24 @@ class Settings extends Equatable {
 
   @override
   List<Object?> get props => [
-        isArabic,
-        isFormat12Hours,
-        palette,
-        mushafPaper,
-        pageBrightness,
-        readingMode,
-        playbackSpeed,
-        defaultReciter,
-        isPrayerStripPinned,
-        adhanEnabledByPrayer,
-        reminderMinutesByPrayer,
-        hasCompletedOnboarding,
-        showSplashOnLaunch,
-        notificationHintDismissed,
-        calculationMethod,
-        asrSchool,
-      ];
+    isArabic,
+    isFormat12Hours,
+    palette,
+    mushafPaper,
+    pageBrightness,
+    readingMode,
+    playbackSpeed,
+    defaultReciter,
+    isPrayerStripPinned,
+    prayerAlerts,
+    stripStyle,
+    alertsIntroSeen,
+    xiaomiAutostartConfirmed,
+    xiaomiBatteryConfirmed,
+    hasCompletedOnboarding,
+    showSplashOnLaunch,
+    notificationHintDismissed,
+    calculationMethod,
+    asrSchool,
+  ];
 }
