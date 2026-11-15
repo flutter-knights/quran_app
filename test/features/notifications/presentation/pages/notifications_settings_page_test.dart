@@ -4,9 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
@@ -258,6 +260,43 @@ void main() {
     );
     expect(find.text('شريط أوقات الصلاة'), findsNothing);
     debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('the strip row opens the strip settings route', (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    whenListen(
+      reliability,
+      const Stream<ReliabilityState>.empty(),
+      initialState: ReliabilityLoaded(ok),
+    );
+    whenListen(today, const Stream<PrayerTimes?>.empty(), initialState: null);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider<ReliabilityCubit>.value(value: reliability),
+              BlocProvider<TodayPrayerTimesCubit>.value(value: today),
+            ],
+            child: const NotificationsSettingsPage(),
+          ),
+        ),
+        GoRoute(
+          path: AppRouter.prayerStripPath,
+          builder: (context, state) => const Text('strip-page'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      alertsRouterApp(settings: settings, router: router),
+    );
+    await tester.pumpAndSettle();
+    await tapAndSettle(tester, find.text('شريط أوقات الصلاة'));
+    expect(find.text('strip-page'), findsOneWidget);
   });
 
   for (final locale in ['ar', 'en']) {

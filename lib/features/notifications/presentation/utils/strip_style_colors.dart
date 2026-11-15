@@ -74,3 +74,29 @@ Color _appNight(ColorPalette palette) => switch (palette) {
   ColorPalette.neutralLight => const Color(0xFF93BAA8),
   ColorPalette.slateDark || ColorPalette.slateLight => const Color(0xFF8DB5CC),
 };
+
+enum StripInk { primary, passed, muted }
+
+Color stripShadeColor({required bool night}) =>
+    night ? const Color(0xFF1F1F1F) : const Color(0xFFF2F2F2);
+
+Color stripInk(StripInk ink, {required bool night}) => switch (ink) {
+  StripInk.primary => night ? const Color(0xFFF8F9F8) : const Color(0xDE000000),
+  StripInk.passed => night ? const Color(0x7FF8F9F8) : const Color(0x6F000000),
+  StripInk.muted => night ? const Color(0xFF8B9A94) : const Color(0x8A000000),
+};
+
+bool stripFillsCell(StripShape shape) =>
+    shape == StripShape.rounded || shape == StripShape.pill;
+
+Color stripNextText(StripRenderStyle s, {required bool night}) {
+  if (stripFillsCell(s.shape)) {
+    return Color(night ? s.pillTextNight : s.pillTextDay);
+  }
+  return Color(night ? s.highlightNight : s.highlightTextDay);
+}
+
+Color stripMutedText(StripRenderStyle s, {required bool night}) =>
+    !night && s.backgroundDay != null
+    ? const Color(0xA8000000)
+    : stripInk(StripInk.muted, night: night);

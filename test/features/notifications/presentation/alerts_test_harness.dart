@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
@@ -25,6 +26,13 @@ class MemStorage implements Storage {
   Future<void> close() async {}
 }
 
+const _delegates = <LocalizationsDelegate<dynamic>>[
+  S.delegate,
+  GlobalMaterialLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+  GlobalCupertinoLocalizations.delegate,
+];
+
 Widget alertsApp({
   required SettingsCubit settings,
   required Widget home,
@@ -35,14 +43,26 @@ Widget alertsApp({
     child: MaterialApp(
       locale: Locale(locale),
       supportedLocales: S.delegate.supportedLocales,
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: _delegates,
       theme: settings.state.settingsModel.palette.toThemeData(),
       home: home,
+    ),
+  );
+}
+
+Widget alertsRouterApp({
+  required SettingsCubit settings,
+  required GoRouter router,
+  String locale = 'ar',
+}) {
+  return BlocProvider.value(
+    value: settings,
+    child: MaterialApp.router(
+      locale: Locale(locale),
+      supportedLocales: S.delegate.supportedLocales,
+      localizationsDelegates: _delegates,
+      theme: settings.state.settingsModel.palette.toThemeData(),
+      routerConfig: router,
     ),
   );
 }

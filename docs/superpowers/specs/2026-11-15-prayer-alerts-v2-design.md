@@ -657,6 +657,6 @@ Every state, with the shared rules: Arabic-Indic digits on every surface when th
 | Onboarding Xiaomi step | Three steps; «تخطٍّ» leaves the flags false. |
 | Upgrade sheet | Two lines, plus the Xiaomi line on Xiaomi. «مراجعة الإعدادات» opens `/notifications` (on Xiaomi, `ReliabilityPage` first); «لاحقًا» closes. Shown once. |
 | Missed sheet | `missed_title` names the most recent missed prayer; body per §8. «إصلاح الآن» opens `ReliabilityPage`; «لاحقًا» closes. Shown once per detected miss (ack on show). |
-| Strip (system) | Compact: 5 cells, passed prayers at 60% text, the next cell highlighted. Expanded: date line + 5 rows, next row highlighted with the «التالية» tag. No next prayer in the window: nothing highlighted. |
+| Strip (system) | Compact: 5 cells, passed prayers at about 50% text (§7), the next cell highlighted. Expanded: date line + 5 rows, next row highlighted with the «التالية» tag. No next prayer in the window: nothing highlighted. |
 | Late notification | Silent, title and body per §7, action «إصلاح». |
 

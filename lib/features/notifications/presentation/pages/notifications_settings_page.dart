@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
@@ -105,6 +107,12 @@ class _StripRow extends StatelessWidget {
               : expanded
               ? s.alerts_stripRow_onExpanded
               : s.alerts_stripRow_on,
+          trailing: HugeIcon(
+            icon: forwardArrowIcon(context),
+            color: context.colorScheme.onSurfaceVariant,
+            size: 20,
+          ),
+          onTap: () => context.push(AppRouter.prayerStripPath),
         );
       },
     );

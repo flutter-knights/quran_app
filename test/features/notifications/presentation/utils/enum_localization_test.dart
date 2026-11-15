@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import 'package:quran_app/features/notifications/presentation/utils/enum_localization.dart';
 
 Future<PendingS> pendingFor(WidgetTester tester, String locale) async {
@@ -210,5 +211,20 @@ void main() {
   test('alertsDateLabel reads day and month with locale digits', () {
     expect(alertsDateLabel(DateTime(2026, 11, 22), 'ar'), '٢٢ نوفمبر');
     expect(alertsDateLabel(DateTime(2026, 11, 22), 'en'), '22 November');
+  });
+
+  testWidgets('strip option labels in both languages', (tester) async {
+    final ar = await pendingFor(tester, 'ar');
+    expect(stripHighlightLabel(ar, StripHighlight.maroon), 'عنابي');
+    expect(stripBackgroundLabel(ar, StripBackground.auto), 'تلقائي حسب النظام');
+    expect(stripShapeLabel(ar, StripShape.pill), 'كبسولة');
+    final en = await pendingFor(tester, 'en');
+    expect(stripHighlightLabel(en, StripHighlight.app), 'App colour');
+    expect(stripBackgroundLabel(en, StripBackground.rose), 'Rose');
+    expect(stripShapeLabel(en, StripShape.rounded), 'Rounded rectangle');
+    expect(
+      StripHighlight.values.map((h) => stripHighlightLabel(ar, h)).toSet(),
+      hasLength(StripHighlight.values.length),
+    );
   });
 }

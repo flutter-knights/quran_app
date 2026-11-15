@@ -144,4 +144,49 @@ void main() {
       const Color(0xFF8DB5CC),
     );
   });
+
+  test('shade and ink mirror the native values and values-night colours', () {
+    expect(stripShadeColor(night: false), const Color(0xFFF2F2F2));
+    expect(stripShadeColor(night: true), const Color(0xFF1F1F1F));
+    expect(stripInk(StripInk.primary, night: false), const Color(0xDE000000));
+    expect(stripInk(StripInk.primary, night: true), const Color(0xFFF8F9F8));
+    expect(stripInk(StripInk.passed, night: false), const Color(0x6F000000));
+    expect(stripInk(StripInk.passed, night: true), const Color(0x7FF8F9F8));
+    expect(stripInk(StripInk.muted, night: false), const Color(0x8A000000));
+    expect(stripInk(StripInk.muted, night: true), const Color(0xFF8B9A94));
+  });
+
+  test('next text follows the native fill rule on API 31+', () {
+    StripRenderStyle r(StripShape shape) => stripRenderStyle(
+      StripStyle(highlight: StripHighlight.darkGreen, shape: shape),
+      ColorPalette.neutralLight,
+    );
+    for (final shape in [StripShape.rounded, StripShape.pill]) {
+      expect(stripFillsCell(shape), isTrue, reason: shape.name);
+      expect(stripNextText(r(shape), night: false), const Color(0xFFFFFFFF));
+      expect(stripNextText(r(shape), night: true), const Color(0xFF121413));
+    }
+    for (final shape in [StripShape.outline, StripShape.none]) {
+      expect(stripFillsCell(shape), isFalse, reason: shape.name);
+      expect(stripNextText(r(shape), night: false), const Color(0xFF406C5C));
+      expect(stripNextText(r(shape), night: true), const Color(0xFF8FC4AE));
+    }
+  });
+
+  test('muted text darkens only over a day background fill', () {
+    StripRenderStyle r(StripBackground b) =>
+        stripRenderStyle(StripStyle(background: b), ColorPalette.neutralLight);
+    expect(
+      stripMutedText(r(StripBackground.sand), night: false),
+      const Color(0xA8000000),
+    );
+    expect(
+      stripMutedText(r(StripBackground.sand), night: true),
+      const Color(0xFF8B9A94),
+    );
+    expect(
+      stripMutedText(r(StripBackground.auto), night: false),
+      const Color(0x8A000000),
+    );
+  });
 }

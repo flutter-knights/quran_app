@@ -15,6 +15,7 @@ import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_list_parts.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_switch_row.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/reminder_picker.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/sound_picker.dart';
 import 'package:quran_app/features/notifications/presentation/utils/enum_localization.dart';
@@ -143,7 +144,7 @@ class _SheetBody extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     child: Column(
                       children: [
-                        _SwitchRow(
+                        AlertsSwitchRow(
                           title: s.alerts_sheet_alertSwitch,
                           value: alert.enabled,
                           onChanged: (v) =>
@@ -164,7 +165,7 @@ class _SheetBody extends StatelessWidget {
                         ),
                         if (!ios) ...[
                           const AlertsRowDivider(),
-                          _SwitchRow(
+                          AlertsSwitchRow(
                             title: s.alerts_sheet_ringInSilent,
                             subtitle: s.alerts_sheet_ringInSilentSub,
                             value: alert.ringInSilent && ringable,
@@ -197,7 +198,7 @@ class _SheetBody extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     child: Column(
                       children: [
-                        _SwitchRow(
+                        AlertsSwitchRow(
                           title: s.alerts_sheet_reminderSwitch,
                           value: reminderActive,
                           onChanged: alert.enabled
@@ -249,33 +250,3 @@ class _SheetBody extends StatelessWidget {
 }
 
 const _notePadding = EdgeInsetsDirectional.fromSTEB(16, 10, 16, 10);
-
-class _SwitchRow extends StatelessWidget {
-  const _SwitchRow({
-    required this.title,
-    required this.value,
-    required this.onChanged,
-    this.subtitle,
-  });
-
-  final String title;
-  final String? subtitle;
-  final bool value;
-  final ValueChanged<bool>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: SwitchListTile(
-        contentPadding: const EdgeInsetsDirectional.symmetric(horizontal: 16),
-        title: Text(title, style: TS.semi16),
-        subtitle: subtitle == null
-            ? null
-            : Text(subtitle!, style: TS.regular14),
-        value: value,
-        onChanged: onChanged,
-      ),
-    );
-  }
-}

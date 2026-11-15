@@ -5,6 +5,7 @@ import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 String prayerLabel(BuildContext context, PrayerName p) {
@@ -107,3 +108,28 @@ String? prayerTimeLabel(
 
 String alertsDateLabel(DateTime date, String localeCode) =>
     DateFormat('d MMMM', localeCode).format(date).toIndicNumerals(localeCode);
+
+String stripHighlightLabel(PendingS s, StripHighlight h) => switch (h) {
+  StripHighlight.app => s.strip_color_app,
+  StripHighlight.darkGreen => s.strip_color_darkGreen,
+  StripHighlight.emerald => s.strip_color_emerald,
+  StripHighlight.blue => s.strip_color_blue,
+  StripHighlight.indigo => s.strip_color_indigo,
+  StripHighlight.maroon => s.strip_color_maroon,
+  StripHighlight.bronze => s.strip_color_bronze,
+};
+
+String stripBackgroundLabel(PendingS s, StripBackground b) => switch (b) {
+  StripBackground.auto => s.strip_bg_auto,
+  StripBackground.mint => s.strip_bg_mint,
+  StripBackground.sand => s.strip_bg_sand,
+  StripBackground.sky => s.strip_bg_sky,
+  StripBackground.rose => s.strip_bg_rose,
+};
+
+String stripShapeLabel(PendingS s, StripShape shape) => switch (shape) {
+  StripShape.none => s.strip_shape_none,
+  StripShape.rounded => s.strip_shape_rounded,
+  StripShape.pill => s.strip_shape_pill,
+  StripShape.outline => s.strip_shape_outline,
+};
