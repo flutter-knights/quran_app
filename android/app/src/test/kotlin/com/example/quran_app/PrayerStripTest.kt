@@ -1,8 +1,11 @@
 package com.example.quran_app
 
+import java.io.File
 import java.util.Calendar
+import javax.xml.parsers.DocumentBuilderFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PrayerStripTest {
@@ -210,5 +213,16 @@ class PrayerStripTest {
     @Test fun passedTextKeeps60PercentOfItsAlpha() {
         assertEquals(0x99FFFFFF.toInt(), StripStyleNative.passed(0xFFFFFFFF.toInt()))
         assertEquals(0x85000000.toInt(), StripStyleNative.passed(0xDE000000.toInt()))
+    }
+
+    @Test fun stripLayoutsUseOnlyRemoteViewsSafeViews() {
+        val allowed = setOf("LinearLayout", "TextView")
+        for (name in listOf("prayer_strip_collapsed", "prayer_strip_expanded")) {
+            val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .parse(File("src/main/res/layout/$name.xml"))
+            val nodes = doc.getElementsByTagName("*")
+            val tags = (0 until nodes.length).map { nodes.item(it).nodeName }.toSet()
+            assertTrue("$name uses ${tags - allowed}", allowed.containsAll(tags))
+        }
     }
 }

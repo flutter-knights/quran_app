@@ -20,20 +20,22 @@
         android:orientation="horizontal" android:gravity="center_vertical"
         android:minHeight="32dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
-        <TextView android:id="@+id/cell_0_label"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="15sp"
-            android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
-            android:maxLines="1" android:ellipsize="end" />
-        <TextView android:id="@+id/cell_0_tag"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textColor="@color/strip_text_primary" android:textSize="12sp"
-            android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
-            android:maxLines="1" android:visibility="gone" />
-        <View
-            android:layout_width="0dp" android:layout_height="0dp"
-            android:layout_weight="1" />
+        <LinearLayout
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView android:id="@+id/cell_0_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/cell_0_tag"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
+                android:maxLines="1" android:visibility="gone" />
+        </LinearLayout>
         <TextView android:id="@+id/cell_0_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:textColor="@color/strip_text_primary" android:textSize="16sp"
@@ -46,20 +48,22 @@
         android:orientation="horizontal" android:gravity="center_vertical"
         android:minHeight="32dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
-        <TextView android:id="@+id/cell_1_label"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="15sp"
-            android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
-            android:maxLines="1" android:ellipsize="end" />
-        <TextView android:id="@+id/cell_1_tag"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textColor="@color/strip_text_primary" android:textSize="12sp"
-            android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
-            android:maxLines="1" android:visibility="gone" />
-        <View
-            android:layout_width="0dp" android:layout_height="0dp"
-            android:layout_weight="1" />
+        <LinearLayout
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView android:id="@+id/cell_1_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/cell_1_tag"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
+                android:maxLines="1" android:visibility="gone" />
+        </LinearLayout>
         <TextView android:id="@+id/cell_1_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:textColor="@color/strip_text_primary" android:textSize="16sp"
@@ -72,20 +76,22 @@
         android:orientation="horizontal" android:gravity="center_vertical"
         android:minHeight="32dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
-        <TextView android:id="@+id/cell_2_label"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="15sp"
-            android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
-            android:maxLines="1" android:ellipsize="end" />
-        <TextView android:id="@+id/cell_2_tag"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textColor="@color/strip_text_primary" android:textSize="12sp"
-            android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
-            android:maxLines="1" android:visibility="gone" />
-        <View
-            android:layout_width="0dp" android:layout_height="0dp"
-            android:layout_weight="1" />
+        <LinearLayout
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView android:id="@+id/cell_2_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/cell_2_tag"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
+                android:maxLines="1" android:visibility="gone" />
+        </LinearLayout>
         <TextView android:id="@+id/cell_2_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:textColor="@color/strip_text_primary" android:textSize="16sp"
@@ -98,20 +104,22 @@
         android:orientation="horizontal" android:gravity="center_vertical"
         android:minHeight="32dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
-        <TextView android:id="@+id/cell_3_label"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="15sp"
-            android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
-            android:maxLines="1" android:ellipsize="end" />
-        <TextView android:id="@+id/cell_3_tag"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textColor="@color/strip_text_primary" android:textSize="12sp"
-            android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
-            android:maxLines="1" android:visibility="gone" />
-        <View
-            android:layout_width="0dp" android:layout_height="0dp"
-            android:layout_weight="1" />
+        <LinearLayout
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView android:id="@+id/cell_3_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/cell_3_tag"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
+                android:maxLines="1" android:visibility="gone" />
+        </LinearLayout>
         <TextView android:id="@+id/cell_3_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:textColor="@color/strip_text_primary" android:textSize="16sp"
@@ -124,20 +132,22 @@
         android:orientation="horizontal" android:gravity="center_vertical"
         android:minHeight="32dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
-        <TextView android:id="@+id/cell_4_label"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="15sp"
-            android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
-            android:maxLines="1" android:ellipsize="end" />
-        <TextView android:id="@+id/cell_4_tag"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textColor="@color/strip_text_primary" android:textSize="12sp"
-            android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
-            android:maxLines="1" android:visibility="gone" />
-        <View
-            android:layout_width="0dp" android:layout_height="0dp"
-            android:layout_weight="1" />
+        <LinearLayout
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView android:id="@+id/cell_4_label"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
+                android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/cell_4_tag"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/strip_text_primary" android:textSize="12sp"
+                android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
+                android:maxLines="1" android:visibility="gone" />
+        </LinearLayout>
         <TextView android:id="@+id/cell_4_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:textColor="@color/strip_text_primary" android:textSize="16sp"
