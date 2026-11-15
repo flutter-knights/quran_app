@@ -18,7 +18,7 @@ Check here before writing a helper. Keep these pure: no widgets, no feature impo
 ## Constants (`core/constants/`)
 - **`AssetsDir`**: `fontsDir`, `imagesDir`, `iconsDir`, `jsonDir`. Never hardcode an `assets/` path.
 - **`DeviceSize`** on `BuildContext`: `context.height`, `context.width`, `context.aspectRatio`, `context.fontScaler`, `context.responsiveFont(size)`.
-- **`ColorPalette`**, **`MushafPaper`**, **`MushafReadingMode`**, **`PrayerName`**, **`FeatureFlags`**, **`HadithPagination`**.
+- **`ColorPalette`**, **`MushafPaper`**, **`MushafReadingMode`**, **`PrayerName`**, **`HadithPagination`**.
 
 ## Base classes
 - **`UseCase<T, P>`** (`core/usecases/usecase.dart`): `Future<T> call(P params)`. **`StreamUseCase<T, Params>`** for streams. **`NoParams`** for parameterless calls.

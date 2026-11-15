@@ -10,7 +10,9 @@ import 'package:quran_app/features/bookmarks/presentation/pages/bookmarks_page.d
 import 'package:quran_app/features/qibla/presentation/cubit/qibla_cubit.dart';
 import 'package:quran_app/features/qibla/presentation/pages/qibla_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
-import 'package:quran_app/features/home/presentation/pages/notifications_settings_page.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/pages/notifications_settings_page.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:quran_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
@@ -81,7 +83,13 @@ abstract class AppRouter {
       GoRoute(
         path: notificationsPath,
         pageBuilder: GoTransitions.fade.withScale.build(
-          builder: (context, state) => const NotificationsSettingsPage(),
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => sl<ReliabilityCubit>()),
+              BlocProvider(create: (_) => sl<TodayPrayerTimesCubit>()..load()),
+            ],
+            child: const NotificationsSettingsPage(),
+          ),
         ),
       ),
       GoRoute(
