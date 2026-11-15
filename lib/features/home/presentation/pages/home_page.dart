@@ -8,6 +8,7 @@ import 'package:quran_app/features/home/presentation/cubit/daily_prayer_context_
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/home/presentation/pages/widgets/home_view.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_prompt_gate.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 class HomePage extends StatelessWidget {
@@ -95,7 +96,7 @@ class HomePage extends StatelessWidget {
         // Re-assert the strip when the app returns to the foreground: the OS
         // can kill the hosting foreground service while we're backgrounded, and
         // a warm resume (no cold start) wouldn't otherwise re-fire the loaders.
-        child: _StripResumeGuard(child: HomeView()),
+        child: _StripResumeGuard(child: AlertsPromptGate(child: HomeView())),
       ),
     );
   }
