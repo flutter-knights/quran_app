@@ -31,7 +31,16 @@ object AlertPlanner {
     const val REMINDER_VIBRATE_CHANNEL = "prayer_reminder_channel"
     const val REMINDER_SILENT_CHANNEL = "prayer_reminder_silent_v2"
 
-    private val CANONICAL = listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha")
+    const val ACTION_APP_DETAILS = "android.settings.APPLICATION_DETAILS_SETTINGS"
+    const val ACTION_NOTIFICATION_SETTINGS = "android.settings.APP_NOTIFICATION_SETTINGS"
+    const val ACTION_EXACT_ALARM = "android.settings.REQUEST_SCHEDULE_EXACT_ALARM"
+    const val ACTION_BATTERY_SETTINGS = "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
+    const val EXTRA_APP_PACKAGE = "android.provider.extra.APP_PACKAGE"
+    private const val MIUI_SECURITY = "com.miui.securitycenter"
+    private const val MIUI_POWER = "com.miui.powerkeeper"
+    private val XIAOMI_BRANDS = setOf("xiaomi", "redmi", "poco")
+
+    private val CANONICAL =listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha")
     private val DATE = Regex("""(\d{4})-(\d{2})-(\d{2})""")
     private val TIME = Regex("""(\d{1,2}):(\d{2})""")
 
@@ -46,6 +55,11 @@ object AlertPlanner {
     data class Miss(val prayer: String, val at: Long)
     data class Slot(val requestCode: Int, val key: String, val triggerAt: Long)
     data class SlotPlan(val cancel: List<Int>, val slots: List<Slot>)
+    data class IntentSpec(val action: String?, val pkg: String?, val cls: String?, val extras: Map<String, String>)
+    data class OsState(
+        val notificationsEnabled: Boolean, val channelBlocked: Boolean, val exactAlarmsAllowed: Boolean,
+        val batteryUnrestricted: Boolean, val isXiaomi: Boolean,
+    )
 
     enum class Outcome { FIRED, LATE, SKIPPED, MISSED }
     enum class Route { SKIP, LATE, MISSED, DELIVER }
@@ -181,6 +195,56 @@ object AlertPlanner {
         records.filter { (_, r) -> r.outcome == Outcome.LATE && r.triggerAt > lastCheckedAt }
             .map { (k, r) -> Miss(k.substringAfter('/'), r.triggerAt) }
             .sortedByDescending { it.at }
+
+    fun isXiaomi(manufacturer: String?, brand: String?) =
+        listOf(manufacturer, brand).any { it?.lowercase(Locale.ROOT) in XIAOMI_BRANDS }
+
+    fun statusChannels(alerts: Map<String, AdhanSpec>) =
+        alerts.values.flatMap { routeChannels(it.sound) }.toSet() + PLAYBACK_CHANNEL
+
+    fun exactAlarmsAllowed(sdk: Int, canScheduleExact: () -> Boolean) = when {
+        sdk >= 33 -> true
+        sdk >= 31 -> canScheduleExact()
+        else -> true
+    }
+
+    fun statusMap(
+        os: OsState, usesAlarmClock: Boolean, scheduledUntil: Long?, snapshotUntil: String?,
+        missed: List<Miss>, late: List<Miss>,
+    ): Map<String, Any?> = mapOf(
+        "notificationsEnabled" to os.notificationsEnabled,
+        "channelBlocked" to os.channelBlocked,
+        "exactAlarmsAllowed" to os.exactAlarmsAllowed,
+        "batteryUnrestricted" to os.batteryUnrestricted,
+        "isXiaomi" to os.isXiaomi,
+        "usesAlarmClock" to usesAlarmClock,
+        "scheduledUntil" to scheduledUntil,
+        "snapshotUntil" to snapshotUntil,
+        "missed" to missed.map { mapOf("prayer" to it.prayer, "at" to it.at) },
+        "late" to late.map { mapOf("prayer" to it.prayer, "at" to it.at) },
+    )
+
+    fun settingsCandidates(target: String, packageName: String, label: String): List<IntentSpec> {
+        val battery = IntentSpec(ACTION_BATTERY_SETTINGS, null, null, emptyMap())
+        val specific = when (target) {
+            "notifications" -> listOf(IntentSpec(ACTION_NOTIFICATION_SETTINGS, null, null, mapOf(EXTRA_APP_PACKAGE to packageName)))
+            "exactAlarm" -> listOf(IntentSpec(ACTION_EXACT_ALARM, packageName, null, emptyMap()))
+            "battery" -> listOf(battery)
+            "autostart" -> listOf(
+                IntentSpec(null, MIUI_SECURITY, "com.miui.permcenter.autostart.AutoStartManagementActivity", emptyMap()),
+                IntentSpec(null, MIUI_SECURITY, "com.miui.permcenter.permissions.PermissionsEditorActivity", mapOf("extra_pkgname" to packageName)),
+            )
+            "xiaomiBattery" -> listOf(
+                IntentSpec(
+                    null, MIUI_POWER, "com.miui.powerkeeper.ui.HiddenAppsConfigActivity",
+                    mapOf("package_name" to packageName, "package_label" to label),
+                ),
+                battery,
+            )
+            else -> emptyList()
+        }
+        return specific + IntentSpec(ACTION_APP_DETAILS, packageName, null, emptyMap())
+    }
 
     fun pruneArmed(armed: Map<String, ArmedEntry>, now: Long) = armed.filterValues { it.triggerAt >= now - PRUNE_MS }
 

@@ -46,6 +46,9 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "scheduleTestAdhan" -> handleScheduleTestAdhan(ctx, call, result)
             "schedulePrayerReminders" -> handleSchedulePrayerReminders(ctx, call, result)
             "cancelAllReminders" -> handleCancelAllReminders(ctx, result)
+            "getReliabilityStatus" -> replyFromStore(ctx, result) { ReliabilityReader.read(it) }
+            "ackMissed" -> runInStore(ctx, result) { ReliabilityReader.ack(it) }
+            "openSystemSettings" -> handleOpenSystemSettings(ctx, call, result)
             "previewSound" -> handlePreviewSound(ctx, call, result)
             "stopPreview" -> {
                 SoundPreviewPlayer.stop()
@@ -128,6 +131,16 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         runInStore(ctx, result) { PrayerReminderScheduler.cancelAll(it) }
     }
 
+    private fun handleOpenSystemSettings(ctx: Context, call: MethodCall, result: MethodChannel.Result) {
+        val target = (call.arguments as? Map<*, *>)?.get("target") as? String
+        if (target == null) {
+            result.error("BAD_ARGS", "Expected {target}", null)
+            return
+        }
+        SystemSettingsLauncher.open(ctx, target)
+        result.success(null)
+    }
+
     private fun handlePreviewSound(ctx: Context, call: MethodCall, result: MethodChannel.Result) {
         val args = call.arguments as? Map<*, *>
         val sound = args?.get("sound") as? String
@@ -158,17 +171,26 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private fun localeOf(args: Map<*, *>) = (args["localeCode"] as? String) ?: "en"
 
     private fun runInStore(ctx: Context, result: MethodChannel.Result, block: (Context) -> Unit) {
+        replyFromStore(ctx, result) {
+            block(it)
+            null
+        }
+    }
+
+    private fun replyFromStore(ctx: Context, result: MethodChannel.Result, block: (Context) -> Any?) {
         val main = Handler(Looper.getMainLooper())
         AlertStore.post(ctx) {
-            val error = try {
-                block(it)
-                null
+            val outcome = try {
+                Result.success(block(it))
             } catch (e: Exception) {
-                Log.e(TAG, "runInStore: failed", e)
-                e
+                Log.e(TAG, "replyFromStore: failed", e)
+                Result.failure(e)
             }
             main.post {
-                if (error == null) result.success(null) else result.error("NATIVE_ERROR", error.message, null)
+                outcome.fold(
+                    { value -> result.success(value) },
+                    { e -> result.error("NATIVE_ERROR", e.message, null) },
+                )
             }
         }
     }
