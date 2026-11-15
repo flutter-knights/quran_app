@@ -42,14 +42,20 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
     final todayData = prayerTimesLocalDataSource.getCached(date: now);
 
     if (todayData == null) {
-      return _fetchAndCacheRemote(location, now, method: method, school: school);
+      return _fetchAndCacheRemote(
+        location,
+        now,
+        method: method,
+        school: school,
+      );
     }
 
     final ishaTime = todayData.timings[PrayerName.isha]?.parse24hTime();
     if (ishaTime != null && now.isAfter(ishaTime)) {
       final tomorrowDate = now.add(const Duration(days: 1));
-      final tomorrowData =
-          prayerTimesLocalDataSource.getCached(date: tomorrowDate);
+      final tomorrowData = prayerTimesLocalDataSource.getCached(
+        date: tomorrowDate,
+      );
 
       if (tomorrowData != null) {
         return Right(tomorrowData);
@@ -66,12 +72,8 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
     required int school,
   }) async {
     try {
-      final List<PrayerTimes> prayerTimesList =
-          await prayerTimeRemoteDataSource.getPrayerTimesList(
-        location,
-        method: method,
-        school: school,
-      );
+      final List<PrayerTimes> prayerTimesList = await prayerTimeRemoteDataSource
+          .getPrayerTimesList(location, method: method, school: school);
       await prayerTimesLocalDataSource.cache(prayerTimesList);
       final cached = prayerTimesLocalDataSource.getCached(date: targetDate);
       if (cached == null) {
@@ -110,14 +112,14 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
     if (cachedKeys.length >= daysInMonth) return false;
 
     try {
-      final List<PrayerTimes> prayerTimesList =
-          await prayerTimeRemoteDataSource.getPrayerTimesList(
-        location,
-        year: year,
-        month: month,
-        method: method,
-        school: school,
-      );
+      final List<PrayerTimes> prayerTimesList = await prayerTimeRemoteDataSource
+          .getPrayerTimesList(
+            location,
+            year: year,
+            month: month,
+            method: method,
+            school: school,
+          );
       await prayerTimesLocalDataSource.cache(prayerTimesList);
       return true;
     } catch (e) {
