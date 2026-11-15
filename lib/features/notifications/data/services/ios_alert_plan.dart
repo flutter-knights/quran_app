@@ -18,6 +18,15 @@ enum IosSound {
   bool get audible => this != none;
 }
 
+const iosMaxDays = 12;
+const iosReminderIdBase = 200;
+const _idsPerDay = 10;
+
+bool isIosAlertId(int id) {
+  final offset = id >= iosReminderIdBase ? id - iosReminderIdBase : id;
+  return offset >= 0 && offset < iosMaxDays * _idsPerDay;
+}
+
 class IosAlertRequest extends Equatable {
   final int id;
   final DateTime at;
@@ -33,14 +42,14 @@ class IosAlertRequest extends Equatable {
     required this.sound,
   });
 
+  bool get isReminder => id >= iosReminderIdBase;
+
   @override
   List<Object?> get props => [id, at, title, body, sound];
 }
 
-const _reminderIdBase = 200;
-
 int iosDayCount(int requestsPerDay) =>
-    requestsPerDay <= 0 ? 0 : min(12, 60 ~/ requestsPerDay);
+    requestsPerDay <= 0 ? 0 : min(iosMaxDays, 60 ~/ requestsPerDay);
 
 List<IosAlertRequest> planIosAlerts({
   required List<PrayerTimes> days,
@@ -57,7 +66,7 @@ List<IosAlertRequest> planIosAlerts({
       active.length +
       active.where((e) => e.$3.effectiveReminderMinutes != null).length;
   final dayCount = iosDayCount(requestsPerDay);
-  final copy = localeCode == 'ar' ? _arabic : _english;
+  final arabic = localeCode == 'ar';
 
   final byDate = <DateTime, PrayerTimes>{};
   for (final day in days) {
@@ -75,27 +84,30 @@ List<IosAlertRequest> planIosAlerts({
     for (final (index, prayer, alert) in active) {
       final at = _timeOn(date, timings[prayer]);
       if (at == null) continue;
-      final id = dayIndex * 10 + index;
+      final id = dayIndex * _idsPerDay + index;
+      final name = (arabic ? _arabicNames : _englishNames)[prayer]!;
       if (at.isAfter(now)) {
         dayRequests.add(
           IosAlertRequest(
             id: id,
             at: at,
-            title: copy.names[prayer]!,
-            body: copy.adhanBodies[prayer]!,
+            title: name,
+            body: arabic ? 'حان موعد صلاة $name' : "It's time for $name prayer",
             sound: _adhanSound(prayer, alert.sound),
           ),
         );
       }
       if (alert.effectiveReminderMinutes case final minutes?) {
-        final reminderAt = at.subtract(Duration(minutes: minutes));
+        final reminderAt = at.subtract(
+          Duration(minutes: PrayerAlert.clampMinutes(minutes)),
+        );
         if (reminderAt.isAfter(now)) {
           dayRequests.add(
             IosAlertRequest(
-              id: _reminderIdBase + id,
+              id: iosReminderIdBase + id,
               at: reminderAt,
-              title: copy.reminderTitles[prayer]!,
-              body: copy.reminderBodies[prayer]!,
+              title: arabic ? 'تذكير $name' : '$name reminder',
+              body: arabic ? 'اقتربت صلاة $name' : '$name prayer is coming up',
               sound: alert.reminderSound == ReminderSound.tone
                   ? IosSound.defaultSound
                   : IosSound.none,
@@ -140,71 +152,18 @@ DateTime? _timeOn(DateTime date, String? hhmm) {
   return DateTime(date.year, date.month, date.day, hour, minute);
 }
 
-typedef _Copy = ({
-  Map<PrayerName, String> names,
-  Map<PrayerName, String> adhanBodies,
-  Map<PrayerName, String> reminderTitles,
-  Map<PrayerName, String> reminderBodies,
-});
+const _arabicNames = {
+  PrayerName.fajr: 'الفجر',
+  PrayerName.dhuhr: 'الظهر',
+  PrayerName.asr: 'العصر',
+  PrayerName.maghrib: 'المغرب',
+  PrayerName.isha: 'العشاء',
+};
 
-const _Copy _arabic = (
-  names: {
-    PrayerName.fajr: 'الفجر',
-    PrayerName.dhuhr: 'الظهر',
-    PrayerName.asr: 'العصر',
-    PrayerName.maghrib: 'المغرب',
-    PrayerName.isha: 'العشاء',
-  },
-  adhanBodies: {
-    PrayerName.fajr: 'حان موعد صلاة الفجر',
-    PrayerName.dhuhr: 'حان موعد صلاة الظهر',
-    PrayerName.asr: 'حان موعد صلاة العصر',
-    PrayerName.maghrib: 'حان موعد صلاة المغرب',
-    PrayerName.isha: 'حان موعد صلاة العشاء',
-  },
-  reminderTitles: {
-    PrayerName.fajr: 'تذكير الفجر',
-    PrayerName.dhuhr: 'تذكير الظهر',
-    PrayerName.asr: 'تذكير العصر',
-    PrayerName.maghrib: 'تذكير المغرب',
-    PrayerName.isha: 'تذكير العشاء',
-  },
-  reminderBodies: {
-    PrayerName.fajr: 'اقتربت صلاة الفجر',
-    PrayerName.dhuhr: 'اقتربت صلاة الظهر',
-    PrayerName.asr: 'اقتربت صلاة العصر',
-    PrayerName.maghrib: 'اقتربت صلاة المغرب',
-    PrayerName.isha: 'اقتربت صلاة العشاء',
-  },
-);
-
-const _Copy _english = (
-  names: {
-    PrayerName.fajr: 'Fajr',
-    PrayerName.dhuhr: 'Dhuhr',
-    PrayerName.asr: 'Asr',
-    PrayerName.maghrib: 'Maghrib',
-    PrayerName.isha: 'Isha',
-  },
-  adhanBodies: {
-    PrayerName.fajr: "It's time for Fajr prayer",
-    PrayerName.dhuhr: "It's time for Dhuhr prayer",
-    PrayerName.asr: "It's time for Asr prayer",
-    PrayerName.maghrib: "It's time for Maghrib prayer",
-    PrayerName.isha: "It's time for Isha prayer",
-  },
-  reminderTitles: {
-    PrayerName.fajr: 'Fajr reminder',
-    PrayerName.dhuhr: 'Dhuhr reminder',
-    PrayerName.asr: 'Asr reminder',
-    PrayerName.maghrib: 'Maghrib reminder',
-    PrayerName.isha: 'Isha reminder',
-  },
-  reminderBodies: {
-    PrayerName.fajr: 'Fajr prayer is coming up',
-    PrayerName.dhuhr: 'Dhuhr prayer is coming up',
-    PrayerName.asr: 'Asr prayer is coming up',
-    PrayerName.maghrib: 'Maghrib prayer is coming up',
-    PrayerName.isha: 'Isha prayer is coming up',
-  },
-);
+const _englishNames = {
+  PrayerName.fajr: 'Fajr',
+  PrayerName.dhuhr: 'Dhuhr',
+  PrayerName.asr: 'Asr',
+  PrayerName.maghrib: 'Maghrib',
+  PrayerName.isha: 'Isha',
+};

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
-import 'package:quran_app/core/notifications/ios_alert_plan.dart';
+import 'package:quran_app/features/notifications/data/services/ios_alert_plan.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 
@@ -219,5 +219,58 @@ void main() {
     expect(IosSound.defaultSound.file, isNull);
     expect(IosSound.defaultSound.audible, isTrue);
     expect(IosSound.none.audible, isFalse);
+  });
+
+  test('reminder minutes outside 1..60 are clamped', () {
+    final reqs = planIosAlerts(
+      days: eightDays.take(1).toList(),
+      alerts: {
+        PrayerName.dhuhr: const PrayerAlert(
+          reminderEnabled: true,
+          reminderMinutes: 0,
+        ),
+        PrayerName.asr: const PrayerAlert(
+          reminderEnabled: true,
+          reminderMinutes: 90,
+        ),
+      },
+      localeCode: 'en',
+      now: DateTime(2026, 11, 15),
+    );
+    expect(
+      reqs.firstWhere((r) => r.id == 201).at,
+      DateTime(2026, 11, 15, 11, 40),
+    );
+    expect(
+      reqs.firstWhere((r) => r.id == 202).at,
+      DateTime(2026, 11, 15, 13, 39),
+    );
+  });
+
+  test('isReminder follows the reminder id range', () {
+    final reqs = planIosAlerts(
+      days: eightDays,
+      alerts: allWithReminders,
+      localeCode: 'en',
+      now: DateTime(2026, 11, 15),
+    );
+    expect(
+      reqs.where((r) => r.isReminder).map((r) => r.id),
+      everyElement(greaterThanOrEqualTo(200)),
+    );
+    expect(
+      reqs.where((r) => !r.isReminder).map((r) => r.id),
+      everyElement(lessThan(200)),
+    );
+    expect(reqs.where((r) => r.isReminder).length, 30);
+  });
+
+  test('isIosAlertId covers both ranges, v1 ids and not the test id', () {
+    for (final id in [0, 10, 15, 20, 25, 119, 200, 319]) {
+      expect(isIosAlertId(id), isTrue, reason: '$id');
+    }
+    for (final id in [-1, 120, 199, 320, 9999]) {
+      expect(isIosAlertId(id), isFalse, reason: '$id');
+    }
   });
 }

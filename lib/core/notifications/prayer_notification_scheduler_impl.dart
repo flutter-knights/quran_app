@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
-import 'package:quran_app/core/notifications/ios_alert_plan.dart';
+import 'package:quran_app/features/notifications/data/services/ios_alert_plan.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
@@ -28,9 +28,6 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
       presentBadge: false,
     ),
   );
-
-  static bool _isAlertId(int id) =>
-      (id >= 0 && id < 120) || (id >= 200 && id < 320);
 
   @override
   Future<bool?> requestNotificationsPermission() async {
@@ -109,10 +106,7 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     required Map<PrayerName, PrayerAlert> alerts,
     required String localeCode,
   }) async {
-    if (!_initialized) {
-      debugPrint('[PrayerNotif] schedule called before init, skipping');
-      return null;
-    }
+    if (!_initialized) throw StateError('scheduleAlerts called before init');
     await cancelAll();
     final requests = planIosAlerts(
       days: days,
@@ -140,7 +134,7 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         );
         scheduled++;
-        if (request.id < 200 &&
+        if (!request.isReminder &&
             (lastAdhan == null || request.at.isAfter(lastAdhan))) {
           lastAdhan = request.at;
         }
@@ -159,7 +153,7 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
   Future<void> cancelAll() async {
     final pending = await _plugin.pendingNotificationRequests();
     for (final request in pending) {
-      if (_isAlertId(request.id)) await _plugin.cancel(id: request.id);
+      if (isIosAlertId(request.id)) await _plugin.cancel(id: request.id);
     }
   }
 

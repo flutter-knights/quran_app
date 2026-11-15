@@ -326,7 +326,8 @@ Copy is in Appendix A and states in Appendix C.
   - Titles and bodies are in Arabic or English by locale.
   - Adhan sounds: adhan → the bundled CAF; tone → default sound; vibrate or silent → no sound. Reminder sounds: tone → default sound; vibrate or silent → no sound. iOS cannot vibrate without sound, so both pickers omit «اهتزاز فقط» on iOS and a stored `vibrate` behaves as silent.
 - `scheduleAlerts` starts with `cancelAll`, which clears the v2 id ranges and v1's ids (10–15, 20–25), so no v1 request survives the upgrade. The legacy single-day path is removed.
-- Dart stores the last scheduled adhan time after each iOS schedule; it is iOS's `scheduledUntil`.
+- Dart stores the last scheduled adhan time after each iOS schedule; it is iOS's `scheduledUntil`. When an alert is on but nothing could be scheduled, it stores the sync time, so the status line reads attention; with every alert off it clears the date.
+- `AppDelegate` sets `UNUserNotificationCenter.current().delegate = self`, so alerts, including the test adhan, are presented and play while the app is open.
 
 ## 10. Strings and generated code (declared exception)
 

@@ -18,11 +18,13 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   final NotificationsNativeDataSource native;
   final PrayerNotificationScheduler legacyScheduler;
   final NotificationsLocalDataSource local;
+  final DateTime Function() clock;
 
   NotificationsRepositoryImpl({
     required this.native,
     required this.legacyScheduler,
     required this.local,
+    this.clock = DateTime.now,
   });
 
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -106,9 +108,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         localeCode: localeCode,
       );
       final anyEnabled = alertPrayers.any((p) => alerts[p]?.enabled ?? false);
-      if (until != null || !anyEnabled) {
-        await local.writeIosScheduledUntil(until);
-      }
+      await local.writeIosScheduledUntil(anyEnabled ? until ?? clock() : null);
     }
   });
 

@@ -27,4 +27,5 @@ Check here before writing a helper. Keep these pure: no widgets, no feature impo
 - **`DioErrorHandler.handle`**, **`GeolocatorErrorHandler.handle`** (`core/utils/`): exception → `Failure`.
 
 ## Services
-- **`PrayerNotificationScheduler`** (`core/notifications/`): `init()` runs in `main()`; on iOS `scheduleAlerts` schedules the per-prayer adhans and reminders planned by `planIosAlerts` (`ios_alert_plan.dart`, pure and tested) and returns the last adhan time. Android scheduling is native.
+- **`PrayerNotificationScheduler`** (`core/notifications/`): `init()` runs in `main()`; on iOS `scheduleAlerts` schedules the per-prayer adhans and reminders planned by `planIosAlerts` (`features/notifications/data/services/ios_alert_plan.dart`, pure and tested) and returns the last adhan time. Android scheduling is native.
+  - Known exception to "no feature imports": the scheduler imports `PrayerTimes` (home), `PrayerAlert` and the iOS planner (notifications). Don't add more.

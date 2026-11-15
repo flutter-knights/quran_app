@@ -415,14 +415,38 @@ void main() {
       verify(() => local.writeIosScheduledUntil(null)).called(1);
     });
 
-    test('iOS: nothing scheduled while an alert is on keeps the stored '
-        'scheduledUntil, so a passed date flags attention', () async {
+    test('iOS: nothing scheduled while an alert is on stores now, so the '
+        'status line reads attention', () async {
       stubScheduleAlerts(null);
-      await repo.scheduleDailyAdhans(
+      final now = DateTime(2026, 11, 15, 19);
+      await NotificationsRepositoryImpl(
+        native: native,
+        legacyScheduler: scheduler,
+        local: local,
+        clock: () => now,
+      ).scheduleDailyAdhans(
         days: [pt],
         alerts: Settings.defaultPrayerAlerts,
         localeCode: 'en',
       );
+      verify(() => local.writeIosScheduledUntil(now)).called(1);
+    });
+
+    test('iOS: an uninitialised scheduler is a Left and keeps the stored '
+        'scheduledUntil', () async {
+      when(
+        () => scheduler.scheduleAlerts(
+          days: any(named: 'days'),
+          alerts: any(named: 'alerts'),
+          localeCode: any(named: 'localeCode'),
+        ),
+      ).thenThrow(StateError('scheduleAlerts called before init'));
+      final r = await repo.scheduleDailyAdhans(
+        days: [pt],
+        alerts: Settings.defaultPrayerAlerts,
+        localeCode: 'en',
+      );
+      expect(r.isLeft(), isTrue);
       verifyNever(() => local.writeIosScheduledUntil(any()));
     });
 
