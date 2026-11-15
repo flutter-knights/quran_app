@@ -3,22 +3,18 @@ import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/usecases/usecase.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
-import 'package:quran_app/features/notifications/domain/entities/adhan_audio_settings.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/domain/repositories/notifications_repository.dart';
 
 class SyncDailyAdhansParams {
   final List<PrayerTimes> days;
-  final AdhanAudioSettings? audio;
-  final Map<PrayerName, bool> enabledByPrayer;
-  final Map<PrayerName, int> reminderMinutesByPrayer;
+  final Map<PrayerName, PrayerAlert> alerts;
   final String localeCode;
 
   const SyncDailyAdhansParams({
     required this.days,
-    required this.enabledByPrayer,
-    required this.reminderMinutesByPrayer,
+    required this.alerts,
     required this.localeCode,
-    this.audio,
   });
 }
 
@@ -31,8 +27,7 @@ class SyncDailyAdhans
   Future<Either<Failure, Unit>> call(SyncDailyAdhansParams params) async {
     final adhanResult = await repository.scheduleDailyAdhans(
       days: params.days,
-      audio: params.audio ?? AdhanAudioSettings.defaults(),
-      enabledByPrayer: params.enabledByPrayer,
+      alerts: params.alerts,
       localeCode: params.localeCode,
     );
 
@@ -40,7 +35,7 @@ class SyncDailyAdhans
       (failure) async => Left(failure),
       (_) => repository.schedulePrayerReminders(
         days: params.days,
-        reminderMinutesByPrayer: params.reminderMinutesByPrayer,
+        alerts: params.alerts,
         localeCode: params.localeCode,
       ),
     );

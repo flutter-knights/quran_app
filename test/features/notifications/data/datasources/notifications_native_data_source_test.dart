@@ -12,26 +12,30 @@ void main() {
   late List<MethodCall> calls;
   late NotificationsNativeDataSourceImpl ds;
 
-  final window = PrayerStripWindow(days: [
-    const PrayerStripState(
-      cells: [PrayerCell(label: 'Fajr', timeFormatted: '04:15', minutes: 255)],
-      nextPrayerIndex: 0,
-      dateKey: '22-05-2026',
-      hijriDateLabel: '5 Dhul-Hijjah',
-      weekdayLabel: '',
-      localeCode: 'en',
-      isFriday: false,
-    ),
-  ]);
+  final window = PrayerStripWindow(
+    days: [
+      const PrayerStripState(
+        cells: [
+          PrayerCell(label: 'Fajr', timeFormatted: '04:15', minutes: 255),
+        ],
+        nextPrayerIndex: 0,
+        dateKey: '22-05-2026',
+        hijriDateLabel: '5 Dhul-Hijjah',
+        weekdayLabel: '',
+        localeCode: 'en',
+        isFriday: false,
+      ),
+    ],
+  );
 
   setUp(() {
     calls = [];
     ds = NotificationsNativeDataSourceImpl();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async {
-      calls.add(call);
-      return null;
-    });
+          calls.add(call);
+          return null;
+        });
   });
 
   tearDown(() {
@@ -62,25 +66,29 @@ void main() {
     expect((calls.single.arguments as Map)['days'], isA<List>());
   });
 
-  test('scheduleDailyAdhans invokes the channel with days + audio map',
-      () async {
+  test('scheduleDailyAdhans sends days, alerts and localeCode', () async {
     final days = [
       {
-        'date': '2026-05-22',
-        'timings': {'fajr': '04:15', 'isha': '21:16'},
-      }
+        'date': '2026-11-15',
+        'timings': {'fajr': '04:52'},
+      },
     ];
     await ds.scheduleDailyAdhans(
       days: days,
-      clipAssetByPrayer: const {'fajr': 'fajr_adhan', 'isha': 'normal_adhan'},
-      volume: 1.0,
-      localeCode: 'en',
+      alerts: {
+        'fajr': {'sound': 'tone', 'ringInSilent': false},
+      },
+      localeCode: 'ar',
     );
-    expect(calls.single.method, 'scheduleDailyAdhans');
     final args = calls.single.arguments as Map;
+    expect(calls.single.method, 'scheduleDailyAdhans');
     expect(args['days'], days);
-    expect(args['volume'], 1.0);
-    expect(args['localeCode'], 'en');
+    expect(args['alerts'], {
+      'fajr': {'sound': 'tone', 'ringInSilent': false},
+    });
+    expect(args['localeCode'], 'ar');
+    expect(args.containsKey('clips'), isFalse);
+    expect(args.containsKey('volume'), isFalse);
   });
 
   test('cancelAllAdhans invokes the channel', () async {
@@ -88,36 +96,104 @@ void main() {
     expect(calls.single.method, 'cancelAllAdhans');
   });
 
-  test('throws PlatformNotImplementedException when native side is missing',
-      () async {
-    // Removing the mock makes the call raise MissingPluginException internally;
-    // the data source wraps that as a `PlatformNotImplementedException`.
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, null);
-    expect(
-      () => ds.disableStrip(),
-      throwsA(isA<PlatformNotImplementedException>()),
-    );
-  });
+  test(
+    'throws PlatformNotImplementedException when native side is missing',
+    () async {
+      // Removing the mock makes the call raise MissingPluginException internally;
+      // the data source wraps that as a `PlatformNotImplementedException`.
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+      expect(
+        () => ds.disableStrip(),
+        throwsA(isA<PlatformNotImplementedException>()),
+      );
+    },
+  );
 
-  test('schedulePrayerReminders invokes the channel with the days + reminder map',
-      () async {
+  test('schedulePrayerReminders sends the reminders key', () async {
     final days = [
       {
         'date': '2026-05-22',
-        'timings': {'fajr': '04:15', 'dhuhr': '12:52', 'maghrib': '19:46'},
-      }
+        'timings': {'fajr': '04:15', 'maghrib': '19:46'},
+      },
     ];
     await ds.schedulePrayerReminders(
       days: days,
-      remindersByPrayer: const {'fajr': 15, 'maghrib': 5},
+      reminders: {
+        'fajr': {'minutes': 15, 'reminderSound': 'silent'},
+      },
       localeCode: 'ar',
     );
     expect(calls.single.method, 'schedulePrayerReminders');
     final args = calls.single.arguments as Map;
     expect(args['days'], days);
-    expect(args['remindersByPrayer'], {'fajr': 15, 'maghrib': 5});
+    expect(args['reminders'], {
+      'fajr': {'minutes': 15, 'reminderSound': 'silent'},
+    });
+    expect(args.containsKey('remindersByPrayer'), isFalse);
     expect(args['localeCode'], 'ar');
+  });
+
+  test(
+    'scheduleTestAdhan sends delay, locale, sound and ringInSilent',
+    () async {
+      await ds.scheduleTestAdhan(
+        delay: const Duration(seconds: 5),
+        localeCode: 'ar',
+        sound: 'vibrate',
+        ringInSilent: true,
+      );
+      expect(calls.single.method, 'scheduleTestAdhan');
+      expect(calls.single.arguments, {
+        'delaySeconds': 5,
+        'localeCode': 'ar',
+        'sound': 'vibrate',
+        'ringInSilent': true,
+      });
+    },
+  );
+
+  test('getReliabilityStatus returns the native map', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          return {'isXiaomi': true};
+        });
+    final result = await ds.getReliabilityStatus();
+    expect(calls.single.method, 'getReliabilityStatus');
+    expect(result['isXiaomi'], true);
+  });
+
+  test('getReliabilityStatus returns an empty map on null', () async {
+    expect(await ds.getReliabilityStatus(), isEmpty);
+  });
+
+  test('getReliabilityStatus throws PlatformNotImplementedException when '
+      'native side is missing', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, null);
+    expect(
+      () => ds.getReliabilityStatus(),
+      throwsA(isA<PlatformNotImplementedException>()),
+    );
+  });
+
+  test('openSystemSettings sends the target name', () async {
+    await ds.openSystemSettings('xiaomiBattery');
+    expect(calls.single.method, 'openSystemSettings');
+    expect(calls.single.arguments, {'target': 'xiaomiBattery'});
+  });
+
+  test('previewSound sends sound and prayer', () async {
+    await ds.previewSound(sound: 'adhan', prayer: 'fajr');
+    expect(calls.single.method, 'previewSound');
+    expect(calls.single.arguments, {'sound': 'adhan', 'prayer': 'fajr'});
+  });
+
+  test('ackMissed and stopPreview invoke the channel', () async {
+    await ds.ackMissed();
+    await ds.stopPreview();
+    expect(calls.map((c) => c.method), ['ackMissed', 'stopPreview']);
   });
 
   test('cancelAllReminders invokes the channel', () async {

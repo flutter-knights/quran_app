@@ -4,9 +4,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
-import 'package:quran_app/features/notifications/domain/entities/adhan_audio_settings.dart';
 import 'package:quran_app/features/notifications/domain/repositories/notifications_repository.dart';
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
+import 'package:quran_app/features/settings/domain/entities/settings.dart';
 
 class _MockRepo extends Mock implements NotificationsRepository {}
 
@@ -35,87 +35,84 @@ void main() {
     ),
   );
 
-  const allEnabled = {
-    PrayerName.fajr: true,
-    PrayerName.dhuhr: true,
-    PrayerName.asr: true,
-    PrayerName.maghrib: true,
-    PrayerName.isha: true,
-  };
-  const noReminders = {
-    PrayerName.fajr: 0,
-    PrayerName.dhuhr: 0,
-    PrayerName.asr: 0,
-    PrayerName.maghrib: 0,
-    PrayerName.isha: 0,
-  };
-
   setUp(() {
     repo = _MockRepo();
     useCase = SyncDailyAdhans(repository: repo);
     registerFallbackValue(pt);
-    registerFallbackValue(AdhanAudioSettings.defaults());
     registerFallbackValue(<PrayerTimes>[]);
   });
 
-  test('delegates to scheduleDailyAdhans AND schedulePrayerReminders',
-      () async {
-    when(() => repo.scheduleDailyAdhans(
+  test(
+    'delegates to scheduleDailyAdhans AND schedulePrayerReminders',
+    () async {
+      when(
+        () => repo.scheduleDailyAdhans(
           days: any(named: 'days'),
-          audio: any(named: 'audio'),
-          enabledByPrayer: any(named: 'enabledByPrayer'),
+          alerts: any(named: 'alerts'),
           localeCode: any(named: 'localeCode'),
-        )).thenAnswer((_) async => const Right(unit));
-    when(() => repo.schedulePrayerReminders(
+        ),
+      ).thenAnswer((_) async => const Right(unit));
+      when(
+        () => repo.schedulePrayerReminders(
           days: any(named: 'days'),
-          reminderMinutesByPrayer: any(named: 'reminderMinutesByPrayer'),
+          alerts: any(named: 'alerts'),
           localeCode: any(named: 'localeCode'),
-        )).thenAnswer((_) async => const Right(unit));
+        ),
+      ).thenAnswer((_) async => const Right(unit));
 
-    final result = await useCase.call(SyncDailyAdhansParams(
-      days: [pt],
-      enabledByPrayer: allEnabled,
-      reminderMinutesByPrayer: noReminders,
-      localeCode: 'en',
-    ));
-
-    expect(result.isRight(), true);
-    verify(() => repo.scheduleDailyAdhans(
-          days: any(named: 'days'),
-          audio: AdhanAudioSettings.defaults(),
-          enabledByPrayer: allEnabled,
+      final result = await useCase.call(
+        SyncDailyAdhansParams(
+          days: [pt],
+          alerts: Settings.defaultPrayerAlerts,
           localeCode: 'en',
-        )).called(1);
-    verify(() => repo.schedulePrayerReminders(
-          days: any(named: 'days'),
-          reminderMinutesByPrayer: noReminders,
+        ),
+      );
+
+      expect(result.isRight(), true);
+      verify(
+        () => repo.scheduleDailyAdhans(
+          days: [pt],
+          alerts: Settings.defaultPrayerAlerts,
           localeCode: 'en',
-        )).called(1);
-  });
+        ),
+      ).called(1);
+      verify(
+        () => repo.schedulePrayerReminders(
+          days: [pt],
+          alerts: Settings.defaultPrayerAlerts,
+          localeCode: 'en',
+        ),
+      ).called(1);
+    },
+  );
 
-  test('returns Left when scheduleDailyAdhans fails (skips reminders)',
-      () async {
-    when(() => repo.scheduleDailyAdhans(
+  test(
+    'returns Left when scheduleDailyAdhans fails (skips reminders)',
+    () async {
+      when(
+        () => repo.scheduleDailyAdhans(
           days: any(named: 'days'),
-          audio: any(named: 'audio'),
-          enabledByPrayer: any(named: 'enabledByPrayer'),
+          alerts: any(named: 'alerts'),
           localeCode: any(named: 'localeCode'),
-        )).thenAnswer((_) async => const Left(
-          UnknownNotificationFailure('boom'),
-        ));
+        ),
+      ).thenAnswer((_) async => const Left(UnknownNotificationFailure('boom')));
 
-    final result = await useCase.call(SyncDailyAdhansParams(
-      days: [pt],
-      enabledByPrayer: allEnabled,
-      reminderMinutesByPrayer: noReminders,
-      localeCode: 'en',
-    ));
+      final result = await useCase.call(
+        SyncDailyAdhansParams(
+          days: [pt],
+          alerts: Settings.defaultPrayerAlerts,
+          localeCode: 'en',
+        ),
+      );
 
-    expect(result.isLeft(), true);
-    verifyNever(() => repo.schedulePrayerReminders(
+      expect(result.isLeft(), true);
+      verifyNever(
+        () => repo.schedulePrayerReminders(
           days: any(named: 'days'),
-          reminderMinutesByPrayer: any(named: 'reminderMinutesByPrayer'),
+          alerts: any(named: 'alerts'),
           localeCode: any(named: 'localeCode'),
-        ));
-  });
+        ),
+      );
+    },
+  );
 }

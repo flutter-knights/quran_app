@@ -100,14 +100,7 @@ class HomePage extends StatelessWidget {
                 sl<SyncDailyAdhans>().call(
                   SyncDailyAdhansParams(
                     days: days,
-                    enabledByPrayer: {
-                      for (final e in settings.prayerAlerts.entries)
-                        e.key: e.value.enabled,
-                    },
-                    reminderMinutesByPrayer: {
-                      for (final e in settings.prayerAlerts.entries)
-                        e.key: e.value.effectiveReminderMinutes ?? 0,
-                    },
+                    alerts: settings.prayerAlerts,
                     localeCode: locale,
                   ),
                 ),
@@ -159,16 +152,7 @@ class HomePage extends StatelessWidget {
                     sl<SyncDailyAdhans>().call(
                       SyncDailyAdhansParams(
                         days: days,
-                        enabledByPrayer: {
-                          for (final e
-                              in settings.settingsModel.prayerAlerts.entries)
-                            e.key: e.value.enabled,
-                        },
-                        reminderMinutesByPrayer: {
-                          for (final e
-                              in settings.settingsModel.prayerAlerts.entries)
-                            e.key: e.value.effectiveReminderMinutes ?? 0,
-                        },
+                        alerts: settings.settingsModel.prayerAlerts,
                         localeCode: locale,
                       ),
                     ),

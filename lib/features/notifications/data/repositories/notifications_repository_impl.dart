@@ -5,8 +5,12 @@ import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/data/datasources/notifications_native_data_source.dart';
-import 'package:quran_app/features/notifications/domain/entities/adhan_audio_settings.dart';
+import 'package:quran_app/features/notifications/data/models/reliability_status_model.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
+import 'package:quran_app/features/notifications/domain/entities/preview_sound.dart';
+import 'package:quran_app/features/notifications/domain/entities/reliability_status.dart';
+import 'package:quran_app/features/notifications/domain/entities/system_settings_target.dart';
 import 'package:quran_app/features/notifications/domain/repositories/notifications_repository.dart';
 
 class NotificationsRepositoryImpl implements NotificationsRepository {
@@ -18,17 +22,31 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     required this.legacyScheduler,
   });
 
-  Future<Either<Failure, Unit>> _run(Future<void> Function() body) async {
+  bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
+
+  Future<Either<Failure, T>> _runValue<T>(Future<T> Function() body) async {
     try {
-      await body();
-      return const Right(unit);
+      return Right(await body());
     } on PlatformNotImplementedException {
-      return const Left(PlatformNotSupportedFailure(
-        'Pinned prayer strip is not implemented on this platform yet.',
-      ));
+      return const Left(
+        PlatformNotSupportedFailure('Not supported on this platform.'),
+      );
     } catch (e) {
       return Left(UnknownNotificationFailure(e.toString()));
     }
+  }
+
+  Future<Either<Failure, Unit>> _run(Future<void> Function() body) =>
+      _runValue(() async {
+        await body();
+        return unit;
+      });
+
+  Future<Either<Failure, Unit>> _runAndroidOnly(
+    Future<void> Function() body,
+  ) async {
+    if (!_isAndroid) return const Right(unit);
+    return _run(body);
   }
 
   /// Like `_run`, but treats `PlatformNotImplementedException` as a soft
@@ -64,114 +82,160 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   @override
   Future<Either<Failure, Unit>> scheduleDailyAdhans({
     required List<PrayerTimes> days,
-    required AdhanAudioSettings audio,
-    required Map<PrayerName, bool> enabledByPrayer,
+    required Map<PrayerName, PrayerAlert> alerts,
     required String localeCode,
-  }) =>
-      _run(() async {
-        if (days.isEmpty) return;
-        if (defaultTargetPlatform == TargetPlatform.android) {
-          final daysPayload = [
-            for (final pt in days)
-              {
-                'date': _toIsoDate(pt.date.gregorianDate),
-                'timings': {
-                  for (final e in pt.timings.entries)
-                    if (enabledByPrayer[e.key] ?? true)
-                      e.key.name.toLowerCase(): e.value,
-                },
-              },
-          ];
-          await native.scheduleDailyAdhans(
-            days: daysPayload,
-            clipAssetByPrayer: _lowercasePrayerKeys(audio.clipAssetByPrayer),
-            volume: audio.volume,
-            localeCode: localeCode,
-          );
-        } else {
-          await legacyScheduler
-              .scheduleDailyPrayerNotifications(days.first);
-        }
-      });
+  }) => _run(() async {
+    if (days.isEmpty) return;
+    if (_isAndroid) {
+      await native.scheduleDailyAdhans(
+        days: _daysPayload(days),
+        alerts: {
+          for (final p in alertPrayers)
+            if (alerts[p] case final a? when a.enabled)
+              p.name: {'sound': a.sound.name, 'ringInSilent': a.ringInSilent},
+        },
+        localeCode: localeCode,
+      );
+    } else {
+      await legacyScheduler.scheduleDailyPrayerNotifications(days.first);
+    }
+  });
 
   @override
-  Future<Either<Failure, Unit>> cancelAllAdhans() =>
-      _run(() async {
-        if (defaultTargetPlatform == TargetPlatform.android) {
-          await native.cancelAllAdhans();
-        } else {
-          await legacyScheduler.cancelAllPrayerNotifications();
-        }
-      });
+  Future<Either<Failure, Unit>> cancelAllAdhans() => _run(() async {
+    if (_isAndroid) {
+      await native.cancelAllAdhans();
+    } else {
+      await legacyScheduler.cancelAllPrayerNotifications();
+    }
+  });
 
   @override
   Future<Either<Failure, Unit>> schedulePrayerReminders({
     required List<PrayerTimes> days,
-    required Map<PrayerName, int> reminderMinutesByPrayer,
+    required Map<PrayerName, PrayerAlert> alerts,
     required String localeCode,
-  }) =>
-      _runOptional('schedulePrayerReminders', () async {
-        if (days.isEmpty) return;
-        if (defaultTargetPlatform == TargetPlatform.android) {
-          final filtered = <String, int>{
-            for (final e in reminderMinutesByPrayer.entries)
-              if (e.value > 0) e.key.name.toLowerCase(): e.value,
-          };
-          final daysPayload = [
-            for (final pt in days)
-              {
-                'date': _toIsoDate(pt.date.gregorianDate),
-                'timings': {
-                  for (final e in pt.timings.entries)
-                    e.key.name.toLowerCase(): e.value,
+  }) => _runOptional('schedulePrayerReminders', () async {
+    if (days.isEmpty) return;
+    if (_isAndroid) {
+      await native.schedulePrayerReminders(
+        days: _daysPayload(days),
+        reminders: {
+          for (final p in alertPrayers)
+            if (alerts[p] case final a?)
+              if (a.effectiveReminderMinutes case final minutes?)
+                p.name: {
+                  'minutes': minutes,
+                  'reminderSound': a.reminderSound.name,
                 },
-              },
-          ];
-          await native.schedulePrayerReminders(
-            days: daysPayload,
-            remindersByPrayer: filtered,
-            localeCode: localeCode,
-          );
-        } else {
-          final prayerTimes = days.first;
-          await legacyScheduler.cancelAllStaticReminders();
-          final date = _parseGregorian(prayerTimes.date.gregorianDate);
-          if (date == null) return;
-          for (final e in reminderMinutesByPrayer.entries) {
-            if (e.value <= 0) continue;
-            final hhmm = prayerTimes.timings[e.key];
-            if (hhmm == null) continue;
-            final parts = hhmm.split(':');
-            if (parts.length != 2) continue;
-            final hour = int.tryParse(parts[0]);
-            final minute = int.tryParse(parts[1]);
-            if (hour == null || minute == null) continue;
-            final prayerAt =
-                DateTime(date.year, date.month, date.day, hour, minute);
-            final at = prayerAt.subtract(Duration(minutes: e.value));
-            await legacyScheduler.scheduleStaticReminder(
-              prayer: e.key,
-              at: at,
-              title: _prayerNameLocalized(e.key, localeCode),
-              body: _reminderBody(e.key, e.value, localeCode),
-            );
-          }
-        }
-      });
+        },
+        localeCode: localeCode,
+      );
+    } else {
+      final prayerTimes = days.first;
+      await legacyScheduler.cancelAllStaticReminders();
+      final date = _parseGregorian(prayerTimes.date.gregorianDate);
+      if (date == null) return;
+      for (final p in alertPrayers) {
+        final minutes = alerts[p]?.effectiveReminderMinutes;
+        if (minutes == null) continue;
+        final hhmm = prayerTimes.timings[p];
+        if (hhmm == null) continue;
+        final parts = hhmm.split(':');
+        if (parts.length != 2) continue;
+        final hour = int.tryParse(parts[0]);
+        final minute = int.tryParse(parts[1]);
+        if (hour == null || minute == null) continue;
+        final prayerAt = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          hour,
+          minute,
+        );
+        await legacyScheduler.scheduleStaticReminder(
+          prayer: p,
+          at: prayerAt.subtract(Duration(minutes: minutes)),
+          title: _prayerNameLocalized(p, localeCode),
+          body: _reminderBody(p, minutes, localeCode),
+        );
+      }
+    }
+  });
 
   @override
   Future<Either<Failure, Unit>> cancelAllReminders() =>
       _runOptional('cancelAllReminders', () async {
-        if (defaultTargetPlatform == TargetPlatform.android) {
+        if (_isAndroid) {
           await native.cancelAllReminders();
         } else {
           await legacyScheduler.cancelAllStaticReminders();
         }
       });
 
-  Map<String, String> _lowercasePrayerKeys(Map<PrayerName, String> source) {
-    return {for (final e in source.entries) e.key.name.toLowerCase(): e.value};
+  @override
+  Future<Either<Failure, Unit>> scheduleTestAdhan({
+    required PrayerAlert alert,
+    required String localeCode,
+    Duration delay = const Duration(seconds: 5),
+  }) => _run(() async {
+    if (_isAndroid) {
+      await native.scheduleTestAdhan(
+        delay: delay,
+        localeCode: localeCode,
+        sound: alert.sound.name,
+        ringInSilent: alert.ringInSilent,
+      );
+    } else {
+      await legacyScheduler.scheduleTestNotification(delay: delay);
+    }
+  });
+
+  @override
+  Future<Either<Failure, ReliabilityStatus>> getReliabilityStatus() async {
+    if (_isAndroid) {
+      return _runValue(
+        () async =>
+            ReliabilityStatusModel.fromMap(await native.getReliabilityStatus()),
+      );
+    }
+    return _runValue(
+      () async => ReliabilityStatus.ios(
+        notificationsEnabled: await legacyScheduler.areNotificationsEnabled(),
+      ),
+    );
   }
+
+  @override
+  Future<Either<Failure, Unit>> ackMissedAlerts() =>
+      _runAndroidOnly(native.ackMissed);
+
+  @override
+  Future<Either<Failure, Unit>> openSystemSettings(
+    SystemSettingsTarget target,
+  ) => _runAndroidOnly(() => native.openSystemSettings(target.name));
+
+  @override
+  Future<Either<Failure, Unit>> previewSound({
+    required PreviewSound sound,
+    required PrayerName prayer,
+  }) => _runAndroidOnly(
+    () => native.previewSound(sound: sound.name, prayer: prayer.name),
+  );
+
+  @override
+  Future<Either<Failure, Unit>> stopPreview() =>
+      _runAndroidOnly(native.stopPreview);
+
+  List<Map<String, dynamic>> _daysPayload(List<PrayerTimes> days) => [
+    for (final pt in days)
+      {
+        'date': _toIsoDate(pt.date.gregorianDate),
+        'timings': {
+          for (final e in pt.timings.entries) e.key.name.toLowerCase(): e.value,
+        },
+      },
+  ];
 
   DateTime? _parseGregorian(String s) {
     // PrayerTimes.date.gregorianDate is "dd-MM-yyyy".

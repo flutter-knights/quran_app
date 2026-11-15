@@ -1,12 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
-import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
-import 'package:quran_app/features/notifications/data/datasources/notifications_native_data_source.dart';
+import 'package:quran_app/features/notifications/domain/usecases/schedule_test_adhan.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -16,19 +15,13 @@ class TestAdhanButton extends StatelessWidget {
   const TestAdhanButton({super.key});
 
   Future<void> _onPressed(BuildContext context) async {
-    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
-    final localeCode =
-        context.read<SettingsCubit>().state.settingsModel.isArabic ? 'ar' : 'en';
-    if (isAndroid) {
-      await sl<NotificationsNativeDataSource>().scheduleTestAdhan(
-        delay: const Duration(seconds: 5),
-        localeCode: localeCode,
-      );
-    } else {
-      await sl<PrayerNotificationScheduler>().scheduleTestNotification(
-        delay: const Duration(seconds: 5),
-      );
-    }
+    final settings = context.read<SettingsCubit>().state.settingsModel;
+    await sl<ScheduleTestAdhan>()(
+      ScheduleTestAdhanParams(
+        alert: settings.prayerAlerts[PrayerName.dhuhr]!,
+        localeCode: settings.isArabic ? 'ar' : 'en',
+      ),
+    );
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(S.of(context).testAdhanScheduledSnack)),

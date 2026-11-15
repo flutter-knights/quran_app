@@ -17,14 +17,13 @@ abstract class NotificationsNativeDataSource {
   Future<void> refreshStrip(PrayerStripWindow window);
   Future<void> scheduleDailyAdhans({
     required List<Map<String, dynamic>> days,
-    required Map<String, String> clipAssetByPrayer,
-    required double volume,
+    required Map<String, Map<String, Object>> alerts,
     required String localeCode,
   });
   Future<void> cancelAllAdhans();
   Future<void> schedulePrayerReminders({
     required List<Map<String, dynamic>> days,
-    required Map<String, int> remindersByPrayer,
+    required Map<String, Map<String, Object>> reminders,
     required String localeCode,
   });
   Future<void> cancelAllReminders();
@@ -33,7 +32,14 @@ abstract class NotificationsNativeDataSource {
   Future<void> scheduleTestAdhan({
     Duration delay = const Duration(seconds: 30),
     String localeCode = 'en',
+    required String sound,
+    required bool ringInSilent,
   });
+  Future<Map<String, Object?>> getReliabilityStatus();
+  Future<void> ackMissed();
+  Future<void> openSystemSettings(String target);
+  Future<void> previewSound({required String sound, required String prayer});
+  Future<void> stopPreview();
 }
 
 class NotificationsNativeDataSourceImpl
@@ -63,16 +69,13 @@ class NotificationsNativeDataSourceImpl
   @override
   Future<void> scheduleDailyAdhans({
     required List<Map<String, dynamic>> days,
-    required Map<String, String> clipAssetByPrayer,
-    required double volume,
+    required Map<String, Map<String, Object>> alerts,
     required String localeCode,
-  }) =>
-      _invoke('scheduleDailyAdhans', {
-        'days': days,
-        'clips': clipAssetByPrayer,
-        'volume': volume,
-        'localeCode': localeCode,
-      });
+  }) => _invoke('scheduleDailyAdhans', {
+    'days': days,
+    'alerts': alerts,
+    'localeCode': localeCode,
+  });
 
   @override
   Future<void> cancelAllAdhans() => _invoke('cancelAllAdhans');
@@ -80,14 +83,13 @@ class NotificationsNativeDataSourceImpl
   @override
   Future<void> schedulePrayerReminders({
     required List<Map<String, dynamic>> days,
-    required Map<String, int> remindersByPrayer,
+    required Map<String, Map<String, Object>> reminders,
     required String localeCode,
-  }) =>
-      _invoke('schedulePrayerReminders', {
-        'days': days,
-        'remindersByPrayer': remindersByPrayer,
-        'localeCode': localeCode,
-      });
+  }) => _invoke('schedulePrayerReminders', {
+    'days': days,
+    'reminders': reminders,
+    'localeCode': localeCode,
+  });
 
   @override
   Future<void> cancelAllReminders() => _invoke('cancelAllReminders');
@@ -96,9 +98,38 @@ class NotificationsNativeDataSourceImpl
   Future<void> scheduleTestAdhan({
     Duration delay = const Duration(seconds: 30),
     String localeCode = 'en',
-  }) =>
-      _invoke('scheduleTestAdhan', {
-        'delaySeconds': delay.inSeconds,
-        'localeCode': localeCode,
-      });
+    required String sound,
+    required bool ringInSilent,
+  }) => _invoke('scheduleTestAdhan', {
+    'delaySeconds': delay.inSeconds,
+    'localeCode': localeCode,
+    'sound': sound,
+    'ringInSilent': ringInSilent,
+  });
+
+  @override
+  Future<Map<String, Object?>> getReliabilityStatus() async {
+    try {
+      return await _channel.invokeMapMethod<String, Object?>(
+            'getReliabilityStatus',
+          ) ??
+          {};
+    } on MissingPluginException {
+      throw const PlatformNotImplementedException('getReliabilityStatus');
+    }
+  }
+
+  @override
+  Future<void> ackMissed() => _invoke('ackMissed');
+
+  @override
+  Future<void> openSystemSettings(String target) =>
+      _invoke('openSystemSettings', {'target': target});
+
+  @override
+  Future<void> previewSound({required String sound, required String prayer}) =>
+      _invoke('previewSound', {'sound': sound, 'prayer': prayer});
+
+  @override
+  Future<void> stopPreview() => _invoke('stopPreview');
 }
