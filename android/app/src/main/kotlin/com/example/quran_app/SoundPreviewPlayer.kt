@@ -43,26 +43,35 @@ object SoundPreviewPlayer {
                 finish(p, sound)
                 true
             }
-            mp.prepare()
-            mp.start()
+            mp.setOnPreparedListener { start(it, sound) }
             player = mp
             this.onEnded = onEnded
+            mp.prepareAsync()
         } catch (e: Exception) {
             Log.w(TAG, "play failed sound=$sound prayer=$prayer", e)
             mp.release()
+            if (player === mp) {
+                player = null
+                this.onEnded = null
+            }
             main.post { onEnded(sound) }
         }
     }
 
     @Synchronized
-    fun stop() {
-        player?.let {
-            try {
-                it.stop()
-            } catch (_: IllegalStateException) {
-            }
-            it.release()
+    private fun start(mp: MediaPlayer, sound: String) {
+        if (player !== mp) return
+        try {
+            mp.start()
+        } catch (e: IllegalStateException) {
+            Log.w(TAG, "start failed sound=$sound", e)
+            finish(mp, sound)
         }
+    }
+
+    @Synchronized
+    fun stop() {
+        player?.release()
         player = null
         onEnded = null
     }

@@ -3,6 +3,7 @@ package com.example.quran_app
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.DateTimeException
+import java.time.Instant
 import java.time.LocalDate
 import java.util.Calendar
 import java.util.Locale
@@ -12,6 +13,7 @@ import kotlin.math.abs
 object AlertPlanner {
 
     const val MAX_DAYS = 7
+    const val CODE_DAYS = MAX_DAYS + 1
     const val ADHAN_BASE = 200
     const val REMINDER_BASE = 300
     const val HEAL_REQUEST_CODE = 298
@@ -91,15 +93,28 @@ object AlertPlanner {
         }.timeInMillis
     }
 
+    fun requestCode(base: Int, date: String, prayerIndex: Int) =
+        base + Math.floorMod(LocalDate.parse(date).toEpochDay(), CODE_DAYS.toLong()).toInt() * 10 + prayerIndex
+
+    private fun epochDay(date: String) = try {
+        LocalDate.parse(date).toEpochDay()
+    } catch (e: DateTimeException) {
+        null
+    }
+
+    private fun window(sorted: List<Day>, now: Long, zone: TimeZone, live: (Day) -> Boolean): List<Day> {
+        val start = Instant.ofEpochMilli(now - LATE_THRESHOLD_MS).atZone(zone.toZoneId()).toLocalDate().toEpochDay()
+        return sorted.filter { d -> epochDay(d.date)?.let { it - start in 0L until CODE_DAYS } == true && live(d) }.take(MAX_DAYS)
+    }
+
     fun planAdhans(days: List<Day>, alerts: Map<String, AdhanSpec>, now: Long, zone: TimeZone): List<PlannedAlarm> {
         val sorted = days.distinctBy { it.date }.sortedBy { it.date }
-        val chosen = sorted.filter { d -> PRAYERS.any { p -> alerts.containsKey(p) && (prayerAt(d, p, zone) ?: 0L) > now } }
-            .take(MAX_DAYS)
-        return chosen.flatMapIndexed { slot, d ->
+        val chosen = window(sorted, now, zone) { d -> PRAYERS.any { p -> alerts.containsKey(p) && (prayerAt(d, p, zone) ?: 0L) > now } }
+        return chosen.flatMap { d ->
             PRAYERS.mapIndexedNotNull { i, p ->
                 val at = prayerAt(d, p, zone)
                 if (!alerts.containsKey(p) || at == null || at <= now) null
-                else PlannedAlarm(key(d.date, p), p, ADHAN_BASE + slot * 10 + i, at, at, nextAt(sorted, d, p, at, zone))
+                else PlannedAlarm(key(d.date, p), p, requestCode(ADHAN_BASE, d.date, i), at, at, nextAt(sorted, d, p, at, zone))
             }
         }
     }
@@ -112,12 +127,12 @@ object AlertPlanner {
             return (at - spec.minutes * 60_000L) to at
         }
         val sorted = days.distinctBy { it.date }.sortedBy { it.date }
-        val chosen = sorted.filter { d -> PRAYERS.any { p -> (trigger(d, p)?.first ?: 0L) > now } }.take(MAX_DAYS)
-        return chosen.flatMapIndexed { slot, d ->
+        val chosen = window(sorted, now, zone) { d -> PRAYERS.any { p -> (trigger(d, p)?.first ?: 0L) > now } }
+        return chosen.flatMap { d ->
             PRAYERS.mapIndexedNotNull { i, p ->
                 val (at, prayerTime) = trigger(d, p) ?: return@mapIndexedNotNull null
                 if (at <= now) null
-                else PlannedAlarm(key(d.date, p), p, REMINDER_BASE + slot * 10 + i, at, prayerTime, prayerTime)
+                else PlannedAlarm(key(d.date, p), p, requestCode(REMINDER_BASE, d.date, i), at, prayerTime, prayerTime)
             }
         }
     }
@@ -130,12 +145,13 @@ object AlertPlanner {
     }
 
     fun staleRequestCodes(base: Int, armed: Set<Int>) =
-        (0 until MAX_DAYS).flatMap { slot -> PRAYERS.indices.map { base + slot * 10 + it } }.filter { it !in armed }
+        (0 until CODE_DAYS).flatMap { day -> PRAYERS.indices.map { base + day * 10 + it } }.filter { it !in armed }
 
     fun planSlots(base: Int, plan: List<PlannedAlarm>, previous: List<Slot>, recorded: Set<String>, now: Long): SlotPlan {
         val planned = plan.map { it.requestCode }.toSet()
+        val keys = plan.map { it.key }.toSet()
         val pending = previous.filter {
-            it.requestCode !in planned && it.triggerAt > now - LATE_THRESHOLD_MS && it.triggerAt <= now && it.key !in recorded
+            it.requestCode !in planned && it.key !in keys && it.triggerAt > now - LATE_THRESHOLD_MS && it.triggerAt <= now && it.key !in recorded
         }
         return SlotPlan(
             staleRequestCodes(base, planned + pending.map { it.requestCode }),

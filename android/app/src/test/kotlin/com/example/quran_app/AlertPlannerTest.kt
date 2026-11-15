@@ -58,8 +58,8 @@ class AlertPlannerTest {
 
     @Test fun planAdhans_armsFirstSevenDatesWithFutureTriggers() {
         val plan = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-15T13:00"), utc)
-        assertEquals(listOf(202, 203, 204), plan.filter { it.key.startsWith("2026-11-15") }.map { it.requestCode })
-        assertEquals((260..264).toList(), plan.filter { it.key.startsWith("2026-11-21") }.map { it.requestCode })
+        assertEquals(listOf(242, 243, 244), plan.filter { it.key.startsWith("2026-11-15") }.map { it.requestCode })
+        assertEquals((220..224).toList(), plan.filter { it.key.startsWith("2026-11-21") }.map { it.requestCode })
         assertTrue(plan.none { it.key.startsWith("2026-11-22") })
         assertEquals(33, plan.size)
     }
@@ -67,7 +67,9 @@ class AlertPlannerTest {
     @Test fun planAdhans_skipsTodayWhenAllPassed() {
         val plan = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-15T20:00"), utc)
         assertEquals("2026-11-16/fajr", plan.first().key)
-        assertEquals(200, plan.first().requestCode)
+        assertEquals(250, plan.first().requestCode)
+        assertEquals("2026-11-22/isha", plan.last().key)
+        assertEquals(234, plan.last().requestCode)
     }
 
     @Test fun planAdhans_nextAtFollowsCanonicalOrder() {
@@ -95,7 +97,7 @@ class AlertPlannerTest {
 
     @Test fun planAdhans_emptyAlertsCancelsAllSlots() {
         assertTrue(AlertPlanner.planAdhans(tenDays, emptyMap(), ms("2026-11-15T00:00"), utc).isEmpty())
-        assertEquals(35, AlertPlanner.staleRequestCodes(200, emptySet()).size)
+        assertEquals(40, AlertPlanner.staleRequestCodes(200, emptySet()).size)
         assertFalse(AlertPlanner.staleRequestCodes(200, setOf(202)).contains(202))
     }
 
@@ -112,7 +114,7 @@ class AlertPlannerTest {
 
     @Test fun planReminders_subtractsMinutesAndUses300Base() {
         val plan = AlertPlanner.planReminders(tenDays, mapOf("asr" to ReminderSpec(15, "tone")), ms("2026-11-15T13:00"), utc)
-        assertEquals(302, plan.first().requestCode)
+        assertEquals(342, plan.first().requestCode)
         assertEquals(ms("2026-11-15T14:24"), plan.first().triggerAt)
         assertEquals(ms("2026-11-15T14:39"), plan.first().prayerAt)
     }
@@ -267,7 +269,7 @@ class AlertPlannerTest {
         val result = AlertPlanner.planSlots(200, emptyList(), previous, emptySet(), now)
         assertFalse(result.cancel.contains(202))
         assertEquals(previous, result.slots)
-        assertEquals(34, result.cancel.size)
+        assertEquals(39, result.cancel.size)
     }
 
     @Test fun planSlots_cancelsRecordedOrOldOverdueAlarms() {
@@ -278,13 +280,105 @@ class AlertPlannerTest {
         assertTrue(old.slots.isEmpty())
     }
 
-    @Test fun planSlots_reassignedCodeIsNotCancelled() {
-        val plan = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-15T20:00"), utc)
-        val previous = listOf(Slot(204, "2026-11-15/isha", ms("2026-11-15T18:16")))
-        val result = AlertPlanner.planSlots(200, plan, previous, emptySet(), ms("2026-11-15T18:30"))
-        assertFalse(result.cancel.contains(204))
-        assertEquals("2026-11-16/isha", result.slots.single { it.requestCode == 204 }.key)
-        assertEquals(plan.size, result.slots.size)
+    @Test fun planSlots_afterIshaKeepsTonightsPendingCode() {
+        val now = ms("2026-11-15T18:30")
+        val plan = AlertPlanner.planAdhans(tenDays, allOn, now, utc)
+        val tonight = Slot(244, "2026-11-15/isha", ms("2026-11-15T18:16"))
+        assertEquals("2026-11-16/fajr", plan.first().key)
+        assertTrue(plan.none { it.requestCode == tonight.requestCode })
+        val result = AlertPlanner.planSlots(200, plan, listOf(tonight), emptySet(), now)
+        assertFalse(result.cancel.contains(tonight.requestCode))
+        assertTrue(result.slots.contains(tonight))
+    }
+
+    @Test fun planSlots_afterLateIshaKeepsYesterdaysPendingCode() {
+        val lateIsha = (15..24).map { Day("2026-11-$it", day("2026-11-$it").timings + ("isha" to "23:50")) }
+        val now = ms("2026-11-16T00:10")
+        val plan = AlertPlanner.planAdhans(lateIsha, allOn, now, utc)
+        val yesterday = Slot(244, "2026-11-15/isha", ms("2026-11-15T23:50"))
+        assertTrue(plan.none { it.requestCode == yesterday.requestCode })
+        assertEquals(7, plan.map { it.key.substringBefore('/') }.distinct().size)
+        val result = AlertPlanner.planSlots(200, plan, listOf(yesterday), emptySet(), now)
+        assertFalse(result.cancel.contains(yesterday.requestCode))
+        assertTrue(result.slots.contains(yesterday))
+    }
+
+    @Test fun planAdhans_codesAreStableForADateAcrossRearms() {
+        val first = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-15T13:00"), utc).associate { it.key to it.requestCode }
+        val second = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-16T13:00"), utc).associate { it.key to it.requestCode }
+        val third = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-17T20:00"), utc).associate { it.key to it.requestCode }
+        assertEquals(first["2026-11-21/isha"], second["2026-11-21/isha"])
+        assertEquals(second["2026-11-22/fajr"], third["2026-11-22/fajr"])
+        for ((a, b) in listOf(first to second, second to third)) {
+            for (k in a.keys intersect b.keys) assertEquals(k, a[k], b[k])
+        }
+    }
+
+    @Test fun planSlots_rearmEveryTenMinutesNeverSharesACode() {
+        val lateIsha = (15..24).map { Day("2026-11-$it", day("2026-11-$it").timings + ("isha" to "23:50")) }
+        for (days in listOf(tenDays, lateIsha)) {
+            var previous = emptyList<Slot>()
+            var now = ms("2026-11-15T00:00")
+            while (now < ms("2026-11-18T00:00")) {
+                val plan = AlertPlanner.planAdhans(days, allOn, now, utc)
+                val result = AlertPlanner.planSlots(200, plan, previous, emptySet(), now)
+                val pending = previous.filter { it.triggerAt > now - 30 * minute && it.triggerAt <= now }
+                assertTrue(result.slots.containsAll(pending))
+                assertEquals(result.slots.size, result.slots.map { it.requestCode }.distinct().size)
+                assertEquals(result.slots.size, result.slots.map { it.key }.distinct().size)
+                assertTrue(result.cancel.none { c -> result.slots.any { it.requestCode == c } })
+                val before = previous.associate { it.key to it.requestCode }
+                for (s in result.slots) before[s.key]?.let { assertEquals(s.key, it, s.requestCode) }
+                previous = result.slots
+                now += 10 * minute
+            }
+        }
+    }
+
+    @Test fun planAdhans_gappedSnapshotStaysInsideTheCodeWindow() {
+        val gapped = (15..17).map { day("2026-11-$it") } + (20..30).map { day("2026-11-$it") }
+        val plan = AlertPlanner.planAdhans(gapped, allOn, ms("2026-11-15T01:00"), utc)
+        assertEquals(listOf("2026-11-15", "2026-11-16", "2026-11-17", "2026-11-20", "2026-11-21", "2026-11-22"), plan.map { it.key.substringBefore('/') }.distinct())
+        assertEquals(plan.size, plan.map { it.requestCode }.distinct().size)
+        val reminders = AlertPlanner.planReminders(gapped, PRAYERS.associateWith { ReminderSpec(10, "tone") }, ms("2026-11-15T00:00"), utc)
+        assertEquals(reminders.size, reminders.map { it.requestCode }.distinct().size)
+        assertTrue(reminders.all { it.requestCode in 300..374 })
+    }
+
+    @Test fun planSlots_upgradeFromSlotCodesCancelsEveryOldCodeWithoutDuplicates() {
+        val now = ms("2026-11-15T14:00")
+        val oldNow = ms("2026-11-15T13:00")
+        val dates = (15..21).map { "2026-11-$it" }
+        val old = dates.flatMapIndexed { slot, date ->
+            PRAYERS.mapIndexedNotNull { i, p ->
+                val at = AlertPlanner.prayerAt(day(date), p, utc)!!
+                if (at <= oldNow) null else Slot(200 + slot * 10 + i, "$date/$p", at)
+            }
+        }
+        val plan = AlertPlanner.planAdhans(tenDays, allOn, now, utc)
+        val result = AlertPlanner.planSlots(200, plan, old, emptySet(), now)
+        val planned = plan.map { it.requestCode }.toSet()
+        assertEquals(plan.map { Slot(it.requestCode, it.key, it.triggerAt) }, result.slots)
+        assertTrue(old.all { it.requestCode in planned || it.requestCode in result.cancel })
+        assertTrue(result.cancel.none { it in planned })
+        val v1 = (0..2).flatMap { d -> (0..4).map { 200 + d * 10 + it } } + (300..304)
+        val all = AlertPlanner.staleRequestCodes(200, emptySet()) + AlertPlanner.staleRequestCodes(300, emptySet())
+        assertTrue(all.containsAll(v1))
+    }
+
+    @Test fun planSlots_overdueSlotForAReplannedKeyIsDropped() {
+        val now = trigger + 10 * minute
+        val moved = AlertPlanner.PlannedAlarm("2026-11-15/asr", "asr", 242, trigger + 20 * minute, trigger + 20 * minute, next)
+        val result = AlertPlanner.planSlots(200, listOf(moved), listOf(Slot(202, "2026-11-15/asr", trigger)), emptySet(), now)
+        assertEquals(listOf(Slot(242, "2026-11-15/asr", trigger + 20 * minute)), result.slots)
+        assertTrue(result.cancel.contains(202))
+    }
+
+    @Test fun requestCodes_neverReachHealOrTestCodes() {
+        val all = AlertPlanner.staleRequestCodes(200, emptySet()) + AlertPlanner.staleRequestCodes(300, emptySet())
+        assertEquals(80, all.toSet().size)
+        assertFalse(all.contains(AlertPlanner.HEAL_REQUEST_CODE))
+        assertFalse(all.contains(AlertPlanner.TEST_REQUEST_CODE))
     }
 
     @Test fun slots_roundTrip() {
@@ -325,6 +419,6 @@ class AlertPlannerTest {
     @Test fun planReminders_skipsZeroMinuteEntries() {
         val plan = AlertPlanner.planReminders(tenDays, mapOf("asr" to ReminderSpec(0, "tone"), "isha" to ReminderSpec(5, "tone")), ms("2026-11-15T13:00"), utc)
         assertTrue(plan.none { it.prayer == "asr" })
-        assertEquals(304, plan.first().requestCode)
+        assertEquals(344, plan.first().requestCode)
     }
 }
