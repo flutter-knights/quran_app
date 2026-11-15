@@ -16,6 +16,9 @@ import 'package:quran_app/features/notifications/domain/usecases/schedule_test_a
 import 'package:quran_app/features/notifications/domain/usecases/stop_alert_preview.dart';
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/sound_preview_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
 
 /// Registers Dart-side dependencies for the notifications feature.
 /// The legacy `PrayerNotificationScheduler` must already be registered
@@ -54,4 +57,7 @@ void initNotifications() {
       disablePrayerStrip: sl(),
     ),
   );
+  sl.registerFactory(() => ReliabilityCubit(sl(), sl(), sl()));
+  sl.registerFactory(() => SoundPreviewCubit(sl(), sl()));
+  sl.registerFactory(() => TodayPrayerTimesCubit(sl()));
 }
