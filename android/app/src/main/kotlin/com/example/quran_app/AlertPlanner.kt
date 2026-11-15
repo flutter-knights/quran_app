@@ -2,6 +2,8 @@ package com.example.quran_app
 
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.DateTimeException
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
@@ -35,6 +37,8 @@ object AlertPlanner {
     data class ArmedEntry(val triggerAt: Long, val armedAt: Long)
     data class Record(val outcome: Outcome, val triggerAt: Long)
     data class Miss(val prayer: String, val at: Long)
+    data class Slot(val requestCode: Int, val key: String, val triggerAt: Long)
+    data class SlotPlan(val cancel: List<Int>, val slots: List<Slot>)
 
     enum class Outcome { FIRED, LATE, SKIPPED, MISSED }
     enum class Route { SKIP, LATE, MISSED, DELIVER }
@@ -55,15 +59,15 @@ object AlertPlanner {
         val hour = h.toInt()
         val minute = m.toInt()
         if (hour > 23 || minute > 59) return null
-        return try {
-            Calendar.getInstance(zone).apply {
-                isLenient = false
-                clear()
-                set(year.toInt(), month.toInt() - 1, dom.toInt(), hour, minute, 0)
-            }.timeInMillis
-        } catch (e: IllegalArgumentException) {
-            null
+        try {
+            LocalDate.of(year.toInt(), month.toInt(), dom.toInt())
+        } catch (e: DateTimeException) {
+            return null
         }
+        return Calendar.getInstance(zone).apply {
+            clear()
+            set(year.toInt(), month.toInt() - 1, dom.toInt(), hour, minute, 0)
+        }.timeInMillis
     }
 
     fun planAdhans(days: List<Day>, alerts: Map<String, AdhanSpec>, now: Long, zone: TimeZone): List<PlannedAlarm> {
@@ -106,6 +110,17 @@ object AlertPlanner {
 
     fun staleRequestCodes(base: Int, armed: Set<Int>) =
         (0 until MAX_DAYS).flatMap { slot -> PRAYERS.indices.map { base + slot * 10 + it } }.filter { it !in armed }
+
+    fun planSlots(base: Int, plan: List<PlannedAlarm>, previous: List<Slot>, recorded: Set<String>, now: Long): SlotPlan {
+        val planned = plan.map { it.requestCode }.toSet()
+        val pending = previous.filter {
+            it.requestCode !in planned && it.triggerAt > now - LATE_THRESHOLD_MS && it.triggerAt <= now && it.key !in recorded
+        }
+        return SlotPlan(
+            staleRequestCodes(base, planned + pending.map { it.requestCode }),
+            plan.map { Slot(it.requestCode, it.key, it.triggerAt) } + pending,
+        )
+    }
 
     fun clockMoved(nowWall: Long, nowElapsed: Long, armedAt: Long?, armedElapsed: Long?): Boolean {
         if (armedAt == null || armedElapsed == null || nowElapsed < armedElapsed) return false
@@ -209,6 +224,29 @@ object AlertPlanner {
 
     fun decodeRecords(json: String?): Map<String, Record> = decodeEntries(json) { e ->
         Record(Outcome.valueOf(e.getString("outcome")), e.getLong("triggerAt"))
+    }
+
+    fun encodeSlots(slots: List<Slot>): String {
+        val arr = JSONArray()
+        for (s in slots) arr.put(JSONObject().put("requestCode", s.requestCode).put("key", s.key).put("triggerAt", s.triggerAt))
+        return arr.toString()
+    }
+
+    fun decodeSlots(json: String?): List<Slot> {
+        if (json == null) return emptyList()
+        return try {
+            val arr = JSONArray(json)
+            (0 until arr.length()).mapNotNull { i ->
+                val o = arr.optJSONObject(i) ?: return@mapNotNull null
+                try {
+                    Slot(o.getInt("requestCode"), o.getString("key"), o.getLong("triggerAt"))
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     private fun <T> decodeEntries(json: String?, read: (JSONObject) -> T): Map<String, T> {

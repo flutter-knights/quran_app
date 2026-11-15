@@ -11,6 +11,7 @@ import com.example.quran_app.AlertPlanner.Record
 import com.example.quran_app.AlertPlanner.ReminderSnapshot
 import com.example.quran_app.AlertPlanner.ReminderSpec
 import com.example.quran_app.AlertPlanner.Route
+import com.example.quran_app.AlertPlanner.Slot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -253,5 +254,77 @@ class AlertPlannerTest {
     @Test fun snapshotUntil_isTheLastValidDate() {
         assertEquals("2026-11-24", AlertPlanner.snapshotUntil(tenDays.reversed() + Day("bad", emptyMap())))
         assertNull(AlertPlanner.snapshotUntil(emptyList()))
+    }
+
+    @Test fun prayerAt_rollsForwardInADstGap() {
+        val newYork = TimeZone.getTimeZone("America/New_York")
+        assertEquals(ms("2026-03-08T07:30"), AlertPlanner.prayerAt(Day("2026-03-08", mapOf("fajr" to "02:30")), "fajr", newYork))
+    }
+
+    @Test fun planSlots_keepsOverdueUnrecordedAlarm() {
+        val now = trigger + 10 * minute
+        val previous = listOf(Slot(202, "2026-11-15/asr", trigger))
+        val result = AlertPlanner.planSlots(200, emptyList(), previous, emptySet(), now)
+        assertFalse(result.cancel.contains(202))
+        assertEquals(previous, result.slots)
+        assertEquals(34, result.cancel.size)
+    }
+
+    @Test fun planSlots_cancelsRecordedOrOldOverdueAlarms() {
+        val previous = listOf(Slot(202, "2026-11-15/asr", trigger))
+        assertTrue(AlertPlanner.planSlots(200, emptyList(), previous, setOf("2026-11-15/asr"), trigger + 10 * minute).cancel.contains(202))
+        val old = AlertPlanner.planSlots(200, emptyList(), previous, emptySet(), trigger + 31 * minute)
+        assertTrue(old.cancel.contains(202))
+        assertTrue(old.slots.isEmpty())
+    }
+
+    @Test fun planSlots_reassignedCodeIsNotCancelled() {
+        val plan = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-15T20:00"), utc)
+        val previous = listOf(Slot(204, "2026-11-15/isha", ms("2026-11-15T18:16")))
+        val result = AlertPlanner.planSlots(200, plan, previous, emptySet(), ms("2026-11-15T18:30"))
+        assertFalse(result.cancel.contains(204))
+        assertEquals("2026-11-16/isha", result.slots.single { it.requestCode == 204 }.key)
+        assertEquals(plan.size, result.slots.size)
+    }
+
+    @Test fun slots_roundTrip() {
+        val slots = listOf(Slot(202, "2026-11-15/asr", trigger))
+        assertEquals(slots, AlertPlanner.decodeSlots(AlertPlanner.encodeSlots(slots)))
+        assertTrue(AlertPlanner.decodeSlots("[oops").isEmpty())
+    }
+
+    @Test fun route_exactlyThirtyMinutesDelivers() {
+        assertEquals(Route.DELIVER, routeAt(trigger + 30 * minute))
+    }
+
+    @Test fun detectMisses_lastCheckedAtBoundsUnrecordedMisses() {
+        val armed = mapOf("2026-11-15/asr" to ArmedEntry(trigger, armedAt))
+        val now = ms("2026-11-15T17:00")
+        assertTrue(AlertPlanner.detectMisses(armed, emptyMap(), trigger, 0, 0, now).isEmpty())
+        assertEquals(listOf(Miss("asr", trigger)), AlertPlanner.detectMisses(armed, emptyMap(), trigger - 1, 0, 0, now))
+    }
+
+    @Test fun detectMisses_reachesBack24Hours() {
+        val armed = mapOf("2026-11-15/asr" to ArmedEntry(trigger, armedAt))
+        assertTrue(AlertPlanner.detectMisses(armed, emptyMap(), 0, 0, 0, trigger + 25 * 60 * minute).isEmpty())
+        assertEquals(listOf(Miss("asr", trigger)), AlertPlanner.detectMisses(armed, emptyMap(), 0, 0, 0, trigger + 23 * 60 * minute))
+    }
+
+    @Test fun detectMisses_waits35Minutes() {
+        val armed = mapOf("2026-11-15/asr" to ArmedEntry(trigger, armedAt))
+        assertTrue(AlertPlanner.detectMisses(armed, emptyMap(), 0, 0, 0, trigger + 34 * minute).isEmpty())
+        assertEquals(listOf(Miss("asr", trigger)), AlertPlanner.detectMisses(armed, emptyMap(), 0, 0, 0, trigger + 36 * minute))
+    }
+
+    @Test fun planReminders_legacySnapshotPlansVibrateReminders() {
+        val s = AlertPlanner.parseReminderSnapshot("""{"days":[{"date":"2026-11-15","timings":{"asr":"14:39"}}],"reminders":{"asr":10},"locale":"en"}""")
+        val plan = AlertPlanner.planReminders(s.days, s.reminders, ms("2026-11-15T13:00"), utc)
+        assertEquals(listOf(ms("2026-11-15T14:29")), plan.map { it.triggerAt })
+    }
+
+    @Test fun planReminders_skipsZeroMinuteEntries() {
+        val plan = AlertPlanner.planReminders(tenDays, mapOf("asr" to ReminderSpec(0, "tone"), "isha" to ReminderSpec(5, "tone")), ms("2026-11-15T13:00"), utc)
+        assertTrue(plan.none { it.prayer == "asr" })
+        assertEquals(304, plan.first().requestCode)
     }
 }

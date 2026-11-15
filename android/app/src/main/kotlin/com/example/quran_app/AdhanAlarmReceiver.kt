@@ -1,6 +1,5 @@
 package com.example.quran_app
 
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -26,13 +25,14 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
     }
 
     private fun handle(context: Context, intent: Intent) {
-        val prayer = intent.getStringExtra(EXTRA_PRAYER) ?: return
         val localeCode = intent.getStringExtra(EXTRA_LOCALE) ?: "en"
         if (intent.getBooleanExtra(EXTRA_TEST, false)) {
+            val prayer = intent.getStringExtra(EXTRA_PRAYER) ?: return
             deliver(context, prayer, localeCode, intent.getStringExtra(EXTRA_SOUND) ?: "adhan", intent.getBooleanExtra(EXTRA_RING_IN_SILENT, false))
             return
         }
         try {
+            val prayer = intent.getStringExtra(EXTRA_PRAYER) ?: return
             routeFire(context, intent, prayer, localeCode)
         } finally {
             AdhanScheduler.rearmFromSnapshot(context)
@@ -62,8 +62,12 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             AlertPlanner.Route.SKIP -> AlertStore.writeRecord(context, key, AlertPlanner.Record(AlertPlanner.Outcome.SKIPPED, triggerAt))
             AlertPlanner.Route.MISSED -> AlertStore.writeRecord(context, key, AlertPlanner.Record(AlertPlanner.Outcome.MISSED, triggerAt))
             AlertPlanner.Route.LATE -> {
-                postLate(context, prayer, localeCode, ((nowWall - triggerAt) / 60_000L).toInt())
                 AlertStore.writeRecord(context, key, AlertPlanner.Record(AlertPlanner.Outcome.LATE, triggerAt))
+                try {
+                    postLate(context, prayer, localeCode, ((nowWall - triggerAt) / 60_000L).toInt())
+                } catch (e: Exception) {
+                    Log.e(TAG, "postLate failed for $key", e)
+                }
             }
             AlertPlanner.Route.DELIVER -> {
                 AlertStore.writeRecord(context, key, AlertPlanner.Record(AlertPlanner.Outcome.FIRED, triggerAt))
@@ -114,13 +118,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
                 lateMinutes,
                 NumberFormat.getIntegerInstance(Locale.forLanguageTag(localeCode)).format(lateMinutes),
             )
-            val openPI = PendingIntent.getActivity(
-                context, 0,
-                Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                },
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
+            val openPI = AdhanScheduler.openAppIntent(context)
             val notification = NotificationCompat.Builder(context, AlertChannels.ALERT_SILENT)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(ctx.getString(R.string.prayer_late_title, ctx.getString(nameRes), minutesText))
@@ -132,11 +130,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
                 .setAutoCancel(true)
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .build()
-            try {
-                NotificationManagerCompat.from(context).notify(LATE_NOTIFICATION_ID, notification)
-            } catch (e: SecurityException) {
-                Log.w(TAG, "postLate: notification permission missing", e)
-            }
+            NotificationManagerCompat.from(context).notify(LATE_NOTIFICATION_ID, notification)
         }
     }
 }

@@ -10,7 +10,6 @@ object PrayerReminderIds {
 
     const val NOTIFICATION_ID_BASE = 2300
 
-    /** Lowercase prayer name -> notification ID. */
     val notificationIdByPrayer: Map<String, Int> = linkedMapOf(
         "fajr"    to 2300,
         "dhuhr"   to 2301,

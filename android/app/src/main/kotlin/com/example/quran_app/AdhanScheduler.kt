@@ -21,36 +21,22 @@ object AdhanScheduler {
     }
 
     fun armDays(context: Context, snapshot: AlertPlanner.AdhanSnapshot) {
-        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val now = System.currentTimeMillis()
         val elapsed = SystemClock.elapsedRealtime()
         val plan = AlertPlanner.planAdhans(snapshot.days, snapshot.alerts, now, TimeZone.getDefault())
-        for (alarm in plan) {
+        val recorded = AlertStore.readRecords(context).keys
+        AlarmSlots.arm(context, AdhanAlarmReceiver::class.java, AlertPlanner.ADHAN_BASE, plan, recorded, now, USE_ALARM_CLOCK) { alarm ->
             val spec = snapshot.alerts.getValue(alarm.prayer)
-            val intent = Intent(context, AdhanAlarmReceiver::class.java).apply {
-                putExtra(AdhanAlarmReceiver.EXTRA_KEY, alarm.key)
-                putExtra(AdhanAlarmReceiver.EXTRA_PRAYER, alarm.prayer)
-                putExtra(AdhanAlarmReceiver.EXTRA_LOCALE, snapshot.localeCode)
-                putExtra(AdhanAlarmReceiver.EXTRA_TRIGGER_AT, alarm.triggerAt)
-                putExtra(AdhanAlarmReceiver.EXTRA_SOUND, spec.sound)
-                putExtra(AdhanAlarmReceiver.EXTRA_RING_IN_SILENT, spec.ringInSilent)
-                putExtra(AdhanAlarmReceiver.EXTRA_NEXT_AT, alarm.nextAt)
-                putExtra(AdhanAlarmReceiver.EXTRA_ARMED_AT, now)
-                putExtra(AdhanAlarmReceiver.EXTRA_ARMED_ELAPSED, elapsed)
-            }
-            val pi = PendingIntent.getBroadcast(context, alarm.requestCode, intent, FLAGS)
-            try {
-                if (USE_ALARM_CLOCK) {
-                    am.setAlarmClock(AlarmManager.AlarmClockInfo(alarm.triggerAt, openAppIntent(context)), pi)
-                } else {
-                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarm.triggerAt, pi)
-                }
-            } catch (e: SecurityException) {
-                Log.w(TAG, "armDays: exact denied, inexact for ${alarm.key}")
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarm.triggerAt, pi)
-            }
+            putExtra(AdhanAlarmReceiver.EXTRA_KEY, alarm.key)
+            putExtra(AdhanAlarmReceiver.EXTRA_PRAYER, alarm.prayer)
+            putExtra(AdhanAlarmReceiver.EXTRA_LOCALE, snapshot.localeCode)
+            putExtra(AdhanAlarmReceiver.EXTRA_TRIGGER_AT, alarm.triggerAt)
+            putExtra(AdhanAlarmReceiver.EXTRA_SOUND, spec.sound)
+            putExtra(AdhanAlarmReceiver.EXTRA_RING_IN_SILENT, spec.ringInSilent)
+            putExtra(AdhanAlarmReceiver.EXTRA_NEXT_AT, alarm.nextAt)
+            putExtra(AdhanAlarmReceiver.EXTRA_ARMED_AT, now)
+            putExtra(AdhanAlarmReceiver.EXTRA_ARMED_ELAPSED, elapsed)
         }
-        cancelSlots(context, AlertPlanner.staleRequestCodes(AlertPlanner.ADHAN_BASE, plan.map { it.requestCode }.toSet()))
 
         val kept = AlertStore.readArmed(context).filterValues { it.triggerAt <= now }
         val armed = kept + plan.associate { it.key to AlertPlanner.ArmedEntry(it.triggerAt, now) }
@@ -99,11 +85,11 @@ object AdhanScheduler {
 
     fun cancelAll(context: Context) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        cancelSlots(context, AlertPlanner.staleRequestCodes(AlertPlanner.ADHAN_BASE, emptySet()))
+        AlarmSlots.cancelAll(context, AdhanAlarmReceiver::class.java, AlertPlanner.ADHAN_BASE)
         am.cancel(healIntent(context))
         AlertStore.writeSnapshot(context, AlertStore.ADHAN_PREFS, AlertStore.ADHAN_SNAPSHOT, null)
         val now = System.currentTimeMillis()
-        AlertStore.writeArmed(context, AlertStore.readArmed(context).filterValues { it.triggerAt <= now })
+        AlertStore.writeArmed(context, AlertPlanner.pruneArmed(AlertStore.readArmed(context).filterValues { it.triggerAt <= now }, now))
         AlertStore.remove(context, AlertStore.SCHEDULED_UNTIL)
         Log.i(TAG, "cancelAll: cleared adhan slots, heal alarm and snapshot")
     }
@@ -118,7 +104,6 @@ object AdhanScheduler {
     )
 
     fun armTest(context: Context, delaySeconds: Int, localeCode: String, sound: String, ringInSilent: Boolean) {
-        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val trigger = System.currentTimeMillis() + delaySeconds * 1000L
         val intent = Intent(context, AdhanAlarmReceiver::class.java)
         for ((k, v) in testExtras(localeCode, sound, ringInSilent, trigger)) {
@@ -128,33 +113,20 @@ object AdhanScheduler {
                 is Long -> intent.putExtra(k, v)
             }
         }
-        val pi = PendingIntent.getBroadcast(context, AlertPlanner.TEST_REQUEST_CODE, intent, FLAGS)
-        try {
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pi)
-        } catch (e: SecurityException) {
-            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pi)
-        }
+        val pi = PendingIntent.getBroadcast(context, AlertPlanner.TEST_REQUEST_CODE, intent, AlarmSlots.FLAGS)
+        AlarmSlots.schedule(context, trigger, pi, alarmClock = false)
         Log.i(TAG, "armTest: in ${delaySeconds}s")
     }
 
-    private fun cancelSlots(context: Context, codes: List<Int>) {
-        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        for (rc in codes) {
-            am.cancel(PendingIntent.getBroadcast(context, rc, Intent(context, AdhanAlarmReceiver::class.java), FLAGS))
-        }
-    }
-
     private fun healIntent(context: Context) = PendingIntent.getBroadcast(
-        context, AlertPlanner.HEAL_REQUEST_CODE, Intent(context, AdhanHealReceiver::class.java), FLAGS,
+        context, AlertPlanner.HEAL_REQUEST_CODE, Intent(context, AdhanHealReceiver::class.java), AlarmSlots.FLAGS,
     )
 
-    private fun openAppIntent(context: Context) = PendingIntent.getActivity(
+    fun openAppIntent(context: Context): PendingIntent = PendingIntent.getActivity(
         context, 0,
         Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
         },
-        FLAGS,
+        AlarmSlots.FLAGS,
     )
-
-    private const val FLAGS = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 }

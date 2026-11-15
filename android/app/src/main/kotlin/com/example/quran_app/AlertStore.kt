@@ -65,6 +65,12 @@ object AlertStore {
         prefs(context).edit().remove(name).commit()
     }
 
+    fun readSlots(context: Context, base: Int) = AlertPlanner.decodeSlots(prefs(context).getString("slots_$base", null))
+
+    fun writeSlots(context: Context, base: Int, slots: List<AlertPlanner.Slot>) {
+        prefs(context).edit().putString("slots_$base", AlertPlanner.encodeSlots(slots)).commit()
+    }
+
     fun readSnapshot(context: Context, prefsName: String, key: String): String? =
         context.getSharedPreferences(prefsName, Context.MODE_PRIVATE).getString(key, null)
 

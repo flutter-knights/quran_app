@@ -95,8 +95,7 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val localeCode = (args?.get("localeCode") as? String) ?: "en"
         val sound = (args?.get("sound") as? String) ?: "adhan"
         val ringInSilent = (args?.get("ringInSilent") as? Boolean) ?: false
-        AdhanScheduler.armTest(ctx, delay, localeCode, sound, ringInSilent)
-        result.success(null)
+        runInStore(ctx, result) { AdhanScheduler.armTest(it, delay, localeCode, sound, ringInSilent) }
     }
 
     private fun handleSchedulePrayerReminders(
