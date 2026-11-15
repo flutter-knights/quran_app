@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">تطبيق القرآن</string>
+    <string name="app_name">الفرقان</string>
 
     <string name="adhan_stop">إيقاف</string>
     <string name="adhan_body_fajr">حان موعد صلاة الفجر</string>
@@ -39,5 +39,9 @@
     </plurals>
     <string name="prayer_late_body">تأخّر التنبيه، وقد يكون السبب توفير البطارية.</string>
     <string name="prayer_late_fix">إصلاح</string>
+    <string name="channel_alert_tone">تنبيهات الصلاة</string>
+    <string name="channel_alert_vibrate">تنبيهات الصلاة (اهتزاز)</string>
     <string name="channel_alert_silent">تنبيهات الصلاة (بدون صوت)</string>
+    <string name="channel_reminder_tone">تذكيرات الصلاة</string>
+    <string name="channel_reminder_silent">تذكيرات الصلاة (بدون صوت)</string>
 </resources>

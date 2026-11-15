@@ -23,6 +23,13 @@ object AlertPlanner {
     const val PRUNE_MS = 48 * 60 * 60_000L
     const val ISHA_FALLBACK_MS = 6 * 60 * 60_000L
     val PRAYERS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
+    const val PLAYBACK_CHANNEL = "prayer_adhan_channel"
+    const val ALERT_TONE_CHANNEL = "prayer_alert_tone_v2"
+    const val ALERT_VIBRATE_CHANNEL = "prayer_alert_vibrate_v2"
+    const val ALERT_SILENT_CHANNEL = "prayer_alert_silent_v2"
+    const val REMINDER_TONE_CHANNEL = "prayer_reminder_tone_v2"
+    const val REMINDER_VIBRATE_CHANNEL = "prayer_reminder_channel"
+    const val REMINDER_SILENT_CHANNEL = "prayer_reminder_silent_v2"
 
     private val CANONICAL = listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha")
     private val DATE = Regex("""(\d{4})-(\d{2})-(\d{2})""")
@@ -136,6 +143,26 @@ object AlertPlanner {
         if (clockMoved(nowWall, nowElapsed, armedAt, armedElapsed)) return Route.SKIP
         return if (nowWall < (nextAt ?: (triggerAt + LATE_THRESHOLD_MS))) Route.LATE else Route.MISSED
     }
+
+    fun plays(sound: String, ringInSilent: Boolean, audible: Boolean) = sound == "adhan" && (ringInSilent || audible)
+
+    fun deliveryChannel(sound: String, playing: Boolean) = when {
+        playing -> PLAYBACK_CHANNEL
+        sound == "vibrate" -> ALERT_VIBRATE_CHANNEL
+        sound == "silent" -> ALERT_SILENT_CHANNEL
+        else -> ALERT_TONE_CHANNEL
+    }
+
+    fun routeChannels(sound: String) =
+        if (sound == "adhan") setOf(PLAYBACK_CHANNEL, ALERT_TONE_CHANNEL) else setOf(deliveryChannel(sound, false))
+
+    fun reminderChannel(reminderSound: String) = when (reminderSound) {
+        "tone" -> REMINDER_TONE_CHANNEL
+        "silent" -> REMINDER_SILENT_CHANNEL
+        else -> REMINDER_VIBRATE_CHANNEL
+    }
+
+    fun clipFor(prayer: String) = if (prayer == "fajr") "fajr_adhan" else "normal_adhan"
 
     fun detectMisses(
         armed: Map<String, ArmedEntry>, records: Map<String, Record>, lastCheckedAt: Long,

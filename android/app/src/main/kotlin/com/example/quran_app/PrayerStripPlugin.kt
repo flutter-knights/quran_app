@@ -45,6 +45,11 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "scheduleTestAdhan" -> handleScheduleTestAdhan(ctx, call, result)
             "schedulePrayerReminders" -> handleSchedulePrayerReminders(ctx, call, result)
             "cancelAllReminders" -> handleCancelAllReminders(ctx, result)
+            "previewSound" -> handlePreviewSound(ctx, call, result)
+            "stopPreview" -> {
+                SoundPreviewPlayer.stop()
+                result.success(null)
+            }
             else -> result.notImplemented()
         }
     }
@@ -120,6 +125,18 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         ctx: Context, result: MethodChannel.Result,
     ) {
         runInStore(ctx, result) { PrayerReminderScheduler.cancelAll(it) }
+    }
+
+    private fun handlePreviewSound(ctx: Context, call: MethodCall, result: MethodChannel.Result) {
+        val args = call.arguments as? Map<*, *>
+        val sound = args?.get("sound") as? String
+        val prayer = args?.get("prayer") as? String
+        if (sound == null || prayer == null) {
+            result.error("BAD_ARGS", "Expected {sound, prayer}", null)
+            return
+        }
+        SoundPreviewPlayer.play(ctx, sound, prayer)
+        result.success(null)
     }
 
     private fun parseDays(args: Map<*, *>): List<AlertPlanner.Day> {

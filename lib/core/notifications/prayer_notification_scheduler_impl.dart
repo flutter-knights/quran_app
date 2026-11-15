@@ -13,7 +13,7 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
   bool _initialized = false;
 
   PrayerNotificationSchedulerImpl({FlutterLocalNotificationsPlugin? plugin})
-      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   static const Map<PrayerName, int> _notificationIds = {
     PrayerName.fajr: 10,
@@ -43,28 +43,6 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
   static const String _fajrChannelId = 'prayer_fajr_channel';
   static const String _standardChannelId = 'prayer_standard_channel';
   static const String _legacyChannelId = 'prayer_times_channel';
-
-  static const AndroidNotificationChannel _fajrChannel =
-      AndroidNotificationChannel(
-    _fajrChannelId,
-    'Fajr adhan',
-    description: 'Adhan at prayer time',
-    importance: Importance.max,
-    sound: RawResourceAndroidNotificationSound('fajr_adhan'),
-    playSound: true,
-    enableVibration: false,
-  );
-
-  static const AndroidNotificationChannel _standardChannel =
-      AndroidNotificationChannel(
-    _standardChannelId,
-    'Prayer adhan',
-    description: 'Adhan at prayer time',
-    importance: Importance.max,
-    sound: RawResourceAndroidNotificationSound('normal_adhan'),
-    playSound: true,
-    enableVibration: false,
-  );
 
   static const NotificationDetails _fajrDetails = NotificationDetails(
     android: AndroidNotificationDetails(
@@ -128,29 +106,38 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
   Future<bool?> requestNotificationsPermission() async {
     final androidPlugin = _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (androidPlugin != null) {
       return androidPlugin.requestNotificationsPermission();
     }
     final iosPlugin = _plugin
         .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>();
-    return iosPlugin?.requestPermissions(alert: true, badge: false, sound: true);
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    return iosPlugin?.requestPermissions(
+      alert: true,
+      badge: false,
+      sound: true,
+    );
   }
 
   @override
   Future<bool> areNotificationsEnabled() async {
     final androidPlugin = _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (androidPlugin != null) {
       return await androidPlugin.areNotificationsEnabled() ?? false;
     }
     final iosPlugin = _plugin
         .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>();
-    final granted =
-        await iosPlugin?.checkPermissions().then((p) => p?.isAlertEnabled);
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    final granted = await iosPlugin?.checkPermissions().then(
+      (p) => p?.isAlertEnabled,
+    );
     return granted ?? false;
   }
 
@@ -172,12 +159,15 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
 
     final androidPlugin = _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     // One-time migration: drop the legacy single-sound channel. No-op if absent.
     await androidPlugin?.deleteNotificationChannel(channelId: _legacyChannelId);
-    await androidPlugin?.createNotificationChannel(_fajrChannel);
-    await androidPlugin?.createNotificationChannel(_standardChannel);
+    await androidPlugin?.deleteNotificationChannel(channelId: _fajrChannelId);
+    await androidPlugin?.deleteNotificationChannel(
+      channelId: _standardChannelId,
+    );
 
     _initialized = true;
     debugPrint('[PrayerNotif] init complete, tz=${tz.local.name}');
@@ -246,9 +236,7 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
         continue;
       }
     }
-    debugPrint(
-      '[PrayerNotif] done: scheduled=$scheduled, skipped=$skipped',
-    );
+    debugPrint('[PrayerNotif] done: scheduled=$scheduled, skipped=$skipped');
   }
 
   @override

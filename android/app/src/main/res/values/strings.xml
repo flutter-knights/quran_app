@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Quran App</string>
+    <string name="app_name">Al-Furqan</string>
 
     <!-- Adhan notification -->
     <string name="adhan_stop">Stop</string>
@@ -37,5 +37,9 @@
     </plurals>
     <string name="prayer_late_body">The alert was late; battery saving may be the cause.</string>
     <string name="prayer_late_fix">Fix</string>
+    <string name="channel_alert_tone">Prayer alerts</string>
+    <string name="channel_alert_vibrate">Prayer alerts (vibrate)</string>
     <string name="channel_alert_silent">Prayer alerts (silent)</string>
+    <string name="channel_reminder_tone">Prayer reminders</string>
+    <string name="channel_reminder_silent">Prayer reminders (silent)</string>
 </resources>

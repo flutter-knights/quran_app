@@ -1,12 +1,15 @@
 package com.example.quran_app
 
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -28,7 +31,10 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         val localeCode = intent.getStringExtra(EXTRA_LOCALE) ?: "en"
         if (intent.getBooleanExtra(EXTRA_TEST, false)) {
             val prayer = intent.getStringExtra(EXTRA_PRAYER) ?: return
-            deliver(context, prayer, localeCode, intent.getStringExtra(EXTRA_SOUND) ?: "adhan", intent.getBooleanExtra(EXTRA_RING_IN_SILENT, false))
+            val sound = intent.getStringExtra(EXTRA_SOUND) ?: "adhan"
+            val ringInSilent = intent.getBooleanExtra(EXTRA_RING_IN_SILENT, false)
+            AlertChannels.ensureAll(context)
+            deliver(context, prayer, localeCode, sound, ringInSilent, AlertPlanner.plays(sound, ringInSilent, isAudibleNow(context)))
             return
         }
         try {
@@ -47,9 +53,11 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         val ringInSilent = legacy || intent.getBooleanExtra(EXTRA_RING_IN_SILENT, false)
         val triggerAt = intent.getLongExtra(EXTRA_TRIGGER_AT, 0L).takeIf { it > 0L } ?: nowWall
         val key = intent.getStringExtra(EXTRA_KEY) ?: AlertPlanner.keyFor(triggerAt, prayer, TimeZone.getDefault())
+        AlertChannels.ensureAll(context)
+        val playing = AlertPlanner.plays(sound, ringInSilent, isAudibleNow(context))
         val route = AlertPlanner.route(
             NotificationManagerCompat.from(context).areNotificationsEnabled(),
-            false,
+            AlertChannels.isBlocked(context, AlertPlanner.deliveryChannel(sound, playing)),
             nowWall,
             nowElapsed,
             triggerAt,
@@ -57,7 +65,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             intent.longOrNull(EXTRA_ARMED_AT),
             intent.longOrNull(EXTRA_ARMED_ELAPSED),
         )
-        Log.i(TAG, "onReceive $key route=$route legacy=$legacy sound=$sound")
+        Log.i(TAG, "onReceive $key route=$route legacy=$legacy sound=$sound playing=$playing")
         when (route) {
             AlertPlanner.Route.SKIP -> AlertStore.writeRecord(context, key, AlertPlanner.Record(AlertPlanner.Outcome.SKIPPED, triggerAt))
             AlertPlanner.Route.MISSED -> AlertStore.writeRecord(context, key, AlertPlanner.Record(AlertPlanner.Outcome.MISSED, triggerAt))
@@ -72,7 +80,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             AlertPlanner.Route.DELIVER -> {
                 AlertStore.writeRecord(context, key, AlertPlanner.Record(AlertPlanner.Outcome.FIRED, triggerAt))
                 PrayerReminderIds.notificationIdByPrayer[prayer]?.let { NotificationManagerCompat.from(context).cancel(it) }
-                deliver(context, prayer, localeCode, sound, ringInSilent)
+                deliver(context, prayer, localeCode, sound, ringInSilent, playing)
             }
         }
     }
@@ -94,22 +102,63 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         const val EXTRA_KEY = "key"
         const val EXTRA_TEST = "test"
 
-        fun deliver(context: Context, prayer: String, localeCode: String, sound: String, ringInSilent: Boolean, playing: Boolean = true) {
+        fun isAudibleNow(context: Context): Boolean {
+            val audio = context.getSystemService(AudioManager::class.java) ?: return false
+            val manager = context.getSystemService(NotificationManager::class.java) ?: return false
+            val filter = manager.currentInterruptionFilter
+            return audio.ringerMode == AudioManager.RINGER_MODE_NORMAL &&
+                (filter == NotificationManager.INTERRUPTION_FILTER_ALL || filter == NotificationManager.INTERRUPTION_FILTER_UNKNOWN) &&
+                audio.getStreamVolume(AudioManager.STREAM_NOTIFICATION) > 0
+        }
+
+        fun deliver(context: Context, prayer: String, localeCode: String, sound: String, ringInSilent: Boolean, playing: Boolean) {
             if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) {
                 Log.w(TAG, "deliver: notifications disabled, skipping $prayer")
                 return
             }
-            val serviceIntent = Intent(context, AdhanPlaybackService::class.java).apply {
-                action = AdhanPlaybackService.ACTION_PLAY
-                putExtra(AdhanPlaybackService.EXTRA_PRAYER, prayer)
-                putExtra(AdhanPlaybackService.EXTRA_CLIP, if (prayer == "fajr") "fajr_adhan" else "normal_adhan")
-                putExtra(AdhanPlaybackService.EXTRA_LOCALE, localeCode)
+            if (playing) {
+                val serviceIntent = Intent(context, AdhanPlaybackService::class.java).apply {
+                    action = AdhanPlaybackService.ACTION_PLAY
+                    putExtra(AdhanPlaybackService.EXTRA_PRAYER, prayer)
+                    putExtra(AdhanPlaybackService.EXTRA_CLIP, AlertPlanner.clipFor(prayer))
+                    putExtra(AdhanPlaybackService.EXTRA_LOCALE, localeCode)
+                    putExtra(AdhanPlaybackService.EXTRA_RING_IN_SILENT, ringInSilent)
+                }
+                try {
+                    ContextCompat.startForegroundService(context, serviceIntent)
+                    return
+                } catch (e: Exception) {
+                    Log.w(TAG, "deliver: playback start failed for $prayer, posting text", e)
+                }
             }
-            context.startForegroundService(serviceIntent)
+            postAdhanText(context, prayer, localeCode, sound)
+        }
+
+        private fun postAdhanText(context: Context, prayer: String, localeCode: String, sound: String) {
+            val channel = AlertPlanner.deliveryChannel(sound, false)
+            val ctx = localizedContext(context, localeCode)
+            val titleRes = ctx.resources.getIdentifier("adhan_title_$prayer", "string", context.packageName)
+                .let { if (it != 0) it else R.string.adhan_title_fajr }
+            val bodyRes = ctx.resources.getIdentifier("adhan_body_$prayer", "string", context.packageName)
+                .let { if (it != 0) it else R.string.adhan_body_fajr }
+            val builder = NotificationCompat.Builder(context, channel)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(ctx.getString(titleRes))
+                .setContentText(ctx.getString(bodyRes))
+                .setContentIntent(AdhanScheduler.openAppIntent(context))
+                .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            when (channel) {
+                AlertChannels.ALERT_TONE -> builder.setPriority(NotificationCompat.PRIORITY_HIGH).setDefaults(NotificationCompat.DEFAULT_SOUND)
+                AlertChannels.ALERT_VIBRATE -> builder.setPriority(NotificationCompat.PRIORITY_HIGH).setDefaults(NotificationCompat.DEFAULT_VIBRATE)
+                else -> builder.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            }
+            NotificationManagerCompat.from(context).notify(AdhanPlaybackService.NOTIFICATION_ID, builder.build())
         }
 
         fun postLate(context: Context, prayer: String, localeCode: String, lateMinutes: Int) {
-            AlertChannels.ensureAlertSilent(context)
+            AlertChannels.ensureAll(context)
             val ctx = localizedContext(context, localeCode)
             val nameRes = ctx.resources.getIdentifier("adhan_title_$prayer", "string", context.packageName)
                 .let { if (it != 0) it else R.string.adhan_title_fajr }

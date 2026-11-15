@@ -15,6 +15,7 @@ object AdhanScheduler {
     const val USE_ALARM_CLOCK = true
 
     fun sync(context: Context, snapshot: AlertPlanner.AdhanSnapshot) {
+        AlertChannels.ensureAll(context)
         AlertStore.writeSnapshot(context, AlertStore.ADHAN_PREFS, AlertStore.ADHAN_SNAPSHOT, AlertPlanner.encodeAdhanSnapshot(snapshot))
         AlertStore.setIfUnset(context, AlertStore.LAST_CHECKED_AT, System.currentTimeMillis())
         armDays(context, snapshot)
