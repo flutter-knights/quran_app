@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,10 @@ void main() {
   final ishaMiss = MissedAlert(
     prayer: PrayerName.isha,
     at: DateTime(2026, 11, 14, 18, 16),
+  );
+  final ishaMiss2 = MissedAlert(
+    prayer: PrayerName.isha,
+    at: DateTime(2026, 11, 15, 18, 19),
   );
   final asrLate = MissedAlert(
     prayer: PrayerName.asr,
@@ -85,13 +91,14 @@ void main() {
     WidgetTester tester,
     List<ReliabilityState> states, {
     String locale = 'ar',
+    Stream<ReliabilityState>? stream,
   }) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     whenListen(
       reliability,
-      Stream.fromIterable(states),
+      stream ?? Stream.fromIterable(states),
       initialState: const ReliabilityLoading(),
     );
     settings.updateSettings(isArabic: locale == 'ar');
@@ -200,6 +207,66 @@ void main() {
     ]);
     expect(find.text(missedTitle), findsOneWidget);
     verify(() => reliability.ackMissed(any())).called(1);
+  });
+
+  testWidgets('a late delivery found while running shows the sheet', (
+    tester,
+  ) async {
+    await pump(tester, [
+      const ReliabilityLoaded(base),
+      ReliabilityLoaded(base.copyWith(late: [asrLate])),
+    ]);
+    expect(find.text('تأخّر تنبيه العصر'), findsOneWidget);
+    verify(() => reliability.ackMissed(any())).called(1);
+  });
+
+  testWidgets('an alert already shown is not shown again', (tester) async {
+    final status = base.copyWith(late: [asrLate]);
+    final states = StreamController<ReliabilityState>();
+    addTearDown(states.close);
+    await pump(tester, const [], stream: states.stream);
+    states.add(ReliabilityLoaded(status));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsOneWidget);
+    await tester.tap(find.text('لاحقًا'));
+    await tester.pumpAndSettle();
+    states.add(ReliabilityLoaded(status.copyWith(batteryUnrestricted: false)));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
+    verify(() => reliability.ackMissed(any())).called(1);
+  });
+
+  testWidgets('a newer miss after the first is shown too', (tester) async {
+    final states = StreamController<ReliabilityState>();
+    addTearDown(states.close);
+    await pump(tester, const [], stream: states.stream);
+    states.add(ReliabilityLoaded(base.copyWith(late: [asrLate])));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('لاحقًا'));
+    await tester.pumpAndSettle();
+    states.add(ReliabilityLoaded(base.copyWith(missed: [ishaMiss2])));
+    await tester.pumpAndSettle();
+    expect(find.text(missedTitle), findsOneWidget);
+    verify(() => reliability.ackMissed(any())).called(2);
+  });
+
+  testWidgets('nothing shows while a route covers Home, then it shows on '
+      'return', (tester) async {
+    final states = StreamController<ReliabilityState>();
+    addTearDown(states.close);
+    final router = await pump(tester, const [], stream: states.stream);
+    states.add(const ReliabilityLoaded(base));
+    await tester.pumpAndSettle();
+    router.push(AppRouter.notificationsPath);
+    await tester.pumpAndSettle();
+    states.add(ReliabilityLoaded(xiaomiMiss));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
+    verifyNever(() => reliability.ackMissed(any()));
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text(missedTitle), findsOneWidget);
+    verify(() => reliability.ackMissed(xiaomiMiss)).called(1);
   });
 
   testWidgets('an unavailable status shows nothing and keeps the intro', (
