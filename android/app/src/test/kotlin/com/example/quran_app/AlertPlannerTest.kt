@@ -361,6 +361,7 @@ class AlertPlannerTest {
         assertEquals(plan.map { Slot(it.requestCode, it.key, it.triggerAt) }, result.slots)
         assertTrue(old.all { it.requestCode in planned || it.requestCode in result.cancel })
         assertTrue(result.cancel.none { it in planned })
+        assertTrue(result.cancel.containsAll((230..234).toList()))
         val v1 = (0..2).flatMap { d -> (0..4).map { 200 + d * 10 + it } } + (300..304)
         val all = AlertPlanner.staleRequestCodes(200, emptySet()) + AlertPlanner.staleRequestCodes(300, emptySet())
         assertTrue(all.containsAll(v1))

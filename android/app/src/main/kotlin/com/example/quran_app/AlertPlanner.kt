@@ -3,7 +3,6 @@ package com.example.quran_app
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.DateTimeException
-import java.time.Instant
 import java.time.LocalDate
 import java.util.Calendar
 import java.util.Locale
@@ -103,7 +102,8 @@ object AlertPlanner {
     }
 
     private fun window(sorted: List<Day>, now: Long, zone: TimeZone, live: (Day) -> Boolean): List<Day> {
-        val start = Instant.ofEpochMilli(now - LATE_THRESHOLD_MS).atZone(zone.toZoneId()).toLocalDate().toEpochDay()
+        val c = Calendar.getInstance(zone).apply { timeInMillis = now - LATE_THRESHOLD_MS }
+        val start = LocalDate.of(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH)).toEpochDay()
         return sorted.filter { d -> epochDay(d.date)?.let { it - start in 0L until CODE_DAYS } == true && live(d) }.take(MAX_DAYS)
     }
 
