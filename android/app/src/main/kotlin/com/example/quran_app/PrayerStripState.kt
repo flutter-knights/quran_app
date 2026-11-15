@@ -69,6 +69,9 @@ data class StripStyleNative(
         else -> highlightTextDay
     }
 
+    fun resolvesCellTextAtRender(tintable: Boolean) =
+        !tintable && (backgroundDay != null || backgroundNight != null)
+
     fun mutedText(night: Boolean, default: Int) =
         if (!night && backgroundDay != null) MUTED_ON_DAY_FILL else default
 

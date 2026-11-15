@@ -47,6 +47,11 @@ class PrayerStripRenderer(private val context: Context) {
             nextNight = style.nextTextColor(night = true, tintable = TINTABLE),
             mutedDay = style.mutedText(night = false, default = colorIn(night = false, R.color.strip_text_muted)),
             mutedNight = style.mutedText(night = true, default = colorIn(night = true, R.color.strip_text_muted)),
+            fixedCellText = if (style.resolvesCellTextAtRender(TINTABLE)) {
+                colorIn(night, R.color.strip_text_primary) to colorIn(night, R.color.strip_text_passed)
+            } else {
+                null
+            },
         )
         val collapsed = RemoteViews(context.packageName, R.layout.prayer_strip_collapsed)
         bindCells(collapsed, day, nextIndex, style, paint, CELL_IDS, expanded = false)
@@ -94,6 +99,7 @@ class PrayerStripRenderer(private val context: Context) {
         val nextNight: Int,
         val mutedDay: Int,
         val mutedNight: Int,
+        val fixedCellText: Pair<Int, Int>?,
     )
 
     private fun bindCells(
@@ -120,8 +126,15 @@ class PrayerStripRenderer(private val context: Context) {
                 StripCellRole.PASSED -> {
                     views.setBoolean(LABEL_IDS[i], "setEnabled", false)
                     views.setBoolean(TIME_IDS[i], "setEnabled", false)
+                    paint.fixedCellText?.let { (_, passed) ->
+                        views.setTextColor(LABEL_IDS[i], passed)
+                        views.setTextColor(TIME_IDS[i], passed)
+                    }
                 }
-                StripCellRole.UPCOMING -> Unit
+                StripCellRole.UPCOMING -> paint.fixedCellText?.let { (upcoming, _) ->
+                    views.setTextColor(LABEL_IDS[i], upcoming)
+                    views.setTextColor(TIME_IDS[i], upcoming)
+                }
             }
         }
     }

@@ -217,6 +217,14 @@ class PrayerStripTest {
         assertEquals(0xFF8FC4AE.toInt(), base.copy(shape = StripShape.NONE).nextTextColor(night = true))
     }
 
+    @Test fun cellTextIsResolvedAtRenderOnlyBelowApi31WithAFill() {
+        val filled = StripStyleNative(backgroundDay = 0xFFE3EFEA.toInt(), backgroundNight = 0xFF16302A.toInt())
+        assertTrue(filled.resolvesCellTextAtRender(tintable = false))
+        assertFalse(filled.resolvesCellTextAtRender(tintable = true))
+        assertFalse(StripStyleNative().resolvesCellTextAtRender(tintable = false))
+        assertTrue(StripStyleNative(backgroundNight = 0xFF16302A.toInt()).resolvesCellTextAtRender(tintable = false))
+    }
+
     @Test fun shapeParsesWireNamesWithARoundedDefault() {
         assertEquals(StripShape.NONE, StripShape.parse("none"))
         assertEquals(StripShape.OUTLINE, StripShape.parse("outline"))
