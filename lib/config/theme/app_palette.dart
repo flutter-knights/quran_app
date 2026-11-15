@@ -9,93 +9,106 @@ extension AppPaletteX on ColorPalette {
       this == ColorPalette.neutralDark || this == ColorPalette.slateDark;
 
   Color get bg => switch (this) {
-        ColorPalette.neutralDark => const Color(0xFF0D0D0D),
-        ColorPalette.neutralLight => const Color(0xFFF4F4F4),
-        ColorPalette.slateDark => const Color(0xFF0A0C10),
-        ColorPalette.slateLight => const Color(0xFFF0F3F8),
-      };
+    ColorPalette.neutralDark => const Color(0xFF0D0D0D),
+    ColorPalette.neutralLight => const Color(0xFFF4F4F4),
+    ColorPalette.slateDark => const Color(0xFF0A0C10),
+    ColorPalette.slateLight => const Color(0xFFF0F3F8),
+  };
 
   Color get surface => switch (this) {
-        ColorPalette.neutralDark => const Color(0xFF1A1A1A),
-        ColorPalette.neutralLight => const Color(0xFFE2E2E2),
-        ColorPalette.slateDark => const Color(0xFF141820),
-        ColorPalette.slateLight => const Color(0xFFD8E2F0),
-      };
+    ColorPalette.neutralDark => const Color(0xFF1A1A1A),
+    ColorPalette.neutralLight => const Color(0xFFE2E2E2),
+    ColorPalette.slateDark => const Color(0xFF141820),
+    ColorPalette.slateLight => const Color(0xFFD8E2F0),
+  };
 
   Color get primary => switch (this) {
-        ColorPalette.neutralDark || ColorPalette.neutralLight =>
-          const Color(0xFF2E5244),
-        ColorPalette.slateDark || ColorPalette.slateLight =>
-          const Color(0xFF1C4558),
-      };
+    ColorPalette.neutralDark ||
+    ColorPalette.neutralLight => const Color(0xFF2E5244),
+    ColorPalette.slateDark ||
+    ColorPalette.slateLight => const Color(0xFF1C4558),
+  };
 
   Color get secondary => switch (this) {
-        ColorPalette.neutralDark || ColorPalette.neutralLight =>
-          const Color(0xFF5C8070),
-        ColorPalette.slateDark || ColorPalette.slateLight =>
-          const Color(0xFF4878A0),
-      };
+    ColorPalette.neutralDark ||
+    ColorPalette.neutralLight => const Color(0xFF5C8070),
+    ColorPalette.slateDark ||
+    ColorPalette.slateLight => const Color(0xFF4878A0),
+  };
 
   Color get onSurface => switch (this) {
-        ColorPalette.neutralDark => const Color(0xFFF5F5F5),
-        ColorPalette.neutralLight => const Color(0xFF141414),
-        ColorPalette.slateDark => const Color(0xFFF0F4F8),
-        ColorPalette.slateLight => const Color(0xFF0A0C12),
-      };
+    ColorPalette.neutralDark => const Color(0xFFF5F5F5),
+    ColorPalette.neutralLight => const Color(0xFF141414),
+    ColorPalette.slateDark => const Color(0xFFF0F4F8),
+    ColorPalette.slateLight => const Color(0xFF0A0C12),
+  };
 
   Color get onSurfaceVar => switch (this) {
-        ColorPalette.neutralDark => const Color(0xFF8A8A8A),
-        ColorPalette.neutralLight => const Color(0xFF686868),
-        ColorPalette.slateDark => const Color(0xFF8A92A0),
-        ColorPalette.slateLight => const Color(0xFF5E6880),
-      };
+    ColorPalette.neutralDark => const Color(0xFF8A8A8A),
+    ColorPalette.neutralLight => const Color(0xFF686868),
+    ColorPalette.slateDark => const Color(0xFF8A92A0),
+    ColorPalette.slateLight => const Color(0xFF5E6880),
+  };
+
+  Color get onPrimary => const Color(0xFFF5F5F5);
+
+  Color get primaryInk => isDark ? secondary : primary;
+
+  Color get primaryTint => isDark
+      ? secondary.withValues(alpha: 0.22)
+      : primary.withValues(alpha: 0.12);
+
+  Color get error => AppColors.error;
+
+  Color get onError =>
+      isDark ? const Color(0xFF0D0D0D) : const Color(0xFFF5F5F5);
 
   Color get mushafBg => switch (this) {
-        ColorPalette.neutralDark => const Color(0xFF1C1A14),
-        ColorPalette.neutralLight => const Color(0xFFFFFCF5),
-        ColorPalette.slateDark => const Color(0xFF111620),
-        ColorPalette.slateLight => const Color(0xFFF8FBFF),
-      };
+    ColorPalette.neutralDark => const Color(0xFF1C1A14),
+    ColorPalette.neutralLight => const Color(0xFFFFFCF5),
+    ColorPalette.slateDark => const Color(0xFF111620),
+    ColorPalette.slateLight => const Color(0xFFF8FBFF),
+  };
 
   Color get mushafText => switch (this) {
-        ColorPalette.neutralDark => const Color(0xFFD4C5B0),
-        ColorPalette.neutralLight => const Color(0xFF1A1208),
-        ColorPalette.slateDark => const Color(0xFFC8D4E0),
-        ColorPalette.slateLight => const Color(0xFF0A0E14),
-      };
+    ColorPalette.neutralDark => const Color(0xFFD4C5B0),
+    ColorPalette.neutralLight => const Color(0xFF1A1208),
+    ColorPalette.slateDark => const Color(0xFFC8D4E0),
+    ColorPalette.slateLight => const Color(0xFF0A0E14),
+  };
 
   // rgba(255,255,255,0.06) for dark; rgba(0,0,0,0.06) for light
   Color get mushafBorderColor =>
       isDark ? const Color(0x0FFFFFFF) : const Color(0x0F000000);
 
   ColorScheme get colorScheme => ColorScheme(
-        brightness: isDark ? Brightness.dark : Brightness.light,
-        primary: primary,
-        onPrimary: const Color(0xFFF5F5F5),
-        secondary: secondary,
-        onSecondary: const Color(0xFFF5F5F5),
-        error: AppColors.error,
-        onError: isDark ? const Color(0xFF0D0D0D) : const Color(0xFFF5F5F5),
-        surface: bg,
-        onSurface: onSurface,
-        onSurfaceVariant: onSurfaceVar,
-        surfaceContainer: surface,
-      );
+    brightness: isDark ? Brightness.dark : Brightness.light,
+    primary: primary,
+    onPrimary: onPrimary,
+    secondary: secondary,
+    onSecondary: const Color(0xFFF5F5F5),
+    error: error,
+    onError: onError,
+    surface: bg,
+    onSurface: onSurface,
+    onSurfaceVariant: onSurfaceVar,
+    surfaceContainer: surface,
+  );
 
   ThemeData toThemeData() => ThemeData(
-        useMaterial3: true,
-        colorScheme: colorScheme,
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: surface,
-          suffixIconColor: onSurface,
-          prefixIconColor: onSurface,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          hintStyle: TS.regular15.copyWith(color: onSurface),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-      );
+    useMaterial3: true,
+    colorScheme: colorScheme,
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: surface,
+      suffixIconColor: onSurface,
+      prefixIconColor: onSurface,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+      ),
+      hintStyle: TS.regular15.copyWith(color: onSurface),
+      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+    ),
+  );
 }

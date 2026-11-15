@@ -17,6 +17,8 @@ Before creating ANY widget, check this list. If a match exists, use it. A core w
 - **AppSectionHeader**: accent bar + uppercase label + optional trailing (`label, trailing`).
 - **AppSegmentedSelector\<T\>**: compact segmented control over `SegmentOption<T>(value, label)` (`options, selected, onChanged, expand`).
 - **AppStatusBadge**: tinted pill with optional dot (`color, label, showDot`). For any status: hadith grade, download state.
+- **AppSettingsTile**: settings row, min 48 high, title over an optional value subtitle, optional leading and trailing, 38% opacity and no tap when disabled (`title, subtitle, leading, trailing, onTap, enabled`). Group rows in a `SurfaceCard`.
+- **AppOption\<T\>** + **showAppOptionSheet\<T\>** (`app_option_sheet.dart`): pick-one modal sheet, `RadioGroup` over `RadioListTile` rows with an optional `leading` (e.g. a swatch dot) and `trailing` slot per option; selecting calls `onSelected` and closes. `footer` renders under the rows; `onClosed` runs once however the sheet closes.
 - **ActionButtonsRow** + **ActionBtn** / **ActionBtn.primary**: row of equal-width 44-high buttons (`icon, label, onPressed, iconTrailing`).
 - **OrnamentDivider**: line ◆ line divider.
 - **ScrollToTopFab**: wraps a scrollable and fades in a scroll-to-top button past `threshold` (`controller, child, threshold`).

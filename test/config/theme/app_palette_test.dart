@@ -1,6 +1,7 @@
 // test/config/theme/app_palette_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app/config/theme/app_colors.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 
@@ -72,6 +73,60 @@ void main() {
     test('theme uses palette primary as colorScheme.primary', () {
       final theme = ColorPalette.slateDark.toThemeData();
       expect(theme.colorScheme.primary, ColorPalette.slateDark.primary);
+    });
+  });
+  group('alert getters keep today\'s colours', () {
+    test('onPrimary is the old onPrimary on every palette', () {
+      for (final p in ColorPalette.values) {
+        expect(p.onPrimary, const Color(0xFFF5F5F5));
+      }
+    });
+    test('primaryInk is primary in light and secondary in dark', () {
+      expect(
+        ColorPalette.neutralLight.primaryInk,
+        ColorPalette.neutralLight.primary,
+      );
+      expect(
+        ColorPalette.slateLight.primaryInk,
+        ColorPalette.slateLight.primary,
+      );
+      expect(
+        ColorPalette.neutralDark.primaryInk,
+        ColorPalette.neutralDark.secondary,
+      );
+      expect(
+        ColorPalette.slateDark.primaryInk,
+        ColorPalette.slateDark.secondary,
+      );
+    });
+    test(
+      'primaryTint is primary at 12% in light and secondary at 22% in dark',
+      () {
+        expect(
+          ColorPalette.neutralLight.primaryTint,
+          ColorPalette.neutralLight.primary.withValues(alpha: 0.12),
+        );
+        expect(
+          ColorPalette.slateDark.primaryTint,
+          ColorPalette.slateDark.secondary.withValues(alpha: 0.22),
+        );
+      },
+    );
+    test('error and onError match the old colour scheme', () {
+      for (final p in ColorPalette.values) {
+        expect(p.error, AppColors.error);
+      }
+      expect(ColorPalette.neutralDark.onError, const Color(0xFF0D0D0D));
+      expect(ColorPalette.slateDark.onError, const Color(0xFF0D0D0D));
+      expect(ColorPalette.neutralLight.onError, const Color(0xFFF5F5F5));
+      expect(ColorPalette.slateLight.onError, const Color(0xFFF5F5F5));
+    });
+    test('colorScheme reads onPrimary, error and onError from the getters', () {
+      for (final p in ColorPalette.values) {
+        expect(p.colorScheme.onPrimary, p.onPrimary);
+        expect(p.colorScheme.error, p.error);
+        expect(p.colorScheme.onError, p.onError);
+      }
     });
   });
 }
