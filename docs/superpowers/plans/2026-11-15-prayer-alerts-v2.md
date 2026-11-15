@@ -431,9 +431,9 @@ Kotlin source dir: `android/app/src/main/kotlin/com/example/quran_app/` (written
 **Interfaces:**
 - Consumes: the Task 3 channel table rows `scheduleDailyAdhans`, `schedulePrayerReminders`, `scheduleTestAdhan`, `cancelAllAdhans`, `cancelAllReminders`.
 - Produces (Tasks 5, 6, 9 rely on these):
-  - `object AlertPlanner` with constants `MAX_DAYS = 7`, `ADHAN_BASE = 200`, `REMINDER_BASE = 300`, `HEAL_REQUEST_CODE = 298`, `TEST_REQUEST_CODE = 299`, `LATE_THRESHOLD_MS = 30 min`, `CLOCK_DRIFT_MS = 2 min`, `MISS_MARGIN_MS = 35 min`, `REACH_MS = 24 h`, `PRUNE_MS = 48 h`, `ISHA_FALLBACK_MS = 6 h`, `PRAYERS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")`.
+  - `object AlertPlanner` with constants `MAX_DAYS = 7`, `CODE_DAYS = MAX_DAYS + 1`, `ADHAN_BASE = 200`, `REMINDER_BASE = 300`, `HEAL_REQUEST_CODE = 298`, `TEST_REQUEST_CODE = 299`, `LATE_THRESHOLD_MS = 30 min`, `CLOCK_DRIFT_MS = 2 min`, `MISS_MARGIN_MS = 35 min`, `REACH_MS = 24 h`, `PRUNE_MS = 48 h`, `ISHA_FALLBACK_MS = 6 h`, `PRAYERS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")`.
   - Data classes `Day(date: String, timings: Map<String, String>)`, `AdhanSpec(sound: String, ringInSilent: Boolean)`, `ReminderSpec(minutes: Int, reminderSound: String)`, `AdhanSnapshot(days: List<Day>, alerts: Map<String, AdhanSpec>, localeCode: String, legacy: Boolean)`, `ReminderSnapshot(days: List<Day>, reminders: Map<String, ReminderSpec>, localeCode: String, legacy: Boolean)`, `PlannedAlarm(key: String, prayer: String, requestCode: Int, triggerAt: Long, prayerAt: Long, nextAt: Long)`, `ArmedEntry(triggerAt: Long, armedAt: Long)`, `Record(outcome: Outcome, triggerAt: Long)`, `Miss(prayer: String, at: Long)`; `enum Outcome { FIRED, LATE, SKIPPED, MISSED }`; `enum Route { SKIP, LATE, MISSED, DELIVER }`.
-  - Functions: `key(date: String, prayer: String): String` (`"2026-11-15/asr"`), `keyFor(triggerAt: Long, prayer: String, zone: TimeZone): String`, `prayerAt(day: Day, prayer: String, zone: TimeZone): Long?`, `parseAdhanSnapshot(json: String): AdhanSnapshot`, `parseReminderSnapshot(json: String): ReminderSnapshot` (both throw on malformed JSON), `planAdhans(days: List<Day>, alerts: Map<String, AdhanSpec>, now: Long, zone: TimeZone): List<PlannedAlarm>`, `planReminders(days: List<Day>, reminders: Map<String, ReminderSpec>, now: Long, zone: TimeZone): List<PlannedAlarm>`, `staleRequestCodes(base: Int, armed: Set<Int>): List<Int>`, `clockMoved(nowWall: Long, nowElapsed: Long, armedAt: Long?, armedElapsed: Long?): Boolean`, `route(notificationsEnabled: Boolean, channelBlocked: Boolean, nowWall: Long, nowElapsed: Long, triggerAt: Long, nextAt: Long?, armedAt: Long?, armedElapsed: Long?): Route`, `detectMisses(armed: Map<String, ArmedEntry>, records: Map<String, Record>, lastCheckedAt: Long, lastBootHandledAt: Long, lastClockChangeAt: Long, now: Long): List<Miss>`, `lateSince(records: Map<String, Record>, lastCheckedAt: Long): List<Miss>`, `pruneArmed(armed, now)`, `pruneRecords(records, now)`, `snapshotUntil(days: List<Day>): String?`.
+  - Functions: `key(date: String, prayer: String): String` (`"2026-11-15/asr"`), `keyFor(triggerAt: Long, prayer: String, zone: TimeZone): String`, `prayerAt(day: Day, prayer: String, zone: TimeZone): Long?`, `parseAdhanSnapshot(json: String): AdhanSnapshot`, `parseReminderSnapshot(json: String): ReminderSnapshot` (both throw on malformed JSON), `planAdhans(days: List<Day>, alerts: Map<String, AdhanSpec>, now: Long, zone: TimeZone): List<PlannedAlarm>`, `planReminders(days: List<Day>, reminders: Map<String, ReminderSpec>, now: Long, zone: TimeZone): List<PlannedAlarm>`, `requestCode(base: Int, date: String, prayerIndex: Int): Int`, `staleRequestCodes(base: Int, armed: Set<Int>): List<Int>`, `clockMoved(nowWall: Long, nowElapsed: Long, armedAt: Long?, armedElapsed: Long?): Boolean`, `route(notificationsEnabled: Boolean, channelBlocked: Boolean, nowWall: Long, nowElapsed: Long, triggerAt: Long, nextAt: Long?, armedAt: Long?, armedElapsed: Long?): Route`, `detectMisses(armed: Map<String, ArmedEntry>, records: Map<String, Record>, lastCheckedAt: Long, lastBootHandledAt: Long, lastClockChangeAt: Long, now: Long): List<Miss>`, `lateSince(records: Map<String, Record>, lastCheckedAt: Long): List<Miss>`, `pruneArmed(armed, now)`, `pruneRecords(records, now)`, `snapshotUntil(days: List<Day>): String?`.
   - `object AlertStore`: `val executor: ExecutorService` (single thread), `fun post(context: Context, block: (Context) -> Unit)` (runs on the executor), `fun prefs(context)`; persisted in prefs `alert_store` with `commit()`: `armed_log` and `records` (JSON objects keyed by `key`), `last_checked_at`, `last_boot_handled_at`, `last_clock_change_at`, `scheduled_until`. Accessors: `readArmed`, `writeArmed`, `readRecords`, `writeRecord(context, key, Record)` (prunes on write), `getLong/setLong(context, name, value)`, `setIfUnset(context, name, value)`. Snapshots keep v1's locations: prefs `adhan_prefs` key `adhan_snapshot`, prefs `reminder_prefs` key `reminder_snapshot`.
   - `AdhanScheduler`: `const val USE_ALARM_CLOCK = true`, `fun sync(context, snapshot: AlertPlanner.AdhanSnapshot)` (save snapshot, set `last_checked_at` if unset, arm), `fun armDays(context, snapshot)`, `fun rearmFromSnapshot(context)` (re-arms adhans **and** reminders; caller is already on the executor), `fun armHeal(context)`, `fun cancelAll(context)`, `fun armTest(context, delaySeconds: Int, localeCode: String, sound: String, ringInSilent: Boolean)`.
   - `PrayerReminderScheduler`: `fun sync(context, snapshot: AlertPlanner.ReminderSnapshot)`, `fun armDays(context, snapshot)`, `fun cancelAll(context)`.
@@ -451,15 +451,15 @@ In `android/app/build.gradle.kts` `dependencies { }` add `testImplementation("ju
 ```kotlin
 @Test fun planAdhans_armsFirstSevenDatesWithFutureTriggers() {
     val plan = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-15T13:00"), utc)
-    assertEquals(listOf(202, 203, 204), plan.filter { it.key.startsWith("2026-11-15") }.map { it.requestCode })
-    assertEquals((260..264).toList(), plan.filter { it.key.startsWith("2026-11-21") }.map { it.requestCode })
+    assertEquals(listOf(242, 243, 244), plan.filter { it.key.startsWith("2026-11-15") }.map { it.requestCode })
+    assertEquals((220..224).toList(), plan.filter { it.key.startsWith("2026-11-21") }.map { it.requestCode })
     assertTrue(plan.none { it.key.startsWith("2026-11-22") })
     assertEquals(33, plan.size)
 }
 @Test fun planAdhans_skipsTodayWhenAllPassed() {
     val plan = AlertPlanner.planAdhans(tenDays, allOn, ms("2026-11-15T20:00"), utc)
     assertEquals("2026-11-16/fajr", plan.first().key)
-    assertEquals(200, plan.first().requestCode)
+    assertEquals(250, plan.first().requestCode)
 }
 @Test fun planAdhans_nextAtFollowsCanonicalOrder() {
     val plan = AlertPlanner.planAdhans(tenDays, mapOf("fajr" to AdhanSpec("adhan", false), "isha" to AdhanSpec("tone", false)), ms("2026-11-15T00:00"), utc)
@@ -477,12 +477,12 @@ In `android/app/build.gradle.kts` `dependencies { }` add `testImplementation("ju
 }
 @Test fun planAdhans_emptyAlertsCancelsAllSlots() {
     assertTrue(AlertPlanner.planAdhans(tenDays, emptyMap(), ms("2026-11-15T00:00"), utc).isEmpty())
-    assertEquals(35, AlertPlanner.staleRequestCodes(200, emptySet()).size)
+    assertEquals(40, AlertPlanner.staleRequestCodes(200, emptySet()).size)
     assertFalse(AlertPlanner.staleRequestCodes(200, setOf(202)).contains(202))
 }
 @Test fun planReminders_subtractsMinutesAndUses300Base() {
     val plan = AlertPlanner.planReminders(tenDays, mapOf("asr" to ReminderSpec(15, "tone")), ms("2026-11-15T13:00"), utc)
-    assertEquals(302, plan.first().requestCode)
+    assertEquals(342, plan.first().requestCode)
     assertEquals(ms("2026-11-15T14:24"), plan.first().triggerAt)
     assertEquals(ms("2026-11-15T14:39"), plan.first().prayerAt)
 }
@@ -547,13 +547,12 @@ Expected: compilation failure (`AlertPlanner` unresolved).
 ```kotlin
 fun planAdhans(days: List<Day>, alerts: Map<String, AdhanSpec>, now: Long, zone: TimeZone): List<PlannedAlarm> {
     val sorted = days.distinctBy { it.date }.sortedBy { it.date }
-    val chosen = sorted.filter { d -> PRAYERS.any { p -> alerts.containsKey(p) && (prayerAt(d, p, zone) ?: 0L) > now } }
-        .take(MAX_DAYS)
-    return chosen.flatMapIndexed { slot, d ->
+    val chosen = window(sorted, now, zone) { d -> PRAYERS.any { p -> alerts.containsKey(p) && (prayerAt(d, p, zone) ?: 0L) > now } }
+    return chosen.flatMap { d ->
         PRAYERS.mapIndexedNotNull { i, p ->
             val at = prayerAt(d, p, zone)
             if (!alerts.containsKey(p) || at == null || at <= now) null
-            else PlannedAlarm(key(d.date, p), p, ADHAN_BASE + slot * 10 + i, at, at, nextAt(sorted, d, p, at, zone))
+            else PlannedAlarm(key(d.date, p), p, requestCode(ADHAN_BASE, d.date, i), at, at, nextAt(sorted, d, p, at, zone))
         }
     }
 }
@@ -592,7 +591,7 @@ fun detectMisses(armed: Map<String, ArmedEntry>, records: Map<String, Record>, l
 }
 ```
 
-`planReminders` uses the same date selection, but a date qualifies when some `prayerAt - minutes * 60_000 > now`; `trigger = prayerAt - minutes * 60_000`, `REMINDER_BASE`, and `nextAt = prayerAt`. A snapshot is legacy when the adhan JSON has no `alerts` object (then every entry of `PRAYERS` present in any day's `timings` gets `AdhanSpec("adhan", true)`; v1 timings also carry sunrise, which is not in `PRAYERS` and gets no alert) or a reminder value is an `Int` (then `ReminderSpec(value, "vibrate")`). `lateSince` returns `LATE` records with `triggerAt > lastCheckedAt`, newest first. `staleRequestCodes(base, armed)` is every `base + slot * 10 + i` for slot 0..6, i 0..4 not in `armed`.
+`planReminders` uses the same date selection, but a date qualifies when some `prayerAt - minutes * 60_000 > now`; `trigger = prayerAt - minutes * 60_000`, `REMINDER_BASE`, and `nextAt = prayerAt`. A snapshot is legacy when the adhan JSON has no `alerts` object (then every entry of `PRAYERS` present in any day's `timings` gets `AdhanSpec("adhan", true)`; v1 timings also carry sunrise, which is not in `PRAYERS` and gets no alert) or a reminder value is an `Int` (then `ReminderSpec(value, "vibrate")`). `lateSince` returns `LATE` records with `triggerAt > lastCheckedAt`, newest first. `window` keeps the dates whose epoch day is in [start, start + CODE_DAYS), where start is the local date of `now − LATE_THRESHOLD_MS` computed through `Calendar`, then takes `MAX_DAYS`. `requestCode(base, date, i)` is `base + floorMod(epochDay(date), CODE_DAYS) * 10 + i`. `staleRequestCodes(base, armed)` is every `base + day * 10 + i` for day 0..7 and i 0..4 that is not in `armed`.
 
 - [ ] **Step 6: Implement `AlertStore`, schedulers, receivers and the plugin handlers**
 
