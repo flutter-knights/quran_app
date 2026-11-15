@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/palette_context.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
-import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/directional_icons.dart';
@@ -24,66 +24,76 @@ class AlertsStatusLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<SettingsCubit, SettingsState, (int, ColorPalette)>(
-      selector: (state) =>
-          (state.settingsModel.enabledAlertCount, state.settingsModel.palette),
-      builder: (context, data) =>
-          BlocBuilder<ReliabilityCubit, ReliabilityState>(
-            builder: (context, state) =>
-                _line(context, state, data.$1, data.$2),
-          ),
+    return BlocSelector<SettingsCubit, SettingsState, int>(
+      selector: (state) => state.settingsModel.enabledAlertCount,
+      builder: (context, enabledCount) => enabledCount == 0
+          ? _StatusRow(
+              icon: HugeIcons.strokeRoundedNotificationOff01,
+              iconColor: context.colorScheme.onSurfaceVariant,
+              text: enabledCountLabel(
+                PendingS.of(context),
+                0,
+                context.langCode,
+              ),
+              onTap: onTap,
+            )
+          : BlocBuilder<ReliabilityCubit, ReliabilityState>(
+              builder: (context, state) => _line(context, state, enabledCount),
+            ),
     );
   }
 
-  Widget _line(
-    BuildContext context,
-    ReliabilityState state,
-    int enabledCount,
-    ColorPalette palette,
-  ) {
+  Widget _line(BuildContext context, ReliabilityState state, int enabledCount) {
     final s = PendingS.of(context);
     final lang = context.langCode;
-    final scheme = context.colorScheme;
-    if (state is ReliabilityLoading) {
-      return Skeletonizer(
-        child: _StatusRow(
-          icon: HugeIcons.strokeRoundedCheckmarkCircle02,
-          iconColor: scheme.onSurfaceVariant,
-          text: s.alerts_status_ok(alertsDateLabel(DateTime.now(), lang)),
-        ),
-      );
-    }
+    final muted = context.colorScheme.onSurfaceVariant;
     final status = switch (state) {
+      ReliabilityLoading() => null,
+      ReliabilityUnavailable() => null,
       ReliabilityLoaded(:final status) => status,
-      _ => null,
     };
-    final kind = status == null
-        ? AlertsStatusKind.okNoDate
-        : resolveAlertsStatus(
-            enabledCount: enabledCount,
-            status: status,
-            isAndroid: defaultTargetPlatform == TargetPlatform.android,
-            now: DateTime.now(),
-          );
-    final text = switch (kind) {
-      AlertsStatusKind.allOff => enabledCountLabel(s, 0, lang),
-      AlertsStatusKind.off => s.alerts_status_off,
-      AlertsStatusKind.attention => s.alerts_status_attention,
-      AlertsStatusKind.ok => s.alerts_status_ok(
-        alertsDateLabel(status!.scheduledUntil!, lang),
-      ),
-      AlertsStatusKind.okNoDate => s.alerts_status_okNoDate,
-    };
-    final ok = kind == AlertsStatusKind.ok || kind == AlertsStatusKind.okNoDate;
+    if (status == null) {
+      final loading = state is ReliabilityLoading;
+      final row = _StatusRow(
+        icon: loading
+            ? HugeIcons.strokeRoundedCheckmarkCircle02
+            : HugeIcons.strokeRoundedNotification01,
+        iconColor: muted,
+        text: loading
+            ? s.alerts_status_ok(alertsDateLabel(DateTime.now(), lang))
+            : s.alerts_status_okNoDate,
+        onTap: loading ? null : onTap,
+      );
+      return loading ? Skeletonizer(child: row) : row;
+    }
+    final kind = resolveAlertsStatus(
+      enabledCount: enabledCount,
+      status: status,
+      isAndroid: defaultTargetPlatform == TargetPlatform.android,
+      now: DateTime.now(),
+    );
     return _StatusRow(
       icon: switch (kind) {
         AlertsStatusKind.allOff ||
         AlertsStatusKind.off => HugeIcons.strokeRoundedNotificationOff01,
         AlertsStatusKind.attention => HugeIcons.strokeRoundedInformationCircle,
-        _ => HugeIcons.strokeRoundedCheckmarkCircle02,
+        AlertsStatusKind.ok ||
+        AlertsStatusKind.okNoDate => HugeIcons.strokeRoundedCheckmarkCircle02,
       },
-      iconColor: ok ? palette.primaryInk : scheme.onSurfaceVariant,
-      text: text,
+      iconColor: switch (kind) {
+        AlertsStatusKind.ok ||
+        AlertsStatusKind.okNoDate => context.palette.primaryInk,
+        _ => muted,
+      },
+      text: switch (kind) {
+        AlertsStatusKind.allOff => enabledCountLabel(s, 0, lang),
+        AlertsStatusKind.off => s.alerts_status_off,
+        AlertsStatusKind.attention => s.alerts_status_attention,
+        AlertsStatusKind.ok => s.alerts_status_ok(
+          alertsDateLabel(status.scheduledUntil!, lang),
+        ),
+        AlertsStatusKind.okNoDate => s.alerts_status_okNoDate,
+      },
       onTap: onTap,
     );
   }

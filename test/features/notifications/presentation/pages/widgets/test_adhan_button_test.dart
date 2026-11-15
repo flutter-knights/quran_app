@@ -7,6 +7,7 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/domain/entities/reliability_status.dart';
 import 'package:quran_app/features/notifications/domain/usecases/schedule_test_adhan.dart';
@@ -117,5 +118,19 @@ void main() {
     await tester.tap(find.text('تشغيل أذان تجريبي'));
     await tester.pumpAndSettle();
     verify(() => schedule(any())).called(1);
+  });
+
+  testWidgets('a failed schedule shows the blocked snackbar', (tester) async {
+    when(
+      () => schedule(any()),
+    ).thenAnswer((_) async => const Left(UnknownNotificationFailure('boom')));
+    await pump(tester, const ReliabilityLoaded(ok));
+    await tester.tap(find.text('تشغيل أذان تجريبي'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('لن يعمل الأذان: الإشعارات أو المنبهات الدقيقة غير مسموحة.'),
+      findsOneWidget,
+    );
+    expect(find.text('يصل بعد ثوانٍ إذا كانت الإشعارات مسموحة.'), findsNothing);
   });
 }

@@ -11,13 +11,15 @@ class ReminderPicker extends StatefulWidget {
     super.key,
     required this.minutes,
     required this.enabled,
-    required this.arrivesAt,
+    required this.rawTime,
+    required this.use24Hour,
     required this.onCommit,
   });
 
   final int minutes;
   final bool enabled;
-  final String? arrivesAt;
+  final String? rawTime;
+  final bool use24Hour;
   final ValueChanged<int> onCommit;
 
   static const chipMinutes = [5, 10, 15, 30];
@@ -46,7 +48,16 @@ class _ReminderPickerState extends State<ReminderPicker> {
     final lang = context.langCode;
     final scheme = context.colorScheme;
     final enabled = widget.enabled;
-    final mutedStyle = TS.regular12.copyWith(color: scheme.onSurfaceVariant);
+    final disabled = scheme.onSurface.withValues(alpha: 0.38);
+    final strong = enabled ? scheme.onSurface : disabled;
+    final muted = enabled ? scheme.onSurfaceVariant : disabled;
+    final mutedStyle = TS.regular12.copyWith(color: muted);
+    final arrivesAt = prayerTimeLabel(
+      widget.rawTime,
+      use24Hour: widget.use24Hour,
+      localeCode: lang,
+      minutesBefore: _draft,
+    );
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 12),
       child: Column(
@@ -58,12 +69,12 @@ class _ReminderPickerState extends State<ReminderPicker> {
             children: [
               Text(
                 s.alerts_sheet_reminderValue(minutesLabel(s, _draft, lang)),
-                style: TS.semi20.copyWith(color: scheme.onSurface),
+                style: TS.semi20.copyWith(color: strong),
               ),
-              if (widget.arrivesAt case final arrivesAt?)
+              if (arrivesAt != null)
                 Text(
                   s.alerts_sheet_reminderArrives(arrivesAt),
-                  style: TS.regular14.copyWith(color: scheme.onSurfaceVariant),
+                  style: TS.regular14.copyWith(color: muted),
                 ),
             ],
           ),
@@ -77,6 +88,7 @@ class _ReminderPickerState extends State<ReminderPicker> {
                 ? (v) => setState(() => _draft = v.round())
                 : null,
             onChangeEnd: enabled ? (v) => widget.onCommit(v.round()) : null,
+            semanticFormatterCallback: (v) => minutesLabel(s, v.round(), lang),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

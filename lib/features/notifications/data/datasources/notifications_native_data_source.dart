@@ -56,7 +56,7 @@ class NotificationsNativeDataSourceImpl
   Stream<String> get previewEnded {
     final controller = _previewEnded;
     if (controller != null) return controller.stream;
-    final created = _previewEnded = StreamController<String>.broadcast();
+    final created = _previewEnded = StreamController.broadcast();
     _channel.setMethodCallHandler((call) async {
       final sound = (call.arguments as Map?)?['sound'];
       if (call.method == 'previewEnded' && sound is String) created.add(sound);

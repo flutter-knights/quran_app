@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/palette_context.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
@@ -16,80 +17,79 @@ import 'package:quran_app/features/notifications/presentation/utils/enum_localiz
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 Future<void> showPrayerSoundPicker(BuildContext context, PrayerName prayer) {
-  final s = PendingS.current;
-  final ios = defaultTargetPlatform == TargetPlatform.iOS;
   final settings = context.read<SettingsCubit>();
-  final current = _alertOf(settings, prayer).sound;
-  final preview = ios ? null : sl<SoundPreviewCubit>();
-  return showAppOptionSheet(
+  return _showSoundPicker(
     context: context,
-    title: s.alerts_picker_prayerSound,
-    selected: ios && current == PrayerSound.vibrate
-        ? PrayerSound.silent
-        : current,
-    options: [
-      for (final sound in PrayerSound.values)
-        if (!ios || sound != PrayerSound.vibrate)
-          AppOption(
-            value: sound,
-            label: prayerSoundLabel(s, sound, prayer: prayer, ios: ios),
-            subtitle: sound == PrayerSound.silent
-                ? s.alerts_picker_silentSub
-                : null,
-            trailing: _previewTrailing(
-              preview,
-              switch (sound) {
-                PrayerSound.adhan => PreviewSound.adhan,
-                PrayerSound.tone => PreviewSound.tone,
-                _ => null,
-              },
-              prayer,
-              prayerSoundLabel(s, sound, prayer: prayer, ios: ios),
-            ),
-          ),
-    ],
+    prayer: prayer,
+    title: PendingS.current.alerts_picker_prayerSound,
+    values: PrayerSound.values,
+    current: _alertOf(settings, prayer).sound,
+    vibrate: PrayerSound.vibrate,
+    silent: PrayerSound.silent,
+    labelOf: (sound, ios) =>
+        prayerSoundLabel(PendingS.current, sound, prayer: prayer, ios: ios),
+    previewOf: (sound) => switch (sound) {
+      PrayerSound.adhan => PreviewSound.adhan,
+      PrayerSound.tone => PreviewSound.tone,
+      _ => null,
+    },
     onSelected: (sound) => settings.updatePrayerAlert(
       prayer,
       _alertOf(settings, prayer).copyWith(sound: sound),
     ),
-    footer: _previewFooter(preview),
-    onClosed: preview?.close,
   );
 }
 
 Future<void> showReminderSoundPicker(BuildContext context, PrayerName prayer) {
-  final s = PendingS.current;
-  final ios = defaultTargetPlatform == TargetPlatform.iOS;
   final settings = context.read<SettingsCubit>();
-  final current = _alertOf(settings, prayer).reminderSound;
-  final preview = ios ? null : sl<SoundPreviewCubit>();
-  return showAppOptionSheet(
+  return _showSoundPicker(
     context: context,
-    title: s.alerts_sheet_reminderSound,
-    selected: ios && current == ReminderSound.vibrate
-        ? ReminderSound.silent
-        : current,
-    options: [
-      for (final sound in ReminderSound.values)
-        if (!ios || sound != ReminderSound.vibrate)
-          AppOption(
-            value: sound,
-            label: reminderSoundLabel(s, sound, ios: ios),
-            subtitle: sound == ReminderSound.silent
-                ? s.alerts_picker_silentSub
-                : null,
-            trailing: _previewTrailing(
-              preview,
-              sound == ReminderSound.tone ? PreviewSound.tone : null,
-              prayer,
-              reminderSoundLabel(s, sound, ios: ios),
-            ),
-          ),
-    ],
+    prayer: prayer,
+    title: PendingS.current.alerts_sheet_reminderSound,
+    values: ReminderSound.values,
+    current: _alertOf(settings, prayer).reminderSound,
+    vibrate: ReminderSound.vibrate,
+    silent: ReminderSound.silent,
+    labelOf: (sound, ios) =>
+        reminderSoundLabel(PendingS.current, sound, ios: ios),
+    previewOf: (sound) =>
+        sound == ReminderSound.tone ? PreviewSound.tone : null,
     onSelected: (sound) => settings.updatePrayerAlert(
       prayer,
       _alertOf(settings, prayer).copyWith(reminderSound: sound),
     ),
+  );
+}
+
+Future<void> _showSoundPicker<T>({
+  required BuildContext context,
+  required PrayerName prayer,
+  required String title,
+  required List<T> values,
+  required T current,
+  required T vibrate,
+  required T silent,
+  required String Function(T sound, bool ios) labelOf,
+  required PreviewSound? Function(T sound) previewOf,
+  required ValueChanged<T> onSelected,
+}) {
+  final s = PendingS.current;
+  final ios = defaultTargetPlatform == TargetPlatform.iOS;
+  final preview = ios ? null : sl<SoundPreviewCubit>();
+  return showAppOptionSheet(
+    context: context,
+    title: title,
+    selected: ios && current == vibrate ? silent : current,
+    options: values.where((sound) => !ios || sound != vibrate).map((sound) {
+      final label = labelOf(sound, ios);
+      return AppOption(
+        value: sound,
+        label: label,
+        subtitle: sound == silent ? s.alerts_picker_silentSub : null,
+        trailing: _previewTrailing(preview, previewOf(sound), prayer, label),
+      );
+    }).toList(),
+    onSelected: onSelected,
     footer: _previewFooter(preview),
     onClosed: preview?.close,
   );
@@ -129,9 +129,7 @@ class _PreviewButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = PendingS.of(context);
-    final ink = context.select(
-      (SettingsCubit c) => c.state.settingsModel.palette.primaryInk,
-    );
+    final ink = context.palette.primaryInk;
     return BlocSelector<SoundPreviewCubit, PreviewSound?, bool>(
       selector: (playing) => playing == sound,
       builder: (context, playing) => IconButton(

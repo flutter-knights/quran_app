@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/calculation_method.dart';
@@ -186,10 +187,44 @@ void main() {
     expect(find.text('الإشعارات غير مسموحة، فلن يصل الأذان'), findsOneWidget);
   });
 
-  testWidgets('unavailable status reads as on without a date', (tester) async {
+  Finder checkIcon() => find.byWidgetPredicate(
+    (w) => w is HugeIcon && w.icon == HugeIcons.strokeRoundedCheckmarkCircle02,
+  );
+
+  testWidgets('unavailable status reads as on with a neutral icon', (
+    tester,
+  ) async {
     await pump(tester, state: const ReliabilityUnavailable());
     expect(find.text('التنبيهات تعمل'), findsOneWidget);
+    expect(checkIcon(), findsNothing);
   });
+
+  testWidgets('a resolved status without a date keeps the check icon', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    await pump(
+      tester,
+      state: const ReliabilityLoaded(
+        ReliabilityStatus.ios(notificationsEnabled: true),
+      ),
+    );
+    expect(find.text('التنبيهات تعمل'), findsOneWidget);
+    expect(checkIcon(), findsOneWidget);
+    debugDefaultTargetPlatformOverride = null;
+  });
+
+  for (final state in const [ReliabilityUnavailable(), ReliabilityLoading()]) {
+    testWidgets('every prayer off reads as off while ${state.runtimeType}', (
+      tester,
+    ) async {
+      settings.applyAlertToAll(enabled: false);
+      await pump(tester, state: state, settle: false);
+      expect(find.text('متوقف لكل الصلوات'), findsOneWidget);
+      expect(find.text('التنبيهات تعمل'), findsNothing);
+      expect(checkIcon(), findsNothing);
+    });
+  }
 
   testWidgets('every prayer off reads as off for all prayers', (tester) async {
     settings.applyAlertToAll(enabled: false);

@@ -20,7 +20,7 @@ void main() {
 
   Future<void> pump(
     WidgetTester tester, {
-    String? arrivesAt = '٤:٤٠ ص',
+    String? rawTime = '04:50',
     bool enabled = true,
   }) async {
     await tester.pumpWidget(
@@ -30,7 +30,8 @@ void main() {
           body: ReminderPicker(
             minutes: 10,
             enabled: enabled,
-            arrivesAt: arrivesAt,
+            rawTime: rawTime,
+            use24Hour: false,
             onCommit: commits.add,
           ),
         ),
@@ -50,7 +51,7 @@ void main() {
   });
 
   testWidgets('a null arrival time hides the arrival line', (tester) async {
-    await pump(tester, arrivesAt: null);
+    await pump(tester, rawTime: null);
     expect(find.textContaining('يصلك'), findsNothing);
   });
 
@@ -81,5 +82,40 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(commits, isEmpty);
+  });
+
+  testWidgets('the arrival time follows the slider while dragging', (
+    tester,
+  ) async {
+    await pump(tester);
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(Slider)),
+    );
+    await gesture.moveBy(const Offset(1000, 0));
+    await tester.pump();
+    final value = tester.widget<Text>(find.textContaining('قبل ')).data;
+    final arrives = tester.widget<Text>(find.textContaining('يصلك')).data;
+    expect(
+      (value, arrives),
+      anyOf(
+        ('قبل دقيقة واحدة', 'يصلك ٤:٤٩ ص'),
+        ('قبل ٦٠ دقيقة', 'يصلك ٣:٥٠ ص'),
+      ),
+    );
+    expect(commits, isEmpty);
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('the slider announces minutes, not a percentage', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pump(tester);
+    final node = find.semantics.byValue('١٠ دقائق');
+    expect(node, findsOne);
+    final data = node.evaluate().single.getSemanticsData();
+    expect(data.increasedValue, '١١ دقيقة');
+    expect(data.decreasedValue, '٩ دقائق');
+    expect(find.semantics.byValue(RegExp('%')), findsNothing);
+    handle.dispose();
   });
 }

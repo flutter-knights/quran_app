@@ -40,7 +40,7 @@ void main() {
     preview = _MockPreview();
     stop = _MockStop();
     watchEnded = _MockWatchEnded();
-    ended = StreamController<PreviewSound>.broadcast();
+    ended = StreamController.broadcast();
     when(() => watchEnded(any())).thenAnswer((_) => ended.stream);
     when(() => preview(any())).thenAnswer((_) async => const Right(unit));
     when(() => stop(any())).thenAnswer((_) async => const Right(unit));

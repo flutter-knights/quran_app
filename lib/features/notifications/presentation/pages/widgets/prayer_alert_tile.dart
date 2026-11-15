@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/palette_context.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
-import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
@@ -29,23 +29,19 @@ class PrayerAlertTile extends StatelessWidget {
     final lang = context.langCode;
     final scheme = context.colorScheme;
     final ios = defaultTargetPlatform == TargetPlatform.iOS;
-    return BlocSelector<
-      SettingsCubit,
-      SettingsState,
-      (PrayerAlert, bool, ColorPalette)
-    >(
+    final ink = context.palette.primaryInk;
+    return BlocSelector<SettingsCubit, SettingsState, (PrayerAlert, bool)>(
       selector: (state) => (
         state.settingsModel.prayerAlerts[prayer] ?? const PrayerAlert(),
         state.settingsModel.is24HourFormat,
-        state.settingsModel.palette,
       ),
       builder: (context, data) {
-        final (alert, use24Hour, palette) = data;
+        final (alert, use24Hour) = data;
         final active = alert.enabled && alert.sound != PrayerSound.silent;
         return AppSettingsTile(
           leading: HugeIcon(
             icon: prayerAlertIcon(alert),
-            color: active ? palette.primaryInk : scheme.onSurfaceVariant,
+            color: active ? ink : scheme.onSurfaceVariant,
             size: 22,
           ),
           title: prayerLabel(context, prayer),

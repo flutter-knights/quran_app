@@ -84,16 +84,11 @@ class _SheetBody extends StatelessWidget {
     final lang = context.langCode;
     final ios = defaultTargetPlatform == TargetPlatform.iOS;
     final reminderActive = alert.enabled && alert.reminderEnabled;
+    final ringable = alert.sound == PrayerSound.adhan;
     final time = prayerTimeLabel(
       rawTime,
       use24Hour: use24Hour,
       localeCode: lang,
-    );
-    final arrivesAt = prayerTimeLabel(
-      rawTime,
-      use24Hour: use24Hour,
-      localeCode: lang,
-      minutesBefore: alert.reminderMinutes,
     );
     final chevron = HugeIcon(
       icon: forwardArrowIcon(context),
@@ -108,6 +103,7 @@ class _SheetBody extends StatelessWidget {
         16 + MediaQuery.viewPaddingOf(context).bottom,
       ),
       child: Column(
+        spacing: 8,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
@@ -134,94 +130,117 @@ class _SheetBody extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          AppSectionHeader(label: s.alerts_sheet_atTime),
-          const SizedBox(height: 10),
-          SurfaceCard(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                _SwitchRow(
-                  title: s.alerts_sheet_alertSwitch,
-                  value: alert.enabled,
-                  onChanged: (v) =>
-                      _update(context, alert.copyWith(enabled: v)),
-                ),
-                const AlertsRowDivider(),
-                AppSettingsTile(
-                  title: s.alerts_sheet_sound,
-                  subtitle: prayerSoundLabel(
-                    s,
-                    alert.sound,
-                    prayer: prayer,
-                    ios: ios,
+          Column(
+            spacing: 24,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Column(
+                spacing: 10,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppSectionHeader(label: s.alerts_sheet_atTime),
+                  SurfaceCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        _SwitchRow(
+                          title: s.alerts_sheet_alertSwitch,
+                          value: alert.enabled,
+                          onChanged: (v) =>
+                              _update(context, alert.copyWith(enabled: v)),
+                        ),
+                        const AlertsRowDivider(),
+                        AppSettingsTile(
+                          title: s.alerts_sheet_sound,
+                          subtitle: prayerSoundLabel(
+                            s,
+                            alert.sound,
+                            prayer: prayer,
+                            ios: ios,
+                          ),
+                          trailing: chevron,
+                          enabled: alert.enabled,
+                          onTap: () => showPrayerSoundPicker(context, prayer),
+                        ),
+                        if (!ios) ...[
+                          const AlertsRowDivider(),
+                          _SwitchRow(
+                            title: s.alerts_sheet_ringInSilent,
+                            subtitle: s.alerts_sheet_ringInSilentSub,
+                            value: alert.ringInSilent && ringable,
+                            onChanged: alert.enabled && ringable
+                                ? (v) => _update(
+                                    context,
+                                    alert.copyWith(ringInSilent: v),
+                                  )
+                                : null,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                  trailing: chevron,
-                  enabled: alert.enabled,
-                  onTap: () => showPrayerSoundPicker(context, prayer),
-                ),
-                if (!ios) ...[
-                  const AlertsRowDivider(),
-                  _SwitchRow(
-                    title: s.alerts_sheet_ringInSilent,
-                    subtitle: s.alerts_sheet_ringInSilentSub,
-                    value: alert.ringInSilent,
-                    onChanged: alert.enabled && alert.sound == PrayerSound.adhan
-                        ? (v) =>
-                              _update(context, alert.copyWith(ringInSilent: v))
-                        : null,
+                  if (ios)
+                    AlertsNote(
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: 16,
+                      ),
+                      text: s.alerts_sheet_iosNote,
+                    ),
+                ],
+              ),
+              Column(
+                spacing: 10,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppSectionHeader(label: s.alerts_sheet_beforeTime),
+                  SurfaceCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        _SwitchRow(
+                          title: s.alerts_sheet_reminderSwitch,
+                          value: reminderActive,
+                          onChanged: alert.enabled
+                              ? (v) => _update(
+                                  context,
+                                  alert.copyWith(reminderEnabled: v),
+                                )
+                              : null,
+                        ),
+                        if (alert.enabled)
+                          ReminderPicker(
+                            minutes: alert.reminderMinutes,
+                            enabled: reminderActive,
+                            rawTime: rawTime,
+                            use24Hour: use24Hour,
+                            onCommit: (m) => _update(
+                              context,
+                              alert.copyWith(reminderMinutes: m),
+                            ),
+                          )
+                        else
+                          AlertsNote(
+                            padding: _notePadding,
+                            text: s.alerts_sheet_reminderDisabled,
+                          ),
+                        const AlertsRowDivider(),
+                        AppSettingsTile(
+                          title: s.alerts_sheet_reminderSound,
+                          subtitle: reminderSoundLabel(
+                            s,
+                            alert.reminderSound,
+                            ios: ios,
+                          ),
+                          trailing: chevron,
+                          enabled: reminderActive,
+                          onTap: () => showReminderSoundPicker(context, prayer),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-              ],
-            ),
-          ),
-          if (ios)
-            AlertsNote(padding: _notePadding, text: s.alerts_sheet_iosNote),
-          const SizedBox(height: 24),
-          AppSectionHeader(label: s.alerts_sheet_beforeTime),
-          const SizedBox(height: 10),
-          SurfaceCard(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                _SwitchRow(
-                  title: s.alerts_sheet_reminderSwitch,
-                  value: reminderActive,
-                  onChanged: alert.enabled
-                      ? (v) =>
-                            _update(context, alert.copyWith(reminderEnabled: v))
-                      : null,
-                ),
-                if (alert.enabled)
-                  Opacity(
-                    opacity: reminderActive ? 1 : 0.38,
-                    child: ReminderPicker(
-                      minutes: alert.reminderMinutes,
-                      enabled: reminderActive,
-                      arrivesAt: arrivesAt,
-                      onCommit: (m) =>
-                          _update(context, alert.copyWith(reminderMinutes: m)),
-                    ),
-                  )
-                else
-                  AlertsNote(
-                    padding: _notePadding,
-                    text: s.alerts_sheet_reminderDisabled,
-                  ),
-                const AlertsRowDivider(),
-                AppSettingsTile(
-                  title: s.alerts_sheet_reminderSound,
-                  subtitle: reminderSoundLabel(
-                    s,
-                    alert.reminderSound,
-                    ios: ios,
-                  ),
-                  trailing: chevron,
-                  enabled: reminderActive,
-                  onTap: () => showReminderSoundPicker(context, prayer),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),

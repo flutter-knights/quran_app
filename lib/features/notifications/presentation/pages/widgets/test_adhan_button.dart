@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/palette_context.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
-import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
@@ -34,9 +34,10 @@ class TestAdhanButton extends StatelessWidget {
         localeCode: settings.isArabic ? 'ar' : 'en',
       ),
     );
-    if (result.isRight()) {
-      messenger.showSnackBar(SnackBar(content: Text(s.alerts_testCaption)));
-    }
+    final message = result.isRight()
+        ? s.alerts_testCaption
+        : s.alerts_testBlocked;
+    messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -50,13 +51,10 @@ class TestAdhanButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       onPressed: () => _onPressed(context),
-      icon: BlocSelector<SettingsCubit, SettingsState, ColorPalette>(
-        selector: (state) => state.settingsModel.palette,
-        builder: (context, palette) => HugeIcon(
-          icon: HugeIcons.strokeRoundedPlayCircle,
-          color: palette.primaryInk,
-          size: 22,
-        ),
+      icon: HugeIcon(
+        icon: HugeIcons.strokeRoundedPlayCircle,
+        color: context.palette.primaryInk,
+        size: 22,
       ),
       label: Text(S.of(context).playTestAdhan, style: TS.semi16),
     );

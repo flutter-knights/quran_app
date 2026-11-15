@@ -96,7 +96,32 @@ void main() {
     );
     final ring = switchTitled(tester, 'يرن حتى في الوضع الصامت');
     expect(ring.onChanged, isNull);
-    expect(ring.value, isTrue);
+    expect(ring.value, isFalse);
+    expect(fajr().ringInSilent, isTrue);
+  });
+
+  testWidgets('the adhan shows the stored ring in silent value', (
+    tester,
+  ) async {
+    await open(tester, const PrayerAlert(ringInSilent: true));
+    expect(switchTitled(tester, 'يرن حتى في الوضع الصامت').value, isTrue);
+  });
+
+  testWidgets('a reminder that is off reads as disabled in the picker', (
+    tester,
+  ) async {
+    await open(tester, const PrayerAlert());
+    final slider = tester.widget<Slider>(find.byType(Slider));
+    expect(slider.onChanged, isNull);
+    final chips = tester.widgetList<ChoiceChip>(find.byType(ChoiceChip));
+    expect(chips.every((c) => c.onSelected == null), isTrue);
+    final value = tester.widget<Text>(find.text('قبل ١٠ دقائق'));
+    final scheme = Theme.of(tester.element(find.byType(Slider))).colorScheme;
+    expect(value.style?.color, scheme.onSurface.withValues(alpha: 0.38));
+    expect(
+      find.ancestor(of: find.byType(Slider), matching: find.byType(Opacity)),
+      findsNothing,
+    );
   });
 
   testWidgets('toggling the alert switch writes enabled to the cubit', (
