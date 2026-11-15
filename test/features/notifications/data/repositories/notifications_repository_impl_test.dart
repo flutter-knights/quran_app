@@ -403,14 +403,27 @@ void main() {
       },
     );
 
-    test('iOS: nothing scheduled clears scheduledUntil', () async {
+    test('iOS: every alert off clears scheduledUntil', () async {
+      stubScheduleAlerts(null);
+      await repo.scheduleDailyAdhans(
+        days: [pt],
+        alerts: {
+          for (final p in alertPrayers) p: const PrayerAlert(enabled: false),
+        },
+        localeCode: 'en',
+      );
+      verify(() => local.writeIosScheduledUntil(null)).called(1);
+    });
+
+    test('iOS: nothing scheduled while an alert is on keeps the stored '
+        'scheduledUntil, so a passed date flags attention', () async {
       stubScheduleAlerts(null);
       await repo.scheduleDailyAdhans(
         days: [pt],
         alerts: Settings.defaultPrayerAlerts,
         localeCode: 'en',
       );
-      verify(() => local.writeIosScheduledUntil(null)).called(1);
+      verifyNever(() => local.writeIosScheduledUntil(any()));
     });
 
     test('iOS: a scheduler failure is a Left', () async {

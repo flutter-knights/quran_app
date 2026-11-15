@@ -105,7 +105,10 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         alerts: alerts,
         localeCode: localeCode,
       );
-      await local.writeIosScheduledUntil(until);
+      final anyEnabled = alertPrayers.any((p) => alerts[p]?.enabled ?? false);
+      if (until != null || !anyEnabled) {
+        await local.writeIosScheduledUntil(until);
+      }
     }
   });
 
