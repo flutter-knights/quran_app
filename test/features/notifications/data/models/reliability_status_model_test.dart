@@ -70,6 +70,24 @@ void main() {
     expect(s.snapshotUntil, isNull);
   });
 
+  test('epoch values outside the DateTime range are dropped', () {
+    final s = ReliabilityStatusModel.fromMap({
+      'scheduledUntil': 9000000000000000,
+      'missed': [
+        {'prayer': 'isha', 'at': -9000000000000000},
+        {'prayer': 'fajr', 'at': 8640000000000000},
+      ],
+    });
+    expect(s.scheduledUntil, isNull);
+    expect(
+      s.missed.single,
+      MissedAlert(
+        prayer: PrayerName.fajr,
+        at: DateTime.fromMillisecondsSinceEpoch(8640000000000000),
+      ),
+    );
+  });
+
   test('ReliabilityStatus.ios has no Android problems', () {
     final s = ReliabilityStatus.ios(
       notificationsEnabled: false,

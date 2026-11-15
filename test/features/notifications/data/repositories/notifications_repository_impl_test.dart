@@ -523,6 +523,19 @@ void main() {
       },
     );
 
+    test('iOS: getReliabilityStatus stays Right when the permission check '
+        'throws', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      when(
+        () => scheduler.areNotificationsEnabled(),
+      ).thenThrow(Exception('boom'));
+      final r = await repo.getReliabilityStatus();
+      expect(
+        r,
+        const Right(ReliabilityStatus.ios(notificationsEnabled: false)),
+      );
+    });
+
     test('Android: settings, preview and ack calls reach native', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       when(() => native.openSystemSettings(any())).thenAnswer((_) async {});

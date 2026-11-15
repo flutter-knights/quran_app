@@ -31,9 +31,7 @@ class ReliabilityStatusModel extends ReliabilityStatus {
       batteryUnrestricted: flag('batteryUnrestricted', true),
       isXiaomi: flag('isXiaomi', false),
       usesAlarmClock: flag('usesAlarmClock', false),
-      scheduledUntil: scheduledUntil is int
-          ? DateTime.fromMillisecondsSinceEpoch(scheduledUntil)
-          : null,
+      scheduledUntil: _epoch(scheduledUntil),
       snapshotUntil: snapshotUntil is String
           ? DateTime.tryParse(snapshotUntil)
           : null,
@@ -52,7 +50,14 @@ class ReliabilityStatusModel extends ReliabilityStatus {
 
   static MissedAlert? _alert(Object? prayer, Object? at) {
     final p = alertPrayers.firstWhereOrNull((p) => p.name == prayer);
-    if (p == null || at is! int) return null;
-    return MissedAlert(prayer: p, at: DateTime.fromMillisecondsSinceEpoch(at));
+    final time = _epoch(at);
+    if (p == null || time == null) return null;
+    return MissedAlert(prayer: p, at: time);
   }
+
+  static const _maxEpochMs = 8640000000000000;
+
+  static DateTime? _epoch(Object? raw) => raw is int && raw.abs() <= _maxEpochMs
+      ? DateTime.fromMillisecondsSinceEpoch(raw)
+      : null;
 }

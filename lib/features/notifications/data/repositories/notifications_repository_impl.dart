@@ -192,18 +192,24 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   });
 
   @override
-  Future<Either<Failure, ReliabilityStatus>> getReliabilityStatus() async {
-    if (_isAndroid) {
-      return _runValue(
-        () async =>
-            ReliabilityStatusModel.fromMap(await native.getReliabilityStatus()),
-      );
+  Future<Either<Failure, ReliabilityStatus>> getReliabilityStatus() =>
+      _runValue(() async {
+        if (_isAndroid) {
+          return ReliabilityStatusModel.fromMap(
+            await native.getReliabilityStatus(),
+          );
+        }
+        return ReliabilityStatus.ios(
+          notificationsEnabled: await _iosNotificationsEnabled(),
+        );
+      });
+
+  Future<bool> _iosNotificationsEnabled() async {
+    try {
+      return await legacyScheduler.areNotificationsEnabled();
+    } catch (_) {
+      return false;
     }
-    return _runValue(
-      () async => ReliabilityStatus.ios(
-        notificationsEnabled: await legacyScheduler.areNotificationsEnabled(),
-      ),
-    );
   }
 
   @override

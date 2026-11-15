@@ -16,13 +16,13 @@ class TestAdhanButton extends StatelessWidget {
 
   Future<void> _onPressed(BuildContext context) async {
     final settings = context.read<SettingsCubit>().state.settingsModel;
-    await sl<ScheduleTestAdhan>()(
+    final result = await sl<ScheduleTestAdhan>()(
       ScheduleTestAdhanParams(
         alert: settings.prayerAlerts[PrayerName.dhuhr]!,
         localeCode: settings.isArabic ? 'ar' : 'en',
       ),
     );
-    if (context.mounted) {
+    if (result.isRight() && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(S.of(context).testAdhanScheduledSnack)),
       );
