@@ -61,7 +61,7 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private fun handleEnableOrRefreshStrip(
         ctx: Context, call: MethodCall, result: MethodChannel.Result
     ) {
-        val json = serializeStripArgs(call.arguments)
+        val json = PrayerStripWindow.channelArgsToJson(call.arguments)
         if (json == null) {
             result.error("BAD_ARGS", "Expected {days:[...]} state, got ${call.arguments}", null)
             return
@@ -203,36 +203,6 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 )
             }
         }
-    }
-
-    private fun serializeStripArgs(args: Any?): String? {
-        if (args !is Map<*, *>) return null
-        val daysRaw = args["days"] as? List<*> ?: return null
-        val daysArr = org.json.JSONArray()
-        for (d in daysRaw) {
-            val dm = d as? Map<*, *> ?: return null
-            val cellsRaw = dm["cells"] as? List<*> ?: return null
-            val cellsArr = org.json.JSONArray()
-            for (c in cellsRaw) {
-                val cm = c as? Map<*, *> ?: return null
-                cellsArr.put(
-                    org.json.JSONObject()
-                        .put("label", cm["label"] as? String ?: return null)
-                        .put("time", cm["time"] as? String ?: return null)
-                        .put("minutes", (cm["minutes"] as? Int) ?: return null)
-                )
-            }
-            val dObj = org.json.JSONObject()
-                .put("dateKey", dm["dateKey"] as? String ?: return null)
-                .put("cells", cellsArr)
-                .put("hijriDateLabel", dm["hijriDateLabel"] as? String ?: return null)
-                .put("weekdayLabel", dm["weekdayLabel"] as? String ?: return null)
-                .put("localeCode", dm["localeCode"] as? String ?: return null)
-                .put("isFriday", dm["isFriday"] as? Boolean ?: return null)
-            (dm["accentColor"] as? String)?.let { dObj.put("accentColor", it) }
-            daysArr.put(dObj)
-        }
-        return org.json.JSONObject().put("days", daysArr).toString()
     }
 
     companion object {

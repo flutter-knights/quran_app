@@ -13,6 +13,6 @@ paths: ["lib/features/**/presentation/**/*.dart", "lib/features/splash/**/*.dart
 - `surah`: `mushaf_paper_colors.dart` (`MushafPaper` → colours), `printed_chrome_resolver.dart`, `current_ayah_notifier.dart`.
 - `bookmarks`: `page_description.dart` (page → surah/ayah label).
 - `ahadith`: `hadith_list_filter.dart`.
-- `notifications`: `enum_localization.dart` (prayer, sound, minute and count labels, the alert summary, the alert icon, prayer-time and status-date labels, all with Arabic-Indic digits), `calculation_method_localization.dart` (`CalculationMethod`/`AsrSchool` `.localized(context)`).
+- `notifications`: `enum_localization.dart` (prayer, sound, minute and count labels, the alert summary, the alert icon, prayer-time and status-date labels, all with Arabic-Indic digits), `calculation_method_localization.dart` (`CalculationMethod`/`AsrSchool` `.localized(context)`), `strip_style_colors.dart` (`StripStyle` → the strip's day and night ARGB style for native, plus the swatch helpers for option sheets).
 
 Enum `.localized()` and `.color` extensions go here too, as `enum_localization.dart` and `enum_colors.dart`, never in `domain/`.

@@ -4,23 +4,28 @@ import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/builders/prayer_strip_state_builder.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_render_style.dart';
 import 'package:quran_app/features/notifications/domain/services/next_prayer_resolver.dart';
 
 class BuildPrayerStripWindowParams {
   final String localeCode;
   final bool use24Hour;
-  final int? accentColor;
   final DateTime? now;
   final int days;
   final List<PrayerTimes> cachedDays;
+  final String Function(String prayerLabel)? nextInLabel;
+  final String nextTag;
+  final StripRenderStyle? style;
 
   const BuildPrayerStripWindowParams({
     required this.localeCode,
     required this.use24Hour,
-    this.accentColor,
     this.now,
     this.days = 7,
     required this.cachedDays,
+    this.nextInLabel,
+    this.nextTag = '',
+    this.style,
   });
 }
 
@@ -53,12 +58,13 @@ class BuildPrayerStripWindow {
           localeCode: params.localeCode,
           isFriday: date.weekday == DateTime.friday,
           use24Hour: params.use24Hour,
-          accentColor: params.accentColor,
+          nextInLabel: params.nextInLabel,
+          nextTag: params.nextTag,
         ),
       );
     }
 
     if (states.isEmpty) return null;
-    return PrayerStripWindow(days: states);
+    return PrayerStripWindow(days: states, style: params.style);
   }
 }

@@ -50,7 +50,8 @@ class PrayerStripStateBuilder {
     required String localeCode,
     required bool isFriday,
     required bool use24Hour,
-    int? accentColor,
+    String Function(String prayerLabel)? nextInLabel,
+    String nextTag = '',
   }) {
     final labels = localeCode == 'ar' ? _labelsAr : _labelsEn;
     final jumuah = localeCode == 'ar' ? _jumuahLabelAr : _jumuahLabelEn;
@@ -66,18 +67,21 @@ class PrayerStripStateBuilder {
         label: label,
         timeFormatted: time,
         minutes: _parseMinutes(raw),
+        nextLabel: nextInLabel?.call(label) ?? '',
       );
     }).toList();
 
     final nextIndex = _renderOrder.indexOf(nextPrayer);
 
-    final monthName =
-        localeCode == 'ar' ? prayerTimes.date.month : prayerTimes.date.enMonth;
+    final monthName = localeCode == 'ar'
+        ? prayerTimes.date.month
+        : prayerTimes.date.enMonth;
     final dayPart = prayerTimes.date.day.toIndicNumerals(localeCode);
     final hijriLabel = '$dayPart $monthName';
 
-    final weekdayLabel =
-        localeCode == 'ar' ? prayerTimes.date.weekDay : prayerTimes.date.enWeekDay;
+    final weekdayLabel = localeCode == 'ar'
+        ? prayerTimes.date.weekDay
+        : prayerTimes.date.enWeekDay;
 
     return PrayerStripState(
       cells: cells,
@@ -87,7 +91,7 @@ class PrayerStripStateBuilder {
       weekdayLabel: weekdayLabel,
       localeCode: localeCode,
       isFriday: isFriday,
-      accentColor: accentColor,
+      nextTag: nextTag,
     );
   }
 

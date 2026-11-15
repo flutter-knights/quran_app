@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
@@ -20,6 +20,7 @@ import 'package:quran_app/features/notifications/domain/usecases/enable_prayer_s
 import 'package:quran_app/features/notifications/domain/usecases/get_cached_prayer_days.dart';
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/utils/strip_style_colors.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 class _MemStorage implements Storage {
@@ -183,12 +184,35 @@ void main() {
       expect(p.now, now);
       expect(p.localeCode, 'ar');
       expect(p.use24Hour, settingsCubit.state.settingsModel.is24HourFormat);
-      expect(p.accentColor, ColorPalette.neutralDark.primary.toARGB32());
       final e =
           verify(() => enable(captureAny())).captured.single
               as EnablePrayerStripParams;
       expect(e.window, same(window));
       verifyNever(() => disable(any()));
+    });
+
+    test('strip window carries the style and Arabic labels', () async {
+      final previous = Intl.defaultLocale;
+      Intl.defaultLocale = 'ar';
+      addTearDown(() => Intl.defaultLocale = previous);
+      settingsCubit
+        ..updatePrayerStripPinned(true)
+        ..updatePalette(ColorPalette.slateLight)
+        ..updateStripStyle(
+          const StripStyle(
+            highlight: StripHighlight.indigo,
+            shape: StripShape.pill,
+          ),
+        );
+      await cubit.syncNow();
+      final s = settingsCubit.state.settingsModel;
+      final p =
+          verify(() => build(captureAny())).captured.single
+              as BuildPrayerStripWindowParams;
+      expect(p.style, stripRenderStyle(s.stripStyle, s.palette));
+      expect(p.style!.highlightDay, 0xFF4B4FA6);
+      expect(p.nextTag, 'التالية');
+      expect(p.nextInLabel!('العصر'), 'العصر بعد');
     });
 
     test('strip pinned with no window skips enable', () async {

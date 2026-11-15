@@ -4,18 +4,28 @@ import 'package:quran_app/features/notifications/domain/entities/prayer_strip_st
 
 void main() {
   PrayerStripState build() => const PrayerStripState(
-        cells: [
-          PrayerCell(label: 'Fajr', timeFormatted: '04:15', minutes: 255),
-          PrayerCell(label: 'Dhuhr', timeFormatted: '12:52', minutes: 772),
-        ],
-        nextPrayerIndex: 1,
-        dateKey: '22-05-2026',
-        hijriDateLabel: '5 Dhul-Hijjah',
-        weekdayLabel: 'Friday',
-        localeCode: 'en',
-        isFriday: false,
-        accentColor: 0xFF2E5244,
-      );
+    cells: [
+      PrayerCell(
+        label: 'Fajr',
+        timeFormatted: '04:15',
+        minutes: 255,
+        nextLabel: 'Fajr in',
+      ),
+      PrayerCell(
+        label: 'Dhuhr',
+        timeFormatted: '12:52',
+        minutes: 772,
+        nextLabel: 'Dhuhr in',
+      ),
+    ],
+    nextPrayerIndex: 1,
+    dateKey: '22-05-2026',
+    hijriDateLabel: '5 Dhul-Hijjah',
+    weekdayLabel: 'Friday',
+    localeCode: 'en',
+    isFriday: false,
+    nextTag: 'Next',
+  );
 
   test('toJson includes dateKey and per-cell minutes', () {
     final json = build().toJson();
@@ -27,20 +37,28 @@ void main() {
     expect(cells[1]['minutes'], 772);
   });
 
-  test('toJson serializes accentColor as #AARRGGBB hex', () {
-    expect(build().toJson()['accentColor'], '#FF2E5244');
+  test('toJson carries nextLabel per cell and nextTag, no accentColor', () {
+    final json = build().toJson();
+    final cells = (json['cells'] as List).cast<Map>();
+    expect(cells[1]['nextLabel'], 'Dhuhr in');
+    expect(json['nextTag'], 'Next');
+    expect(json.containsKey('accentColor'), isFalse);
   });
 
-  test('fromJson round-trips dateKey, minutes and accentColor', () {
+  test('fromJson round-trips dateKey, minutes and labels', () {
     final s = PrayerStripState.fromJson(build().toJson());
-    expect(s.dateKey, '22-05-2026');
-    expect(s.cells[0].minutes, 255);
-    expect(s.cells[1].minutes, 772);
-    expect(s.accentColor, 0xFF2E5244);
+    expect(s, build());
+    expect(s.cells[1].nextLabel, 'Dhuhr in');
+    expect(s.nextTag, 'Next');
   });
 
-  test('fromJson tolerates a missing accentColor', () {
-    final json = build().toJson()..remove('accentColor');
-    expect(PrayerStripState.fromJson(json).accentColor, isNull);
+  test('fromJson reads missing labels as empty', () {
+    final json = build().toJson()..remove('nextTag');
+    for (final c in (json['cells'] as List).cast<Map>()) {
+      c.remove('nextLabel');
+    }
+    final s = PrayerStripState.fromJson(json);
+    expect(s.nextTag, '');
+    expect(s.cells[0].nextLabel, '');
   });
 }

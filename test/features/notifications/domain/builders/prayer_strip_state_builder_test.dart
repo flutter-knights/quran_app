@@ -29,8 +29,11 @@ void main() {
   group('PrayerStripStateBuilder.build', () {
     test('produces 5 cells in Fajr→Isha order (no sunrise)', () {
       final s = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.fajr,
-        localeCode: 'en', isFriday: false, use24Hour: true,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'en',
+        isFriday: false,
+        use24Hour: true,
       );
       expect(s.cells.length, 5);
       expect(s.cells[0].label, 'Fajr');
@@ -42,8 +45,11 @@ void main() {
 
     test('each cell carries 24h minutes regardless of display format', () {
       final s = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.fajr,
-        localeCode: 'ar', isFriday: false, use24Hour: false,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'ar',
+        isFriday: false,
+        use24Hour: false,
       );
       expect(s.cells[0].minutes, 255); // 04:15
       expect(s.cells[1].minutes, 772); // 12:52
@@ -53,69 +59,112 @@ void main() {
 
     test('dateKey is derived from gregorianDate', () {
       final s = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.fajr,
-        localeCode: 'en', isFriday: false, use24Hour: true,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'en',
+        isFriday: false,
+        use24Hour: true,
       );
       expect(s.dateKey, '22-05-2026');
     });
 
     test('Arabic locale uses Arabic-Indic numerals in display times', () {
       final s = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.fajr,
-        localeCode: 'ar', isFriday: false, use24Hour: true,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'ar',
+        isFriday: false,
+        use24Hour: true,
       );
       expect(s.cells[0].timeFormatted, '٠٤:١٥');
     });
 
     test('isFriday=true swaps Dhuhr label to Jumu\'ah / الجمعة (index 1)', () {
       final ar = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.dhuhr,
-        localeCode: 'ar', isFriday: true, use24Hour: true,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.dhuhr,
+        localeCode: 'ar',
+        isFriday: true,
+        use24Hour: true,
       );
       expect(ar.cells[1].label, 'الجمعة');
       final en = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.dhuhr,
-        localeCode: 'en', isFriday: true, use24Hour: true,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.dhuhr,
+        localeCode: 'en',
+        isFriday: true,
+        use24Hour: true,
       );
       expect(en.cells[1].label, "Jumu'ah");
     });
 
     test('nextPrayerIndex matches nextPrayer position in 5-prayer order', () {
       final s = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.maghrib,
-        localeCode: 'en', isFriday: false, use24Hour: true,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.maghrib,
+        localeCode: 'en',
+        isFriday: false,
+        use24Hour: true,
       );
       expect(s.nextPrayerIndex, 3); // fajr=0,dhuhr=1,asr=2,maghrib=3
     });
 
-    test('accentColor passes through; defaults to null', () {
-      expect(
-        PrayerStripStateBuilder.build(
-          prayerTimes: pt, nextPrayer: PrayerName.fajr,
-          localeCode: 'en', isFriday: false, use24Hour: true,
-          accentColor: 0xFF2E5244,
-        ).accentColor,
-        0xFF2E5244,
+    test('builder sets nextLabel per cell and nextTag', () {
+      final st = PrayerStripStateBuilder.build(
+        prayerTimes: pt,
+        nextPrayer: PrayerName.asr,
+        localeCode: 'ar',
+        isFriday: false,
+        use24Hour: true,
+        nextInLabel: (p) => '$p بعد',
+        nextTag: 'التالية',
       );
-      expect(
-        PrayerStripStateBuilder.build(
-          prayerTimes: pt, nextPrayer: PrayerName.fajr,
-          localeCode: 'en', isFriday: false, use24Hour: true,
-        ).accentColor,
-        isNull,
+      expect(st.cells[2].nextLabel, 'العصر بعد');
+      expect(st.nextTag, 'التالية');
+      expect(st.toJson()['nextTag'], 'التالية');
+      expect((st.toJson()['cells'] as List)[2]['nextLabel'], 'العصر بعد');
+    });
+
+    test('nextLabel uses the Jumu\'ah label on Friday', () {
+      final st = PrayerStripStateBuilder.build(
+        prayerTimes: pt,
+        nextPrayer: PrayerName.dhuhr,
+        localeCode: 'ar',
+        isFriday: true,
+        use24Hour: true,
+        nextInLabel: (p) => '$p بعد',
       );
+      expect(st.cells[1].nextLabel, 'الجمعة بعد');
+    });
+
+    test('labels default to empty without nextInLabel or nextTag', () {
+      final st = PrayerStripStateBuilder.build(
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'en',
+        isFriday: false,
+        use24Hour: true,
+      );
+      expect(st.cells.map((c) => c.nextLabel), everyElement(''));
+      expect(st.nextTag, '');
     });
 
     test('hijri + weekday labels honour locale', () {
       final ar = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.fajr,
-        localeCode: 'ar', isFriday: true, use24Hour: true,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'ar',
+        isFriday: true,
+        use24Hour: true,
       );
       expect(ar.hijriDateLabel, '٥ ذو الحجة');
       expect(ar.weekdayLabel, 'الجمعة');
       final en = PrayerStripStateBuilder.build(
-        prayerTimes: pt, nextPrayer: PrayerName.fajr,
-        localeCode: 'en', isFriday: true, use24Hour: true,
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'en',
+        isFriday: true,
+        use24Hour: true,
       );
       expect(en.hijriDateLabel, '5 Dhul-Hijjah');
       expect(en.weekdayLabel, 'Friday');
@@ -124,8 +173,11 @@ void main() {
     group('12-hour format (use24Hour=false) — display only', () {
       test('English afternoon uses 12-hour digits, no suffix', () {
         final s = PrayerStripStateBuilder.build(
-          prayerTimes: pt, nextPrayer: PrayerName.fajr,
-          localeCode: 'en', isFriday: false, use24Hour: false,
+          prayerTimes: pt,
+          nextPrayer: PrayerName.fajr,
+          localeCode: 'en',
+          isFriday: false,
+          use24Hour: false,
         );
         expect(s.cells[0].timeFormatted, '04:15'); // Fajr
         expect(s.cells[1].timeFormatted, '12:52'); // Dhuhr (noon boundary)
@@ -140,8 +192,11 @@ void main() {
           date: pt.date,
         );
         final s = PrayerStripStateBuilder.build(
-          prayerTimes: midnightPt, nextPrayer: PrayerName.fajr,
-          localeCode: 'en', isFriday: false, use24Hour: false,
+          prayerTimes: midnightPt,
+          nextPrayer: PrayerName.fajr,
+          localeCode: 'en',
+          isFriday: false,
+          use24Hour: false,
         );
         expect(s.cells[0].timeFormatted, '12:00');
         expect(s.cells[0].minutes, 0);

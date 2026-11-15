@@ -9,12 +9,15 @@ class PrayerCell extends Equatable {
   /// parses the localized [timeFormatted] string.
   final int minutes;
 
+  final String nextLabel;
+
   const PrayerCell({
     required this.label,
     required this.timeFormatted,
     required this.minutes,
+    this.nextLabel = '',
   });
 
   @override
-  List<Object?> get props => [label, timeFormatted, minutes];
+  List<Object?> get props => [label, timeFormatted, minutes, nextLabel];
 }

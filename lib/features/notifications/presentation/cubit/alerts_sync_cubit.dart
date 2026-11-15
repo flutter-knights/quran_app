@@ -3,14 +3,15 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/errors/failure.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/usecases/usecase.dart';
 import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/usecases/disable_prayer_strip.dart';
 import 'package:quran_app/features/notifications/domain/usecases/enable_prayer_strip.dart';
 import 'package:quran_app/features/notifications/domain/usecases/get_cached_prayer_days.dart';
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
+import 'package:quran_app/features/notifications/presentation/utils/strip_style_colors.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -98,14 +99,17 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
         ),
       );
       if (s.isPrayerStripPinned) {
+        final strings = PendingS.current;
         final window = await buildPrayerStripWindow(
           BuildPrayerStripWindowParams(
             localeCode: localeCode,
             use24Hour: s.is24HourFormat,
-            accentColor: s.palette.primary.toARGB32(),
             now: now,
             days: 30,
             cachedDays: days,
+            nextInLabel: strings.strip_nextIn,
+            nextTag: strings.strip_next,
+            style: stripRenderStyle(s.stripStyle, s.palette),
           ),
         );
         if (window != null) {

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_render_style.dart';
 import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
 
 PrayerTimes _pt(String dateKey) => PrayerTimes(
@@ -68,5 +69,33 @@ void main() {
       ),
     );
     expect(w, isNull);
+  });
+
+  test('forwards nextInLabel, nextTag and style', () async {
+    const style = StripRenderStyle(
+      expanded: false,
+      countdown: true,
+      highlightDay: 0xFF2F5F98,
+      highlightNight: 0xFF8EBBE3,
+      pillTextDay: 0xFFFFFFFF,
+      pillTextNight: 0xFF121413,
+      shape: 'outline',
+    );
+    final w = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'en',
+        use24Hour: true,
+        now: DateTime(2026, 5, 22, 13),
+        days: 2,
+        cachedDays: cachedDays,
+        nextInLabel: (p) => '$p in',
+        nextTag: 'Next',
+        style: style,
+      ),
+    );
+    expect(w!.style, style);
+    expect(w.days[0].cells[2].nextLabel, 'Asr in');
+    expect(w.days[1].cells[0].nextLabel, 'Fajr in');
+    expect(w.days.map((d) => d.nextTag), everyElement('Next'));
   });
 }
