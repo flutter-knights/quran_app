@@ -32,7 +32,7 @@ import java.util.Locale
 class AdhanPlaybackService : Service() {
 
     private var mediaPlayer: MediaPlayer? = null
-    private var currentPrayer: String? = null
+    private var currentLabel: String? = null
     private var currentLocale: String = "en"
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -51,6 +51,7 @@ class AdhanPlaybackService : Service() {
 
     private fun handlePlay(intent: Intent) {
         val prayer = intent.getStringExtra(EXTRA_PRAYER) ?: "fajr"
+        val label = intent.getStringExtra(EXTRA_LABEL) ?: prayer
         val clipName = intent.getStringExtra(EXTRA_CLIP) ?: "normal_adhan"
         val localeCode = intent.getStringExtra(EXTRA_LOCALE) ?: "en"
         val ringInSilent = intent.getBooleanExtra(EXTRA_RING_IN_SILENT, false)
@@ -64,21 +65,21 @@ class AdhanPlaybackService : Service() {
         // startForegroundService contract for this delivery, re-posting the
         // notification for the prayer that's actually playing.
         if (mediaPlayer != null) {
-            Log.w(TAG, "handlePlay: adhan already playing ($currentPrayer); ignoring $prayer")
-            startForeground(NOTIFICATION_ID, buildNotification(currentPrayer ?: prayer, localeCode, ongoing = false))
+            Log.w(TAG, "handlePlay: adhan already playing ($currentLabel); ignoring $prayer")
+            startForeground(NOTIFICATION_ID, buildNotification(currentLabel ?: label, localeCode, ongoing = false))
             return
         }
 
-        currentPrayer = prayer
+        currentLabel = label
         Log.i(TAG, "onStartCommand action=ACTION_PLAY prayer=$prayer clip=$clipName")
 
-        val notif = buildNotification(prayer, localeCode, ongoing = false)
+        val notif = buildNotification(label, localeCode, ongoing = false)
         try {
             startForeground(NOTIFICATION_ID, notif)
         } catch (e: Exception) {
             Log.e(TAG, "handlePlay: startForeground failed for $prayer, posting text", e)
-            currentPrayer = null
-            runCatching { AdhanAlarmReceiver.postAdhanText(this, prayer, localeCode, "tone") }
+            currentLabel = null
+            runCatching { AdhanAlarmReceiver.postAdhanText(this, label, localeCode, "tone") }
             stopSelf()
             return
         }
@@ -123,7 +124,7 @@ class AdhanPlaybackService : Service() {
                 stopForeground(STOP_FOREGROUND_DETACH)
                 NotificationManagerCompat.from(this@AdhanPlaybackService).notify(
                     NOTIFICATION_ID,
-                    buildNotification(currentPrayer ?: "fajr", currentLocale, ongoing = false),
+                    buildNotification(currentLabel ?: "fajr", currentLocale, ongoing = false),
                 )
             }
             setOnErrorListener { _, what, extra ->
@@ -134,7 +135,7 @@ class AdhanPlaybackService : Service() {
     }
 
     private fun handleStop(reason: String) {
-        Log.i(TAG, "dismissed reason=$reason prayer=$currentPrayer")
+        Log.i(TAG, "dismissed reason=$reason label=$currentLabel")
         mediaPlayer?.let {
             try { it.stop() } catch (_: IllegalStateException) {}
             it.release()
@@ -171,10 +172,10 @@ class AdhanPlaybackService : Service() {
         manager.createNotificationChannel(channel)
     }
 
-    private fun buildNotification(prayer: String, localeCode: String, ongoing: Boolean): android.app.Notification {
+    private fun buildNotification(label: String, localeCode: String, ongoing: Boolean): android.app.Notification {
         Locale.setDefault(Locale.forLanguageTag(localeCode))
         val ctx = localizedContext(this, localeCode)
-        val (title, body) = adhanText(ctx, prayer)
+        val (title, body) = adhanText(ctx, label)
         val stopLabel = ctx.getString(R.string.adhan_stop)
 
         val openPI = PendingIntent.getActivity(
@@ -216,6 +217,7 @@ class AdhanPlaybackService : Service() {
         const val ACTION_STOP = "com.example.quran_app.ACTION_ADHAN_STOP"
 
         const val EXTRA_PRAYER = "prayer"
+        const val EXTRA_LABEL = "label"
         const val EXTRA_CLIP = "clip"
         const val EXTRA_LOCALE = "locale"
         const val EXTRA_RING_IN_SILENT = "ringInSilent"

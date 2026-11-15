@@ -319,7 +319,7 @@ Copy is in Appendix A and states in Appendix C.
 
 ## 9. iOS (G7)
 
-- Trim `fajr_adhan.caf` and `normal_adhan.caf` to 29 s with a 2 s fade-out, mono, IMA4 CAF: `afconvert` → WAV, a Python `wave` trim, then `afconvert` → CAF. Add both to the Runner Resources phase in `project.pbxproj`.
+- Trim `fajr_adhan.caf` and `normal_adhan.caf` to 26.0 s with a 150 ms fade-out, mono, 44.1 kHz IMA4 CAF, so each ends inside the near-silence (25.0–28.4 s) after the last phrase instead of on the start of the next one at 28.4 s: `afconvert` → WAV, a Python `wave` trim, then `afconvert` → CAF. Add both to the Runner Resources phase in `project.pbxproj`.
 - `PrayerNotificationSchedulerImpl` gets `scheduleAlerts(days, alerts, localeCode)`:
   - Schedules per day and prayer, plus reminders.
   - Ids are day×10 + prayer for adhans (0–119) and 200 + day×10 + prayer for reminders (200–319). The test keeps 9999.

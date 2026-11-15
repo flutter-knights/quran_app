@@ -107,6 +107,37 @@ class AlertPlannerTest {
         assertEquals(ms("2026-11-15T04:05"), AlertPlanner.prayerAt(Day("2026-11-15", mapOf("fajr" to "4:05")), "fajr", utc))
     }
 
+    private fun local(s: String, hours: Int) = LocalDateTime.parse(s).toInstant(ZoneOffset.ofHours(hours)).toEpochMilli()
+
+    private val riyadh = TimeZone.getTimeZone("GMT+03:00")
+    private val newYork = TimeZone.getTimeZone("GMT-05:00")
+
+    @Test fun labelKey_fridayDhuhrIsJumuah() {
+        assertEquals(AlertPlanner.JUMUAH, AlertPlanner.labelKey("dhuhr", local("2026-11-20T11:41", 3), riyadh))
+    }
+
+    @Test fun labelKey_fridayAsrIsUnchanged() {
+        assertEquals("asr", AlertPlanner.labelKey("asr", local("2026-11-20T14:39", 3), riyadh))
+    }
+
+    @Test fun labelKey_thursdayDhuhrIsUnchanged() {
+        assertEquals("dhuhr", AlertPlanner.labelKey("dhuhr", local("2026-11-19T11:41", 3), riyadh))
+    }
+
+    @Test fun labelKey_followsTheTriggerDayInTheDeviceZoneNotUtc() {
+        val fridayLateNight = local("2026-11-20T23:50", -5)
+        assertEquals(AlertPlanner.JUMUAH, AlertPlanner.labelKey("dhuhr", fridayLateNight, newYork))
+        assertEquals("dhuhr", AlertPlanner.labelKey("dhuhr", fridayLateNight, utc))
+        assertEquals(AlertPlanner.JUMUAH, AlertPlanner.labelKey("dhuhr", local("2026-11-20T02:00", 3), riyadh))
+    }
+
+    @Test fun labelKey_fridayTriggerDeliveredAfterMidnightStaysJumuah() {
+        val trigger = local("2026-11-20T23:50", 3)
+        val deliveredAt = local("2026-11-21T00:20", 3)
+        assertEquals(AlertPlanner.JUMUAH, AlertPlanner.labelKey("dhuhr", trigger, riyadh))
+        assertEquals("dhuhr", AlertPlanner.labelKey("dhuhr", deliveredAt, riyadh))
+    }
+
     @Test fun keyFor_usesTheLocalDate() {
         assertEquals("2026-11-15/isha", AlertPlanner.keyFor(ms("2026-11-15T18:16"), "isha", utc))
         assertEquals("2026-11-16/isha", AlertPlanner.keyFor(ms("2026-11-15T22:30"), "isha", TimeZone.getTimeZone("GMT+03:00")))

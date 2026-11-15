@@ -7,6 +7,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import java.util.TimeZone
 
 /**
  * Fires at T-N before a prayer. Posts a single notification with the system's
@@ -40,15 +41,16 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         }
 
         AlertChannels.ensureAll(context)
+        val label = AlertPlanner.labelKey(prayer, prayerTimestampMs, TimeZone.getDefault())
         val notif = buildNotification(
-            context, prayer, prayerTimestampMs, localeCode, reminderSound, prayerTimestampMs - now,
+            context, label, prayerTimestampMs, localeCode, reminderSound, prayerTimestampMs - now,
         )
         NotificationManagerCompat.from(context).notify(notifId, notif)
     }
 
     private fun buildNotification(
         context: Context,
-        prayer: String,
+        label: String,
         prayerTimestampMs: Long,
         localeCode: String,
         reminderSound: String,
@@ -57,10 +59,10 @@ class PrayerReminderReceiver : BroadcastReceiver() {
         val ctx = localizedContext(context, localeCode)
 
         val titleResId = ctx.resources.getIdentifier(
-            "reminder_title_$prayer", "string", context.packageName,
+            "reminder_title_$label", "string", context.packageName,
         ).let { if (it != 0) it else R.string.adhan_title_fajr }
         val bodyResId = ctx.resources.getIdentifier(
-            "reminder_body_$prayer", "string", context.packageName,
+            "reminder_body_$label", "string", context.packageName,
         ).let { if (it != 0) it else R.string.adhan_body_fajr }
         val title = ctx.getString(titleResId)
         val body = ctx.getString(bodyResId)

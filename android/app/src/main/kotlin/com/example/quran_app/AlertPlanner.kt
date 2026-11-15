@@ -12,6 +12,7 @@ import kotlin.math.abs
 object AlertPlanner {
 
     const val MAX_DAYS = 7
+    const val JUMUAH = "jumuah"
     const val CODE_DAYS = MAX_DAYS + 1
     const val ADHAN_BASE = 200
     const val REMINDER_BASE = 300
@@ -71,6 +72,11 @@ object AlertPlanner {
         val c = Calendar.getInstance(zone).apply { timeInMillis = triggerAt }
         val date = String.format(Locale.US, "%04d-%02d-%02d", c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH))
         return key(date, prayer)
+    }
+
+    fun labelKey(prayer: String, at: Long, zone: TimeZone): String {
+        val friday = Calendar.getInstance(zone).apply { timeInMillis = at }.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY
+        return if (friday && prayer == "dhuhr") JUMUAH else prayer
     }
 
     fun prayerAt(day: Day, prayer: String, zone: TimeZone): Long? {

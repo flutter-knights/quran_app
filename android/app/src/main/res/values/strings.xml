@@ -9,12 +9,14 @@
     <string name="adhan_body_asr">It\'s time for Asr prayer</string>
     <string name="adhan_body_maghrib">It\'s time for Maghrib prayer</string>
     <string name="adhan_body_isha">It\'s time for Isha prayer</string>
+    <string name="adhan_body_jumuah">It\'s time for Jumu\'ah prayer</string>
 
     <string name="adhan_title_fajr">Fajr</string>
     <string name="adhan_title_dhuhr">Dhuhr</string>
     <string name="adhan_title_asr">Asr</string>
     <string name="adhan_title_maghrib">Maghrib</string>
     <string name="adhan_title_isha">Isha</string>
+    <string name="adhan_title_jumuah">Jumu\'ah</string>
 
     <!-- Pre-prayer reminder -->
     <string name="reminder_channel_name">Pre-prayer reminders</string>
@@ -24,11 +26,13 @@
     <string name="reminder_title_asr">Asr reminder</string>
     <string name="reminder_title_maghrib">Maghrib reminder</string>
     <string name="reminder_title_isha">Isha reminder</string>
+    <string name="reminder_title_jumuah">Jumu\'ah reminder</string>
     <string name="reminder_body_fajr">Fajr prayer is coming up</string>
     <string name="reminder_body_dhuhr">Dhuhr prayer is coming up</string>
     <string name="reminder_body_asr">Asr prayer is coming up</string>
     <string name="reminder_body_maghrib">Maghrib prayer is coming up</string>
     <string name="reminder_body_isha">Isha prayer is coming up</string>
+    <string name="reminder_body_jumuah">Jumu\'ah prayer is coming up</string>
 
     <string name="prayer_late_title">%1$s began %2$s ago</string>
     <plurals name="prayer_late_minutes">
