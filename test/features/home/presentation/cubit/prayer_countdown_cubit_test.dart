@@ -37,6 +37,27 @@ DailyPrayerContext ctxFor(DateTime d, {int ishaHour = 19}) {
   );
 }
 
+DailyPrayerContext contextWithOffsets(
+  DateTime now,
+  Map<PrayerName, int> minutes,
+) {
+  final base = ctxFor(now);
+  String hm(DateTime t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+  return DailyPrayerContext(
+    location: base.location,
+    date: base.date,
+    prayerTimes: PrayerTimes(
+      key: base.prayerTimes.key,
+      timings: {
+        for (final e in minutes.entries)
+          e.key: hm(now.add(Duration(minutes: e.value))),
+      },
+      date: base.prayerTimes.date,
+    ),
+  );
+}
+
 void main() {
   test('no crash before startTimer is called', () async {
     final cubit = PrayerCountdownCubit();
@@ -45,102 +66,134 @@ void main() {
   });
 
   test(
-      'after Isha on same day: emits Tick then one silent RequestRefresh',
-      () async {
-    final cubit = PrayerCountdownCubit();
-    final today = DateTime.now();
-    // ishaHour=0 → all prayers at 00:00-00:05, so now (daytime) is always after isha
-    final ctx = ctxFor(today, ishaHour: 0);
+    'after Isha on same day: emits Tick then one silent RequestRefresh',
+    () async {
+      final cubit = PrayerCountdownCubit();
+      final today = DateTime.now();
+      // ishaHour=0 → all prayers at 00:00-00:05, so now (daytime) is always after isha
+      final ctx = ctxFor(today, ishaHour: 0);
 
-    final emitted = <PrayerCountdownState>[];
-    final sub = cubit.stream.listen(emitted.add);
+      final emitted = <PrayerCountdownState>[];
+      final sub = cubit.stream.listen(emitted.add);
 
-    cubit.startTimer(ctx);
-    await Future<void>.delayed(const Duration(milliseconds: 50));
+      cubit.startTimer(ctx);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
 
-    expect(emitted.whereType<PrayerCountdownTick>().isNotEmpty, isTrue);
-    final refreshes =
-        emitted.whereType<PrayerCountdownRequestRefresh>().toList();
-    expect(refreshes, hasLength(1));
-    expect(refreshes.first.silent, isTrue);
+      expect(emitted.whereType<PrayerCountdownTick>().isNotEmpty, isTrue);
+      final refreshes = emitted
+          .whereType<PrayerCountdownRequestRefresh>()
+          .toList();
+      expect(refreshes, hasLength(1));
+      expect(refreshes.first.silent, isTrue);
 
-    await sub.cancel();
-    await cubit.close();
-  });
+      await sub.cancel();
+      await cubit.close();
+    },
+  );
 
   test(
-      'same-day reload after Isha: startTimer with same date does NOT re-fire refresh',
-      () async {
+    'same-day reload after Isha: startTimer with same date does NOT re-fire refresh',
+    () async {
+      final cubit = PrayerCountdownCubit();
+      final today = DateTime.now();
+      final ctx = ctxFor(today, ishaHour: 0);
+
+      // First start — fires refresh
+      cubit.startTimer(ctx);
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+
+      // Second start with SAME date (simulates after-Isha reload)
+      final emitted = <PrayerCountdownState>[];
+      final sub = cubit.stream.listen(emitted.add);
+
+      cubit.startTimer(ctx); // same date → flags preserved
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+
+      expect(
+        emitted.whereType<PrayerCountdownRequestRefresh>(),
+        isEmpty,
+        reason: 'same-day reload must not re-fire to avoid infinite loop',
+      );
+
+      await sub.cancel();
+      await cubit.close();
+    },
+  );
+
+  test(
+    'midnight crossing: context date behind device date fires one silent refresh',
+    () async {
+      final cubit = PrayerCountdownCubit();
+      // Use yesterday's context so device day != context day
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      final ctx = ctxFor(yesterday, ishaHour: 0);
+
+      final emitted = <PrayerCountdownState>[];
+      final sub = cubit.stream.listen(emitted.add);
+
+      cubit.startTimer(ctx);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      final refreshes = emitted
+          .whereType<PrayerCountdownRequestRefresh>()
+          .toList();
+      expect(refreshes, hasLength(1));
+      expect(refreshes.first.silent, isTrue);
+
+      await sub.cancel();
+      await cubit.close();
+    },
+  );
+
+  test(
+    'context dated ahead (post-Isha wholesale roll) does NOT fire a spurious refresh',
+    () async {
+      final cubit = PrayerCountdownCubit();
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      // Context is for tomorrow while the device clock is still today.
+      final ctx = ctxFor(tomorrow, ishaHour: 0);
+
+      final emitted = <PrayerCountdownState>[];
+      final sub = cubit.stream.listen(emitted.add);
+
+      cubit.startTimer(ctx);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(emitted.whereType<PrayerCountdownTick>().isNotEmpty, isTrue);
+      expect(
+        emitted.whereType<PrayerCountdownRequestRefresh>(),
+        isEmpty,
+        reason: 'a context dated ahead of the device is not stale; no refresh',
+      );
+
+      await sub.cancel();
+      await cubit.close();
+    },
+  );
+  test('next prayer skips sunrise', () async {
+    final now = DateTime.now();
+    const offsets = {
+      PrayerName.fajr: -2,
+      PrayerName.sunrise: 2,
+      PrayerName.dhuhr: 4,
+      PrayerName.asr: 6,
+      PrayerName.maghrib: 8,
+      PrayerName.isha: 10,
+    };
+    if (now.subtract(const Duration(minutes: 3)).day != now.day ||
+        now.add(const Duration(minutes: 11)).day != now.day) {
+      markTestSkipped('fixture would cross midnight');
+      return;
+    }
     final cubit = PrayerCountdownCubit();
-    final today = DateTime.now();
-    final ctx = ctxFor(today, ishaHour: 0);
-
-    // First start — fires refresh
-    cubit.startTimer(ctx);
-    await Future<void>.delayed(const Duration(milliseconds: 30));
-
-    // Second start with SAME date (simulates after-Isha reload)
-    final emitted = <PrayerCountdownState>[];
-    final sub = cubit.stream.listen(emitted.add);
-
-    cubit.startTimer(ctx); // same date → flags preserved
-    await Future<void>.delayed(const Duration(milliseconds: 30));
-
+    cubit.startTimer(contextWithOffsets(now, offsets));
+    final tick = cubit.state as PrayerCountdownTick;
+    expect(tick.prayerCountdown.nextPrayer, PrayerName.dhuhr);
+    expect(tick.prayerCountdown.currentPrayer, PrayerName.fajr);
     expect(
-      emitted.whereType<PrayerCountdownRequestRefresh>(),
-      isEmpty,
-      reason: 'same-day reload must not re-fire to avoid infinite loop',
+      tick.prayerCountdown.remainingTime.inMinutes,
+      inInclusiveRange(2, 4),
     );
-
-    await sub.cancel();
-    await cubit.close();
-  });
-
-  test(
-      'midnight crossing: context date behind device date fires one silent refresh',
-      () async {
-    final cubit = PrayerCountdownCubit();
-    // Use yesterday's context so device day != context day
-    final yesterday = DateTime.now().subtract(const Duration(days: 1));
-    final ctx = ctxFor(yesterday, ishaHour: 0);
-
-    final emitted = <PrayerCountdownState>[];
-    final sub = cubit.stream.listen(emitted.add);
-
-    cubit.startTimer(ctx);
-    await Future<void>.delayed(const Duration(milliseconds: 50));
-
-    final refreshes =
-        emitted.whereType<PrayerCountdownRequestRefresh>().toList();
-    expect(refreshes, hasLength(1));
-    expect(refreshes.first.silent, isTrue);
-
-    await sub.cancel();
-    await cubit.close();
-  });
-
-  test(
-      'context dated ahead (post-Isha wholesale roll) does NOT fire a spurious refresh',
-      () async {
-    final cubit = PrayerCountdownCubit();
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
-    // Context is for tomorrow while the device clock is still today.
-    final ctx = ctxFor(tomorrow, ishaHour: 0);
-
-    final emitted = <PrayerCountdownState>[];
-    final sub = cubit.stream.listen(emitted.add);
-
-    cubit.startTimer(ctx);
-    await Future<void>.delayed(const Duration(milliseconds: 50));
-
-    expect(emitted.whereType<PrayerCountdownTick>().isNotEmpty, isTrue);
-    expect(
-      emitted.whereType<PrayerCountdownRequestRefresh>(),
-      isEmpty,
-      reason: 'a context dated ahead of the device is not stale; no refresh',
-    );
-
-    await sub.cancel();
     await cubit.close();
   });
 }

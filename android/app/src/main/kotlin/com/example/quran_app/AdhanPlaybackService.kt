@@ -4,9 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
@@ -14,6 +12,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import java.util.Locale
 
 /**
  * Foreground service that plays one adhan and shows an ongoing notification.
@@ -33,7 +32,7 @@ import androidx.core.app.NotificationManagerCompat
 class AdhanPlaybackService : Service() {
 
     private var mediaPlayer: MediaPlayer? = null
-    private var currentPrayer: String? = null
+    private var currentLabel: String? = null
     private var currentLocale: String = "en"
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -52,8 +51,10 @@ class AdhanPlaybackService : Service() {
 
     private fun handlePlay(intent: Intent) {
         val prayer = intent.getStringExtra(EXTRA_PRAYER) ?: "fajr"
+        val label = intent.getStringExtra(EXTRA_LABEL) ?: prayer
         val clipName = intent.getStringExtra(EXTRA_CLIP) ?: "normal_adhan"
         val localeCode = intent.getStringExtra(EXTRA_LOCALE) ?: "en"
+        val ringInSilent = intent.getBooleanExtra(EXTRA_RING_IN_SILENT, false)
         currentLocale = localeCode
 
         ensureChannel()
@@ -64,21 +65,29 @@ class AdhanPlaybackService : Service() {
         // startForegroundService contract for this delivery, re-posting the
         // notification for the prayer that's actually playing.
         if (mediaPlayer != null) {
-            Log.w(TAG, "handlePlay: adhan already playing ($currentPrayer); ignoring $prayer")
-            startForeground(NOTIFICATION_ID, buildNotification(currentPrayer ?: prayer, localeCode, ongoing = false))
+            Log.w(TAG, "handlePlay: adhan already playing ($currentLabel); ignoring $prayer")
+            startForeground(NOTIFICATION_ID, buildNotification(currentLabel ?: label, localeCode, ongoing = false))
             return
         }
 
-        currentPrayer = prayer
+        currentLabel = label
         Log.i(TAG, "onStartCommand action=ACTION_PLAY prayer=$prayer clip=$clipName")
 
-        val notif = buildNotification(prayer, localeCode, ongoing = false)
-        startForeground(NOTIFICATION_ID, notif)
+        val notif = buildNotification(label, localeCode, ongoing = false)
+        try {
+            startForeground(NOTIFICATION_ID, notif)
+        } catch (e: Exception) {
+            Log.e(TAG, "handlePlay: startForeground failed for $prayer, posting text", e)
+            currentLabel = null
+            runCatching { AdhanAlarmReceiver.postAdhanText(this, label, localeCode, "tone") }
+            stopSelf()
+            return
+        }
 
-        startMediaPlayer(clipName)
+        startMediaPlayer(clipName, ringInSilent)
     }
 
-    private fun startMediaPlayer(clipName: String) {
+    private fun startMediaPlayer(clipName: String, ringInSilent: Boolean) {
         val resId = resources.getIdentifier(clipName, "raw", packageName)
         if (resId == 0) {
             Log.e(TAG, "startMediaPlayer: R.raw.$clipName not found")
@@ -86,7 +95,7 @@ class AdhanPlaybackService : Service() {
         }
 
         val attrs = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
+            .setUsage(playbackUsage(ringInSilent))
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build()
 
@@ -115,7 +124,7 @@ class AdhanPlaybackService : Service() {
                 stopForeground(STOP_FOREGROUND_DETACH)
                 NotificationManagerCompat.from(this@AdhanPlaybackService).notify(
                     NOTIFICATION_ID,
-                    buildNotification(currentPrayer ?: "fajr", currentLocale, ongoing = false),
+                    buildNotification(currentLabel ?: "fajr", currentLocale, ongoing = false),
                 )
             }
             setOnErrorListener { _, what, extra ->
@@ -126,7 +135,7 @@ class AdhanPlaybackService : Service() {
     }
 
     private fun handleStop(reason: String) {
-        Log.i(TAG, "dismissed reason=$reason prayer=$currentPrayer")
+        Log.i(TAG, "dismissed reason=$reason label=$currentLabel")
         mediaPlayer?.let {
             try { it.stop() } catch (_: IllegalStateException) {}
             it.release()
@@ -163,17 +172,10 @@ class AdhanPlaybackService : Service() {
         manager.createNotificationChannel(channel)
     }
 
-    private fun buildNotification(prayer: String, localeCode: String, ongoing: Boolean): android.app.Notification {
-        val ctx = localizedContext(localeCode)
-
-        val titleResId = ctx.resources.getIdentifier(
-            "adhan_title_$prayer", "string", packageName
-        ).let { if (it != 0) it else R.string.adhan_title_fajr }
-        val bodyResId = ctx.resources.getIdentifier(
-            "adhan_body_$prayer", "string", packageName
-        ).let { if (it != 0) it else R.string.adhan_body_fajr }
-        val title = ctx.getString(titleResId)
-        val body = ctx.getString(bodyResId)
+    private fun buildNotification(label: String, localeCode: String, ongoing: Boolean): android.app.Notification {
+        Locale.setDefault(Locale.forLanguageTag(localeCode))
+        val ctx = localizedContext(this, localeCode)
+        val (title, body) = adhanText(ctx, label)
         val stopLabel = ctx.getString(R.string.adhan_stop)
 
         val openPI = PendingIntent.getActivity(
@@ -193,7 +195,7 @@ class AdhanPlaybackService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_alfurqan)
             .setContentTitle(title)
             .setContentText(body)
             .setOngoing(ongoing)
@@ -206,29 +208,21 @@ class AdhanPlaybackService : Service() {
             .build()
     }
 
-    /**
-     * Returns a Context whose resources are bound to the requested locale —
-     * so the notification title/body always match the app's language, not the
-     * system locale (which may differ).
-     */
-    private fun localizedContext(localeCode: String): Context {
-        val locale = java.util.Locale(localeCode)
-        java.util.Locale.setDefault(locale)
-        val config = Configuration(resources.configuration)
-        config.setLocale(locale)
-        return createConfigurationContext(config)
-    }
-
     companion object {
         private const val TAG = "AdhanService"
-        const val CHANNEL_ID = "prayer_adhan_channel"
+        const val CHANNEL_ID = AlertPlanner.PLAYBACK_CHANNEL
         const val NOTIFICATION_ID = 200
 
         const val ACTION_PLAY = "com.example.quran_app.ACTION_ADHAN_PLAY"
         const val ACTION_STOP = "com.example.quran_app.ACTION_ADHAN_STOP"
 
         const val EXTRA_PRAYER = "prayer"
+        const val EXTRA_LABEL = "label"
         const val EXTRA_CLIP = "clip"
         const val EXTRA_LOCALE = "locale"
+        const val EXTRA_RING_IN_SILENT = "ringInSilent"
     }
 }
+
+fun playbackUsage(ringInSilent: Boolean) =
+    if (ringInSilent) AudioAttributes.USAGE_ALARM else AudioAttributes.USAGE_NOTIFICATION_EVENT

@@ -19,4 +19,29 @@ void main() {
     const b = PrayerCell(label: 'الفجر', timeFormatted: '٤:١٥', minutes: 256);
     expect(a == b, false);
   });
+
+  test('nextLabel defaults to empty and takes part in equality', () {
+    const a = PrayerCell(label: 'العصر', timeFormatted: '٢:٣٩', minutes: 879);
+    const b = PrayerCell(
+      label: 'العصر',
+      timeFormatted: '٢:٣٩',
+      minutes: 879,
+      nextLabel: 'العصر بعد',
+    );
+    expect(a.nextLabel, '');
+    expect(a == b, false);
+  });
+
+  test('timeFull defaults to the compact time', () {
+    const a = PrayerCell(label: 'العصر', timeFormatted: '٠٢:٣٩', minutes: 879);
+    const b = PrayerCell(
+      label: 'العصر',
+      timeFormatted: '٠٢:٣٩',
+      timeFull: '٠٢:٣٩ م',
+      minutes: 879,
+    );
+    expect(a.timeFull, '٠٢:٣٩');
+    expect(b.timeFull, '٠٢:٣٩ م');
+    expect(a == b, false);
+  });
 }

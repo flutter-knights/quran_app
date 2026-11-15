@@ -5,32 +5,35 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 
-/**
- * Re-arms adhan and reminder alarms from their persisted snapshots whenever the
- * basis those alarms were scheduled against may have changed. Registered in the
- * manifest for BOOT_COMPLETED, MY_PACKAGE_REPLACED (reboot / app update) and
- * TIMEZONE_CHANGED / TIME_SET (travel / DST / manual clock change, so alarms
- * fire at the correct local wall-clock time — H3). Re-arming is idempotent and
- * `armDays` skips past triggers, so firing on any of these is safe.
- */
 class AdhanBootReceiver : BroadcastReceiver() {
+
     override fun onReceive(context: Context, intent: Intent?) {
-        Log.i(TAG, "onReceive ${intent?.action} — re-arming from snapshots")
-
-        try {
-            AdhanScheduler.rearmFromSnapshot(context)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to re-arm adhan alarms from snapshot", e)
-        }
-
-        try {
-            PrayerReminderScheduler.rearmFromSnapshot(context)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to re-arm reminder alarms from snapshot", e)
+        val action = intent?.action
+        if (action !in HANDLED) return
+        Log.i(TAG, "onReceive $action, re-arming from snapshots")
+        val pending = goAsync()
+        AlertStore.post(context) { ctx ->
+            try {
+                val now = System.currentTimeMillis()
+                when (action) {
+                    Intent.ACTION_BOOT_COMPLETED -> AlertStore.setLong(ctx, AlertStore.LAST_BOOT_HANDLED_AT, now)
+                    Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED -> AlertStore.setLong(ctx, AlertStore.LAST_CLOCK_CHANGE_AT, now)
+                    Intent.ACTION_MY_PACKAGE_REPLACED -> AlertStore.setIfUnset(ctx, AlertStore.LAST_CHECKED_AT, now)
+                }
+                AdhanScheduler.rearmFromSnapshot(ctx)
+            } finally {
+                pending.finish()
+            }
         }
     }
 
     companion object {
         private const val TAG = "Adhan"
+        private val HANDLED = setOf(
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+        )
     }
 }

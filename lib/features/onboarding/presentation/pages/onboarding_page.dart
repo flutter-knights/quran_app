@@ -6,12 +6,19 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/core/widgets/design/splash_backdrop.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
+import 'package:quran_app/features/onboarding/presentation/pages/widgets/alerts_step.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/appearance_step.dart';
+import 'package:quran_app/features/onboarding/presentation/pages/widgets/exact_alarm_row.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/language_step.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/permission_step.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/welcome_step.dart';
+import 'package:quran_app/features/onboarding/presentation/pages/widgets/xiaomi_step.dart';
+import 'package:quran_app/features/onboarding/presentation/utils/apply_alerts_choice.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -27,13 +34,22 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
-  static const _stepCount = 5;
   static const _locationStep = 3;
   static const _notificationsStep = 4;
+  static const _alertsStep = 5;
+  static const _xiaomiStep = 6;
 
   final _controller = PageController();
   int _index = 0;
   bool _leaving = false;
+  bool _isXiaomi = false;
+  bool? _exactAlarmsAllowed;
+  bool _exactAlarmsAsked = false;
+  AlertsChoice? _alertsChoice;
+  bool _alertsDeferred = false;
+
+  int get _stepCount => _isXiaomi ? 7 : 6;
+  int get _lastStep => _stepCount - 1;
 
   @override
   void dispose() {
@@ -49,6 +65,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 
+  void _next() => _index >= _lastStep ? _finish() : _goTo(_index + 1);
+
+  void _onSecondary() {
+    if (_index == _alertsStep) _alertsDeferred = true;
+    _next();
+  }
+
   Future<void> _onPrimary() async {
     switch (_index) {
       case _locationStep:
@@ -58,24 +81,47 @@ class _OnboardingPageState extends State<OnboardingPage> {
         if (mounted) _goTo(_notificationsStep);
       case _notificationsStep:
         try {
-          await sl<PrayerNotificationScheduler>().requestNotificationsPermission();
+          await sl<PrayerNotificationScheduler>()
+              .requestNotificationsPermission();
         } catch (_) {}
-        _finish();
+        if (mounted) _goTo(_alertsStep);
+      case _alertsStep:
+        _alertsDeferred = false;
+        _next();
       default:
-        _goTo(_index + 1);
+        _next();
     }
   }
 
   void _finish() {
     if (_leaving || !mounted) return;
     _leaving = true;
-    context.read<SettingsCubit>().completeOnboarding();
+    final settings = context.read<SettingsCubit>();
+    if (_alertsChoice case final choice? when !_alertsDeferred) {
+      applyAlertsChoice(settings, choice);
+    }
+    settings.completeOnboarding();
     GoRouter.of(context).pushReplacement(AppRouter.homePath);
   }
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final (xiaomiNow, exactAllowed) = context.select(
+      (ReliabilityCubit c) => switch (c.state) {
+        ReliabilityLoaded(:final status) => (
+          status.isXiaomi,
+          status.exactAlarmsAllowed,
+        ),
+        _ => (false, null),
+      },
+    );
+    _isXiaomi = _isXiaomi || xiaomiNow;
+    _exactAlarmsAllowed = exactAllowed ?? _exactAlarmsAllowed;
+    _exactAlarmsAsked = _exactAlarmsAsked || exactAllowed == false;
+    final storedAlerts = context.select(
+      (SettingsCubit c) => c.state.settingsModel.prayerAlerts,
+    );
     return Scaffold(
       body: SplashBackdrop(
         child: SafeArea(
@@ -111,7 +157,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       icon: HugeIcons.strokeRoundedNotification01,
                       title: s.onb_notifications_title,
                       why: s.onb_notifications_why,
+                      footer: _exactAlarmsAsked
+                          ? ExactAlarmRow(allowed: _exactAlarmsAllowed ?? false)
+                          : null,
                     ),
+                    AlertsStep(
+                      choice: _alertsChoice ?? alertsChoiceFrom(storedAlerts),
+                      onChanged: (c) => setState(() {
+                        _alertsChoice = c;
+                        _alertsDeferred = false;
+                      }),
+                    ),
+                    if (_isXiaomi) const XiaomiStep(),
                   ],
                 ),
               ),
@@ -127,9 +184,15 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _actions(S s) {
+    final pending = PendingS.of(context);
     final isPermissionStep =
         _index == _locationStep || _index == _notificationsStep;
     final primaryLabel = isPermissionStep ? s.onb_enable : s.onb_continue;
+    final secondaryLabel = switch (_index) {
+      _alertsStep => pending.onb_later,
+      _xiaomiStep => pending.onb_skip,
+      _ => s.onb_not_now,
+    };
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -150,15 +213,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
               child: Text(primaryLabel, style: TS.bold16),
             ),
           ),
-          if (isPermissionStep)
+          if (_index >= _locationStep)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: TextButton(
-                onPressed: () => _index == _locationStep
-                    ? _goTo(_notificationsStep)
-                    : _finish(),
+                onPressed: _onSecondary,
                 child: Text(
-                  s.onb_not_now,
+                  secondaryLabel,
                   style: TS.semi14.copyWith(
                     color: Colors.white.withValues(alpha: 0.7),
                   ),

@@ -12,7 +12,7 @@ abstract class PrayerTimesRepository {
 
   /// Pre-caches the given month. Skips network if already fully cached.
   /// Never throws — failures are silently swallowed.
-  Future<void> preCacheMonth({
+  Future<bool> preCacheMonth({
     required Location location,
     required int year,
     required int month,

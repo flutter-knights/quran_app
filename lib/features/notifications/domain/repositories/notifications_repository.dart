@@ -2,36 +2,49 @@ import 'package:dartz/dartz.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
-import 'package:quran_app/features/notifications/domain/entities/adhan_audio_settings.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
+import 'package:quran_app/features/notifications/domain/entities/preview_sound.dart';
+import 'package:quran_app/features/notifications/domain/entities/reliability_status.dart';
+import 'package:quran_app/features/notifications/domain/entities/system_settings_target.dart';
 
 /// Single facade for all notification work — pinned strip + adhan playback +
-/// pre-prayer reminders. All methods return `Either<Failure, Unit>`.
+/// pre-prayer reminders.
 abstract class NotificationsRepository {
   Future<Either<Failure, Unit>> enableStrip(PrayerStripWindow window);
   Future<Either<Failure, Unit>> disableStrip();
   Future<Either<Failure, Unit>> refreshStrip(PrayerStripWindow window);
 
-  /// Schedules per-prayer adhan notifications for the given days.
-  /// [enabledByPrayer] filters which prayers receive an adhan.
-  /// Replaces any previously scheduled set.
   Future<Either<Failure, Unit>> scheduleDailyAdhans({
     required List<PrayerTimes> days,
-    required AdhanAudioSettings audio,
-    required Map<PrayerName, bool> enabledByPrayer,
+    required Map<PrayerName, PrayerAlert> alerts,
     required String localeCode,
   });
 
   Future<Either<Failure, Unit>> cancelAllAdhans();
 
-  /// Schedules pre-prayer reminder notifications for the given days.
-  /// [reminderMinutesByPrayer] maps each prayer to a positive offset in
-  /// minutes; 0 means no reminder. Replaces any previously scheduled set.
   Future<Either<Failure, Unit>> schedulePrayerReminders({
     required List<PrayerTimes> days,
-    required Map<PrayerName, int> reminderMinutesByPrayer,
+    required Map<PrayerName, PrayerAlert> alerts,
     required String localeCode,
   });
 
   Future<Either<Failure, Unit>> cancelAllReminders();
+
+  Future<Either<Failure, Unit>> scheduleTestAdhan({
+    required PrayerAlert alert,
+    required String localeCode,
+    Duration delay = const Duration(seconds: 5),
+  });
+
+  Future<Either<Failure, ReliabilityStatus>> getReliabilityStatus();
+  Future<Either<Failure, Unit>> ackMissedAlerts({required DateTime upTo});
+  Future<Either<Failure, Unit>> openSystemSettings(SystemSettingsTarget target);
+  Future<Either<Failure, Unit>> previewSound({
+    required PreviewSound sound,
+    required PrayerName prayer,
+  });
+  Future<Either<Failure, Unit>> stopPreview();
+  Future<Either<Failure, int?>> androidSdkInt();
+  Stream<PreviewSound> previewEnded();
 }

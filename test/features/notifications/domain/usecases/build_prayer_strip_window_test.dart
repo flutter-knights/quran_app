@@ -1,81 +1,103 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
-import 'package:quran_app/features/home/domain/repositories/prayer_times_repository.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_render_style.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
 
-class _MockRepo extends Mock implements PrayerTimesRepository {}
-
 PrayerTimes _pt(String dateKey) => PrayerTimes(
-      key: dateKey,
-      timings: const {
-        PrayerName.fajr: '04:15',
-        PrayerName.sunrise: '05:07',
-        PrayerName.dhuhr: '12:52',
-        PrayerName.asr: '16:28',
-        PrayerName.maghrib: '19:46',
-        PrayerName.isha: '21:16',
-      },
-      date: Date(
-        month: 'ذو الحجة', weekDay: 'الجمعة', day: '5', year: '1447',
-        enMonth: 'Dhul-Hijjah', enWeekDay: 'Friday', gregorianDate: dateKey,
+  key: dateKey,
+  timings: const {
+    PrayerName.fajr: '04:15',
+    PrayerName.sunrise: '05:07',
+    PrayerName.dhuhr: '12:52',
+    PrayerName.asr: '16:28',
+    PrayerName.maghrib: '19:46',
+    PrayerName.isha: '21:16',
+  },
+  date: Date(
+    month: 'ذو الحجة',
+    weekDay: 'الجمعة',
+    day: '5',
+    year: '1447',
+    enMonth: 'Dhul-Hijjah',
+    enWeekDay: 'Friday',
+    gregorianDate: dateKey,
+  ),
+);
+
+void main() {
+  final useCase = BuildPrayerStripWindow();
+  final cachedDays = [for (var d = 22; d <= 26; d++) _pt('$d-05-2026')];
+
+  test('builds up to N cached days starting today', () async {
+    final window = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'en',
+        use24Hour: true,
+        now: DateTime(2026, 5, 22, 6),
+        days: 3,
+        cachedDays: cachedDays,
       ),
     );
 
-void main() {
-  setUpAll(() => registerFallbackValue(DateTime(2026)));
-
-  late _MockRepo repo;
-  late BuildPrayerStripWindow useCase;
-
-  setUp(() {
-    repo = _MockRepo();
-    useCase = BuildPrayerStripWindow(prayerTimesRepository: repo);
-  });
-
-  test('builds up to N consecutive cached days starting today', () async {
-    final now = DateTime(2026, 5, 22, 6, 0);
-    when(() => repo.getCachedForDate(any())).thenAnswer((inv) async {
-      final d = inv.positionalArguments.first as DateTime;
-      final key =
-          '${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}';
-      return _pt(key);
-    });
-
-    final window = await useCase.call(BuildPrayerStripWindowParams(
-      localeCode: 'en', use24Hour: true, now: now, days: 3,
-    ));
-
-    expect(window, isNotNull);
     expect(window!.days.length, 3);
     expect(window.days[0].dateKey, '22-05-2026');
     expect(window.days[1].dateKey, '23-05-2026');
-    expect(window.days[0].cells.length, 5); // sunrise dropped
+    expect(window.days[0].cells.length, 5);
   });
 
-  test('stops at the first cache gap', () async {
-    final now = DateTime(2026, 5, 22, 6, 0);
-    when(() => repo.getCachedForDate(any())).thenAnswer((inv) async {
-      final d = inv.positionalArguments.first as DateTime;
-      if (d.day >= 24) return null; // 24th onward missing
-      final key =
-          '${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}';
-      return _pt(key);
-    });
-
-    final window = await useCase.call(BuildPrayerStripWindowParams(
-      localeCode: 'en', use24Hour: true, now: now, days: 7,
-    ));
-
-    expect(window!.days.length, 2); // 22nd, 23rd
+  test('stops when cachedDays runs out', () async {
+    final w = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'ar',
+        use24Hour: true,
+        now: DateTime(2026, 5, 22, 9),
+        days: 30,
+        cachedDays: cachedDays.take(2).toList(),
+      ),
+    );
+    expect(w!.days.length, 2);
   });
 
-  test('returns null when today is not cached', () async {
-    when(() => repo.getCachedForDate(any())).thenAnswer((_) async => null);
-    final window = await useCase.call(BuildPrayerStripWindowParams(
-      localeCode: 'en', use24Hour: true, now: DateTime(2026, 5, 22), days: 7,
-    ));
-    expect(window, isNull);
+  test('empty cachedDays returns null', () async {
+    final w = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'ar',
+        use24Hour: true,
+        now: DateTime(2026, 5, 22, 9),
+        cachedDays: const [],
+      ),
+    );
+    expect(w, isNull);
+  });
+
+  test('forwards nextInLabel, nextTag and style', () async {
+    const style = StripRenderStyle(
+      expanded: false,
+      countdown: true,
+      highlightDay: 0xFF2F5F98,
+      highlightNight: 0xFF8EBBE3,
+      highlightTextDay: 0xFF2F5F98,
+      pillTextDay: 0xFFFFFFFF,
+      pillTextNight: 0xFF121413,
+      shape: StripShape.outline,
+    );
+    final w = await useCase.call(
+      BuildPrayerStripWindowParams(
+        localeCode: 'en',
+        use24Hour: true,
+        now: DateTime(2026, 5, 22, 13),
+        days: 2,
+        cachedDays: cachedDays,
+        nextInLabel: (p) => '$p in',
+        nextTag: 'Next',
+        style: style,
+      ),
+    );
+    expect(w!.style, style);
+    expect(w.days[0].cells[2].nextLabel, 'Asr in');
+    expect(w.days[1].cells[0].nextLabel, 'Fajr in');
+    expect(w.nextTag, 'Next');
   });
 }

@@ -5,6 +5,8 @@ import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
@@ -12,18 +14,20 @@ import 'package:quran_app/features/settings/domain/entities/settings.dart';
 part 'settings_state.dart';
 
 class SettingsCubit extends HydratedCubit<SettingsState> {
+  static const defaultPalette = ColorPalette.neutralDark;
+
   SettingsCubit()
-      : super(
-          SettingsState(
-            SettingsModel(
-              palette: ColorPalette.neutralDark,
-              // NOTE: this flag is inverted — `false` selects the 12-hour
-              // format, `true` selects 24-hour. Default first run to 12-hour.
-              isFormat12Hours: false,
-              isArabic: true,
-            ),
+    : super(
+        SettingsState(
+          SettingsModel(
+            palette: defaultPalette,
+            // NOTE: this flag is inverted — `false` selects the 12-hour
+            // format, `true` selects 24-hour. Default first run to 12-hour.
+            isFormat12Hours: false,
+            isArabic: true,
           ),
-        );
+        ),
+      );
 
   void updateSettings({bool? isFormat12Hours, bool? isArabic}) {
     emit(
@@ -46,9 +50,7 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
 
   void updatePageBrightness(double value) {
     final clamped = value.clamp(Settings.minPageBrightness, 1.0);
-    emit(SettingsState(
-      state.settingsModel.copyWith(pageBrightness: clamped),
-    ));
+    emit(SettingsState(state.settingsModel.copyWith(pageBrightness: clamped)));
   }
 
   void updateReadingMode(MushafReadingMode mode) {
@@ -72,10 +74,11 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
   /// Marks first-run onboarding (the landing page) as completed, so the landing
   /// is never shown again on subsequent launches.
   void completeOnboarding() {
-    if (state.settingsModel.hasCompletedOnboarding) return;
+    final s = state.settingsModel;
+    if (s.hasCompletedOnboarding && s.alertsIntroSeen) return;
     emit(
       SettingsState(
-        state.settingsModel.copyWith(hasCompletedOnboarding: true),
+        s.copyWith(hasCompletedOnboarding: true, alertsIntroSeen: true),
       ),
     );
   }
@@ -97,31 +100,80 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
   }
 
   void updateCalculationMethod(CalculationMethod method) {
-    emit(SettingsState(
-        state.settingsModel.copyWith(calculationMethod: method)));
+    emit(
+      SettingsState(state.settingsModel.copyWith(calculationMethod: method)),
+    );
   }
 
   void updateAsrSchool(AsrSchool school) {
     emit(SettingsState(state.settingsModel.copyWith(asrSchool: school)));
   }
 
-  void updateAdhanEnabled(PrayerName prayer, bool enabled) {
-    final next = Map<PrayerName, bool>.from(
-      state.settingsModel.adhanEnabledByPrayer,
-    )..[prayer] = enabled;
-    emit(SettingsState(state.settingsModel.copyWith(adhanEnabledByPrayer: next)));
+  void updatePrayerAlert(PrayerName prayer, PrayerAlert alert) {
+    final next = {...state.settingsModel.prayerAlerts, prayer: _clamped(alert)};
+    emit(SettingsState(state.settingsModel.copyWith(prayerAlerts: next)));
   }
 
-  void updateReminderMinutes(PrayerName prayer, int minutes) {
-    assert(
-      Settings.validReminderMinutes.contains(minutes),
-      'reminder minutes must be one of ${Settings.validReminderMinutes}, got $minutes',
-    );
-    final next = Map<PrayerName, int>.from(
-      state.settingsModel.reminderMinutesByPrayer,
-    )..[prayer] = minutes;
-    emit(SettingsState(state.settingsModel.copyWith(reminderMinutesByPrayer: next)));
+  void applyAlertToAll({
+    required bool enabled,
+    PrayerSound? sound,
+    bool? reminderEnabled,
+    int? reminderMinutes,
+  }) {
+    final current = state.settingsModel.prayerAlerts;
+    final next = {
+      for (final p in alertPrayers)
+        p: _clamped(
+          (current[p] ?? const PrayerAlert()).copyWith(
+            enabled: enabled,
+            sound: sound,
+            reminderEnabled: reminderEnabled,
+            reminderMinutes: reminderMinutes,
+          ),
+        ),
+    };
+    emit(SettingsState(state.settingsModel.copyWith(prayerAlerts: next)));
   }
+
+  void updateStripStyle(StripStyle style) {
+    emit(SettingsState(state.settingsModel.copyWith(stripStyle: style)));
+  }
+
+  void markAlertsIntroSeen() {
+    if (state.settingsModel.alertsIntroSeen) return;
+    emit(SettingsState(state.settingsModel.copyWith(alertsIntroSeen: true)));
+  }
+
+  void setXiaomiAutostartConfirmed(bool value) {
+    emit(
+      SettingsState(
+        state.settingsModel.copyWith(xiaomiAutostartConfirmed: value),
+      ),
+    );
+  }
+
+  void setXiaomiBatteryConfirmed(bool value) {
+    emit(
+      SettingsState(
+        state.settingsModel.copyWith(xiaomiBatteryConfirmed: value),
+      ),
+    );
+  }
+
+  void clearXiaomiConfirmations() {
+    emit(
+      SettingsState(
+        state.settingsModel.copyWith(
+          xiaomiAutostartConfirmed: false,
+          xiaomiBatteryConfirmed: false,
+        ),
+      ),
+    );
+  }
+
+  static PrayerAlert _clamped(PrayerAlert alert) => alert.copyWith(
+    reminderMinutes: PrayerAlert.clampMinutes(alert.reminderMinutes),
+  );
 
   @override
   SettingsState? fromJson(Map<String, dynamic> json) {

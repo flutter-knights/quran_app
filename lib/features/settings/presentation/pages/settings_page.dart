@@ -5,12 +5,16 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
-import 'package:quran_app/core/constants/feature_flags.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
+import 'package:quran_app/core/widgets/design/app_settings_tile.dart';
+import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
+import 'package:quran_app/features/notifications/presentation/utils/enum_localization.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/settings/presentation/pages/widgets/palette_picker_widget.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reading_settings_sheet.dart';
@@ -117,46 +121,49 @@ class SettingsPage extends StatelessWidget {
                       const SizedBox(height: 10),
                       SurfaceCard(
                         key: const ValueKey('settings-open-reading'),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        onTap: () => ReadingSettingsSheet.show(context),
-                        child: _ReadingSettingsRow(
+                        padding: EdgeInsets.zero,
+                        child: AppSettingsTile(
+                          leading: HugeIcon(
+                            icon: HugeIcons.strokeRoundedBookOpen01,
+                            color: scheme.onSurface,
+                            size: 20,
+                          ),
                           title: S.of(context).readingSettings,
                           subtitle: S.of(context).paper,
+                          trailing: HugeIcon(
+                            icon: forwardArrowIcon(context),
+                            color: scheme.onSurfaceVariant,
+                            size: 20,
+                          ),
+                          onTap: () => ReadingSettingsSheet.show(context),
                         ),
                       ),
-                      if (FeatureFlags.pinnedPrayerStripUi) ...[
-                        const SizedBox(height: 24),
-                        AppSectionHeader(label: S.current.notifications),
-                        const SizedBox(height: 10),
-                        SurfaceCard(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: _NotificationRow(
-                            label: S.current.pinnedPrayerTimes,
-                            trailing: Switch(
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              value: settings.isPrayerStripPinned,
-                              onChanged: (_) =>
-                                  sl<SettingsCubit>().updatePrayerStripPinned(
-                                    !settings.isPrayerStripPinned,
-                                  ),
-                            ),
+                      const SizedBox(height: 24),
+                      AppSectionHeader(label: S.of(context).notifications),
+                      const SizedBox(height: 10),
+                      SurfaceCard(
+                        padding: EdgeInsets.zero,
+                        child: AppSettingsTile(
+                          leading: HugeIcon(
+                            icon: HugeIcons.strokeRoundedNotification01,
+                            color: scheme.onSurface,
+                            size: 20,
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        SurfaceCard(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          title: S.of(context).adhan_and_reminders,
+                          subtitle: enabledCountLabel(
+                            PendingS.of(context),
+                            settings.enabledAlertCount,
+                            context.langCode,
+                          ),
+                          trailing: HugeIcon(
+                            icon: forwardArrowIcon(context),
+                            color: scheme.onSurfaceVariant,
+                            size: 20,
+                          ),
                           onTap: () =>
                               context.push(AppRouter.notificationsPath),
-                          child: _NotificationRow(
-                            label: S.current.adhan_and_reminders,
-                            trailing: Icon(
-                              Icons.chevron_right,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
                         ),
-                      ],
+                      ),
                     ],
                   );
                 },
@@ -191,77 +198,6 @@ class _SelectorRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(child: Text(label, style: TS.regular16.cairo)),
           selector,
-        ],
-      ),
-    );
-  }
-}
-
-/// Two-line row for the Mushaf reading-settings entry.
-class _ReadingSettingsRow extends StatelessWidget {
-  const _ReadingSettingsRow({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.colorScheme;
-    return SizedBox(
-      height: 52,
-      child: Row(
-        children: [
-          HugeIcon(
-            icon: HugeIcons.strokeRoundedBookOpen01,
-            color: scheme.onSurface,
-            size: 20,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TS.regular16.cairo),
-                Text(
-                  subtitle,
-                  style: TS.regular14.cairo.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
-        ],
-      ),
-    );
-  }
-}
-
-/// Fixed-height notification row so the section's cards are all the same height
-/// regardless of their trailing control (switch vs chevron).
-class _NotificationRow extends StatelessWidget {
-  const _NotificationRow({required this.label, required this.trailing});
-
-  final String label;
-  final Widget trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.colorScheme;
-    return SizedBox(
-      height: 52,
-      child: Row(
-        children: [
-          HugeIcon(
-            icon: HugeIcons.strokeRoundedNotification01,
-            color: scheme.onSurface,
-            size: 20,
-          ),
-          const SizedBox(width: 10),
-          Expanded(child: Text(label, style: TS.regular16.cairo)),
-          trailing,
         ],
       ),
     );

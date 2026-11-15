@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">تطبيق القرآن</string>
+    <string name="app_name">الفرقان</string>
 
     <string name="adhan_stop">إيقاف</string>
     <string name="adhan_body_fajr">حان موعد صلاة الفجر</string>
@@ -8,12 +8,14 @@
     <string name="adhan_body_asr">حان موعد صلاة العصر</string>
     <string name="adhan_body_maghrib">حان موعد صلاة المغرب</string>
     <string name="adhan_body_isha">حان موعد صلاة العشاء</string>
+    <string name="adhan_body_jumuah">حان موعد صلاة الجمعة</string>
 
     <string name="adhan_title_fajr">الفجر</string>
     <string name="adhan_title_dhuhr">الظهر</string>
     <string name="adhan_title_asr">العصر</string>
     <string name="adhan_title_maghrib">المغرب</string>
     <string name="adhan_title_isha">العشاء</string>
+    <string name="adhan_title_jumuah">الجمعة</string>
 
     <!-- Pre-prayer reminder -->
     <string name="reminder_channel_name">تذكيرات قبل الصلاة</string>
@@ -23,9 +25,27 @@
     <string name="reminder_title_asr">تذكير العصر</string>
     <string name="reminder_title_maghrib">تذكير المغرب</string>
     <string name="reminder_title_isha">تذكير العشاء</string>
+    <string name="reminder_title_jumuah">تذكير الجمعة</string>
     <string name="reminder_body_fajr">اقتربت صلاة الفجر</string>
     <string name="reminder_body_dhuhr">اقتربت صلاة الظهر</string>
     <string name="reminder_body_asr">اقتربت صلاة العصر</string>
     <string name="reminder_body_maghrib">اقتربت صلاة المغرب</string>
     <string name="reminder_body_isha">اقتربت صلاة العشاء</string>
+    <string name="reminder_body_jumuah">اقتربت صلاة الجمعة</string>
+
+    <string name="prayer_late_title">حان وقت %1$s منذ %2$s</string>
+    <plurals name="prayer_late_minutes">
+        <item quantity="one">دقيقة واحدة</item>
+        <item quantity="two">دقيقتين</item>
+        <item quantity="few">%1$s دقائق</item>
+        <item quantity="many">%1$s دقيقة</item>
+        <item quantity="other">%1$s دقيقة</item>
+    </plurals>
+    <string name="prayer_late_body">تأخّر التنبيه، وقد يكون السبب توفير البطارية.</string>
+    <string name="prayer_late_fix">إصلاح</string>
+    <string name="channel_alert_tone">تنبيهات الصلاة</string>
+    <string name="channel_alert_vibrate">تنبيهات الصلاة (اهتزاز)</string>
+    <string name="channel_alert_silent">تنبيهات الصلاة (بدون صوت)</string>
+    <string name="channel_reminder_tone">تذكيرات الصلاة</string>
+    <string name="channel_reminder_silent">تذكيرات الصلاة (بدون صوت)</string>
 </resources>

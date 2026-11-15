@@ -36,7 +36,7 @@ Clean Architecture with Cubit. Each feature is self-contained:
 lib/
 ├── config/            # router/app_router.dart, theme/, hive_config, hydrated_bloc_config
 ├── core/
-│   ├── constants/     # AssetsDir, DeviceSize, ColorPalette, MushafPaper, FeatureFlags…
+│   ├── constants/     # AssetsDir, DeviceSize, ColorPalette, MushafPaper…
 │   ├── di/            # GetIt (sl) setup
 │   ├── errors/        # exceptions.dart, failure.dart
 │   ├── helper functions/   # note the space in the folder name

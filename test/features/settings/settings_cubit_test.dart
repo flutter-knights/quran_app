@@ -4,7 +4,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/core/constants/calculation_method.dart';
-import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
@@ -41,7 +40,10 @@ void main() {
     act: (c) => c.updatePlaybackSpeed(1.5),
     expect: () => [
       isA<SettingsState>().having(
-        (s) => s.settingsModel.playbackSpeed, 'speed', 1.5),
+        (s) => s.settingsModel.playbackSpeed,
+        'speed',
+        1.5,
+      ),
     ],
   );
 
@@ -51,7 +53,10 @@ void main() {
     act: (c) => c.updateDefaultReciter(Reciter.husary),
     expect: () => [
       isA<SettingsState>().having(
-        (s) => s.settingsModel.defaultReciter, 'reciter', Reciter.husary),
+        (s) => s.settingsModel.defaultReciter,
+        'reciter',
+        Reciter.husary,
+      ),
     ],
   );
 
@@ -115,173 +120,14 @@ void main() {
     ],
   );
 
-  test('toMap / fromMap round-trips adhanEnabledByPrayer', () {
-    final model = SettingsModel(
-      isFormat12Hours: false,
-      isArabic: true,
-      adhanEnabledByPrayer: const {
-        PrayerName.fajr: false,
-        PrayerName.dhuhr: true,
-        PrayerName.asr: true,
-        PrayerName.maghrib: true,
-        PrayerName.isha: false,
-      },
-    );
-    final round = SettingsModel.fromMap(model.toMap());
-    expect(round.adhanEnabledByPrayer[PrayerName.fajr], false);
-    expect(round.adhanEnabledByPrayer[PrayerName.dhuhr], true);
-    expect(round.adhanEnabledByPrayer[PrayerName.isha], false);
-  });
-
-  test('toMap / fromMap round-trips reminderMinutesByPrayer', () {
-    final model = SettingsModel(
-      isFormat12Hours: false,
-      isArabic: true,
-      reminderMinutesByPrayer: const {
-        PrayerName.fajr: 15,
-        PrayerName.dhuhr: 0,
-        PrayerName.asr: 10,
-        PrayerName.maghrib: 5,
-        PrayerName.isha: 0,
-      },
-    );
-    final round = SettingsModel.fromMap(model.toMap());
-    expect(round.reminderMinutesByPrayer[PrayerName.fajr], 15);
-    expect(round.reminderMinutesByPrayer[PrayerName.asr], 10);
-    expect(round.reminderMinutesByPrayer[PrayerName.maghrib], 5);
-  });
-
-  test('fromMap applies default adhan-enabled map (all true) when missing', () {
-    final round = SettingsModel.fromMap({
-      'isArabic': true,
-      'isFormat12Hours': true,
-      'playbackSpeed': 1.0,
-      'defaultReciter': 'alafasy',
-      'isPrayerStripPinned': false,
-    });
-    for (final p in [
-      PrayerName.fajr, PrayerName.dhuhr, PrayerName.asr,
-      PrayerName.maghrib, PrayerName.isha,
-    ]) {
-      expect(round.adhanEnabledByPrayer[p], true, reason: '$p should default to true');
-    }
-  });
-
-  test('fromMap applies default reminder map (all zero) when missing', () {
-    final round = SettingsModel.fromMap({
-      'isArabic': true,
-      'isFormat12Hours': true,
-      'playbackSpeed': 1.0,
-      'defaultReciter': 'alafasy',
-      'isPrayerStripPinned': false,
-    });
-    for (final p in [
-      PrayerName.fajr, PrayerName.dhuhr, PrayerName.asr,
-      PrayerName.maghrib, PrayerName.isha,
-    ]) {
-      expect(round.reminderMinutesByPrayer[p], 0, reason: '$p should default to 0');
-    }
-  });
-
-  test('fromMap merges partial adhanEnabledByPrayer with defaults', () {
-    final round = SettingsModel.fromMap({
-      'isArabic': true,
-      'isFormat12Hours': true,
-      'playbackSpeed': 1.0,
-      'defaultReciter': 'alafasy',
-      'isPrayerStripPinned': false,
-      'adhanEnabledByPrayer': {
-        'fajr': false,
-        'dhuhr': false,
-      },
-    });
-    // Provided keys win:
-    expect(round.adhanEnabledByPrayer[PrayerName.fajr], false);
-    expect(round.adhanEnabledByPrayer[PrayerName.dhuhr], false);
-    // Missing keys take the default (true):
-    expect(round.adhanEnabledByPrayer[PrayerName.asr], true);
-    expect(round.adhanEnabledByPrayer[PrayerName.maghrib], true);
-    expect(round.adhanEnabledByPrayer[PrayerName.isha], true);
-  });
-
-  test('fromMap drops out-of-range reminder minutes', () {
-    final round = SettingsModel.fromMap({
-      'isArabic': true,
-      'isFormat12Hours': true,
-      'playbackSpeed': 1.0,
-      'defaultReciter': 'alafasy',
-      'isPrayerStripPinned': false,
-      'reminderMinutesByPrayer': {
-        'fajr': 7,    // invalid — should be dropped, default 0 wins
-        'dhuhr': 10,  // valid
-      },
-    });
-    expect(round.reminderMinutesByPrayer[PrayerName.fajr], 0);
-    expect(round.reminderMinutesByPrayer[PrayerName.dhuhr], 10);
-  });
-
-  blocTest<SettingsCubit, SettingsState>(
-    'updateAdhanEnabled(Fajr, false) emits state with Fajr disabled, others unchanged',
-    build: () => SettingsCubit(),
-    act: (c) => c.updateAdhanEnabled(PrayerName.fajr, false),
-    expect: () => [
-      isA<SettingsState>()
-          .having(
-            (s) => s.settingsModel.adhanEnabledByPrayer[PrayerName.fajr],
-            'fajr enabled',
-            false,
-          )
-          .having(
-            (s) => s.settingsModel.adhanEnabledByPrayer[PrayerName.dhuhr],
-            'dhuhr preserved',
-            true,
-          )
-          .having(
-            (s) => s.settingsModel.adhanEnabledByPrayer[PrayerName.isha],
-            'isha preserved',
-            true,
-          ),
-    ],
-  );
-
-  blocTest<SettingsCubit, SettingsState>(
-    'updateReminderMinutes(Maghrib, 10) emits state with Maghrib reminder=10, others unchanged',
-    build: () => SettingsCubit(),
-    act: (c) => c.updateReminderMinutes(PrayerName.maghrib, 10),
-    expect: () => [
-      isA<SettingsState>()
-          .having(
-            (s) => s.settingsModel.reminderMinutesByPrayer[PrayerName.maghrib],
-            'maghrib reminder',
-            10,
-          )
-          .having(
-            (s) => s.settingsModel.reminderMinutesByPrayer[PrayerName.fajr],
-            'fajr reminder preserved',
-            0,
-          )
-          .having(
-            (s) => s.settingsModel.reminderMinutesByPrayer[PrayerName.isha],
-            'isha reminder preserved',
-            0,
-          ),
-    ],
-  );
-
-  test('updateReminderMinutes rejects invalid step (7) with an assertion', () {
-    final cubit = SettingsCubit();
-    expect(
-      () => cubit.updateReminderMinutes(PrayerName.fajr, 7),
-      throwsA(isA<AssertionError>()),
-    );
-  });
-
   blocTest<SettingsCubit, SettingsState>(
     'updateCalculationMethod emits new method',
     build: () => SettingsCubit(),
     act: (c) => c.updateCalculationMethod(CalculationMethod.egypt),
-    verify: (c) =>
-        expect(c.state.settingsModel.calculationMethod, CalculationMethod.egypt),
+    verify: (c) => expect(
+      c.state.settingsModel.calculationMethod,
+      CalculationMethod.egypt,
+    ),
   );
 
   blocTest<SettingsCubit, SettingsState>(

@@ -17,16 +17,13 @@ class PreCachePrayerTimesParams {
   });
 }
 
-class PreCachePrayerTimes extends UseCase<void, PreCachePrayerTimesParams> {
+class PreCachePrayerTimes extends UseCase<bool, PreCachePrayerTimesParams> {
   final PrayerTimesRepository prayerTimesRepository;
 
   PreCachePrayerTimes({required this.prayerTimesRepository});
 
-  static int _daysInMonth(int year, int month) =>
-      DateTime(year, month + 1, 0).day;
-
   @override
-  Future<void> call(PreCachePrayerTimesParams params) async {
+  Future<bool> call(PreCachePrayerTimesParams params) async {
     final now = params.now ?? DateTime.now();
     final resolved = resolveCalculationParams(
       method: params.method,
@@ -34,7 +31,7 @@ class PreCachePrayerTimes extends UseCase<void, PreCachePrayerTimesParams> {
       enCountry: params.location.enCountry,
     );
 
-    await prayerTimesRepository.preCacheMonth(
+    final current = await prayerTimesRepository.preCacheMonth(
       location: params.location,
       year: now.year,
       month: now.month,
@@ -42,17 +39,14 @@ class PreCachePrayerTimes extends UseCase<void, PreCachePrayerTimesParams> {
       school: resolved.school,
     );
 
-    final daysLeft = _daysInMonth(now.year, now.month) - now.day;
-    if (daysLeft <= 7) {
-      final nextMonth = now.month == 12 ? 1 : now.month + 1;
-      final nextYear = now.month == 12 ? now.year + 1 : now.year;
-      await prayerTimesRepository.preCacheMonth(
-        location: params.location,
-        year: nextYear,
-        month: nextMonth,
-        method: resolved.method,
-        school: resolved.school,
-      );
-    }
+    final next = DateTime(now.year, now.month + 1);
+    final upcoming = await prayerTimesRepository.preCacheMonth(
+      location: params.location,
+      year: next.year,
+      month: next.month,
+      method: resolved.method,
+      school: resolved.school,
+    );
+    return current || upcoming;
   }
 }

@@ -51,19 +51,20 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
     PrayerName currentPrayer = PrayerName.isha;
     PrayerName nextPrayer = PrayerName.fajr;
 
-    DateTime targetNextPrayerTime = ctx.prayerTimes
-        .timings[PrayerName.fajr]!
+    DateTime targetNextPrayerTime = ctx.prayerTimes.timings[PrayerName.fajr]!
         .parse24hTime(date: contextDate)
         .add(1.days);
 
     for (final prayerName in prayersList) {
-      final prayerTime =
-          ctx.prayerTimes.timings[prayerName]!.parse24hTime(date: contextDate);
+      final prayerTime = ctx.prayerTimes.timings[prayerName]!.parse24hTime(
+        date: contextDate,
+      );
 
       if (now.isAfter(prayerTime)) {
         currentPrayer = prayerName;
         continue;
       }
+      if (prayerName == PrayerName.sunrise) continue;
       // now <= prayerTime -> first upcoming (exact-equal counts as upcoming)
       targetNextPrayerTime = prayerTime;
       nextPrayer = prayerName;
@@ -95,8 +96,11 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
     // passed (context.date is strictly before today). A context dated AHEAD of
     // today (the post-Isha wholesale roll) is NOT stale, so use isAfter, not !=.
     final today = DateTime(now.year, now.month, now.day);
-    final ctxDay =
-        DateTime(contextDate.year, contextDate.month, contextDate.day);
+    final ctxDay = DateTime(
+      contextDate.year,
+      contextDate.month,
+      contextDate.day,
+    );
     if (today.isAfter(ctxDay) && !_isMidnightRefreshed) {
       _isMidnightRefreshed = true;
       emit(PrayerCountdownRequestRefresh(silent: true));

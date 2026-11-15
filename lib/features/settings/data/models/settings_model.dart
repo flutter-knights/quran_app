@@ -4,6 +4,8 @@ import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
 
@@ -18,8 +20,11 @@ class SettingsModel extends Settings {
     super.playbackSpeed,
     super.defaultReciter,
     super.isPrayerStripPinned,
-    super.adhanEnabledByPrayer,
-    super.reminderMinutesByPrayer,
+    super.prayerAlerts,
+    super.stripStyle,
+    super.alertsIntroSeen,
+    super.xiaomiAutostartConfirmed,
+    super.xiaomiBatteryConfirmed,
     super.hasCompletedOnboarding,
     super.showSplashOnLaunch,
     super.notificationHintDismissed,
@@ -38,8 +43,11 @@ class SettingsModel extends Settings {
     double? playbackSpeed,
     Reciter? defaultReciter,
     bool? isPrayerStripPinned,
-    Map<PrayerName, bool>? adhanEnabledByPrayer,
-    Map<PrayerName, int>? reminderMinutesByPrayer,
+    Map<PrayerName, PrayerAlert>? prayerAlerts,
+    StripStyle? stripStyle,
+    bool? alertsIntroSeen,
+    bool? xiaomiAutostartConfirmed,
+    bool? xiaomiBatteryConfirmed,
     bool? hasCompletedOnboarding,
     bool? showSplashOnLaunch,
     bool? notificationHintDismissed,
@@ -56,8 +64,13 @@ class SettingsModel extends Settings {
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       defaultReciter: defaultReciter ?? this.defaultReciter,
       isPrayerStripPinned: isPrayerStripPinned ?? this.isPrayerStripPinned,
-      adhanEnabledByPrayer: adhanEnabledByPrayer ?? this.adhanEnabledByPrayer,
-      reminderMinutesByPrayer: reminderMinutesByPrayer ?? this.reminderMinutesByPrayer,
+      prayerAlerts: prayerAlerts ?? this.prayerAlerts,
+      stripStyle: stripStyle ?? this.stripStyle,
+      alertsIntroSeen: alertsIntroSeen ?? this.alertsIntroSeen,
+      xiaomiAutostartConfirmed:
+          xiaomiAutostartConfirmed ?? this.xiaomiAutostartConfirmed,
+      xiaomiBatteryConfirmed:
+          xiaomiBatteryConfirmed ?? this.xiaomiBatteryConfirmed,
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       showSplashOnLaunch: showSplashOnLaunch ?? this.showSplashOnLaunch,
@@ -92,8 +105,11 @@ class SettingsModel extends Settings {
         orElse: () => Reciter.alafasy,
       ),
       isPrayerStripPinned: map['isPrayerStripPinned'] ?? false,
-      adhanEnabledByPrayer: _readEnabledMap(map['adhanEnabledByPrayer']),
-      reminderMinutesByPrayer: _readReminderMap(map['reminderMinutesByPrayer']),
+      prayerAlerts: _readPrayerAlerts(map),
+      stripStyle: _readStripStyle(map['stripStyle']),
+      alertsIntroSeen: _readBool(map['alertsIntroSeen']),
+      xiaomiAutostartConfirmed: _readBool(map['xiaomiAutostartConfirmed']),
+      xiaomiBatteryConfirmed: _readBool(map['xiaomiBatteryConfirmed']),
       // Diverges from the constructor default (false): a persisted entry that
       // predates this key belongs to an existing user who must NOT be sent
       // back through onboarding, so absence reads as "already onboarded".
@@ -122,12 +138,27 @@ class SettingsModel extends Settings {
       'playbackSpeed': playbackSpeed,
       'defaultReciter': defaultReciter.name,
       'isPrayerStripPinned': isPrayerStripPinned,
-      'adhanEnabledByPrayer': {
-        for (final e in adhanEnabledByPrayer.entries) e.key.name: e.value,
+      'prayerAlerts': {
+        for (final e in prayerAlerts.entries)
+          e.key.name: {
+            'enabled': e.value.enabled,
+            'sound': e.value.sound.name,
+            'ringInSilent': e.value.ringInSilent,
+            'reminderEnabled': e.value.reminderEnabled,
+            'reminderMinutes': e.value.reminderMinutes,
+            'reminderSound': e.value.reminderSound.name,
+          },
       },
-      'reminderMinutesByPrayer': {
-        for (final e in reminderMinutesByPrayer.entries) e.key.name: e.value,
+      'stripStyle': {
+        'expanded': stripStyle.expanded,
+        'showCountdown': stripStyle.showCountdown,
+        'highlight': stripStyle.highlight.name,
+        'background': stripStyle.background.name,
+        'shape': stripStyle.shape.name,
       },
+      'alertsIntroSeen': alertsIntroSeen,
+      'xiaomiAutostartConfirmed': xiaomiAutostartConfirmed,
+      'xiaomiBatteryConfirmed': xiaomiBatteryConfirmed,
       'hasCompletedOnboarding': hasCompletedOnboarding,
       'showSplashOnLaunch': showSplashOnLaunch,
       'notificationHintDismissed': notificationHintDismissed,
@@ -142,29 +173,76 @@ class SettingsModel extends Settings {
     return v.clamp(Settings.minPageBrightness, 1.0);
   }
 
-  static Map<PrayerName, bool> _readEnabledMap(dynamic raw) {
-    if (raw is! Map) return Settings.defaultAdhanEnabled;
-    final result = <PrayerName, bool>{...Settings.defaultAdhanEnabled};
-    for (final e in raw.entries) {
-      if (e.key is! String) continue;
-      final p = PrayerName.values.firstWhereOrNull((x) => x.name == e.key);
-      final v = e.value;
-      if (p != null && v is bool) result[p] = v;
+  static bool _readBool(Object? raw, [bool fallback = false]) =>
+      raw is bool ? raw : fallback;
+
+  static T _readEnum<T extends Enum>(List<T> values, Object? raw, T fallback) =>
+      values.firstWhereOrNull((e) => e.name == raw) ?? fallback;
+
+  static Map<PrayerName, PrayerAlert> _readPrayerAlerts(
+    Map<String, dynamic> map,
+  ) {
+    final raw = map['prayerAlerts'];
+    if (raw is Map) {
+      return {for (final p in alertPrayers) p: _alertFromMap(raw[p.name])};
     }
-    return result;
+    final enabled = map['adhanEnabledByPrayer'];
+    final minutes = map['reminderMinutesByPrayer'];
+    return {
+      for (final p in alertPrayers)
+        p: _migrateLegacy(
+          enabled is Map ? enabled[p.name] : null,
+          minutes is Map ? minutes[p.name] : null,
+        ),
+    };
   }
 
-  static Map<PrayerName, int> _readReminderMap(dynamic raw) {
-    if (raw is! Map) return Settings.defaultReminderMinutes;
-    final result = <PrayerName, int>{...Settings.defaultReminderMinutes};
-    for (final e in raw.entries) {
-      if (e.key is! String) continue;
-      final p = PrayerName.values.firstWhereOrNull((x) => x.name == e.key);
-      final v = e.value;
-      if (p != null && v is int && Settings.validReminderMinutes.contains(v)) {
-        result[p] = v;
-      }
-    }
-    return result;
+  static PrayerAlert _migrateLegacy(Object? enabled, Object? minutes) {
+    final m = minutes is int ? minutes : 0;
+    return PrayerAlert(
+      enabled: _readBool(enabled, true),
+      reminderEnabled: m > 0,
+      reminderMinutes: m > 0 ? PrayerAlert.clampMinutes(m) : 10,
+    );
+  }
+
+  static PrayerAlert _alertFromMap(Object? raw) {
+    const d = PrayerAlert();
+    if (raw is! Map) return d;
+    final minutes = raw['reminderMinutes'];
+    return PrayerAlert(
+      enabled: _readBool(raw['enabled'], d.enabled),
+      sound: _readEnum(PrayerSound.values, raw['sound'], d.sound),
+      ringInSilent: _readBool(raw['ringInSilent'], d.ringInSilent),
+      reminderEnabled: _readBool(raw['reminderEnabled'], d.reminderEnabled),
+      reminderMinutes: minutes is int
+          ? PrayerAlert.clampMinutes(minutes)
+          : d.reminderMinutes,
+      reminderSound: _readEnum(
+        ReminderSound.values,
+        raw['reminderSound'],
+        d.reminderSound,
+      ),
+    );
+  }
+
+  static StripStyle _readStripStyle(Object? raw) {
+    const d = StripStyle();
+    if (raw is! Map) return d;
+    return StripStyle(
+      expanded: _readBool(raw['expanded'], d.expanded),
+      showCountdown: _readBool(raw['showCountdown'], d.showCountdown),
+      highlight: _readEnum(
+        StripHighlight.values,
+        raw['highlight'],
+        d.highlight,
+      ),
+      background: _readEnum(
+        StripBackground.values,
+        raw['background'],
+        d.background,
+      ),
+      shape: _readEnum(StripShape.values, raw['shape'], d.shape),
+    );
   }
 }

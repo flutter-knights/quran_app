@@ -2,17 +2,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_render_style.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 
 void main() {
   PrayerStripState day(String dateKey) => PrayerStripState(
-        cells: const [PrayerCell(label: 'Fajr', timeFormatted: '04:15', minutes: 255)],
-        nextPrayerIndex: 0,
-        dateKey: dateKey,
-        hijriDateLabel: '5 Dhul-Hijjah',
-        weekdayLabel: 'Friday',
-        localeCode: 'en',
-        isFriday: false,
-      );
+    cells: const [
+      PrayerCell(label: 'Fajr', timeFormatted: '04:15', minutes: 255),
+    ],
+    nextPrayerIndex: 0,
+    dateKey: dateKey,
+    hijriDateLabel: '5 Dhul-Hijjah',
+    weekdayLabel: 'Friday',
+    localeCode: 'en',
+    isFriday: false,
+  );
 
   test('toJson wraps each day under "days"', () {
     final w = PrayerStripWindow(days: [day('22-05-2026'), day('23-05-2026')]);
@@ -29,5 +33,42 @@ void main() {
       PrayerStripWindow(days: [day('22-05-2026')]),
       PrayerStripWindow(days: [day('22-05-2026')]),
     );
+  });
+
+  test('toJson omits style when unset', () {
+    expect(
+      PrayerStripWindow(
+        days: [day('22-05-2026')],
+      ).toJson().containsKey('style'),
+      isFalse,
+    );
+  });
+
+  test('toJson carries style', () {
+    const style = StripRenderStyle(
+      expanded: true,
+      countdown: false,
+      highlightDay: 0xFF9A3B3B,
+      highlightNight: 0xFFE7A3A3,
+      highlightTextDay: 0xFF9A3B3B,
+      pillTextDay: 0xFFFFFFFF,
+      pillTextNight: 0xFF121413,
+      shape: StripShape.pill,
+    );
+    final window = PrayerStripWindow(days: [day('22-05-2026')], style: style);
+    expect(window.toJson()['style'], isA<Map>());
+    expect(window.toJson()['style'], style.toJson());
+    expect(window, isNot(PrayerStripWindow(days: [day('22-05-2026')])));
+  });
+
+  test('nextTag is serialised once at the top level', () {
+    final json = PrayerStripWindow(
+      days: [day('22-05-2026'), day('23-05-2026')],
+      nextTag: 'Next',
+    ).toJson();
+    expect(json['nextTag'], 'Next');
+    for (final d in (json['days'] as List).cast<Map>()) {
+      expect(d.containsKey('nextTag'), isFalse);
+    }
   });
 }

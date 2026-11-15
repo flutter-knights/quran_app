@@ -10,7 +10,12 @@ import 'package:quran_app/features/bookmarks/presentation/pages/bookmarks_page.d
 import 'package:quran_app/features/qibla/presentation/cubit/qibla_cubit.dart';
 import 'package:quran_app/features/qibla/presentation/pages/qibla_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
-import 'package:quran_app/features/home/presentation/pages/notifications_settings_page.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/android_sdk_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/pages/notifications_settings_page.dart';
+import 'package:quran_app/features/notifications/presentation/pages/prayer_strip_settings_page.dart';
+import 'package:quran_app/features/notifications/presentation/pages/reliability_page.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:quran_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
@@ -26,6 +31,8 @@ import '../../core/di/dependency_injection.dart';
 abstract class AppRouter {
   static const String homePath = "/home";
   static const String notificationsPath = "/notifications";
+  static const String prayerStripPath = "/prayerStrip";
+  static const String alertsReliabilityPath = "/alertsReliability";
   static const String splashPath = "/splash";
   static const String onboardingPath = "/onboarding";
   static const String mushafPath = "/mushaf";
@@ -75,13 +82,43 @@ abstract class AppRouter {
               settings: const GoTransitionSettings(
                 duration: Duration(milliseconds: 450),
               ),
-              builder: (context, state) => const OnboardingPage(),
+              builder: (context, state) => BlocProvider(
+                create: (_) => sl<ReliabilityCubit>(),
+                child: const OnboardingPage(),
+              ),
             ),
       ),
       GoRoute(
         path: notificationsPath,
         pageBuilder: GoTransitions.fade.withScale.build(
-          builder: (context, state) => const NotificationsSettingsPage(),
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => sl<ReliabilityCubit>()),
+              BlocProvider(create: (_) => sl<TodayPrayerTimesCubit>()..load()),
+            ],
+            child: const NotificationsSettingsPage(),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: prayerStripPath,
+        pageBuilder: GoTransitions.fade.withScale.build(
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => sl<TodayPrayerTimesCubit>()..load()),
+              BlocProvider(create: (_) => sl<AndroidSdkCubit>()..load()),
+            ],
+            child: const PrayerStripSettingsPage(),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: alertsReliabilityPath,
+        pageBuilder: GoTransitions.fade.withScale.build(
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<ReliabilityCubit>(),
+            child: const ReliabilityPage(),
+          ),
         ),
       ),
       GoRoute(

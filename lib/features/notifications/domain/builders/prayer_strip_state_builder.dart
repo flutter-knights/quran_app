@@ -3,6 +3,7 @@ import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
+import 'package:quran_app/features/notifications/domain/services/prayer_labels.dart';
 
 /// Fixed Fajr→Isha render order (5 prayers; sunrise is excluded).
 /// Independent of localization.
@@ -13,25 +14,6 @@ const _renderOrder = <PrayerName>[
   PrayerName.maghrib,
   PrayerName.isha,
 ];
-
-const _labelsAr = <PrayerName, String>{
-  PrayerName.fajr: 'الفجر',
-  PrayerName.dhuhr: 'الظهر',
-  PrayerName.asr: 'العصر',
-  PrayerName.maghrib: 'المغرب',
-  PrayerName.isha: 'العشاء',
-};
-
-const _labelsEn = <PrayerName, String>{
-  PrayerName.fajr: 'Fajr',
-  PrayerName.dhuhr: 'Dhuhr',
-  PrayerName.asr: 'Asr',
-  PrayerName.maghrib: 'Maghrib',
-  PrayerName.isha: 'Isha',
-};
-
-const _jumuahLabelAr = 'الجمعة';
-const _jumuahLabelEn = "Jumu'ah";
 
 /// Builds a [PrayerStripState] snapshot from today's prayer times.
 ///
@@ -50,34 +32,39 @@ class PrayerStripStateBuilder {
     required String localeCode,
     required bool isFriday,
     required bool use24Hour,
-    int? accentColor,
+    String Function(String prayerLabel)? nextInLabel,
   }) {
-    final labels = localeCode == 'ar' ? _labelsAr : _labelsEn;
-    final jumuah = localeCode == 'ar' ? _jumuahLabelAr : _jumuahLabelEn;
-
     final cells = _renderOrder.map((p) {
-      final rawLabel = labels[p]!;
-      final label = (isFriday && p == PrayerName.dhuhr) ? jumuah : rawLabel;
+      final label = prayerNameLabel(
+        p,
+        arabic: localeCode == 'ar',
+        friday: isFriday,
+      );
       final raw = prayerTimes.timings[p] ?? '';
       final time = use24Hour
           ? raw.toIndicNumerals(localeCode)
           : _format12Hour(raw, localeCode);
+      final suffix = use24Hour ? null : _dayPeriod(raw, localeCode);
       return PrayerCell(
         label: label,
         timeFormatted: time,
+        timeFull: suffix == null ? time : '$time $suffix',
         minutes: _parseMinutes(raw),
+        nextLabel: nextInLabel?.call(label) ?? '',
       );
     }).toList();
 
     final nextIndex = _renderOrder.indexOf(nextPrayer);
 
-    final monthName =
-        localeCode == 'ar' ? prayerTimes.date.month : prayerTimes.date.enMonth;
+    final monthName = localeCode == 'ar'
+        ? prayerTimes.date.month
+        : prayerTimes.date.enMonth;
     final dayPart = prayerTimes.date.day.toIndicNumerals(localeCode);
     final hijriLabel = '$dayPart $monthName';
 
-    final weekdayLabel =
-        localeCode == 'ar' ? prayerTimes.date.weekDay : prayerTimes.date.enWeekDay;
+    final weekdayLabel = localeCode == 'ar'
+        ? prayerTimes.date.weekDay
+        : prayerTimes.date.enWeekDay;
 
     return PrayerStripState(
       cells: cells,
@@ -87,7 +74,6 @@ class PrayerStripStateBuilder {
       weekdayLabel: weekdayLabel,
       localeCode: localeCode,
       isFriday: isFriday,
-      accentColor: accentColor,
     );
   }
 
@@ -99,6 +85,14 @@ class PrayerStripStateBuilder {
     final h = int.tryParse(parts[0]) ?? 0;
     final m = int.tryParse(parts[1]) ?? 0;
     return h * 60 + m;
+  }
+
+  static String? _dayPeriod(String hhmm24, String localeCode) {
+    final h = int.tryParse(hhmm24.split(':').first);
+    if (h == null || h < 0 || h > 23) return null;
+    final ar = localeCode == 'ar';
+    if (h < 12) return ar ? 'ص' : 'AM';
+    return ar ? 'م' : 'PM';
   }
 
   /// Converts a `HH:mm` 24-hour string into a 12-hour string without an
