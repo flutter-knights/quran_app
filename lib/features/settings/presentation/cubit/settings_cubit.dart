@@ -14,11 +14,13 @@ import 'package:quran_app/features/settings/domain/entities/settings.dart';
 part 'settings_state.dart';
 
 class SettingsCubit extends HydratedCubit<SettingsState> {
+  static const defaultPalette = ColorPalette.neutralDark;
+
   SettingsCubit()
     : super(
         SettingsState(
           SettingsModel(
-            palette: ColorPalette.neutralDark,
+            palette: defaultPalette,
             // NOTE: this flag is inverted — `false` selects the 12-hour
             // format, `true` selects 24-hour. Default first run to 12-hour.
             isFormat12Hours: false,

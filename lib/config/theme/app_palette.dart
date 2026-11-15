@@ -118,7 +118,7 @@ extension AppPaletteX on ColorPalette {
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
     ),
     switchTheme: SwitchThemeData(
-      trackColor: _whenSelected(isDark ? primaryInk : primary),
+      trackColor: _whenSelected(primaryInk),
       thumbColor: _whenSelected(isDark ? bg : onPrimary),
     ),
   );

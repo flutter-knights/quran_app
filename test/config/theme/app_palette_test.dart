@@ -77,64 +77,62 @@ void main() {
 
   group('Appendix B comfort values', () {
     const table = {
-      ColorPalette.neutralLight: [
-        0xFFEDEEEA,
-        0xFFDCE0DA,
-        0xFF1B1F1D,
-        0xFF545A56,
-        0xFF2E5244,
-        0xFFF5F5F2,
-        0xFF2E5244,
-        0xFFA33A35,
-        0xFFF5F5F2,
-      ],
-      ColorPalette.neutralDark: [
-        0xFF121413,
-        0xFF202421,
-        0xFFE4E6E3,
-        0xFFADB2AE,
-        0xFF2E5244,
-        0xFFECEEEB,
-        0xFF93BAA8,
-        0xFFE68A84,
-        0xFF121413,
-      ],
-      ColorPalette.slateLight: [
-        0xFFEBEEF2,
-        0xFFDBE1E8,
-        0xFF1A1E24,
-        0xFF4C5563,
-        0xFF1C4558,
-        0xFFF3F5F7,
-        0xFF1C4558,
-        0xFFA33A35,
-        0xFFF5F5F2,
-      ],
-      ColorPalette.slateDark: [
-        0xFF121418,
-        0xFF1F242C,
-        0xFFE3E6EA,
-        0xFFADB4BF,
-        0xFF1C4558,
-        0xFFECEEF1,
-        0xFF8DB5CC,
-        0xFFE68A84,
-        0xFF121418,
-      ],
+      ColorPalette.neutralLight: (
+        bg: 0xFFEDEEEA,
+        surface: 0xFFDCE0DA,
+        onSurface: 0xFF1B1F1D,
+        onSurfaceVar: 0xFF545A56,
+        primary: 0xFF2E5244,
+        onPrimary: 0xFFF5F5F2,
+        primaryInk: 0xFF2E5244,
+        error: 0xFFA33A35,
+        onError: 0xFFF5F5F2,
+      ),
+      ColorPalette.neutralDark: (
+        bg: 0xFF121413,
+        surface: 0xFF202421,
+        onSurface: 0xFFE4E6E3,
+        onSurfaceVar: 0xFFADB2AE,
+        primary: 0xFF2E5244,
+        onPrimary: 0xFFECEEEB,
+        primaryInk: 0xFF93BAA8,
+        error: 0xFFE68A84,
+        onError: 0xFF121413,
+      ),
+      ColorPalette.slateLight: (
+        bg: 0xFFEBEEF2,
+        surface: 0xFFDBE1E8,
+        onSurface: 0xFF1A1E24,
+        onSurfaceVar: 0xFF4C5563,
+        primary: 0xFF1C4558,
+        onPrimary: 0xFFF3F5F7,
+        primaryInk: 0xFF1C4558,
+        error: 0xFFA33A35,
+        onError: 0xFFF5F5F2,
+      ),
+      ColorPalette.slateDark: (
+        bg: 0xFF121418,
+        surface: 0xFF1F242C,
+        onSurface: 0xFFE3E6EA,
+        onSurfaceVar: 0xFFADB4BF,
+        primary: 0xFF1C4558,
+        onPrimary: 0xFFECEEF1,
+        primaryInk: 0xFF8DB5CC,
+        error: 0xFFE68A84,
+        onError: 0xFF121418,
+      ),
     };
     for (final MapEntry(key: p, value: v) in table.entries) {
       test('$p', () {
-        expect([
-          p.bg,
-          p.surface,
-          p.onSurface,
-          p.onSurfaceVar,
-          p.primary,
-          p.onPrimary,
-          p.primaryInk,
-          p.error,
-          p.onError,
-        ], v.map(Color.new).toList());
+        expect(p.bg, Color(v.bg), reason: 'bg');
+        expect(p.surface, Color(v.surface), reason: 'surface');
+        expect(p.onSurface, Color(v.onSurface), reason: 'onSurface');
+        expect(p.onSurfaceVar, Color(v.onSurfaceVar), reason: 'onSurfaceVar');
+        expect(p.primary, Color(v.primary), reason: 'primary');
+        expect(p.onPrimary, Color(v.onPrimary), reason: 'onPrimary');
+        expect(p.primaryInk, Color(v.primaryInk), reason: 'primaryInk');
+        expect(p.error, Color(v.error), reason: 'error');
+        expect(p.onError, Color(v.onError), reason: 'onError');
       });
     }
     test('primaryTint is primary at 10% in light', () {

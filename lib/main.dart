@@ -68,9 +68,9 @@ class _AppLoaderState extends State<AppLoader> {
   @override
   Widget build(BuildContext context) {
     if (!_ready) {
-      return const MaterialApp(
+      return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(backgroundColor: Color(0xFF0D0D0D)),
+        home: Scaffold(backgroundColor: SettingsCubit.defaultPalette.bg),
       );
     }
     return MultiBlocProvider(
