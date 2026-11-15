@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/xiaomi_checklist.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/onboarding_step_header.dart';
-import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 class XiaomiStep extends StatelessWidget {
   const XiaomiStep({super.key});
@@ -17,7 +15,6 @@ class XiaomiStep extends StatelessWidget {
       colorScheme: theme.colorScheme.copyWith(
         brightness: Brightness.dark,
         primary: Colors.white,
-        secondary: Colors.white,
         onSurface: Colors.white,
         onSurfaceVariant: Colors.white.withValues(alpha: 0.75),
         surfaceContainer: Colors.white.withValues(alpha: 0.08),
@@ -36,16 +33,7 @@ class XiaomiStep extends StatelessWidget {
           ),
           Theme(
             data: onBackdrop,
-            child: BlocSelector<SettingsCubit, SettingsState, (bool, bool)>(
-              selector: (state) => (
-                state.settingsModel.xiaomiAutostartConfirmed,
-                state.settingsModel.xiaomiBatteryConfirmed,
-              ),
-              builder: (context, confirmed) => XiaomiChecklist(
-                autostartConfirmed: confirmed.$1,
-                batteryConfirmed: confirmed.$2,
-              ),
-            ),
+            child: const XiaomiChecklist(ink: Colors.white),
           ),
         ],
       ),

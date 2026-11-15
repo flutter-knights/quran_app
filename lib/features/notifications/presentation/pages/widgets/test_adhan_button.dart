@@ -16,7 +16,9 @@ import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.da
 import 'package:quran_app/generated/l10n.dart';
 
 class TestAdhanButton extends StatelessWidget {
-  const TestAdhanButton({super.key});
+  const TestAdhanButton({super.key, this.label});
+
+  final String? label;
 
   Future<void> _onPressed(BuildContext context) async {
     final s = PendingS.current;
@@ -56,7 +58,7 @@ class TestAdhanButton extends StatelessWidget {
         color: context.palette.primaryInk,
         size: 22,
       ),
-      label: Text(S.of(context).playTestAdhan, style: TS.semi16),
+      label: Text(label ?? S.of(context).playTestAdhan, style: TS.semi16),
     );
   }
 }

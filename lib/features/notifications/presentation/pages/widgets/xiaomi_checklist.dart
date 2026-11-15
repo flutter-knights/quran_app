@@ -11,28 +11,31 @@ import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/notifications/domain/entities/system_settings_target.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_list_parts.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/open_setting_button.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 class XiaomiChecklist extends StatelessWidget {
-  const XiaomiChecklist({
-    super.key,
-    required this.autostartConfirmed,
-    required this.batteryConfirmed,
-  });
+  const XiaomiChecklist({super.key, required this.ink});
 
-  final bool autostartConfirmed;
-  final bool batteryConfirmed;
+  final Color ink;
 
   @override
   Widget build(BuildContext context) {
     final s = PendingS.of(context);
     final settings = context.read<SettingsCubit>();
+    final (autostartConfirmed, batteryConfirmed) = context.select(
+      (SettingsCubit c) => (
+        c.state.settingsModel.xiaomiAutostartConfirmed,
+        c.state.settingsModel.xiaomiBatteryConfirmed,
+      ),
+    );
     return SurfaceCard(
       padding: EdgeInsets.zero,
       child: Column(
         children: [
           _XiaomiStepRow(
             step: 1,
+            ink: ink,
             title: s.rel_autostart,
             subtitle: s.rel_autostartSub,
             target: SystemSettingsTarget.autostart,
@@ -42,6 +45,7 @@ class XiaomiChecklist extends StatelessWidget {
           const AlertsRowDivider(),
           _XiaomiStepRow(
             step: 2,
+            ink: ink,
             title: s.rel_xiaomiBattery,
             subtitle: s.rel_xiaomiBatterySub,
             target: SystemSettingsTarget.xiaomiBattery,
@@ -51,6 +55,7 @@ class XiaomiChecklist extends StatelessWidget {
           const AlertsRowDivider(),
           _XiaomiStepRow(
             step: 3,
+            ink: ink,
             title: s.rel_lockApp,
             subtitle: s.rel_lockAppSub,
           ),
@@ -63,6 +68,7 @@ class XiaomiChecklist extends StatelessWidget {
 class _XiaomiStepRow extends StatelessWidget {
   const _XiaomiStepRow({
     required this.step,
+    required this.ink,
     required this.title,
     required this.subtitle,
     this.target,
@@ -71,6 +77,7 @@ class _XiaomiStepRow extends StatelessWidget {
   });
 
   final int step;
+  final Color ink;
   final String title;
   final String subtitle;
   final SystemSettingsTarget? target;
@@ -81,9 +88,6 @@ class _XiaomiStepRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = PendingS.of(context);
     final scheme = context.colorScheme;
-    final ink = Theme.of(context).brightness == Brightness.dark
-        ? scheme.secondary
-        : scheme.primary;
     final target = this.target;
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
@@ -108,17 +112,7 @@ class _XiaomiStepRow extends StatelessWidget {
                     runSpacing: 8,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(0, 48),
-                          foregroundColor: ink,
-                          side: BorderSide(color: ink.withValues(alpha: 0.5)),
-                        ),
-                        onPressed: () => context
-                            .read<ReliabilityCubit>()
-                            .openSettings(target),
-                        child: Text(s.rel_openSettings, style: TS.semi14),
-                      ),
+                      OpenSettingButton(target: target, ink: ink),
                       if (confirmed)
                         AppStatusBadge(label: s.rel_done, color: ink)
                       else

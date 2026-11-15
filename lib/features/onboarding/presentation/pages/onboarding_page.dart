@@ -9,7 +9,6 @@ import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/core/widgets/design/splash_backdrop.dart';
-import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/alerts_step.dart';
@@ -44,6 +43,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   bool _leaving = false;
   bool _isXiaomi = false;
   AlertsChoice? _alertsChoice;
+  bool _alertsDeferred = false;
 
   int get _stepCount => _isXiaomi ? 7 : 6;
   int get _lastStep => _stepCount - 1;
@@ -62,7 +62,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 
-  void _next() => _index == _lastStep ? _finish() : _goTo(_index + 1);
+  void _next() => _index >= _lastStep ? _finish() : _goTo(_index + 1);
+
+  void _onSecondary() {
+    if (_index == _alertsStep) _alertsDeferred = true;
+    _next();
+  }
 
   Future<void> _onPrimary() async {
     switch (_index) {
@@ -78,9 +83,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         } catch (_) {}
         if (mounted) _goTo(_alertsStep);
       case _alertsStep:
-        if (_alertsChoice case final choice?) {
-          applyAlertsChoice(context.read<SettingsCubit>(), choice);
-        }
+        _alertsDeferred = false;
         _next();
       default:
         _next();
@@ -90,18 +93,26 @@ class _OnboardingPageState extends State<OnboardingPage> {
   void _finish() {
     if (_leaving || !mounted) return;
     _leaving = true;
-    context.read<SettingsCubit>().completeOnboarding();
+    final settings = context.read<SettingsCubit>();
+    if (_alertsChoice case final choice? when !_alertsDeferred) {
+      applyAlertsChoice(settings, choice);
+    }
+    settings.completeOnboarding();
     GoRouter.of(context).pushReplacement(AppRouter.homePath);
   }
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    _isXiaomi = context.select(
+    final xiaomiNow = context.select(
       (ReliabilityCubit c) => switch (c.state) {
         ReliabilityLoaded(:final status) => status.isXiaomi,
         _ => false,
       },
+    );
+    _isXiaomi = _isXiaomi || xiaomiNow;
+    final storedAlerts = context.select(
+      (SettingsCubit c) => c.state.settingsModel.prayerAlerts,
     );
     return Scaffold(
       body: SplashBackdrop(
@@ -140,10 +151,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       why: s.onb_notifications_why,
                     ),
                     AlertsStep(
-                      choice:
-                          _alertsChoice ??
-                          const AlertsChoice(sound: PrayerSound.adhan),
-                      onChanged: (c) => setState(() => _alertsChoice = c),
+                      choice: _alertsChoice ?? alertsChoiceFrom(storedAlerts),
+                      onChanged: (c) => setState(() {
+                        _alertsChoice = c;
+                        _alertsDeferred = false;
+                      }),
                     ),
                     if (_isXiaomi) const XiaomiStep(),
                   ],
@@ -194,7 +206,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: TextButton(
-                onPressed: _next,
+                onPressed: _onSecondary,
                 child: Text(
                   secondaryLabel,
                   style: TS.semi14.copyWith(

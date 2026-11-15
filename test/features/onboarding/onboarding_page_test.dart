@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -67,13 +69,14 @@ void main() {
     WidgetTester tester, {
     bool xiaomi = false,
     String locale = 'ar',
+    Stream<ReliabilityState> states = const Stream.empty(),
   }) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     whenListen(
       reliability,
-      const Stream<ReliabilityState>.empty(),
+      states,
       initialState: ReliabilityLoaded(status.copyWith(isXiaomi: xiaomi)),
     );
     settings.updateSettings(isArabic: locale == 'ar');
@@ -248,6 +251,76 @@ void main() {
       find.byType(RadioGroup<PrayerSound?>),
     );
     expect(radios.groupValue, PrayerSound.tone);
+  });
+
+  testWidgets('a choice swiped past on Xiaomi still applies at the end', (
+    tester,
+  ) async {
+    await pump(tester, xiaomi: true);
+    await toNotificationsStep(tester);
+    await secondary(tester);
+    await tester.tap(find.text('نغمة الإشعار'));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(PageView), const Offset(300, 0));
+    await tester.pumpAndSettle();
+    expect(find.text(xiaomiTitle), findsOneWidget);
+    await primary(tester);
+    final alerts = settings.state.settingsModel.prayerAlerts.values;
+    expect(alerts.every((a) => a.sound == PrayerSound.tone), isTrue);
+    expect(find.text('home-page'), findsOneWidget);
+  });
+
+  testWidgets('later on alerts keeps the defaults through the Xiaomi step', (
+    tester,
+  ) async {
+    await pump(tester, xiaomi: true);
+    await toNotificationsStep(tester);
+    await secondary(tester);
+    await tester.tap(find.text('نغمة الإشعار'));
+    await tester.pumpAndSettle();
+    await secondary(tester);
+    expect(find.text(xiaomiTitle), findsOneWidget);
+    await secondary(tester);
+    final alerts = settings.state.settingsModel.prayerAlerts.values;
+    expect(alerts.every((a) => a.sound == PrayerSound.adhan), isTrue);
+    expect(find.text('home-page'), findsOneWidget);
+  });
+
+  testWidgets('a later unavailable status keeps the Xiaomi step', (
+    tester,
+  ) async {
+    final states = StreamController<ReliabilityState>();
+    addTearDown(states.close);
+    await pump(tester, xiaomi: true, states: states.stream);
+    await toNotificationsStep(tester);
+    await secondary(tester);
+    await secondary(tester);
+    expect(find.text(xiaomiTitle), findsOneWidget);
+    states.add(const ReliabilityUnavailable());
+    await tester.pumpAndSettle();
+    expect(find.text(xiaomiTitle), findsOneWidget);
+    await primary(tester);
+    expect(find.text('home-page'), findsOneWidget);
+  });
+
+  testWidgets('the alerts step starts from the stored alerts', (tester) async {
+    settings.applyAlertToAll(
+      enabled: true,
+      sound: PrayerSound.tone,
+      reminderEnabled: true,
+      reminderMinutes: 30,
+    );
+    await pump(tester);
+    await toNotificationsStep(tester);
+    await secondary(tester);
+    final radios = tester.widget<RadioGroup<PrayerSound?>>(
+      find.byType(RadioGroup<PrayerSound?>),
+    );
+    expect(radios.groupValue, PrayerSound.tone);
+    final selected = tester
+        .widgetList<ChoiceChip>(find.byType(ChoiceChip))
+        .singleWhere((c) => c.selected);
+    expect((selected.label as Text).data, '٣٠ دقيقة');
   });
 
   for (final locale in ['ar', 'en']) {

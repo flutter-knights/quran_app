@@ -18,10 +18,10 @@ import 'package:quran_app/features/notifications/domain/entities/system_settings
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_list_parts.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/open_setting_button.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/test_adhan_button.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/xiaomi_checklist.dart';
 import 'package:quran_app/features/notifications/presentation/utils/enum_localization.dart';
-import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ReliabilityPage extends StatelessWidget {
@@ -59,7 +59,7 @@ class ReliabilityPage extends StatelessWidget {
                       ReliabilityUnavailable() => const [],
                     },
                     const SizedBox(height: 24),
-                    const TestAdhanButton(),
+                    TestAdhanButton(label: PendingS.of(context).rel_test),
                   ],
                 ),
               ),
@@ -183,16 +183,7 @@ class _CheckRow extends StatelessWidget {
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 48),
-                    foregroundColor: ink,
-                    side: BorderSide(color: ink.withValues(alpha: 0.5)),
-                  ),
-                  onPressed: () =>
-                      context.read<ReliabilityCubit>().openSettings(target),
-                  child: Text(s.rel_openSettings, style: TS.semi14),
-                ),
+                OpenSettingButton(target: target, ink: ink),
               ],
             ),
           ),
@@ -215,16 +206,7 @@ class _XiaomiSection extends StatelessWidget {
           text: s.rel_unverifiable,
           padding: const EdgeInsetsDirectional.fromSTEB(4, 10, 4, 10),
         ),
-        BlocSelector<SettingsCubit, SettingsState, (bool, bool)>(
-          selector: (state) => (
-            state.settingsModel.xiaomiAutostartConfirmed,
-            state.settingsModel.xiaomiBatteryConfirmed,
-          ),
-          builder: (context, confirmed) => XiaomiChecklist(
-            autostartConfirmed: confirmed.$1,
-            batteryConfirmed: confirmed.$2,
-          ),
-        ),
+        XiaomiChecklist(ink: context.palette.primaryInk),
       ],
     );
   }

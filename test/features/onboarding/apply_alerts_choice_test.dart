@@ -51,6 +51,38 @@ void main() {
     );
   });
 
+  group('alertsChoiceFrom', () {
+    test('reads the first enabled prayer', () {
+      final alerts = {
+        PrayerName.fajr: const PrayerAlert(enabled: false),
+        PrayerName.dhuhr: const PrayerAlert(
+          sound: PrayerSound.tone,
+          reminderEnabled: true,
+          reminderMinutes: 15,
+        ),
+        PrayerName.asr: const PrayerAlert(),
+      };
+      expect(
+        alertsChoiceFrom(alerts),
+        const AlertsChoice(sound: PrayerSound.tone, reminderMinutes: 15),
+      );
+    });
+
+    test('everything off reads as no alert', () {
+      final alerts = {
+        for (final p in alertPrayers) p: const PrayerAlert(enabled: false),
+      };
+      expect(alertsChoiceFrom(alerts), const AlertsChoice());
+    });
+
+    test('defaults read as adhan without a reminder', () {
+      expect(
+        alertsChoiceFrom(cubit.state.settingsModel.prayerAlerts),
+        const AlertsChoice(sound: PrayerSound.adhan),
+      );
+    });
+  });
+
   test('no alert disables every prayer', () {
     applyAlertsChoice(
       cubit,

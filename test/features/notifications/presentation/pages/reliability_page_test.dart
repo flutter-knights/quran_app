@@ -141,7 +141,10 @@ void main() {
     expect(find.text('بدون قيود'), findsOneWidget);
     expect(find.text('فتح الإعداد'), findsNothing);
     expect(find.text('مجدولة حتى ٢١ نوفمبر'), findsOneWidget);
-    expect(find.byType(TestAdhanButton), findsOneWidget);
+    expect(
+      find.widgetWithText(TestAdhanButton, 'اختبار الأذان'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('nothing scheduled reads as not scheduled yet', (tester) async {
