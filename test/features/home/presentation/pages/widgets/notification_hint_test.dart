@@ -5,6 +5,7 @@ import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart'
 import 'package:quran_app/features/home/presentation/pages/widgets/notification_hint.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
+import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class _FakeScheduler implements PrayerNotificationScheduler {
@@ -17,52 +18,57 @@ class _FakeScheduler implements PrayerNotificationScheduler {
   @override
   Future<bool?> requestNotificationsPermission() async => true;
   @override
-  Future<void> scheduleDailyPrayerNotifications(PrayerTimes p) async {}
+  Future<DateTime?> scheduleAlerts({
+    required List<PrayerTimes> days,
+    required Map<PrayerName, PrayerAlert> alerts,
+    required String localeCode,
+  }) async => null;
   @override
-  Future<void> cancelAllPrayerNotifications() async {}
+  Future<void> cancelAll() async {}
   @override
-  Future<void> scheduleStaticReminder({
-    required PrayerName prayer,
-    required DateTime at,
-    required String title,
-    required String body,
+  Future<void> scheduleTestNotification({
+    Duration delay = Duration.zero,
   }) async {}
-  @override
-  Future<void> cancelAllStaticReminders() async {}
-  @override
-  Future<void> scheduleTestNotification({Duration delay = Duration.zero}) async {}
 }
 
 void main() {
   Widget host(Widget child) => MaterialApp(
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: Scaffold(body: child),
-      );
+    localizationsDelegates: const [
+      S.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+    ],
+    supportedLocales: S.delegate.supportedLocales,
+    home: Scaffold(body: child),
+  );
 
   testWidgets('hidden when notifications enabled', (tester) async {
-    await tester.pumpWidget(host(NotificationHint(
-      dismissed: false,
-      onAllow: () async {},
-      onDismiss: () {},
-      scheduler: _FakeScheduler(true),
-    )));
+    await tester.pumpWidget(
+      host(
+        NotificationHint(
+          dismissed: false,
+          onAllow: () async {},
+          onDismiss: () {},
+          scheduler: _FakeScheduler(true),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(TextButton), findsNothing);
   });
 
   testWidgets('shown when disabled; dismiss fires callback', (tester) async {
     var dismissed = false;
-    await tester.pumpWidget(host(NotificationHint(
-      dismissed: false,
-      onAllow: () async {},
-      onDismiss: () => dismissed = true,
-      scheduler: _FakeScheduler(false),
-    )));
+    await tester.pumpWidget(
+      host(
+        NotificationHint(
+          dismissed: false,
+          onAllow: () async {},
+          onDismiss: () => dismissed = true,
+          scheduler: _FakeScheduler(false),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(TextButton), findsOneWidget);
     await tester.tap(find.byIcon(Icons.close));
@@ -70,12 +76,16 @@ void main() {
   });
 
   testWidgets('hidden when dismissed flag set', (tester) async {
-    await tester.pumpWidget(host(NotificationHint(
-      dismissed: true,
-      onAllow: () async {},
-      onDismiss: () {},
-      scheduler: _FakeScheduler(false),
-    )));
+    await tester.pumpWidget(
+      host(
+        NotificationHint(
+          dismissed: true,
+          onAllow: () async {},
+          onDismiss: () {},
+          scheduler: _FakeScheduler(false),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(TextButton), findsNothing);
   });

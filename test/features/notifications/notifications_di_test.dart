@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/domain/repositories/prayer_times_repository.dart';
+import 'package:quran_app/features/notifications/data/datasources/notifications_local_data_source.dart';
 import 'package:quran_app/features/notifications/domain/usecases/get_android_sdk_int.dart';
 import 'package:quran_app/features/notifications/domain/usecases/watch_preview_ended.dart';
 import 'package:quran_app/features/notifications/notifications_di.dart';
@@ -32,6 +33,7 @@ void main() {
 
     expect(sl<WatchPreviewEnded>(), isA<WatchPreviewEnded>());
     expect(sl<GetAndroidSdkInt>(), isA<GetAndroidSdkInt>());
+    expect(sl<NotificationsLocalDataSource>().boxName, 'prayerConfig');
     final reliability = sl<ReliabilityCubit>();
     final preview = sl<SoundPreviewCubit>();
     final today = sl<TodayPrayerTimesCubit>();

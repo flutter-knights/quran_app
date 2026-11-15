@@ -6,6 +6,7 @@ import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
+import 'package:quran_app/features/notifications/data/datasources/notifications_local_data_source.dart';
 import 'package:quran_app/features/notifications/data/datasources/notifications_native_data_source.dart';
 import 'package:quran_app/features/notifications/data/repositories/notifications_repository_impl.dart';
 import 'package:quran_app/features/notifications/domain/entities/preview_sound.dart';
@@ -22,9 +23,12 @@ class _MockNative extends Mock implements NotificationsNativeDataSource {}
 class _MockLegacyScheduler extends Mock
     implements PrayerNotificationScheduler {}
 
+class _MockLocal extends Mock implements NotificationsLocalDataSource {}
+
 void main() {
   late _MockNative native;
   late _MockLegacyScheduler scheduler;
+  late _MockLocal local;
   late NotificationsRepositoryImpl repo;
 
   final window = PrayerStripWindow(
@@ -67,9 +71,11 @@ void main() {
   setUp(() {
     native = _MockNative();
     scheduler = _MockLegacyScheduler();
+    local = _MockLocal();
     repo = NotificationsRepositoryImpl(
       native: native,
       legacyScheduler: scheduler,
+      local: local,
     );
     registerFallbackValue(window);
     registerFallbackValue(pt);
@@ -146,96 +152,6 @@ void main() {
     });
   });
 
-  group('iOS picks the first day with a future alert time', () {
-    PrayerTimes dayOf(String key) => PrayerTimes(
-      key: key,
-      timings: pt.timings,
-      date: Date(
-        month: 'ذو الحجة',
-        weekDay: 'السبت',
-        day: '6',
-        year: '1447',
-        enMonth: 'Dhul-Hijjah',
-        enWeekDay: 'Saturday',
-        gregorianDate: key,
-      ),
-    );
-    final tomorrow = dayOf('23-05-2026');
-    NotificationsRepositoryImpl repoAt(DateTime now) =>
-        NotificationsRepositoryImpl(
-          native: native,
-          legacyScheduler: scheduler,
-          clock: () => now,
-        );
-
-    setUp(() {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      when(
-        () => scheduler.scheduleDailyPrayerNotifications(any()),
-      ).thenAnswer((_) async {});
-      when(() => scheduler.cancelAllStaticReminders()).thenAnswer((_) async {});
-      when(
-        () => scheduler.scheduleStaticReminder(
-          prayer: any(named: 'prayer'),
-          at: any(named: 'at'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-        ),
-      ).thenAnswer((_) async {});
-    });
-
-    test('after Isha the adhans go to tomorrow', () async {
-      await repoAt(DateTime(2026, 5, 22, 22)).scheduleDailyAdhans(
-        days: [pt, tomorrow],
-        alerts: Settings.defaultPrayerAlerts,
-        localeCode: 'en',
-      );
-      verify(
-        () => scheduler.scheduleDailyPrayerNotifications(tomorrow),
-      ).called(1);
-    });
-
-    test('before Isha the adhans stay on today', () async {
-      await repoAt(DateTime(2026, 5, 22, 20)).scheduleDailyAdhans(
-        days: [pt, tomorrow],
-        alerts: Settings.defaultPrayerAlerts,
-        localeCode: 'en',
-      );
-      verify(() => scheduler.scheduleDailyPrayerNotifications(pt)).called(1);
-    });
-
-    test('after Isha the reminders go to tomorrow', () async {
-      await repoAt(DateTime(2026, 5, 22, 22)).schedulePrayerReminders(
-        days: [pt, tomorrow],
-        alerts: {
-          ...Settings.defaultPrayerAlerts,
-          PrayerName.maghrib: const PrayerAlert(
-            reminderEnabled: true,
-            reminderMinutes: 5,
-          ),
-        },
-        localeCode: 'en',
-      );
-      verify(
-        () => scheduler.scheduleStaticReminder(
-          prayer: PrayerName.maghrib,
-          at: DateTime(2026, 5, 23, 19, 41),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-        ),
-      ).called(1);
-    });
-
-    test('every day past falls back to the first day', () async {
-      await repoAt(DateTime(2026, 5, 24)).scheduleDailyAdhans(
-        days: [pt, tomorrow],
-        alerts: Settings.defaultPrayerAlerts,
-        localeCode: 'en',
-      );
-      verify(() => scheduler.scheduleDailyPrayerNotifications(pt)).called(1);
-    });
-  });
-
   group('scheduleDailyAdhans', () {
     test(
       'Android: sends all six timings and only enabled prayers in alerts',
@@ -269,7 +185,13 @@ void main() {
         expect((captured[1] as Map).keys, ['fajr', 'dhuhr', 'maghrib', 'isha']);
         expect(captured[1]['fajr'], {'sound': 'vibrate', 'ringInSilent': true});
         expect(captured[1]['dhuhr'], {'sound': 'adhan', 'ringInSilent': false});
-        verifyNever(() => scheduler.scheduleDailyPrayerNotifications(any()));
+        verifyNever(
+          () => scheduler.scheduleAlerts(
+            days: any(named: 'days'),
+            alerts: any(named: 'alerts'),
+            localeCode: any(named: 'localeCode'),
+          ),
+        );
       },
     );
 
@@ -339,23 +261,6 @@ void main() {
       ]);
     });
 
-    test('iOS: routes to legacy scheduler, ignores native', () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      when(
-        () => scheduler.scheduleDailyPrayerNotifications(any()),
-      ).thenAnswer((_) async {});
-
-      final r = await repo.scheduleDailyAdhans(
-        days: [pt],
-        alerts: Settings.defaultPrayerAlerts,
-        localeCode: 'en',
-      );
-
-      expect(r, const Right(unit));
-      verify(() => scheduler.scheduleDailyPrayerNotifications(pt)).called(1);
-      verifyZeroInteractions(native);
-    });
-
     test(
       'returns Left(UnknownNotificationFailure) when native throws on Android',
       () async {
@@ -379,24 +284,13 @@ void main() {
     );
   });
 
-  test('cancelAllAdhans iOS: delegates to legacy scheduler', () async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    when(
-      () => scheduler.cancelAllPrayerNotifications(),
-    ).thenAnswer((_) async {});
-    final r = await repo.cancelAllAdhans();
-    expect(r, const Right(unit));
-    verify(() => scheduler.cancelAllPrayerNotifications()).called(1);
-    debugDefaultTargetPlatformOverride = null;
-  });
-
   test('cancelAllAdhans Android: delegates to native', () async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     when(() => native.cancelAllAdhans()).thenAnswer((_) async {});
     final r = await repo.cancelAllAdhans();
     expect(r, const Right(unit));
     verify(() => native.cancelAllAdhans()).called(1);
-    verifyNever(() => scheduler.cancelAllPrayerNotifications());
+    verifyZeroInteractions(scheduler);
     debugDefaultTargetPlatformOverride = null;
   });
 
@@ -464,52 +358,111 @@ void main() {
         expect(r, const Right(unit));
       },
     );
+  });
+
+  group('iOS scheduling', () {
+    void stubScheduleAlerts(DateTime? until) => when(
+      () => scheduler.scheduleAlerts(
+        days: any(named: 'days'),
+        alerts: any(named: 'alerts'),
+        localeCode: any(named: 'localeCode'),
+      ),
+    ).thenAnswer((_) async => until);
+
+    setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      when(() => local.writeIosScheduledUntil(any())).thenAnswer((_) async {});
+      when(() => scheduler.cancelAll()).thenAnswer((_) async {});
+    });
 
     test(
-      'iOS: schedules static reminders from effectiveReminderMinutes',
+      'iOS: scheduleDailyAdhans calls scheduleAlerts and stores scheduledUntil',
       () async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-        when(
-          () => scheduler.cancelAllStaticReminders(),
-        ).thenAnswer((_) async {});
-        when(
-          () => scheduler.scheduleStaticReminder(
-            prayer: any(named: 'prayer'),
-            at: any(named: 'at'),
-            title: any(named: 'title'),
-            body: any(named: 'body'),
-          ),
-        ).thenAnswer((_) async {});
-
-        await repo.schedulePrayerReminders(
+        stubScheduleAlerts(DateTime(2026, 11, 20, 18, 16));
+        final alerts = {
+          ...Settings.defaultPrayerAlerts,
+          PrayerName.asr: const PrayerAlert(enabled: false),
+        };
+        final r = await repo.scheduleDailyAdhans(
           days: [pt],
-          alerts: {
-            ...Settings.defaultPrayerAlerts,
-            PrayerName.maghrib: const PrayerAlert(
-              reminderEnabled: true,
-              reminderMinutes: 5,
-            ),
-            PrayerName.isha: const PrayerAlert(
-              enabled: false,
-              reminderEnabled: true,
-            ),
-          },
-          localeCode: 'en',
+          alerts: alerts,
+          localeCode: 'ar',
         );
-
-        verify(() => scheduler.cancelAllStaticReminders()).called(1);
+        expect(r, const Right(unit));
         verify(
-          () => scheduler.scheduleStaticReminder(
-            prayer: PrayerName.maghrib,
-            at: DateTime(2026, 5, 22, 19, 41),
-            title: any(named: 'title'),
-            body: any(named: 'body'),
+          () => scheduler.scheduleAlerts(
+            days: [pt],
+            alerts: alerts,
+            localeCode: 'ar',
           ),
         ).called(1);
-        verifyNoMoreInteractions(scheduler);
+        verify(
+          () => local.writeIosScheduledUntil(DateTime(2026, 11, 20, 18, 16)),
+        ).called(1);
         verifyZeroInteractions(native);
       },
     );
+
+    test('iOS: nothing scheduled clears scheduledUntil', () async {
+      stubScheduleAlerts(null);
+      await repo.scheduleDailyAdhans(
+        days: [pt],
+        alerts: Settings.defaultPrayerAlerts,
+        localeCode: 'en',
+      );
+      verify(() => local.writeIosScheduledUntil(null)).called(1);
+    });
+
+    test('iOS: a scheduler failure is a Left', () async {
+      when(
+        () => scheduler.scheduleAlerts(
+          days: any(named: 'days'),
+          alerts: any(named: 'alerts'),
+          localeCode: any(named: 'localeCode'),
+        ),
+      ).thenThrow(Exception('boom'));
+      final r = await repo.scheduleDailyAdhans(
+        days: [pt],
+        alerts: Settings.defaultPrayerAlerts,
+        localeCode: 'en',
+      );
+      r.fold(
+        (f) => expect(f, isA<UnknownNotificationFailure>()),
+        (_) => fail('expected Left'),
+      );
+      verifyNever(() => local.writeIosScheduledUntil(any()));
+    });
+
+    test(
+      'iOS: schedulePrayerReminders is a no-op (scheduleAlerts covers reminders)',
+      () async {
+        final r = await repo.schedulePrayerReminders(
+          days: [pt],
+          alerts: {
+            for (final p in alertPrayers)
+              p: const PrayerAlert(reminderEnabled: true),
+          },
+          localeCode: 'en',
+        );
+        expect(r, const Right(unit));
+        verifyZeroInteractions(scheduler);
+        verifyZeroInteractions(native);
+      },
+    );
+
+    test('iOS: cancelAllReminders is a no-op, never touching adhans', () async {
+      expect(await repo.cancelAllReminders(), const Right(unit));
+      verifyZeroInteractions(scheduler);
+      verifyZeroInteractions(native);
+    });
+
+    test('iOS: cancelAllAdhans cancels everything and clears '
+        'scheduledUntil', () async {
+      expect(await repo.cancelAllAdhans(), const Right(unit));
+      verify(() => scheduler.cancelAll()).called(1);
+      verify(() => local.writeIosScheduledUntil(null)).called(1);
+      verifyZeroInteractions(native);
+    });
   });
 
   test('cancelAllReminders Android: delegates to native', () async {
@@ -520,19 +473,6 @@ void main() {
     verify(() => native.cancelAllReminders()).called(1);
     debugDefaultTargetPlatformOverride = null;
   });
-
-  test(
-    'cancelAllReminders iOS: delegates to legacyScheduler.cancelAllStaticReminders',
-    () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      when(() => scheduler.cancelAllStaticReminders()).thenAnswer((_) async {});
-      final r = await repo.cancelAllReminders();
-      expect(r, const Right(unit));
-      verifyZeroInteractions(native);
-      verify(() => scheduler.cancelAllStaticReminders()).called(1);
-      debugDefaultTargetPlatformOverride = null;
-    },
-  );
 
   group('scheduleTestAdhan', () {
     test('scheduleTestAdhan sends Dhuhr sound', () async {
@@ -643,6 +583,40 @@ void main() {
         r,
         const Right(ReliabilityStatus.ios(notificationsEnabled: false)),
       );
+    });
+
+    test(
+      'iOS: getReliabilityStatus reports the stored scheduledUntil',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        when(
+          () => scheduler.areNotificationsEnabled(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => local.readIosScheduledUntil(),
+        ).thenReturn(DateTime(2026, 11, 20, 18, 16));
+        final r = await repo.getReliabilityStatus();
+        expect(
+          r,
+          Right(
+            ReliabilityStatus.ios(
+              notificationsEnabled: true,
+              scheduledUntil: DateTime(2026, 11, 20, 18, 16),
+            ),
+          ),
+        );
+      },
+    );
+
+    test('iOS: getReliabilityStatus stays Right when the stored date cannot '
+        'be read', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      when(
+        () => scheduler.areNotificationsEnabled(),
+      ).thenAnswer((_) async => true);
+      when(() => local.readIosScheduledUntil()).thenThrow(Exception('boom'));
+      final r = await repo.getReliabilityStatus();
+      expect(r, const Right(ReliabilityStatus.ios(notificationsEnabled: true)));
     });
 
     test('Android: settings, preview and ack calls reach native', () async {

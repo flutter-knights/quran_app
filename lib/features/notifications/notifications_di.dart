@@ -1,5 +1,6 @@
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
+import 'package:quran_app/features/notifications/data/datasources/notifications_local_data_source.dart';
 import 'package:quran_app/features/notifications/data/datasources/notifications_native_data_source.dart';
 import 'package:quran_app/features/notifications/data/repositories/notifications_repository_impl.dart';
 import 'package:quran_app/features/notifications/domain/repositories/notifications_repository.dart';
@@ -30,10 +31,12 @@ void initNotifications() {
   sl.registerLazySingleton<NotificationsNativeDataSource>(
     () => NotificationsNativeDataSourceImpl(),
   );
+  sl.registerLazySingleton(() => NotificationsLocalDataSource());
   sl.registerLazySingleton<NotificationsRepository>(
     () => NotificationsRepositoryImpl(
       native: sl(),
       legacyScheduler: sl<PrayerNotificationScheduler>(),
+      local: sl(),
     ),
   );
   sl.registerLazySingleton(() => EnablePrayerStrip(repository: sl()));

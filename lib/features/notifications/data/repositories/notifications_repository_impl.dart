@@ -4,6 +4,7 @@ import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
+import 'package:quran_app/features/notifications/data/datasources/notifications_local_data_source.dart';
 import 'package:quran_app/features/notifications/data/datasources/notifications_native_data_source.dart';
 import 'package:quran_app/features/notifications/data/models/reliability_status_model.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
@@ -16,12 +17,12 @@ import 'package:quran_app/features/notifications/domain/repositories/notificatio
 class NotificationsRepositoryImpl implements NotificationsRepository {
   final NotificationsNativeDataSource native;
   final PrayerNotificationScheduler legacyScheduler;
-  final DateTime Function() clock;
+  final NotificationsLocalDataSource local;
 
   NotificationsRepositoryImpl({
     required this.native,
     required this.legacyScheduler,
-    this.clock = DateTime.now,
+    required this.local,
   });
 
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -99,7 +100,12 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         localeCode: localeCode,
       );
     } else {
-      await legacyScheduler.scheduleDailyPrayerNotifications(_iosDay(days));
+      final until = await legacyScheduler.scheduleAlerts(
+        days: days,
+        alerts: alerts,
+        localeCode: localeCode,
+      );
+      await local.writeIosScheduledUntil(until);
     }
   });
 
@@ -108,7 +114,8 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     if (_isAndroid) {
       await native.cancelAllAdhans();
     } else {
-      await legacyScheduler.cancelAllPrayerNotifications();
+      await legacyScheduler.cancelAll();
+      await local.writeIosScheduledUntil(null);
     }
   });
 
@@ -118,49 +125,26 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     required Map<PrayerName, PrayerAlert> alerts,
     required String localeCode,
   }) => _runOptional('schedulePrayerReminders', () async {
-    if (days.isEmpty) return;
-    if (_isAndroid) {
-      await native.schedulePrayerReminders(
-        days: _daysPayload(days),
-        reminders: {
-          for (final p in alertPrayers)
-            if (alerts[p] case final a?)
-              if (a.effectiveReminderMinutes case final minutes?)
-                p.name: {
-                  'minutes': minutes,
-                  'reminderSound': a.reminderSound.name,
-                },
-        },
-        localeCode: localeCode,
-      );
-    } else {
-      final prayerTimes = _iosDay(days);
-      await legacyScheduler.cancelAllStaticReminders();
-      final date = _parseGregorian(prayerTimes.date.gregorianDate);
-      if (date == null) return;
-      for (final p in alertPrayers) {
-        final minutes = alerts[p]?.effectiveReminderMinutes;
-        if (minutes == null) continue;
-        final prayerAt = _timeOn(date, prayerTimes.timings[p]);
-        if (prayerAt == null) continue;
-        await legacyScheduler.scheduleStaticReminder(
-          prayer: p,
-          at: prayerAt.subtract(Duration(minutes: minutes)),
-          title: _prayerNameLocalized(p, localeCode),
-          body: _reminderBody(p, minutes, localeCode),
-        );
-      }
-    }
+    if (days.isEmpty || !_isAndroid) return;
+    await native.schedulePrayerReminders(
+      days: _daysPayload(days),
+      reminders: {
+        for (final p in alertPrayers)
+          if (alerts[p] case final a?)
+            if (a.effectiveReminderMinutes case final minutes?)
+              p.name: {
+                'minutes': minutes,
+                'reminderSound': a.reminderSound.name,
+              },
+      },
+      localeCode: localeCode,
+    );
   });
 
   @override
   Future<Either<Failure, Unit>> cancelAllReminders() =>
       _runOptional('cancelAllReminders', () async {
-        if (_isAndroid) {
-          await native.cancelAllReminders();
-        } else {
-          await legacyScheduler.cancelAllStaticReminders();
-        }
+        if (_isAndroid) await native.cancelAllReminders();
       });
 
   @override
@@ -191,8 +175,17 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         }
         return ReliabilityStatus.ios(
           notificationsEnabled: await _iosNotificationsEnabled(),
+          scheduledUntil: _iosScheduledUntil(),
         );
       });
+
+  DateTime? _iosScheduledUntil() {
+    try {
+      return local.readIosScheduledUntil();
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<bool> _iosNotificationsEnabled() async {
     try {
@@ -248,37 +241,6 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       },
   ];
 
-  PrayerTimes _iosDay(List<PrayerTimes> days) {
-    final now = clock();
-    return days.firstWhere((day) {
-      final date = _parseGregorian(day.date.gregorianDate);
-      if (date == null) return false;
-      return alertPrayers.any(
-        (p) => _timeOn(date, day.timings[p])?.isAfter(now) ?? false,
-      );
-    }, orElse: () => days.first);
-  }
-
-  DateTime? _timeOn(DateTime date, String? hhmm) {
-    final parts = hhmm?.split(':');
-    if (parts == null || parts.length != 2) return null;
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
-    if (hour == null || minute == null) return null;
-    return DateTime(date.year, date.month, date.day, hour, minute);
-  }
-
-  DateTime? _parseGregorian(String s) {
-    // PrayerTimes.date.gregorianDate is "dd-MM-yyyy".
-    final parts = s.split('-');
-    if (parts.length != 3) return null;
-    final d = int.tryParse(parts[0]);
-    final m = int.tryParse(parts[1]);
-    final y = int.tryParse(parts[2]);
-    if (d == null || m == null || y == null) return null;
-    return DateTime(y, m, d);
-  }
-
   /// Converts "dd-MM-yyyy" (PrayerTimes.date.gregorianDate) to "yyyy-MM-dd".
   String _toIsoDate(String ddMMYyyy) {
     final parts = ddMMYyyy.split('-');
@@ -287,27 +249,5 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
     final mm = parts[1].padLeft(2, '0');
     final yyyy = parts[2];
     return '$yyyy-$mm-$dd';
-  }
-
-  String _prayerNameLocalized(PrayerName p, String locale) {
-    if (locale == 'ar') {
-      return const {
-        PrayerName.fajr: 'الفجر',
-        PrayerName.dhuhr: 'الظهر',
-        PrayerName.asr: 'العصر',
-        PrayerName.maghrib: 'المغرب',
-        PrayerName.isha: 'العشاء',
-        PrayerName.sunrise: 'الشروق',
-      }[p]!;
-    }
-    return p.name[0].toUpperCase() + p.name.substring(1);
-  }
-
-  String _reminderBody(PrayerName p, int minutes, String locale) {
-    final name = _prayerNameLocalized(p, locale);
-    if (locale == 'ar') {
-      return '$name خلال $minutes دقيقة';
-    }
-    return '$name in $minutes minutes';
   }
 }
