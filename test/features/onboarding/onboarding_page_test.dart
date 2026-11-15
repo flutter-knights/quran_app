@@ -41,6 +41,8 @@ void main() {
   );
 
   const alertsTitle = 'تنبيهات الصلاة';
+  const exactTitle = 'المنبهات الدقيقة';
+  final exactOpen = find.widgetWithText(OutlinedButton, 'فتح الإعداد');
   const xiaomiTitle = 'حتى لا يتوقف الأذان على هواتف شاومي';
 
   setUpAll(() async {
@@ -70,6 +72,7 @@ void main() {
     bool xiaomi = false,
     String locale = 'ar',
     Stream<ReliabilityState> states = const Stream.empty(),
+    ReliabilityStatus? initial,
   }) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
@@ -77,7 +80,9 @@ void main() {
     whenListen(
       reliability,
       states,
-      initialState: ReliabilityLoaded(status.copyWith(isXiaomi: xiaomi)),
+      initialState: ReliabilityLoaded(
+        initial ?? status.copyWith(isXiaomi: xiaomi),
+      ),
     );
     settings.updateSettings(isArabic: locale == 'ar');
     final router = GoRouter(
@@ -322,6 +327,74 @@ void main() {
         .singleWhere((c) => c.selected);
     expect((selected.label as Text).data, '٣٠ دقيقة');
   });
+
+  testWidgets('denied exact alarms add a row that opens their setting', (
+    tester,
+  ) async {
+    await pump(tester, initial: status.copyWith(exactAlarmsAllowed: false));
+    await toNotificationsStep(tester);
+    expect(find.text(exactTitle), findsOneWidget);
+    await tester.tap(exactOpen);
+    verify(
+      () => reliability.openSettings(SystemSettingsTarget.exactAlarm),
+    ).called(1);
+    await primary(tester);
+    expect(find.text(alertsTitle), findsOneWidget);
+  });
+
+  testWidgets('a grant on return keeps the row and shows it allowed', (
+    tester,
+  ) async {
+    final states = StreamController<ReliabilityState>();
+    addTearDown(states.close);
+    await pump(
+      tester,
+      initial: status.copyWith(exactAlarmsAllowed: false),
+      states: states.stream,
+    );
+    await toNotificationsStep(tester);
+    states.add(const ReliabilityLoaded(status));
+    await tester.pumpAndSettle();
+    expect(find.text(exactTitle), findsOneWidget);
+    expect(find.text('مسموحة'), findsOneWidget);
+    expect(exactOpen, findsNothing);
+    states.add(const ReliabilityUnavailable());
+    await tester.pumpAndSettle();
+    expect(find.text(exactTitle), findsOneWidget);
+  });
+
+  testWidgets('allowed exact alarms show no row', (tester) async {
+    await pump(tester);
+    await toNotificationsStep(tester);
+    expect(find.text(exactTitle), findsNothing);
+  });
+
+  testWidgets('iOS shows no exact-alarm row', (tester) async {
+    await pump(
+      tester,
+      initial: const ReliabilityStatus.ios(notificationsEnabled: true),
+    );
+    await toNotificationsStep(tester);
+    expect(find.text(exactTitle), findsNothing);
+  });
+
+  for (final locale in ['ar', 'en']) {
+    testWidgets('smoke $locale: the exact-alarm row fits a phone', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        locale: locale,
+        initial: status.copyWith(exactAlarmsAllowed: false),
+      );
+      for (var i = 0; i < 3; i++) {
+        await primary(tester);
+      }
+      await secondary(tester);
+      expect(find.byType(OutlinedButton), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final locale in ['ar', 'en']) {
     testWidgets('smoke $locale: alerts and Xiaomi steps fit a phone', (

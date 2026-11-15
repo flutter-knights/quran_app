@@ -75,7 +75,13 @@ class _PromptListenerState extends State<_PromptListener> {
         return;
       case (prompt: AlertsPrompt.upgrade, prayer: _):
         settings.markAlertsIntroSeen();
-        await _show(UpgradeSheet.show(context, isXiaomi: status.isXiaomi));
+        await _show(
+          UpgradeSheet.show(
+            context,
+            isXiaomi: status.isXiaomi,
+            exactAlarmsAllowed: status.exactAlarmsAllowed,
+          ),
+        );
         _recheck();
       case (:final prompt, :final prayer?):
         final newest = [

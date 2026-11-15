@@ -36,6 +36,7 @@ object AlertPlanner {
     const val ACTION_APP_DETAILS = "android.settings.APPLICATION_DETAILS_SETTINGS"
     const val ACTION_NOTIFICATION_SETTINGS = "android.settings.APP_NOTIFICATION_SETTINGS"
     const val ACTION_EXACT_ALARM = "android.settings.REQUEST_SCHEDULE_EXACT_ALARM"
+    const val ACTION_EXACT_ALARM_GRANTED = "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"
     const val ACTION_BATTERY_SETTINGS = "android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS"
     const val EXTRA_APP_PACKAGE = "android.provider.extra.APP_PACKAGE"
     private const val MIUI_SECURITY = "com.miui.securitycenter"
@@ -225,6 +226,9 @@ object AlertPlanner {
         alerts.values.flatMap { routeChannels(it.sound) }.toSet() + PLAYBACK_CHANNEL
 
     fun exactAlarmsAllowed(sdk: Int, canScheduleExact: () -> Boolean) = if (sdk >= 31) canScheduleExact() else true
+
+    fun rearmOnExactGrant(action: String?, sdk: Int, canScheduleExact: () -> Boolean) =
+        action == ACTION_EXACT_ALARM_GRANTED && exactAlarmsAllowed(sdk, canScheduleExact)
 
     fun ackCheckpoint(current: Long?, upTo: Long) = maxOf(current ?: upTo, upTo)
 

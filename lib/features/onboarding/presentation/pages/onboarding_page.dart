@@ -13,6 +13,7 @@ import 'package:quran_app/features/notifications/presentation/cubit/reliability_
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/alerts_step.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/appearance_step.dart';
+import 'package:quran_app/features/onboarding/presentation/pages/widgets/exact_alarm_row.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/language_step.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/permission_step.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/welcome_step.dart';
@@ -42,6 +43,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   int _index = 0;
   bool _leaving = false;
   bool _isXiaomi = false;
+  bool _exactAlarmsAsked = false;
   AlertsChoice? _alertsChoice;
   bool _alertsDeferred = false;
 
@@ -104,13 +106,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final xiaomiNow = context.select(
+    final (xiaomiNow, exactAllowed) = context.select(
       (ReliabilityCubit c) => switch (c.state) {
-        ReliabilityLoaded(:final status) => status.isXiaomi,
-        _ => false,
+        ReliabilityLoaded(:final status) => (
+          status.isXiaomi,
+          status.exactAlarmsAllowed,
+        ),
+        _ => (false, null),
       },
     );
     _isXiaomi = _isXiaomi || xiaomiNow;
+    _exactAlarmsAsked = _exactAlarmsAsked || exactAllowed == false;
     final storedAlerts = context.select(
       (SettingsCubit c) => c.state.settingsModel.prayerAlerts,
     );
@@ -149,6 +155,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       icon: HugeIcons.strokeRoundedNotification01,
                       title: s.onb_notifications_title,
                       why: s.onb_notifications_why,
+                      footer: _exactAlarmsAsked
+                          ? ExactAlarmRow(allowed: exactAllowed ?? false)
+                          : null,
                     ),
                     AlertsStep(
                       choice: _alertsChoice ?? alertsChoiceFrom(storedAlerts),

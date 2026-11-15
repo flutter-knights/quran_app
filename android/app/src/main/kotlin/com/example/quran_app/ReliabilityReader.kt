@@ -58,6 +58,6 @@ object ReliabilityReader {
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
-    private fun canScheduleExact(context: Context) =
+    fun canScheduleExact(context: Context) =
         runCatching { (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms() }.getOrDefault(true)
 }

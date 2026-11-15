@@ -55,6 +55,7 @@ void main() {
       'قد يكون النظام أوقف التطبيق أو أخّره. صفحة حالة التنبيهات تبيّن ما يلزم تغييره.';
   const upgradeTitle = 'تحسينات في تنبيهات الصلاة';
   const upgradeXiaomi = 'على هواتف شاومي يلزم إعدادان حتى لا يتوقف الأذان.';
+  const upgradeExact = 'المنبهات الدقيقة غير مسموحة، فقد يتأخر الأذان.';
   const upgradeSilent =
       'يتبع الأذان الآن وضع الهاتف الصامت. لتشغيله رغم الصامت: «يرن حتى في الوضع الصامت» لكل صلاة.';
 
@@ -206,6 +207,28 @@ void main() {
     expect(find.text(upgradeXiaomi), findsNothing);
   });
 
+  testWidgets('denied exact alarms add a line and review opens the '
+      'reliability page over the alerts page', (tester) async {
+    await asUpgrader();
+    final router = await pump(tester, [
+      ReliabilityLoaded(base.copyWith(exactAlarmsAllowed: false)),
+    ]);
+    expect(find.text(upgradeExact), findsOneWidget);
+    await tester.tap(find.text('مراجعة الإعدادات'));
+    await tester.pumpAndSettle();
+    expect(find.text('reliability-page'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text('notifications-page'), findsOneWidget);
+  });
+
+  testWidgets('allowed exact alarms leave the line out', (tester) async {
+    await asUpgrader();
+    await pump(tester, [const ReliabilityLoaded(base)]);
+    expect(find.text(upgradeTitle), findsOneWidget);
+    expect(find.text(upgradeExact), findsNothing);
+  });
+
   testWidgets('the upgrade sheet on iOS leaves out the silent-mode line', (
     tester,
   ) async {
@@ -355,7 +378,9 @@ void main() {
       tester,
     ) async {
       await asUpgrader();
-      await pump(tester, [ReliabilityLoaded(xiaomiMiss)], locale: locale);
+      await pump(tester, [
+        ReliabilityLoaded(xiaomiMiss.copyWith(exactAlarmsAllowed: false)),
+      ], locale: locale);
       expect(find.byType(BottomSheet), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

@@ -11,18 +11,30 @@ import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_sheet_actions.dart';
 
 class UpgradeSheet extends StatelessWidget {
-  const UpgradeSheet({super.key, required this.isXiaomi});
+  const UpgradeSheet({
+    super.key,
+    required this.isXiaomi,
+    required this.exactAlarmsAllowed,
+  });
 
   final bool isXiaomi;
+  final bool exactAlarmsAllowed;
 
-  static Future<void> show(BuildContext context, {required bool isXiaomi}) {
+  static Future<void> show(
+    BuildContext context, {
+    required bool isXiaomi,
+    required bool exactAlarmsAllowed,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
       backgroundColor: context.colorScheme.surface,
-      builder: (_) => UpgradeSheet(isXiaomi: isXiaomi),
+      builder: (_) => UpgradeSheet(
+        isXiaomi: isXiaomi,
+        exactAlarmsAllowed: exactAlarmsAllowed,
+      ),
     );
   }
 
@@ -43,6 +55,11 @@ class UpgradeSheet extends StatelessWidget {
           if (!ios)
             _Line(icon: HugeIcons.strokeRoundedVolumeHigh, text: s.upg_silent),
           _Line(icon: HugeIcons.strokeRoundedTimer02, text: s.upg_reminder),
+          if (!exactAlarmsAllowed)
+            _Line(
+              icon: HugeIcons.strokeRoundedAlarmClock,
+              text: s.upg_exactAlarms,
+            ),
           if (isXiaomi)
             _Line(icon: HugeIcons.strokeRoundedSettings02, text: s.upg_xiaomi),
           const SizedBox(height: 4),
@@ -53,7 +70,9 @@ class UpgradeSheet extends StatelessWidget {
               final router = GoRouter.of(context);
               Navigator.of(context).pop();
               router.push(AppRouter.notificationsPath);
-              if (isXiaomi) router.push(AppRouter.alertsReliabilityPath);
+              if (isXiaomi || !exactAlarmsAllowed) {
+                router.push(AppRouter.alertsReliabilityPath);
+              }
             },
           ),
         ],

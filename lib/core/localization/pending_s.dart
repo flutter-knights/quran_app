@@ -187,6 +187,9 @@ class PendingS {
   String get onb_xiaomi_lead => _ar
       ? 'يوقف نظام شاومي التطبيقات في الخلفية. ثلاث خطوات تُبقي الأذان في وقته.'
       : 'Xiaomi\'s system stops apps in the background. Three steps keep the adhan on time.';
+  String get onb_exactAlarmsWhy => _ar
+      ? 'يلزم السماح بها ليصل الأذان في وقته تمامًا.'
+      : 'Needed for the adhan to arrive right on time.';
   String get upg_title =>
       _ar ? 'تحسينات في تنبيهات الصلاة' : 'Prayer alerts improved';
   String get upg_silent => _ar
@@ -198,6 +201,9 @@ class PendingS {
   String get upg_xiaomi => _ar
       ? 'على هواتف شاومي يلزم إعدادان حتى لا يتوقف الأذان.'
       : 'On Xiaomi phones two settings keep the adhan from stopping.';
+  String get upg_exactAlarms => _ar
+      ? 'المنبهات الدقيقة غير مسموحة، فقد يتأخر الأذان.'
+      : 'Exact alarms are not allowed, so the adhan may be late.';
   String get upg_review => _ar ? 'مراجعة الإعدادات' : 'Review settings';
   String missed_title(String prayer) =>
       _ar ? 'فاتك تنبيه $prayer' : 'You missed the $prayer alert';

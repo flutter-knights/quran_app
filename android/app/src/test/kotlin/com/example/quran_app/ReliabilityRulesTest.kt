@@ -98,6 +98,15 @@ class ReliabilityRulesTest {
         assertTrue(AlertPlanner.exactAlarmsAllowed(30) { throw AssertionError("not called below 31") })
     }
 
+    @Test fun exactGrantRearmsOnlyWhenStillAllowed() {
+        val granted = "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"
+        assertTrue(AlertPlanner.rearmOnExactGrant(granted, 34) { true })
+        assertFalse(AlertPlanner.rearmOnExactGrant(granted, 34) { false })
+        assertTrue(AlertPlanner.rearmOnExactGrant(granted, 30) { throw AssertionError("not called below 31") })
+        assertFalse(AlertPlanner.rearmOnExactGrant("android.intent.action.BOOT_COMPLETED", 34) { throw AssertionError("not called") })
+        assertFalse(AlertPlanner.rearmOnExactGrant(null, 34) { true })
+    }
+
     @Test fun statusMapCarriesExactlyTheDartKeys() {
         val map = AlertPlanner.statusMap(
             OsState(notificationsEnabled = true, channelBlocked = false, exactAlarmsAllowed = true, batteryUnrestricted = false, isXiaomi = true),
