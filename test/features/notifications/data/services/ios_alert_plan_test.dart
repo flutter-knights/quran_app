@@ -85,6 +85,31 @@ void main() {
     expect(asrReminder.body, 'Asr prayer is coming up');
   });
 
+  test('Dhuhr on a Friday is announced as Jumuah', () {
+    final friday = [dayOn(20), dayOn(21)];
+    final ar = planIosAlerts(
+      days: friday,
+      alerts: allWithReminders,
+      localeCode: 'ar',
+      now: DateTime(2026, 11, 20),
+    );
+    expect(ar.firstWhere((r) => r.id == 1).title, 'الجمعة');
+    expect(ar.firstWhere((r) => r.id == 1).body, 'حان موعد صلاة الجمعة');
+    expect(ar.firstWhere((r) => r.id == 201).title, 'تذكير الجمعة');
+    expect(ar.firstWhere((r) => r.id == 11).title, 'الظهر');
+    final en = planIosAlerts(
+      days: friday,
+      alerts: allWithReminders,
+      localeCode: 'en',
+      now: DateTime(2026, 11, 20),
+    );
+    expect(
+      en.firstWhere((r) => r.id == 1).body,
+      "It's time for Jumu'ah prayer",
+    );
+    expect(en.firstWhere((r) => r.id == 2).title, 'Asr');
+  });
+
   test(
     'tone uses the default sound, vibrate and silent use none, disabled is skipped',
     () {

@@ -45,14 +45,16 @@ class _PromptListenerState extends State<_PromptListener> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final current = _isCurrent;
-    if (current && !_wasCurrent && _pending) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final state = context.read<ReliabilityCubit>().state;
-        if (state is ReliabilityLoaded) _evaluate(state.status);
-      });
-    }
+    if (current && !_wasCurrent && _pending) _recheck();
     _wasCurrent = current;
+  }
+
+  void _recheck() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = context.read<ReliabilityCubit>().state;
+      if (state is ReliabilityLoaded) _evaluate(state.status);
+    });
   }
 
   Future<void> _evaluate(ReliabilityStatus status) async {
@@ -74,6 +76,7 @@ class _PromptListenerState extends State<_PromptListener> {
       case (prompt: AlertsPrompt.upgrade, prayer: _):
         settings.markAlertsIntroSeen();
         await _show(UpgradeSheet.show(context, isXiaomi: status.isXiaomi));
+        _recheck();
       case (:final prompt, :final prayer?):
         final newest = [
           ...status.missed,

@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
+import 'package:quran_app/features/notifications/domain/services/prayer_labels.dart';
 
 enum IosSound {
   fajrClip('fajr_adhan.caf'),
@@ -85,7 +86,11 @@ List<IosAlertRequest> planIosAlerts({
       final at = _timeOn(date, timings[prayer]);
       if (at == null) continue;
       final id = dayIndex * _idsPerDay + index;
-      final name = (arabic ? _arabicNames : _englishNames)[prayer]!;
+      final name = prayerNameLabel(
+        prayer,
+        arabic: arabic,
+        friday: date.weekday == DateTime.friday,
+      );
       if (at.isAfter(now)) {
         dayRequests.add(
           IosAlertRequest(
@@ -151,19 +156,3 @@ DateTime? _timeOn(DateTime date, String? hhmm) {
   if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
   return DateTime(date.year, date.month, date.day, hour, minute);
 }
-
-const _arabicNames = {
-  PrayerName.fajr: 'الفجر',
-  PrayerName.dhuhr: 'الظهر',
-  PrayerName.asr: 'العصر',
-  PrayerName.maghrib: 'المغرب',
-  PrayerName.isha: 'العشاء',
-};
-
-const _englishNames = {
-  PrayerName.fajr: 'Fajr',
-  PrayerName.dhuhr: 'Dhuhr',
-  PrayerName.asr: 'Asr',
-  PrayerName.maghrib: 'Maghrib',
-  PrayerName.isha: 'Isha',
-};

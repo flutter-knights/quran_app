@@ -310,7 +310,7 @@ Copy is in Appendix A and states in Appendix C.
   - Each row's state is an `AppStatusBadge`: `rel_working` or `rel_needsAction`, with `rel_allowed`/`rel_blocked` (or the battery pair) as the row value. A confirmed Xiaomi row shows the badge `rel_done`.
   - «مجدولة حتى …» and the test button.
 - Prompts: `AlertsPromptGate` wraps `HomeView` and provides a `ReliabilityCubit`. On every load that changes the status (first load, app resume, return from a settings screen), while Home is the current route and no prompt sheet is open, it shows at most one modal sheet; a status that arrives while a route covers Home is evaluated when Home is current again:
-  - The upgrade sheet if `!alertsIntroSeen` and onboarding is complete, then marks it seen.
+  - The upgrade sheet if `!alertsIntroSeen` and onboarding is complete, then marks it seen. When it closes, the gate re-checks the current status through the same post-frame, current-route path as a held status, so a miss or late delivery in that status shows next (or when Home is current again, if «مراجعة الإعدادات» pushed a page).
   - Else the missed sheet if `missed` or `late` holds an `at` newer than any already shown this session (ack on show acknowledges both, up to the newest `at` among them; remembering that `at` keeps a failed ack from prompting again). Its title is `missed_title` for a miss, else `late_title`, naming the most recent prayer. Its body is `missed_body` on Xiaomi and `missed_bodyGeneric` elsewhere. On Xiaomi, showing it clears `xiaomiAutostartConfirmed` and `xiaomiBatteryConfirmed` (MIUI can revert those settings, e.g. after an update), so the checklist asks again. Confirmed Xiaomi rows keep their «فتح الإعداد» action.
 - Home's own widgets are unchanged.
 - Onboarding: after the notification-permission step, insert «تنبيهات الصلاة»: the choice applies to all 5 prayers (adhan → `enabled` + `sound = adhan`; tone → `enabled` + `sound = tone`; «بدون تنبيه» → `enabled = false`), and the reminder chips none/5/10/15/30 set `reminderEnabled` and `reminderMinutes`. On Xiaomi only, add the reliability step next; it reuses the Xiaomi checklist widget from `ReliabilityPage`. Completion sets `alertsIntroSeen`.
@@ -328,6 +328,7 @@ Copy is in Appendix A and states in Appendix C.
   - Adhan sounds: adhan → the bundled CAF; tone → default sound; vibrate or silent → no sound. Reminder sounds: tone → default sound; vibrate or silent → no sound. iOS cannot vibrate without sound, so both pickers omit «اهتزاز فقط» on iOS and a stored `vibrate` behaves as silent.
 - `scheduleAlerts` starts with `cancelAll`, which clears the v2 id ranges and v1's ids (10–15, 20–25), so no v1 request survives the upgrade. The legacy single-day path is removed.
 - Dart stores the last scheduled adhan time after each iOS schedule; it is iOS's `scheduledUntil`. When an alert is on but nothing could be scheduled, it stores the sync time, so the status line reads attention; with every alert off it clears the date.
+- Alert titles and bodies name the prayer through the shared `prayerNameLabel(PrayerName, {required bool arabic, bool friday})` (`notifications/domain/services/prayer_labels.dart`), the same helper the strip builder uses, so a Friday Dhuhr reads «الجمعة»/Jumu'ah from the alert's own date. This is a label only; no separate Jumu'ah time is added.
 - `AppDelegate` sets `UNUserNotificationCenter.current().delegate = self`, so alerts, including the test adhan, are presented and play while the app is open.
 
 ## 10. Strings and generated code (declared exception)
@@ -338,7 +339,7 @@ The owner's rules forbid running `intl_utils` by hand and editing `lib/generated
 - Code without a context (a cubit) uses `PendingS.current`, which reads `Intl.getCurrentLocale()` (set by `S.load`), mirroring `S.current`. Code that must match a language it already holds (the strip's `localeCode`) uses `PendingS.forLanguage(languageCode)` instead, so its strings never mix with the cells' language while `Intl`'s locale lags a language switch.
 - About 120 strings exist twice until the follow-up. A unit test parses both ARBs and checks that every non-plural `PendingS` getter and method matches word for word per locale, so those can't drift; the two plurals are spot-checked against expected outputs.
 - Owner follow-up, listed in the PR: save the ARBs in the IDE, replace `PendingS.of(context)`/`PendingS.current` with `S.of(context)`/`S.current` (a mechanical rename), and delete `pending_s.dart`.
-- This is a declared exception to `localization.md`. Reviews must not "fix" it by running `intl_utils` or editing `lib/generated`.
+- This is a declared exception to `localization.md`. Reviews must not "fix" it by running `intl_utils` or editing `lib/generated`. The whole-branch review flagged the duplication and accepted it as this exception; the follow-up above stays the fix.
 
 ## 11. Comfort theme (G8)
 

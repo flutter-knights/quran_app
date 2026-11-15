@@ -164,9 +164,8 @@ void main() {
     expect(find.text('تأخّر تنبيه العصر'), findsOneWidget);
   });
 
-  testWidgets('an unseen intro shows the upgrade sheet once and no miss', (
-    tester,
-  ) async {
+  testWidgets('an unseen intro shows the upgrade sheet first, then the '
+      'pending miss', (tester) async {
     await asUpgrader();
     await pump(tester, [ReliabilityLoaded(xiaomiMiss)]);
     expect(find.text(upgradeTitle), findsOneWidget);
@@ -179,7 +178,23 @@ void main() {
     await tester.tap(find.text('لاحقًا'));
     await tester.pumpAndSettle();
     expect(find.text(upgradeTitle), findsNothing);
-    expect(find.text(missedTitle), findsNothing);
+    expect(find.text(missedTitle), findsOneWidget);
+    verify(() => reliability.ackMissed(xiaomiMiss)).called(1);
+  });
+
+  testWidgets('a miss behind the upgrade sheet waits while review covers '
+      'Home', (tester) async {
+    await asUpgrader();
+    final status = base.copyWith(missed: [ishaMiss]);
+    final router = await pump(tester, [ReliabilityLoaded(status)]);
+    await tester.tap(find.text('مراجعة الإعدادات'));
+    await tester.pumpAndSettle();
+    expect(find.text('notifications-page'), findsOneWidget);
+    verifyNever(() => reliability.ackMissed(any()));
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text(missedTitle), findsOneWidget);
+    verify(() => reliability.ackMissed(status)).called(1);
   });
 
   testWidgets('the upgrade sheet leaves out the Xiaomi line elsewhere', (

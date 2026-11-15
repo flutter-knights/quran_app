@@ -3,6 +3,7 @@ import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
+import 'package:quran_app/features/notifications/domain/services/prayer_labels.dart';
 
 /// Fixed Fajr→Isha render order (5 prayers; sunrise is excluded).
 /// Independent of localization.
@@ -13,25 +14,6 @@ const _renderOrder = <PrayerName>[
   PrayerName.maghrib,
   PrayerName.isha,
 ];
-
-const _labelsAr = <PrayerName, String>{
-  PrayerName.fajr: 'الفجر',
-  PrayerName.dhuhr: 'الظهر',
-  PrayerName.asr: 'العصر',
-  PrayerName.maghrib: 'المغرب',
-  PrayerName.isha: 'العشاء',
-};
-
-const _labelsEn = <PrayerName, String>{
-  PrayerName.fajr: 'Fajr',
-  PrayerName.dhuhr: 'Dhuhr',
-  PrayerName.asr: 'Asr',
-  PrayerName.maghrib: 'Maghrib',
-  PrayerName.isha: 'Isha',
-};
-
-const _jumuahLabelAr = 'الجمعة';
-const _jumuahLabelEn = "Jumu'ah";
 
 /// Builds a [PrayerStripState] snapshot from today's prayer times.
 ///
@@ -52,12 +34,12 @@ class PrayerStripStateBuilder {
     required bool use24Hour,
     String Function(String prayerLabel)? nextInLabel,
   }) {
-    final labels = localeCode == 'ar' ? _labelsAr : _labelsEn;
-    final jumuah = localeCode == 'ar' ? _jumuahLabelAr : _jumuahLabelEn;
-
     final cells = _renderOrder.map((p) {
-      final rawLabel = labels[p]!;
-      final label = (isFriday && p == PrayerName.dhuhr) ? jumuah : rawLabel;
+      final label = prayerNameLabel(
+        p,
+        arabic: localeCode == 'ar',
+        friday: isFriday,
+      );
       final raw = prayerTimes.timings[p] ?? '';
       final time = use24Hour
           ? raw.toIndicNumerals(localeCode)
