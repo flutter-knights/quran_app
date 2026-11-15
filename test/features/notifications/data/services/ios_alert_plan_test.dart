@@ -298,4 +298,51 @@ void main() {
       expect(isIosAlertId(id), isFalse, reason: '$id');
     }
   });
+
+  group('planIosTestAlert', () {
+    final thursday = DateTime(2026, 11, 19, 10);
+
+    test('uses the Arabic Dhuhr text and the alert sound', () {
+      expect(
+        planIosTestAlert(
+          alert: const PrayerAlert(),
+          localeCode: 'ar',
+          at: thursday,
+        ),
+        IosAlertRequest(
+          id: iosTestAlertId,
+          at: thursday,
+          title: 'الظهر',
+          body: 'حان موعد صلاة الظهر',
+          sound: IosSound.normalClip,
+        ),
+      );
+    });
+
+    test('names Jumu\'ah on a Friday in English', () {
+      final request = planIosTestAlert(
+        alert: const PrayerAlert(),
+        localeCode: 'en',
+        at: DateTime(2026, 11, 20, 10),
+      );
+      expect(request.title, "Jumu'ah");
+      expect(request.body, "It's time for Jumu'ah prayer");
+    });
+
+    test('follows the chosen sound', () {
+      IosSound soundFor(PrayerSound sound) => planIosTestAlert(
+        alert: PrayerAlert(sound: sound),
+        localeCode: 'en',
+        at: thursday,
+      ).sound;
+      expect(soundFor(PrayerSound.tone), IosSound.defaultSound);
+      expect(soundFor(PrayerSound.vibrate), IosSound.none);
+      expect(soundFor(PrayerSound.silent), IosSound.none);
+    });
+
+    test('keeps its id outside the alert range', () {
+      expect(iosTestAlertId, 9999);
+      expect(isIosAlertId(iosTestAlertId), isFalse);
+    });
+  });
 }

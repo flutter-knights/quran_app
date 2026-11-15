@@ -301,6 +301,7 @@
   "alerts_autoMethodReason": "The method is chosen automatically from your country.",
   "alerts_testCaption": "Arrives in a few seconds if notifications are allowed.",
   "alerts_testBlocked": "Nothing will play: notifications are off.",
+  "alerts_testFailed": "Couldn't schedule the test adhan. Try again.",
   "alerts_summary_off": "Off",
   "alerts_summary_ringsInSilent": "rings in silent mode",
   "alerts_summary_reminder": "reminder {minutes} before",

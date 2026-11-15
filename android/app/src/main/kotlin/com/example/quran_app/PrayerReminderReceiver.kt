@@ -58,14 +58,8 @@ class PrayerReminderReceiver : BroadcastReceiver() {
     ): android.app.Notification {
         val ctx = localizedContext(context, localeCode)
 
-        val titleResId = ctx.resources.getIdentifier(
-            "reminder_title_$label", "string", context.packageName,
-        ).let { if (it != 0) it else R.string.adhan_title_fajr }
-        val bodyResId = ctx.resources.getIdentifier(
-            "reminder_body_$label", "string", context.packageName,
-        ).let { if (it != 0) it else R.string.adhan_body_fajr }
-        val title = ctx.getString(titleResId)
-        val body = ctx.getString(bodyResId)
+        val title = ctx.getString(PrayerStrings.reminderTitle(label))
+        val body = ctx.getString(PrayerStrings.reminderBody(label))
 
         val openIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP

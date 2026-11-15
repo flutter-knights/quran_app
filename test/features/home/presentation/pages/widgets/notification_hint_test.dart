@@ -27,6 +27,8 @@ class _FakeScheduler implements PrayerNotificationScheduler {
   Future<void> cancelAll() async {}
   @override
   Future<void> scheduleTestNotification({
+    required PrayerAlert alert,
+    required String localeCode,
     Duration delay = Duration.zero,
   }) async {}
 }

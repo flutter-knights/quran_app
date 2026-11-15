@@ -285,6 +285,7 @@
   "alerts_autoMethodReason": "تُختار الطريقة تلقائيًا حسب بلدك.",
   "alerts_testCaption": "يصل بعد ثوانٍ إذا كانت الإشعارات مسموحة.",
   "alerts_testBlocked": "لن يعمل الأذان: الإشعارات غير مسموحة.",
+  "alerts_testFailed": "تعذّر جدولة الأذان التجريبي، حاول مرة أخرى.",
   "alerts_summary_off": "متوقف",
   "alerts_summary_ringsInSilent": "يرن في الوضع الصامت",
   "alerts_summary_reminder": "تذكير قبل {minutes}",

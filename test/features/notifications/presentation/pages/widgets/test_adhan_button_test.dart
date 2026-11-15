@@ -138,14 +138,19 @@ void main() {
     verify(() => schedule(any())).called(1);
   });
 
-  testWidgets('a failed schedule shows the blocked snackbar', (tester) async {
+  testWidgets('a failed schedule says the test failed, not that '
+      'notifications are off', (tester) async {
     when(
       () => schedule(any()),
     ).thenAnswer((_) async => const Left(UnknownNotificationFailure('boom')));
     await pump(tester, const ReliabilityLoaded(ok));
     await tester.tap(find.text('تشغيل أذان تجريبي'));
     await tester.pumpAndSettle();
-    expect(find.text('لن يعمل الأذان: الإشعارات غير مسموحة.'), findsOneWidget);
+    expect(
+      find.text('تعذّر جدولة الأذان التجريبي، حاول مرة أخرى.'),
+      findsOneWidget,
+    );
+    expect(find.text('لن يعمل الأذان: الإشعارات غير مسموحة.'), findsNothing);
     expect(find.text('يصل بعد ثوانٍ إذا كانت الإشعارات مسموحة.'), findsNothing);
   });
 }

@@ -30,6 +30,7 @@ void main() {
   late _MockLegacyScheduler scheduler;
   late _MockLocal local;
   late NotificationsRepositoryImpl repo;
+  late int appSettingsOpened;
 
   final window = PrayerStripWindow(
     days: [
@@ -72,10 +73,15 @@ void main() {
     native = _MockNative();
     scheduler = _MockLegacyScheduler();
     local = _MockLocal();
+    appSettingsOpened = 0;
     repo = NotificationsRepositoryImpl(
       native: native,
       legacyScheduler: scheduler,
       local: local,
+      openAppSettings: () async {
+        appSettingsOpened++;
+        return true;
+      },
     );
     registerFallbackValue(window);
     registerFallbackValue(pt);
@@ -84,6 +90,7 @@ void main() {
     registerFallbackValue(PrayerName.fajr);
     registerFallbackValue(DateTime(2026));
     registerFallbackValue(Duration.zero);
+    registerFallbackValue(const PrayerAlert());
   });
 
   tearDown(() => debugDefaultTargetPlatformOverride = null);
@@ -537,18 +544,23 @@ void main() {
       ).called(1);
     });
 
-    test('iOS: delegates to the legacy test notification', () async {
+    test('iOS: delegates to the legacy test notification with the alert '
+        'and locale', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       when(
-        () => scheduler.scheduleTestNotification(delay: any(named: 'delay')),
+        () => scheduler.scheduleTestNotification(
+          alert: any(named: 'alert'),
+          localeCode: any(named: 'localeCode'),
+          delay: any(named: 'delay'),
+        ),
       ).thenAnswer((_) async {});
-      final r = await repo.scheduleTestAdhan(
-        alert: const PrayerAlert(),
-        localeCode: 'en',
-      );
+      const alert = PrayerAlert(sound: PrayerSound.vibrate);
+      final r = await repo.scheduleTestAdhan(alert: alert, localeCode: 'ar');
       expect(r, const Right(unit));
       verify(
         () => scheduler.scheduleTestNotification(
+          alert: alert,
+          localeCode: 'ar',
           delay: const Duration(seconds: 5),
         ),
       ).called(1);
@@ -726,13 +738,24 @@ void main() {
       expect(r.isLeft(), isTrue);
     });
 
-    test('iOS: openSystemSettings, previewSound, stopPreview, ackMissedAlerts '
-        'are Right no-ops', () async {
+    test('iOS: the notifications target opens the app settings', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       expect(
         await repo.openSystemSettings(SystemSettingsTarget.notifications),
         const Right(unit),
       );
+      expect(appSettingsOpened, 1);
+      verifyZeroInteractions(native);
+    });
+
+    test('iOS: Android-only settings targets, previewSound, stopPreview, '
+        'ackMissedAlerts are Right no-ops', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      expect(
+        await repo.openSystemSettings(SystemSettingsTarget.battery),
+        const Right(unit),
+      );
+      expect(appSettingsOpened, 0);
       expect(
         await repo.previewSound(
           sound: PreviewSound.tone,

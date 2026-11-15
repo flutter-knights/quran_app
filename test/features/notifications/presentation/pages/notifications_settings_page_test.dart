@@ -152,12 +152,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('a completed sync reloads the status line', (tester) async {
+  testWidgets('a completed sync reloads the status line and today\'s '
+      'times', (tester) async {
     final sync = MockAlertsSync();
     whenListen(sync, Stream.value(DateTime(2026, 11, 15, 9)));
     when(() => reliability.load()).thenAnswer((_) async {});
+    when(() => today.load()).thenAnswer((_) async {});
     await pump(tester, alertsSync: sync);
     verify(() => reliability.load()).called(1);
+    verify(() => today.load()).called(1);
   });
 
   testWidgets('loading status renders as a skeleton', (tester) async {

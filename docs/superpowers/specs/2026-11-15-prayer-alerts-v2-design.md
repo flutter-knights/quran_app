@@ -254,7 +254,9 @@ When a preview ends without an explicit `stopPreview()` (the clip completes, `Me
 ### Housekeeping
 
 - The manifest registers `AdhanHealReceiver` with `exported="false"`.
-- `res/raw/keep.xml` with `tools:keep="@raw/*"`.
+- `res/raw/keep.xml` with `tools:keep="@raw/*"`, because the clips are looked up by name.
+- Prayer titles and bodies (`adhan_title_*`, `adhan_body_*`, `reminder_title_*`, `reminder_body_*`) resolve through `PrayerStrings`, an explicit `when(label)` map to `R.string.*` with Fajr as the fallback, never `getIdentifier`. The release resource shrinker removes strings that are only looked up by name, so every non-Fajr alert would otherwise read «الفجر».
+- Release signing reads `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; git-ignored) and falls back to the debug key when the file is absent.
 - The Dart `init()` deletes `prayer_fajr_channel` and `prayer_standard_channel` and stops creating them.
 - `android:label="@string/app_name"`, with values «Al-Furqan» and values-ar «الفرقان».
 
@@ -267,7 +269,7 @@ When a preview ends without an explicit `stopPreview()` (the clip completes, `Me
   - `openSystemSettings(SystemSettingsTarget)`
   - `previewSound(PrayerSound|ReminderSound, PrayerName)` / `stopPreview()`
   - `previewEnded()`: a `Stream<PreviewSound>` of previews that ended on their own (native → Dart)
-- On iOS each call returns `Right`: `getReliabilityStatus` gives `notificationsEnabled` from the plugin's permission check, `exactAlarmsAllowed` and `batteryUnrestricted` true, `isXiaomi` false, `scheduledUntil` the last scheduled iOS adhan and no misses; the other calls are no-ops. No `Failure` reaches the UI for an unsupported call.
+- On iOS each call returns `Right`: `getReliabilityStatus` gives `notificationsEnabled` from the plugin's permission check, `exactAlarmsAllowed` and `batteryUnrestricted` true, `isXiaomi` false, `scheduledUntil` the last scheduled iOS adhan and no misses; `openSystemSettings(notifications)` opens the app's page in Settings (`Geolocator.openAppSettings`, injected into the repository), since iOS never re-prompts after a denial; the other calls are no-ops. No `Failure` reaches the UI for an unsupported call.
 - Scheduling moves out of HomePage's listeners into `AlertsSyncCubit` (notifications feature). It is an app-wide lazy singleton provided once in `main.dart` above the router, like the other app-wide cubits, so pushed routes see its state. It owns the debounce timer (cancelled in `close()`), the day collection and the calls to `SyncDailyAdhans` and the strip use cases, and it is their only caller. Its state is the time of the last completed alert sync. HomePage's listeners read it from context and only call `requestSync()` (full: adhans, reminders and the strip) or `requestStripRefresh()` (strip only: build the window, then enable or disable), on:
   - the prayer-times context loading (location and month timings ready): full
   - precache completed, only when it fetched a month: full
@@ -293,7 +295,8 @@ Copy is in Appendix A and states in Appendix C.
   - The one-line silent-mode note (`alerts_silentTruth`; `alerts_iosTruth` on iOS).
   - Strip row (Android only).
   - «مواقيت الصلاة», where method and Asr open option sheets, plus the auto-method reason line.
-  - `TestAdhanButton`: when notifications are off, the snackbar says nothing will play (`alerts_testBlocked`) and nothing is scheduled. With exact alarms denied it still schedules (the inexact fallback) and says the adhan may be late (`upg_exactAlarms`); otherwise `alerts_testCaption`.
+  - `TestAdhanButton`: when notifications are off, the snackbar says nothing will play (`alerts_testBlocked`) and nothing is scheduled. With exact alarms denied it still schedules (the inexact fallback) and says the adhan may be late (`upg_exactAlarms`); otherwise `alerts_testCaption`. If scheduling itself fails, it says the test could not be scheduled (`alerts_testFailed`).
+  - Today's times (`TodayPrayerTimesCubit`) reload after every completed alert sync (`ReloadTimesOnSync`, also on `PrayerStripSettingsPage`), so a method or Asr-school change shows the new times without leaving the page.
 - `PrayerAlertSheet`:
   - Modal bottom sheet, live commit.
   - Sound rows open `showAppOptionSheet`.
@@ -323,7 +326,7 @@ Copy is in Appendix A and states in Appendix C.
 - Trim `fajr_adhan.caf` and `normal_adhan.caf` to 26.0 s with a 150 ms fade-out, mono, 44.1 kHz IMA4 CAF, so each ends inside the near-silence (25.0–28.4 s) after the last phrase instead of on the start of the next one at 28.4 s: `afconvert` → WAV, a Python `wave` trim, then `afconvert` → CAF. Add both to the Runner Resources phase in `project.pbxproj`.
 - `PrayerNotificationSchedulerImpl` gets `scheduleAlerts(days, alerts, localeCode)`:
   - Schedules per day and prayer, plus reminders.
-  - Ids are day×10 + prayer for adhans (0–119) and 200 + day×10 + prayer for reminders (200–319). The test keeps 9999.
+  - Ids are day×10 + prayer for adhans (0–119) and 200 + day×10 + prayer for reminders (200–319). The test keeps 9999; `planIosTestAlert` gives it Dhuhr's (or Jumu'ah's) localized title and body and the sound of the alert sent by `TestAdhanButton`, as on Android.
   - The day count is ⌊60 / requestsPerDay⌋, at most 12; zero requests per day schedules nothing.
   - Titles and bodies are in Arabic or English by locale.
   - Adhan sounds: adhan → the bundled CAF; tone → default sound; vibrate or silent → no sound. Reminder sounds: tone → default sound; vibrate or silent → no sound. iOS cannot vibrate without sound, so both pickers omit «اهتزاز فقط» on iOS and a stored `vibrate` behaves as silent.
@@ -410,7 +413,7 @@ The feature keeps all data on the device: prayer times, settings and fire record
   2. «فتح الإعداد» opens «المنبهات والتذكيرات»; allow it and go back: the row shows «مسموحة» and onboarding continues.
   3. `adb logcat | grep "exact alarms granted"` shows the `ExactAlarmGrantReceiver` line; `adb shell dumpsys alarm | grep -A3 $P` lists the adhan, reminder and strip alarms again, now exact (the adhans as alarm-clock alarms).
   4. Revoke it in system settings: the app is stopped; reopen it and the status line reads «إعداد يحتاج إلى إجراء», the reliability row reads «غير مسموحة», and `dumpsys alarm` shows the inexact fallback.
-  5. With the grant still revoked, let one adhan fire with the screen off (the test button refuses while exact alarms are denied): note whether `AdhanPlaybackService` starts (adhan audio) or the receiver logs the FGS-start fallback (tone notification only).
+  5. With the grant still revoked, let one adhan fire with the screen off (the test button still schedules while exact alarms are denied, inexact, and warns that the adhan may be late, so it can be used for this check): note whether `AdhanPlaybackService` starts (adhan audio) or the receiver logs the FGS-start fallback (tone notification only).
   6. Upgrader: install the last release build (v1, which declares `USE_EXACT_ALARM` and has no `alertsIntroSeen`), finish its onboarding, then install this build over it. If `canScheduleExactAlarms()` is now false, the upgrade sheet shows `upg_exactAlarms` and «مراجعة الإعدادات» lands on the reliability page over the alerts page.
 - Strip on a device (Android 12+ and one below 12): the compact strip is not clipped at 1× and 1.3× font scale; the expanded strip fits; the header countdown shows (note whether it appears only when expanded) with its digits in the phone's language; each shape and background in light and dark, and a dark-mode switch recolours the strip on Android 12+ without reopening the app; after Isha the strip shows tomorrow with Fajr and the countdown targets tomorrow's Fajr.
 
@@ -487,6 +490,7 @@ States: Appendix C. Visual layout: `docs/design-audit/prayer/settings/final-spec
 | `alerts_autoMethodReason` | تُختار الطريقة تلقائيًا حسب بلدك. | The method is chosen automatically from your country. |
 | `alerts_testCaption` | يصل بعد ثوانٍ إذا كانت الإشعارات مسموحة. | Arrives in a few seconds if notifications are allowed. |
 | `alerts_testBlocked` | لن يعمل الأذان: الإشعارات غير مسموحة. | Nothing will play: notifications are off. |
+| `alerts_testFailed` | تعذّر جدولة الأذان التجريبي، حاول مرة أخرى. | Couldn't schedule the test adhan. Try again. |
 | `alerts_summary_off` | متوقف | Off |
 | `alerts_summary_ringsInSilent` | يرن في الوضع الصامت | rings in silent mode |
 | `alerts_summary_reminder` | تذكير قبل {minutes} | reminder {minutes} before |

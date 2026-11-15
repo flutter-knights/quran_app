@@ -20,15 +20,6 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
   static const String _standardChannelId = 'prayer_standard_channel';
   static const String _legacyChannelId = 'prayer_times_channel';
 
-  static const _testDetails = NotificationDetails(
-    iOS: DarwinNotificationDetails(
-      sound: 'normal_adhan.caf',
-      presentSound: true,
-      presentAlert: true,
-      presentBadge: false,
-    ),
-  );
-
   @override
   Future<bool?> requestNotificationsPermission() async {
     final androidPlugin = _plugin
@@ -123,14 +114,7 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
           title: request.title,
           body: request.body,
           scheduledDate: tz.TZDateTime.from(request.at, tz.local),
-          notificationDetails: NotificationDetails(
-            iOS: DarwinNotificationDetails(
-              presentAlert: true,
-              presentBadge: false,
-              presentSound: request.sound.audible,
-              sound: request.sound.file,
-            ),
-          ),
+          notificationDetails: _details(request.sound),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         );
         scheduled++;
@@ -159,6 +143,8 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
 
   @override
   Future<void> scheduleTestNotification({
+    required PrayerAlert alert,
+    required String localeCode,
     Duration delay = const Duration(seconds: 30),
   }) async {
     if (!_initialized) {
@@ -166,14 +152,28 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
       return;
     }
     final fireAt = tz.TZDateTime.now(tz.local).add(delay);
+    final request = planIosTestAlert(
+      alert: alert,
+      localeCode: localeCode,
+      at: fireAt,
+    );
     await _plugin.zonedSchedule(
-      id: 9999,
-      title: 'Adhan test',
-      body: 'Background fire check (${delay.inSeconds}s)',
+      id: request.id,
+      title: request.title,
+      body: request.body,
       scheduledDate: fireAt,
-      notificationDetails: _testDetails,
+      notificationDetails: _details(request.sound),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
     debugPrint('[PrayerNotif] test scheduled at $fireAt');
   }
+
+  NotificationDetails _details(IosSound sound) => NotificationDetails(
+    iOS: DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: false,
+      presentSound: sound.audible,
+      sound: sound.file,
+    ),
+  );
 }

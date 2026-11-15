@@ -21,6 +21,7 @@ enum IosSound {
 
 const iosMaxDays = 12;
 const iosReminderIdBase = 200;
+const iosTestAlertId = 9999;
 const _idsPerDay = 10;
 
 bool isIosAlertId(int id) {
@@ -97,7 +98,7 @@ List<IosAlertRequest> planIosAlerts({
             id: id,
             at: at,
             title: name,
-            body: arabic ? 'حان موعد صلاة $name' : "It's time for $name prayer",
+            body: _adhanBody(name, arabic: arabic),
             sound: _adhanSound(prayer, alert.sound),
           ),
         );
@@ -127,6 +128,29 @@ List<IosAlertRequest> planIosAlerts({
   }
   return requests;
 }
+
+IosAlertRequest planIosTestAlert({
+  required PrayerAlert alert,
+  required String localeCode,
+  required DateTime at,
+}) {
+  final arabic = localeCode == 'ar';
+  final name = prayerNameLabel(
+    PrayerName.dhuhr,
+    arabic: arabic,
+    friday: at.weekday == DateTime.friday,
+  );
+  return IosAlertRequest(
+    id: iosTestAlertId,
+    at: at,
+    title: name,
+    body: _adhanBody(name, arabic: arabic),
+    sound: _adhanSound(PrayerName.dhuhr, alert.sound),
+  );
+}
+
+String _adhanBody(String name, {required bool arabic}) =>
+    arabic ? 'حان موعد صلاة $name' : "It's time for $name prayer";
 
 IosSound _adhanSound(PrayerName prayer, PrayerSound sound) => switch (sound) {
   PrayerSound.adhan when prayer == PrayerName.fajr => IosSound.fajrClip,

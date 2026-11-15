@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
@@ -19,12 +20,14 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   final PrayerNotificationScheduler legacyScheduler;
   final NotificationsLocalDataSource local;
   final DateTime Function() clock;
+  final Future<bool> Function() openAppSettings;
 
   NotificationsRepositoryImpl({
     required this.native,
     required this.legacyScheduler,
     required this.local,
     this.clock = DateTime.now,
+    this.openAppSettings = Geolocator.openAppSettings,
   });
 
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -164,7 +167,11 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         ringInSilent: alert.ringInSilent,
       );
     } else {
-      await legacyScheduler.scheduleTestNotification(delay: delay);
+      await legacyScheduler.scheduleTestNotification(
+        alert: alert,
+        localeCode: localeCode,
+        delay: delay,
+      );
     }
   });
 
@@ -207,7 +214,12 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   @override
   Future<Either<Failure, Unit>> openSystemSettings(
     SystemSettingsTarget target,
-  ) => _runAndroidOnly(() => native.openSystemSettings(target.name));
+  ) {
+    if (!_isAndroid && target == SystemSettingsTarget.notifications) {
+      return _run(openAppSettings);
+    }
+    return _runAndroidOnly(() => native.openSystemSettings(target.name));
+  }
 
   @override
   Future<Either<Failure, Unit>> previewSound({

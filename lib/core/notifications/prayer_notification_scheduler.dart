@@ -23,5 +23,9 @@ abstract class PrayerNotificationScheduler {
 
   Future<void> cancelAll();
 
-  Future<void> scheduleTestNotification({Duration delay});
+  Future<void> scheduleTestNotification({
+    required PrayerAlert alert,
+    required String localeCode,
+    Duration delay,
+  });
 }

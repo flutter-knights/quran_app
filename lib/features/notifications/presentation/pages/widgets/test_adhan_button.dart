@@ -44,7 +44,7 @@ class TestAdhanButton extends StatelessWidget {
     final message = switch (result.isRight()) {
       true when exactDenied => s.upg_exactAlarms,
       true => s.alerts_testCaption,
-      false => s.alerts_testBlocked,
+      false => s.alerts_testFailed,
     };
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }

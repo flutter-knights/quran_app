@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
@@ -10,6 +11,7 @@ import 'package:quran_app/core/widgets/design/app_settings_tile.dart';
 import 'package:quran_app/features/notifications/domain/builders/prayer_strip_state_builder.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
 import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/android_sdk_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_state.dart';
@@ -59,6 +61,7 @@ void main() {
     int? sdkInt,
     DateTime Function()? now,
     bool settle = true,
+    AlertsSyncCubit? alertsSync,
   }) async {
     phone(tester);
     cubit.updateSettings(isArabic: locale == 'ar');
@@ -74,6 +77,7 @@ void main() {
       alertsApp(
         settings: cubit,
         locale: locale,
+        alertsSync: alertsSync,
         home: MultiBlocProvider(
           providers: [
             BlocProvider<TodayPrayerTimesCubit>.value(value: today),
@@ -539,5 +543,13 @@ void main() {
       await pumpPreview(tester, const StripStyle());
       expect(find.text('الفرقان · المغرب بعد · ٢٩:٠٠'), findsOneWidget);
     });
+  });
+
+  testWidgets('a completed sync reloads today\'s times', (tester) async {
+    final sync = MockAlertsSync();
+    whenListen(sync, Stream.value(DateTime(2026, 11, 15, 9)));
+    when(() => today.load()).thenAnswer((_) async {});
+    await pumpPage(tester, alertsSync: sync);
+    verify(() => today.load()).called(1);
   });
 }

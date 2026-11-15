@@ -207,4 +207,51 @@ void main() {
       ),
     ).called(1);
   });
+
+  test('the test notification follows the alert sound and locale', () async {
+    await scheduler.init();
+    stubSchedule();
+    await scheduler.scheduleTestNotification(
+      alert: const PrayerAlert(sound: PrayerSound.tone),
+      localeCode: 'ar',
+      delay: const Duration(seconds: 5),
+    );
+    final captured = verify(
+      () => plugin.zonedSchedule(
+        id: 9999,
+        scheduledDate: any(named: 'scheduledDate'),
+        notificationDetails: captureAny(named: 'notificationDetails'),
+        androidScheduleMode: any(named: 'androidScheduleMode'),
+        title: captureAny(named: 'title'),
+        body: captureAny(named: 'body'),
+      ),
+    ).captured;
+    final details = captured[0] as NotificationDetails;
+    expect(captured[1], anyOf('الظهر', 'الجمعة'));
+    expect(captured[2], startsWith('حان موعد صلاة'));
+    expect(details.iOS?.sound, isNull);
+    expect(details.iOS?.presentSound, isTrue);
+  });
+
+  test('a silent alert sends a silent test notification', () async {
+    await scheduler.init();
+    stubSchedule();
+    await scheduler.scheduleTestNotification(
+      alert: const PrayerAlert(sound: PrayerSound.silent),
+      localeCode: 'en',
+    );
+    final details =
+        verify(
+              () => plugin.zonedSchedule(
+                id: 9999,
+                scheduledDate: any(named: 'scheduledDate'),
+                notificationDetails: captureAny(named: 'notificationDetails'),
+                androidScheduleMode: any(named: 'androidScheduleMode'),
+                title: any(named: 'title'),
+                body: any(named: 'body'),
+              ),
+            ).captured.single
+            as NotificationDetails;
+    expect(details.iOS?.presentSound, isFalse);
+  });
 }

@@ -22,6 +22,7 @@ import 'package:quran_app/features/notifications/presentation/cubit/today_prayer
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_list_parts.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_switch_row.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/reload_times_on_sync.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/strip_preview.dart';
 import 'package:quran_app/features/notifications/presentation/utils/enum_localization.dart';
 import 'package:quran_app/features/notifications/presentation/utils/strip_style_colors.dart';
@@ -35,24 +36,26 @@ class PrayerStripSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = PendingS.of(context);
-    return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppScreenAppBar(title: s.strip_title),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32),
-                children: [
-                  _PreviewSection(now: now),
-                  const SizedBox(height: 16),
-                  const _SettingsCards(),
-                  AlertsNote(text: s.strip_note),
-                ],
+    return ReloadTimesOnSync(
+      child: Scaffold(
+        backgroundColor: context.colorScheme.surface,
+        body: SafeArea(
+          child: Column(
+            children: [
+              AppScreenAppBar(title: s.strip_title),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32),
+                  children: [
+                    _PreviewSection(now: now),
+                    const SizedBox(height: 16),
+                    const _SettingsCards(),
+                    AlertsNote(text: s.strip_note),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

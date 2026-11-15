@@ -48,6 +48,9 @@ class PendingS {
   String get alerts_testBlocked => _ar
       ? 'لن يعمل الأذان: الإشعارات غير مسموحة.'
       : 'Nothing will play: notifications are off.';
+  String get alerts_testFailed => _ar
+      ? 'تعذّر جدولة الأذان التجريبي، حاول مرة أخرى.'
+      : 'Couldn\'t schedule the test adhan. Try again.';
   String get alerts_summary_off => _ar ? 'متوقف' : 'Off';
   String get alerts_summary_ringsInSilent =>
       _ar ? 'يرن في الوضع الصامت' : 'rings in silent mode';
