@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/app_status_badge.dart';
 import 'package:quran_app/features/notifications/domain/entities/system_settings_target.dart';
-import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/open_setting_button.dart';
 
 class ExactAlarmRow extends StatelessWidget {
   const ExactAlarmRow({super.key, required this.allowed});
@@ -48,18 +47,9 @@ class ExactAlarmRow extends StatelessWidget {
                 if (allowed)
                   AppStatusBadge(label: s.rel_allowed, color: Colors.white)
                 else
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 48),
-                      foregroundColor: Colors.white,
-                      side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    onPressed: () => context
-                        .read<ReliabilityCubit>()
-                        .openSettings(SystemSettingsTarget.exactAlarm),
-                    child: Text(s.rel_openSettings, style: TS.semi14),
+                  const OpenSettingButton(
+                    target: SystemSettingsTarget.exactAlarm,
+                    ink: Colors.white,
                   ),
               ],
             ),

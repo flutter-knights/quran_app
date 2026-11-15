@@ -84,7 +84,7 @@ void main() {
       await tester.tap(find.text('تشغيل أذان تجريبي'));
       await tester.pumpAndSettle();
       expect(
-        find.text('لن يعمل الأذان: الإشعارات أو المنبهات الدقيقة غير مسموحة.'),
+        find.text('لن يعمل الأذان: الإشعارات غير مسموحة.'),
         findsOneWidget,
       );
       verifyNever(() => schedule(any()));
@@ -113,6 +113,24 @@ void main() {
     },
   );
 
+  testWidgets(
+    'denied exact alarms still schedule and warn the adhan may be late',
+    (tester) async {
+      await pump(
+        tester,
+        ReliabilityLoaded(ok.copyWith(exactAlarmsAllowed: false)),
+      );
+      await tester.tap(find.text('تشغيل أذان تجريبي'));
+      await tester.pumpAndSettle();
+      verify(() => schedule(any())).called(1);
+      expect(
+        find.text('المنبهات الدقيقة غير مسموحة، فقد يتأخر الأذان.'),
+        findsOneWidget,
+      );
+      expect(find.text('لن يعمل الأذان: الإشعارات غير مسموحة.'), findsNothing);
+    },
+  );
+
   testWidgets('a status still loading does not block the test', (tester) async {
     await pump(tester, const ReliabilityLoading());
     await tester.tap(find.text('تشغيل أذان تجريبي'));
@@ -127,10 +145,7 @@ void main() {
     await pump(tester, const ReliabilityLoaded(ok));
     await tester.tap(find.text('تشغيل أذان تجريبي'));
     await tester.pumpAndSettle();
-    expect(
-      find.text('لن يعمل الأذان: الإشعارات أو المنبهات الدقيقة غير مسموحة.'),
-      findsOneWidget,
-    );
+    expect(find.text('لن يعمل الأذان: الإشعارات غير مسموحة.'), findsOneWidget);
     expect(find.text('يصل بعد ثوانٍ إذا كانت الإشعارات مسموحة.'), findsNothing);
   });
 }

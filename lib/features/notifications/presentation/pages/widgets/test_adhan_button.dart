@@ -23,12 +23,17 @@ class TestAdhanButton extends StatelessWidget {
   Future<void> _onPressed(BuildContext context) async {
     final s = PendingS.current;
     final messenger = ScaffoldMessenger.of(context);
-    if (context.read<ReliabilityCubit>().state case ReliabilityLoaded(
+    final reliability = context.read<ReliabilityCubit>().state;
+    if (reliability case ReliabilityLoaded(
       :final status,
-    ) when !status.notificationsEnabled || !status.exactAlarmsAllowed) {
+    ) when !status.notificationsEnabled) {
       messenger.showSnackBar(SnackBar(content: Text(s.alerts_testBlocked)));
       return;
     }
+    final exactDenied = switch (reliability) {
+      ReliabilityLoaded(:final status) => !status.exactAlarmsAllowed,
+      _ => false,
+    };
     final settings = context.read<SettingsCubit>().state.settingsModel;
     final result = await sl<ScheduleTestAdhan>()(
       ScheduleTestAdhanParams(
@@ -36,9 +41,11 @@ class TestAdhanButton extends StatelessWidget {
         localeCode: settings.isArabic ? 'ar' : 'en',
       ),
     );
-    final message = result.isRight()
-        ? s.alerts_testCaption
-        : s.alerts_testBlocked;
+    final message = switch (result.isRight()) {
+      true when exactDenied => s.upg_exactAlarms,
+      true => s.alerts_testCaption,
+      false => s.alerts_testBlocked,
+    };
     messenger.showSnackBar(SnackBar(content: Text(message)));
   }
 

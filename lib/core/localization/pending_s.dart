@@ -46,8 +46,8 @@ class PendingS {
       ? 'يصل بعد ثوانٍ إذا كانت الإشعارات مسموحة.'
       : 'Arrives in a few seconds if notifications are allowed.';
   String get alerts_testBlocked => _ar
-      ? 'لن يعمل الأذان: الإشعارات أو المنبهات الدقيقة غير مسموحة.'
-      : 'Nothing will play: notifications or exact alarms are off.';
+      ? 'لن يعمل الأذان: الإشعارات غير مسموحة.'
+      : 'Nothing will play: notifications are off.';
   String get alerts_summary_off => _ar ? 'متوقف' : 'Off';
   String get alerts_summary_ringsInSilent =>
       _ar ? 'يرن في الوضع الصامت' : 'rings in silent mode';

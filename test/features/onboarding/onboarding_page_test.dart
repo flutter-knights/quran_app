@@ -361,6 +361,7 @@ void main() {
     states.add(const ReliabilityUnavailable());
     await tester.pumpAndSettle();
     expect(find.text(exactTitle), findsOneWidget);
+    expect(find.text('مسموحة'), findsOneWidget);
   });
 
   testWidgets('allowed exact alarms show no row', (tester) async {

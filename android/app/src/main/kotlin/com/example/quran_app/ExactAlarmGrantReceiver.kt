@@ -14,8 +14,11 @@ class ExactAlarmGrantReceiver : BroadcastReceiver() {
         val pending = goAsync()
         AlertStore.post(context) { ctx ->
             try {
-                AdhanScheduler.rearmFromSnapshot(ctx)
-                PrayerStripController.refresh(ctx)
+                try {
+                    AdhanScheduler.rearmFromSnapshot(ctx)
+                } finally {
+                    PrayerStripController.refresh(ctx)
+                }
             } finally {
                 pending.finish()
             }

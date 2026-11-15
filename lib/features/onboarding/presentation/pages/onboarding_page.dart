@@ -43,6 +43,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   int _index = 0;
   bool _leaving = false;
   bool _isXiaomi = false;
+  bool? _exactAlarmsAllowed;
   bool _exactAlarmsAsked = false;
   AlertsChoice? _alertsChoice;
   bool _alertsDeferred = false;
@@ -116,6 +117,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       },
     );
     _isXiaomi = _isXiaomi || xiaomiNow;
+    _exactAlarmsAllowed = exactAllowed ?? _exactAlarmsAllowed;
     _exactAlarmsAsked = _exactAlarmsAsked || exactAllowed == false;
     final storedAlerts = context.select(
       (SettingsCubit c) => c.state.settingsModel.prayerAlerts,
@@ -156,7 +158,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       title: s.onb_notifications_title,
                       why: s.onb_notifications_why,
                       footer: _exactAlarmsAsked
-                          ? ExactAlarmRow(allowed: exactAllowed ?? false)
+                          ? ExactAlarmRow(allowed: _exactAlarmsAllowed ?? false)
                           : null,
                     ),
                     AlertsStep(
