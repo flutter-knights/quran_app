@@ -12,7 +12,6 @@ class PrayerStripState extends Equatable {
   final String weekdayLabel;
   final String localeCode;
   final bool isFriday;
-  final String nextTag;
 
   const PrayerStripState({
     required this.cells,
@@ -22,7 +21,6 @@ class PrayerStripState extends Equatable {
     required this.weekdayLabel,
     required this.localeCode,
     required this.isFriday,
-    this.nextTag = '',
   });
 
   PrayerStripState copyWith({
@@ -33,7 +31,6 @@ class PrayerStripState extends Equatable {
     String? weekdayLabel,
     String? localeCode,
     bool? isFriday,
-    String? nextTag,
   }) {
     return PrayerStripState(
       cells: cells ?? this.cells,
@@ -43,7 +40,6 @@ class PrayerStripState extends Equatable {
       weekdayLabel: weekdayLabel ?? this.weekdayLabel,
       localeCode: localeCode ?? this.localeCode,
       isFriday: isFriday ?? this.isFriday,
-      nextTag: nextTag ?? this.nextTag,
     );
   }
 
@@ -53,6 +49,7 @@ class PrayerStripState extends Equatable {
           (c) => {
             'label': c.label,
             'time': c.timeFormatted,
+            'timeFull': c.timeFull,
             'minutes': c.minutes,
             'nextLabel': c.nextLabel,
           },
@@ -64,7 +61,6 @@ class PrayerStripState extends Equatable {
     'weekdayLabel': weekdayLabel,
     'localeCode': localeCode,
     'isFriday': isFriday,
-    'nextTag': nextTag,
   };
 
   factory PrayerStripState.fromJson(Map<String, Object?> json) {
@@ -75,6 +71,7 @@ class PrayerStripState extends Equatable {
             (m) => PrayerCell(
               label: m['label'] as String,
               timeFormatted: m['time'] as String,
+              timeFull: m['timeFull'] as String?,
               minutes: m['minutes'] as int,
               nextLabel: (m['nextLabel'] as String?) ?? '',
             ),
@@ -86,7 +83,6 @@ class PrayerStripState extends Equatable {
       weekdayLabel: (json['weekdayLabel'] as String?) ?? '',
       localeCode: json['localeCode'] as String,
       isFriday: json['isFriday'] as bool,
-      nextTag: (json['nextTag'] as String?) ?? '',
     );
   }
 
@@ -99,6 +95,5 @@ class PrayerStripState extends Equatable {
     weekdayLabel,
     localeCode,
     isFriday,
-    nextTag,
   ];
 }

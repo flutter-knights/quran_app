@@ -51,7 +51,6 @@ class PrayerStripStateBuilder {
     required bool isFriday,
     required bool use24Hour,
     String Function(String prayerLabel)? nextInLabel,
-    String nextTag = '',
   }) {
     final labels = localeCode == 'ar' ? _labelsAr : _labelsEn;
     final jumuah = localeCode == 'ar' ? _jumuahLabelAr : _jumuahLabelEn;
@@ -63,9 +62,11 @@ class PrayerStripStateBuilder {
       final time = use24Hour
           ? raw.toIndicNumerals(localeCode)
           : _format12Hour(raw, localeCode);
+      final suffix = use24Hour ? null : _dayPeriod(raw, localeCode);
       return PrayerCell(
         label: label,
         timeFormatted: time,
+        timeFull: suffix == null ? time : '$time $suffix',
         minutes: _parseMinutes(raw),
         nextLabel: nextInLabel?.call(label) ?? '',
       );
@@ -91,7 +92,6 @@ class PrayerStripStateBuilder {
       weekdayLabel: weekdayLabel,
       localeCode: localeCode,
       isFriday: isFriday,
-      nextTag: nextTag,
     );
   }
 
@@ -103,6 +103,14 @@ class PrayerStripStateBuilder {
     final h = int.tryParse(parts[0]) ?? 0;
     final m = int.tryParse(parts[1]) ?? 0;
     return h * 60 + m;
+  }
+
+  static String? _dayPeriod(String hhmm24, String localeCode) {
+    final h = int.tryParse(hhmm24.split(':').first);
+    if (h == null || h < 0 || h > 23) return null;
+    final ar = localeCode == 'ar';
+    if (h < 12) return ar ? 'ص' : 'AM';
+    return ar ? 'م' : 'PM';
   }
 
   /// Converts a `HH:mm` 24-hour string into a 12-hour string without an

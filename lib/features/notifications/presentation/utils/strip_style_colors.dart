@@ -52,6 +52,7 @@ StripRenderStyle stripRenderStyle(StripStyle style, ColorPalette palette) =>
         palette,
         night: true,
       ).toARGB32(),
+      highlightTextDay: _textDay(style.highlight, palette).toARGB32(),
       pillTextDay: _pillTextDay.toARGB32(),
       pillTextNight: _pillTextNight.toARGB32(),
       backgroundDay: stripBackgroundSwatch(style.background)?.toARGB32(),
@@ -59,8 +60,14 @@ StripRenderStyle stripRenderStyle(StripStyle style, ColorPalette palette) =>
         style.background,
         night: true,
       )?.toARGB32(),
-      shape: style.shape.name,
+      shape: style.shape,
     );
+
+Color _textDay(StripHighlight h, ColorPalette palette) => switch (h) {
+  StripHighlight.darkGreen => const Color(0xFF406C5C),
+  StripHighlight.emerald => const Color(0xFF1C7151),
+  _ => stripHighlightSwatch(h, palette),
+};
 
 Color _appNight(ColorPalette palette) => switch (palette) {
   ColorPalette.neutralDark ||

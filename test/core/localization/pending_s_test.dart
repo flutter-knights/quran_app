@@ -117,4 +117,13 @@ void main() {
     expect(PendingS.current.alerts_prayersSection, 'Prayers');
     Intl.defaultLocale = previous;
   });
+
+  test('forLanguage ignores the Intl default locale', () {
+    final previous = Intl.defaultLocale;
+    Intl.defaultLocale = 'en';
+    addTearDown(() => Intl.defaultLocale = previous);
+    expect(PendingS.forLanguage('ar').strip_next, 'التالية');
+    expect(PendingS.forLanguage('ar').strip_nextIn('العصر'), 'العصر بعد');
+    expect(PendingS.forLanguage('en').strip_next, 'Next');
+  });
 }

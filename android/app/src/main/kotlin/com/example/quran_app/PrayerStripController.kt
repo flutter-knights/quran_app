@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -20,6 +21,7 @@ import java.util.Locale
 object PrayerStripController {
 
     private const val MIDNIGHT_REQUEST_CODE = 99
+    private const val TAG = "PrayerStripController"
 
     fun show(context: Context, windowJson: String) {
         val ctx = context.applicationContext
@@ -32,30 +34,34 @@ object PrayerStripController {
     fun hide(context: Context) {
         val ctx = context.applicationContext
         PrayerStripStateStore(ctx).clear()
-        cancelAlarms(ctx)
-        NotificationManagerCompat.from(ctx).cancel(PrayerStripRenderer.NOTIFICATION_ID)
+        clearShown(ctx)
     }
 
     private fun renderCurrentDay(ctx: Context) {
-        val window = PrayerStripStateStore(ctx).load() ?: return
+        val store = PrayerStripStateStore(ctx)
+        if (!store.isEnabled()) return
+        val window = store.load() ?: return clearShown(ctx)
         val now = Calendar.getInstance()
         val tomorrow = (now.clone() as Calendar).apply { add(Calendar.DAY_OF_MONTH, 1) }
         val nowMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
-        val picked = pickDay(window, dateKey(now), dateKey(tomorrow), nowMinutes)
-        if (picked == null) {
-            cancelAlarms(ctx)
-            NotificationManagerCompat.from(ctx).cancel(PrayerStripRenderer.NOTIFICATION_ID)
-            return
-        }
-        val (day, nextIndex) = picked
+        val (day, nextIndex) = pickDay(window, dateKey(now), dateKey(tomorrow), nowMinutes)
+            ?: return clearShown(ctx)
         val nextAt = day.cells.getOrNull(nextIndex)?.let { prayerAtMillis(day.dateKey, it.minutes) }
         val renderer = PrayerStripRenderer(ctx)
-        renderer.ensureChannel()
-        NotificationManagerCompat.from(ctx).notify(
-            PrayerStripRenderer.NOTIFICATION_ID,
-            renderer.build(day, nextIndex, nextAt, window.style),
-        )
+        val notification = runCatching {
+            renderer.ensureChannel()
+            renderer.build(window, day, nextIndex, nextAt)
+        }.getOrElse {
+            Log.e(TAG, "renderCurrentDay: build failed", it)
+            return clearShown(ctx)
+        }
+        NotificationManagerCompat.from(ctx).notify(PrayerStripRenderer.NOTIFICATION_ID, notification)
         scheduleAlarms(ctx, day)
+    }
+
+    private fun clearShown(ctx: Context) {
+        cancelAlarms(ctx)
+        NotificationManagerCompat.from(ctx).cancel(PrayerStripRenderer.NOTIFICATION_ID)
     }
 
     fun pickDay(

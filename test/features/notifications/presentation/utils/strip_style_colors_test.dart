@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_render_style.dart';
 import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import 'package:quran_app/features/notifications/presentation/utils/strip_style_colors.dart';
 
@@ -22,7 +23,7 @@ void main() {
     expect(r.pillTextNight, 0xFF121413);
     expect(r.backgroundDay, 0xFFF3ECDD);
     expect(r.backgroundNight, 0xFF2E2A20);
-    expect(r.shape, 'pill');
+    expect(r.shape, StripShape.pill);
     expect(r.countdown, isFalse);
     expect(r.expanded, isTrue);
   });
@@ -33,7 +34,7 @@ void main() {
     expect(r.highlightNight, 0xFF8DB5CC);
     expect(r.backgroundDay, isNull);
     expect(r.backgroundNight, isNull);
-    expect(r.shape, 'rounded');
+    expect(r.shape, StripShape.rounded);
     expect(r.toJson().containsKey('backgroundDay'), isFalse);
     expect(r.toJson().containsKey('backgroundNight'), isFalse);
     expect(r.toJson()['highlightDay'], '#FF1C4558');
@@ -60,6 +61,7 @@ void main() {
       'countdown': true,
       'highlightDay': '#FF2F5F98',
       'highlightNight': '#FF8EBBE3',
+      'highlightTextDay': '#FF2F5F98',
       'pillTextDay': '#FFFFFFFF',
       'pillTextNight': '#FF121413',
       'backgroundDay': '#FFF4E4E6',
@@ -108,6 +110,24 @@ void main() {
     }
     expect(stripBackgroundSwatch(StripBackground.auto), isNull);
     expect(stripBackgroundSwatch(StripBackground.auto, night: true), isNull);
+  });
+
+  test('text-only day highlight darkens darkGreen and emerald to 4.5:1', () {
+    StripRenderStyle text(StripHighlight h) => stripRenderStyle(
+      StripStyle(highlight: h, shape: StripShape.none),
+      ColorPalette.neutralLight,
+    );
+    expect(text(StripHighlight.darkGreen).highlightTextDay, 0xFF406C5C);
+    expect(text(StripHighlight.emerald).highlightTextDay, 0xFF1C7151);
+    for (final h in [
+      StripHighlight.app,
+      StripHighlight.blue,
+      StripHighlight.indigo,
+      StripHighlight.maroon,
+      StripHighlight.bronze,
+    ]) {
+      expect(text(h).highlightTextDay, text(h).highlightDay, reason: h.name);
+    }
   });
 
   test('swatches default to the day colour', () {

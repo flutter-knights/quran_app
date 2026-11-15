@@ -234,17 +234,20 @@ When a preview ends without an explicit `stopPreview()` (the clip completes, `Me
 
 ### Strip
 
-- Window JSON gains `style`: expanded, countdown, highlightDay/Night (ARGB), pillTextDay/Night, backgroundDay/Night (ARGB or absent), and shape.
-- Each day gains `nextLabel` per cell, a ready-made header `{prayer} بعد` built in Dart (`strip_nextIn`), and `nextTag` («التالية», `strip_next`). Strip text comes only from Dart, so it follows the app language.
-- **Compact** layout `prayer_strip_collapsed.xml`: 5 cells, name over time, a root with id `strip_root`, `includeFontPadding=false`. Time strings are built in Dart: they follow `isFormat12Hours` (12h drops ص/م to fit the cell) and use Arabic-Indic digits when the app language is Arabic. Only the chronometer's countdown digits are drawn by the system in the phone's language, which `strip_countdownNote` says.
-- **Expanded** layout `prayer_strip_expanded.xml`: a date line (weekday + Hijri, already in the payload) and 5 rows of name and time, with an «التالية» tag view on the next row.
-- Highlight: the shape drawable (rounded 8 dp / pill / outline 1.5 dp stroke) on the next cell is tinted with the day or night colour on API 31+, or gets a flat fill below that. Shape `none` colours the text only. Pill text is white on day fills and #121413 on night fills. Day or night follows the system `uiMode` at render time.
-- Background: tints `strip_root` (API 31+, flat fill below). With a fill, muted text uses about 66% black.
-- Countdown: `setWhen(nextPrayerMs) + setUsesChronometer + setChronometerCountDown + setShowWhen`, and `setSubText` with that cell's `nextLabel`.
+- Window JSON gains `style`: expanded, countdown, highlightDay/Night (ARGB), highlightTextDay (ARGB, the day colour for text-only highlights, Appendix B), pillTextDay/Night, backgroundDay/Night (ARGB or absent), and shape (`none`/`rounded`/`pill`/`outline`, an enum on both sides; an unknown value reads as `rounded`).
+- Each cell gains `nextLabel`, a ready-made header `{prayer} بعد` built in Dart (`strip_nextIn`), and `timeFull` (the expanded row's time: with ص/م or AM/PM in 12h, the same as `time` in 24h; native falls back to `time` when it is absent). The window carries `nextTag` («التالية», `strip_next`) once at the top level; native still reads an older per-day `nextTag`. Strip text comes only from Dart and is built for the app language (`PendingS.forLanguage(localeCode)`, the same language as the cells), never from the Intl default locale.
+- **Compact** layout `prayer_strip_collapsed.xml`: 5 cells, name (13 sp) over time (11 sp), no vertical padding or margin, a root with id `strip_root`, `includeFontPadding=false`. With Cairo's line box (ascent 1303 + descent 571 per 1000 em = 1.874 em) a cell is 44.98 dp at 1× font scale, inside the ~48 dp collapsed budget on Android 12+ (58.5 dp at 1.3×, where the system clips). Time strings are built in Dart: they follow `isFormat12Hours` (12h drops ص/م to fit the cell) and use Arabic-Indic digits when the app language is Arabic. Only the chronometer's countdown digits are drawn by the system in the phone's language, which `strip_countdownNote` says.
+- **Expanded** layout `prayer_strip_expanded.xml`: a date line (weekday + Hijri, already in the payload; 13 sp, 4 dp below) and 5 rows (min 28 dp, no vertical padding) of name (14 sp) and `timeFull` (15 sp), with an «التالية» tag view on the next row. That is 168.9 dp at 1× and 218.4 dp at 1.3×, inside the 252 dp expanded budget. Layouts use only `LinearLayout` and `TextView`, which RemoteViews can inflate.
+- Highlight: the shape drawable (rounded 8 dp / pill / outline 1.5 dp stroke) on the next cell is tinted with the day or night colour on API 31+, or gets a flat fill below that. Shape `none` colours the text only. Pill text is white on day fills and #121413 on night fills; a text-only highlight (`none`, or `outline` on API 31+) uses `highlightTextDay` by day and the night highlight by night.
+- Passed and upcoming: upcoming names and times use the primary strip text; passed names and times use `strip_text_passed`, about 50% of primary (#6F000000 day, #7FF8F9F8 night). Both come from `values`/`values-night` resources through the `strip_cell_text` selector (`setEnabled(false)` marks a passed cell), so they follow a dark-mode switch on every API level.
+- Day and night: on API 31+ every custom colour (next text, highlight tint, background tint, the date line over a fill) is sent as a day/night pair (`setColorInt`, the two-`ColorStateList` `setColorStateList`), so the system recolours on a dark-mode switch without a re-render. Below API 31 custom colours are resolved with the night mode at render time and corrected by the next render.
+- Background: tints `strip_root` (API 31+, flat fill below). With a day fill, muted text (the date line) uses about 66% black; a night fill keeps the night muted colour.
+- Countdown: `setWhen(nextPrayerMs) + setUsesChronometer + setChronometerCountDown + setShowWhen`, and `setSubText` with that cell's `nextLabel`. On Android 12+ the system shows the countdown in the notification header, which may appear only when the strip is expanded; this needs device verification.
 - Expanded off: no big content view.
 - After Isha the strip shows tomorrow's day with Fajr next, when the window has it. Otherwise it highlights nothing.
 - A swiped strip is not re-posted immediately. It returns at the next strip alarm (next prayer or 00:01) or app open.
 - Dart sends the strip the same cached range as the adhans (up to 30 days), not 7.
+- A stored window that no longer parses, or a render that throws, cancels the strip notification and its alarms instead of leaving a stale strip; the next app open re-sends it.
 
 ### Housekeeping
 
@@ -387,7 +390,7 @@ The feature keeps all data on the device: prayer times, settings and fire record
 ## 15. Verification
 
 - `fvm dart format`, `fvm flutter analyze --no-fatal-infos`, and `fvm flutter test test/features test/core test/config test/quran_package` clean versus `main`. **Never run bare `fvm flutter test`**: `test/tools/generate_mushaf_assets_test.dart` is not skip-guarded and rewrites `assets/mushaf/**`. Check `git status assets/` after every run.
-- `cd android && ./gradlew :app:testDebugUnitTest` for `AlertPlanner`.
+- `cd android && ./gradlew :app:testDebugUnitTest` for `AlertPlanner` and `PrayerStripTest` (payload parsing, colour selection, layout safety and height budgets).
 - `fvm flutter build apk --debug` compiles the Kotlin.
 - iOS: `plutil -lint ios/Runner.xcodeproj/project.pbxproj`, then `fvm flutter build ios --no-codesign --debug`, then confirm that both `.caf` files are in `build/ios/iphoneos/Runner.app`.
 - At authoring time no device was attached (`adb` absent), so the native work is compiled and unit-tested, not proven on the Redmi. The PR carries this adb triage for the owner (`P=com.example.quran_app`):
@@ -397,6 +400,7 @@ The feature keeps all data on the device: prayer times, settings and fire record
   4. Run the test adhan, lock the screen, and watch `adb logcat | grep -iE "$P|Adhan"` for the receiver line.
   5. After a miss: `adb shell dumpsys activity exit-info $P | head -20` shows why the process died.
   6. Turn on autostart, set «بدون قيود», lock the app in recents, and repeat step 3. Alarms that survive confirm the fix path.
+- Strip on a device (Android 12+ and one below 12): the compact strip is not clipped at 1× and 1.3× font scale; the expanded strip fits; the header countdown shows (note whether it appears only when expanded) with its digits in the phone's language; each shape and background in light and dark, and a dark-mode switch recolours the strip on Android 12+ without reopening the app; after Isha the strip shows tomorrow with Fajr and the countdown targets tomorrow's Fajr.
 
 ## 16. Stress-test log
 
@@ -409,7 +413,7 @@ From the stress-test pass of `.claude/skills/feature-flow` (step 2), self-answer
 | The phone is on silent and the prayer uses adhan without the override? | A plain notification goes on the tone channel, so the OS mutes it or vibrates. No FGS, no audio. |
 | Two adhans late at once after a clock jump? | A recorded clock change after arming → dropped silently and recorded `skipped`, so it is not reported as missed. A real deferral → one late notification id (210), only for a prayer whose next prayer hasn't started. |
 | The snapshot runs out (app untouched for more than a month)? | Alarms stop. Nothing counts as missed beyond the snapshot; the status line shows `alerts_status_attention` (rule 3) and the reliability page «مجدولة حتى …» in the past. Native cannot compute times (§2 non-goal). |
-| The strip day changes while the phone is in another mode (light/dark)? | Colours are chosen at render time. The next prayer, midnight or resume render corrects them. Accepted. |
+| The strip day changes while the phone is in another mode (light/dark)? | On API 31+ colours are sent as day/night pairs and plain text comes from night-qualified resources, so the system recolours at once. Below API 31 custom colours are chosen at render time and the next prayer, midnight or resume render corrects them. Accepted. |
 | Onboarding skipped with «لاحقًا» on the alerts step? | Defaults stay (adhan on, no reminder). `alertsIntroSeen` is set true at completion either way. |
 | An upgrader on a non-Xiaomi phone? | The upgrade sheet shows without the Xiaomi line. «مراجعة الإعدادات» opens `/notifications`. |
 | The user denies notifications? | The status line shows `alerts_status_off` and the reliability row offers «فتح الإعداد» (app notification settings). |
@@ -619,6 +623,13 @@ Strip swatches (day / night; night fills use #121413 text, day fills white text)
 | `indigo` | #4B4FA6 | #A9ABEB |
 | `maroon` | #9A3B3B | #E7A3A3 |
 | `bronze` | #8A5A14 | #DDB77A |
+
+Text-only day highlights (`none`, or `outline` on API 31+) need 4.5:1 on mint, sand, sky, rose, a light shade (#F2F2F2) and a tinted shade (#DDE3EA). Two swatches miss it as text (darkGreen 3.71–4.28:1, emerald 4.09–4.72:1), so they get a darker text variant, sent as `highlightTextDay`; the others keep their day colour (lowest: bronze 4.57:1, blue 5.06:1). Night swatches are 6.45:1 or more on every night fill and #1F1F1F.
+
+| Highlight | Day text variant | Lowest contrast |
+|---|---|---|
+| `darkGreen text` | #406C5C | 4.62:1 (tinted shade) |
+| `emerald text` | #1C7151 | 4.60:1 (tinted shade) |
 
 | Background | Day | Night |
 |---|---|---|

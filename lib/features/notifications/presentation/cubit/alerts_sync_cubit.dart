@@ -99,7 +99,7 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
         ),
       );
       if (s.isPrayerStripPinned) {
-        final strings = PendingS.current;
+        final strings = PendingS.forLanguage(localeCode);
         final window = await buildPrayerStripWindow(
           BuildPrayerStripWindowParams(
             localeCode: localeCode,

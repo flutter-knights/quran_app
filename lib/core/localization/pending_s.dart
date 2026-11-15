@@ -10,6 +10,9 @@ class PendingS {
   static PendingS of(BuildContext context) =>
       PendingS._(Localizations.localeOf(context).languageCode == 'ar');
 
+  static PendingS forLanguage(String languageCode) =>
+      PendingS._(languageCode == 'ar');
+
   static PendingS get current =>
       PendingS._(Intl.getCurrentLocale().startsWith('ar'));
 

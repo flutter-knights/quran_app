@@ -3,6 +3,7 @@ import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dar
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/entities/strip_render_style.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 
 void main() {
   PrayerStripState day(String dateKey) => PrayerStripState(
@@ -49,13 +50,25 @@ void main() {
       countdown: false,
       highlightDay: 0xFF9A3B3B,
       highlightNight: 0xFFE7A3A3,
+      highlightTextDay: 0xFF9A3B3B,
       pillTextDay: 0xFFFFFFFF,
       pillTextNight: 0xFF121413,
-      shape: 'pill',
+      shape: StripShape.pill,
     );
     final window = PrayerStripWindow(days: [day('22-05-2026')], style: style);
     expect(window.toJson()['style'], isA<Map>());
     expect(window.toJson()['style'], style.toJson());
     expect(window, isNot(PrayerStripWindow(days: [day('22-05-2026')])));
+  });
+
+  test('nextTag is serialised once at the top level', () {
+    final json = PrayerStripWindow(
+      days: [day('22-05-2026'), day('23-05-2026')],
+      nextTag: 'Next',
+    ).toJson();
+    expect(json['nextTag'], 'Next');
+    for (final d in (json['days'] as List).cast<Map>()) {
+      expect(d.containsKey('nextTag'), isFalse);
+    }
   });
 }

@@ -59,12 +59,15 @@ class BuildPrayerStripWindow {
           isFriday: date.weekday == DateTime.friday,
           use24Hour: params.use24Hour,
           nextInLabel: params.nextInLabel,
-          nextTag: params.nextTag,
         ),
       );
     }
 
     if (states.isEmpty) return null;
-    return PrayerStripWindow(days: states, style: params.style);
+    return PrayerStripWindow(
+      days: states,
+      style: params.style,
+      nextTag: params.nextTag,
+    );
   }
 }

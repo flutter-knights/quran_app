@@ -9,7 +9,7 @@
     <TextView android:id="@+id/strip_date"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:paddingStart="12dp" android:paddingEnd="12dp"
-        android:paddingTop="2dp" android:paddingBottom="6dp"
+        android:paddingBottom="4dp"
         android:textColor="@color/strip_text_muted" android:textSize="13sp"
         android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
         android:textAlignment="viewStart"
@@ -18,7 +18,7 @@
     <LinearLayout android:id="@+id/row_0"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
-        android:minHeight="32dp"
+        android:minHeight="28dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
         <LinearLayout
             android:layout_width="0dp" android:layout_height="wrap_content"
@@ -26,7 +26,7 @@
             android:gravity="center_vertical">
             <TextView android:id="@+id/cell_0_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:textColor="@color/strip_cell_text" android:textSize="14sp"
                 android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
                 android:maxLines="1" android:ellipsize="end" />
             <TextView android:id="@+id/cell_0_tag"
@@ -38,7 +38,7 @@
         </LinearLayout>
         <TextView android:id="@+id/cell_0_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="16sp"
+            android:textColor="@color/strip_cell_text" android:textSize="15sp"
             android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
             android:maxLines="1" />
     </LinearLayout>
@@ -46,7 +46,7 @@
     <LinearLayout android:id="@+id/row_1"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
-        android:minHeight="32dp"
+        android:minHeight="28dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
         <LinearLayout
             android:layout_width="0dp" android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
             android:gravity="center_vertical">
             <TextView android:id="@+id/cell_1_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:textColor="@color/strip_cell_text" android:textSize="14sp"
                 android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
                 android:maxLines="1" android:ellipsize="end" />
             <TextView android:id="@+id/cell_1_tag"
@@ -66,7 +66,7 @@
         </LinearLayout>
         <TextView android:id="@+id/cell_1_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="16sp"
+            android:textColor="@color/strip_cell_text" android:textSize="15sp"
             android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
             android:maxLines="1" />
     </LinearLayout>
@@ -74,7 +74,7 @@
     <LinearLayout android:id="@+id/row_2"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
-        android:minHeight="32dp"
+        android:minHeight="28dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
         <LinearLayout
             android:layout_width="0dp" android:layout_height="wrap_content"
@@ -82,7 +82,7 @@
             android:gravity="center_vertical">
             <TextView android:id="@+id/cell_2_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:textColor="@color/strip_cell_text" android:textSize="14sp"
                 android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
                 android:maxLines="1" android:ellipsize="end" />
             <TextView android:id="@+id/cell_2_tag"
@@ -94,7 +94,7 @@
         </LinearLayout>
         <TextView android:id="@+id/cell_2_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="16sp"
+            android:textColor="@color/strip_cell_text" android:textSize="15sp"
             android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
             android:maxLines="1" />
     </LinearLayout>
@@ -102,7 +102,7 @@
     <LinearLayout android:id="@+id/row_3"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
-        android:minHeight="32dp"
+        android:minHeight="28dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
         <LinearLayout
             android:layout_width="0dp" android:layout_height="wrap_content"
@@ -110,7 +110,7 @@
             android:gravity="center_vertical">
             <TextView android:id="@+id/cell_3_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:textColor="@color/strip_cell_text" android:textSize="14sp"
                 android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
                 android:maxLines="1" android:ellipsize="end" />
             <TextView android:id="@+id/cell_3_tag"
@@ -122,7 +122,7 @@
         </LinearLayout>
         <TextView android:id="@+id/cell_3_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="16sp"
+            android:textColor="@color/strip_cell_text" android:textSize="15sp"
             android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
             android:maxLines="1" />
     </LinearLayout>
@@ -130,7 +130,7 @@
     <LinearLayout android:id="@+id/row_4"
         android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="horizontal" android:gravity="center_vertical"
-        android:minHeight="32dp"
+        android:minHeight="28dp"
         android:paddingStart="12dp" android:paddingEnd="12dp">
         <LinearLayout
             android:layout_width="0dp" android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
             android:gravity="center_vertical">
             <TextView android:id="@+id/cell_4_label"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:textColor="@color/strip_text_primary" android:textSize="15sp"
+                android:textColor="@color/strip_cell_text" android:textSize="14sp"
                 android:fontFamily="@font/cairo_semibold" android:includeFontPadding="false"
                 android:maxLines="1" android:ellipsize="end" />
             <TextView android:id="@+id/cell_4_tag"
@@ -150,7 +150,7 @@
         </LinearLayout>
         <TextView android:id="@+id/cell_4_time"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="@color/strip_text_primary" android:textSize="16sp"
+            android:textColor="@color/strip_cell_text" android:textSize="15sp"
             android:fontFamily="@font/cairo_bold" android:includeFontPadding="false"
             android:maxLines="1" />
     </LinearLayout>

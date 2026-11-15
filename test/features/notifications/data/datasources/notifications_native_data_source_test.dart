@@ -5,6 +5,7 @@ import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dar
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/entities/strip_render_style.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -65,6 +66,7 @@ void main() {
               PrayerCell(
                 label: 'Fajr',
                 timeFormatted: '04:15',
+                timeFull: '04:15 AM',
                 minutes: 255,
                 nextLabel: 'Fajr in',
               ),
@@ -75,26 +77,29 @@ void main() {
             weekdayLabel: '',
             localeCode: 'en',
             isFriday: false,
-            nextTag: 'Next',
           ),
         ],
+        nextTag: 'Next',
         style: StripRenderStyle(
           expanded: true,
           countdown: true,
           highlightDay: 0xFF2E5244,
           highlightNight: 0xFF93BAA8,
+          highlightTextDay: 0xFF2E5244,
           pillTextDay: 0xFFFFFFFF,
           pillTextNight: 0xFF121413,
           backgroundDay: 0xFFE3EFEA,
           backgroundNight: 0xFF16302A,
-          shape: 'rounded',
+          shape: StripShape.rounded,
         ),
       ),
     );
     final args = calls.single.arguments as Map;
     final day = (args['days'] as List).cast<Map>().single;
-    expect(day['nextTag'], 'Next');
-    expect((day['cells'] as List).cast<Map>().single['nextLabel'], 'Fajr in');
+    expect(args['nextTag'], 'Next');
+    final cell = (day['cells'] as List).cast<Map>().single;
+    expect(cell['nextLabel'], 'Fajr in');
+    expect(cell['timeFull'], '04:15 AM');
     final style = args['style'] as Map;
     expect(style['highlightDay'], '#FF2E5244');
     expect(style['backgroundNight'], '#FF16302A');

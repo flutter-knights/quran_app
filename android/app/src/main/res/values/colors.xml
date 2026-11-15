@@ -16,9 +16,8 @@
          Light-mode defaults (Material on-surface). values-night/colors.xml
          overrides these with the dark-mode palette. -->
     <color name="strip_text_primary">#DE000000</color>   <!-- 87% black -->
+    <color name="strip_text_passed">#6F000000</color>
     <color name="strip_text_secondary">#8A000000</color> <!-- 54% black -->
     <color name="strip_text_muted">#8A000000</color>     <!-- 54% black -->
-    <color name="strip_text_dim">#42000000</color>       <!-- 26% black — passed prayers -->
     <color name="strip_accent">#FF4A7C6A</color>         <!-- deep-teal — pill background (both modes) -->
-    <color name="strip_pill_text">#FFF8F9F8</color>      <!-- always-light text on the teal pill -->
 </resources>

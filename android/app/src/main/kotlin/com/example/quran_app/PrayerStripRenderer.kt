@@ -37,11 +37,19 @@ class PrayerStripRenderer(private val context: Context) {
         manager.createNotificationChannel(channel)
     }
 
-    fun build(day: PrayerStripDay, nextIndex: Int, nextAt: Long?, style: StripStyleNative): Notification {
+    fun build(window: PrayerStripWindow, day: PrayerStripDay, nextIndex: Int, nextAt: Long?): Notification {
+        val style = window.style
         val night = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
             Configuration.UI_MODE_NIGHT_YES
+        val paint = Paint(
+            night = night,
+            nextDay = style.nextTextColor(night = false, tintable = TINTABLE),
+            nextNight = style.nextTextColor(night = true, tintable = TINTABLE),
+            mutedDay = style.mutedText(night = false, default = colorIn(night = false, R.color.strip_text_muted)),
+            mutedNight = style.mutedText(night = true, default = colorIn(night = true, R.color.strip_text_muted)),
+        )
         val collapsed = RemoteViews(context.packageName, R.layout.prayer_strip_collapsed)
-        bindCells(collapsed, day, nextIndex, style, night, CELL_IDS)
+        bindCells(collapsed, day, nextIndex, style, paint, CELL_IDS, expanded = false)
 
         val launchPI = PendingIntent.getActivity(
             context, 0,
@@ -62,8 +70,8 @@ class PrayerStripRenderer(private val context: Context) {
 
         if (style.expanded) {
             val expanded = RemoteViews(context.packageName, R.layout.prayer_strip_expanded)
-            bindCells(expanded, day, nextIndex, style, night, ROW_IDS)
-            bindExpandedExtras(expanded, day, nextIndex, style, night)
+            bindCells(expanded, day, nextIndex, style, paint, ROW_IDS, expanded = true)
+            bindExpandedExtras(expanded, day, nextIndex, window.nextTag, style, paint)
             builder.setCustomBigContentView(expanded)
         }
 
@@ -80,39 +88,40 @@ class PrayerStripRenderer(private val context: Context) {
         return builder.build()
     }
 
+    private data class Paint(
+        val night: Boolean,
+        val nextDay: Int,
+        val nextNight: Int,
+        val mutedDay: Int,
+        val mutedNight: Int,
+    )
+
     private fun bindCells(
         views: RemoteViews,
         day: PrayerStripDay,
         nextIndex: Int,
         style: StripStyleNative,
-        night: Boolean,
+        paint: Paint,
         highlightIds: IntArray,
+        expanded: Boolean,
     ) {
-        val primary = context.resources.getColor(R.color.strip_text_primary, null)
-        val muted = style.mutedText(night, context.resources.getColor(R.color.strip_text_muted, null))
-        val passed = StripStyleNative.passed(primary)
-        applyBackground(views, style, night)
-
+        applyBackground(views, style, paint)
         for (i in 0 until 5) {
             val cell = day.cells.getOrNull(i) ?: continue
             views.setTextViewText(LABEL_IDS[i], cell.label)
-            views.setTextViewText(TIME_IDS[i], cell.time)
-            when {
-                i == nextIndex -> {
-                    val text = style.nextTextColor(night, TINTABLE)
+            views.setTextViewText(TIME_IDS[i], if (expanded) cell.timeFull else cell.time)
+            when (StripCellRole.of(i, nextIndex)) {
+                StripCellRole.NEXT -> {
                     views.setTextViewText(LABEL_IDS[i], bold(cell.label))
-                    views.setTextColor(LABEL_IDS[i], text)
-                    views.setTextColor(TIME_IDS[i], text)
-                    applyHighlight(views, highlightIds[i], style, night)
+                    setDayNightText(views, LABEL_IDS[i], paint.nextDay, paint.nextNight, paint.night)
+                    setDayNightText(views, TIME_IDS[i], paint.nextDay, paint.nextNight, paint.night)
+                    applyHighlight(views, highlightIds[i], style, paint.night)
                 }
-                nextIndex < 0 || i < nextIndex -> {
-                    views.setTextColor(LABEL_IDS[i], passed)
-                    views.setTextColor(TIME_IDS[i], passed)
+                StripCellRole.PASSED -> {
+                    views.setBoolean(LABEL_IDS[i], "setEnabled", false)
+                    views.setBoolean(TIME_IDS[i], "setEnabled", false)
                 }
-                else -> {
-                    views.setTextColor(LABEL_IDS[i], primary)
-                    views.setTextColor(TIME_IDS[i], muted)
-                }
+                StripCellRole.UPCOMING -> Unit
             }
         }
     }
@@ -121,23 +130,39 @@ class PrayerStripRenderer(private val context: Context) {
         views: RemoteViews,
         day: PrayerStripDay,
         nextIndex: Int,
+        nextTag: String,
         style: StripStyleNative,
-        night: Boolean,
+        paint: Paint,
     ) {
         val date = listOf(day.weekdayLabel, day.hijriDateLabel).filter { it.isNotEmpty() }.joinToString(" · ")
         views.setTextViewText(R.id.strip_date, date)
-        views.setTextColor(
-            R.id.strip_date,
-            style.mutedText(night, context.resources.getColor(R.color.strip_text_muted, null)),
-        )
+        if (style.backgroundDay != null || style.backgroundNight != null) {
+            setDayNightText(views, R.id.strip_date, paint.mutedDay, paint.mutedNight, paint.night)
+        }
         for (i in 0 until 5) {
-            val showTag = i == nextIndex && day.nextTag.isNotEmpty()
+            val showTag = i == nextIndex && nextTag.isNotEmpty()
             views.setViewVisibility(TAG_IDS[i], if (showTag) View.VISIBLE else View.GONE)
             if (showTag) {
-                views.setTextViewText(TAG_IDS[i], day.nextTag)
-                views.setTextColor(TAG_IDS[i], style.nextTextColor(night, TINTABLE))
+                views.setTextViewText(TAG_IDS[i], nextTag)
+                setDayNightText(views, TAG_IDS[i], paint.nextDay, paint.nextNight, paint.night)
             }
         }
+    }
+
+    private fun setDayNightText(views: RemoteViews, id: Int, day: Int, night: Int, isNight: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            views.setColorInt(id, "setTextColor", day, night)
+        } else {
+            views.setTextColor(id, if (isNight) night else day)
+        }
+    }
+
+    private fun colorIn(night: Boolean, res: Int): Int {
+        val config = Configuration(context.resources.configuration).apply {
+            uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or
+                if (night) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+        }
+        return context.createConfigurationContext(config).getColor(res)
     }
 
     private fun bold(text: String): SpannableString =
@@ -147,31 +172,35 @@ class PrayerStripRenderer(private val context: Context) {
 
     private fun applyHighlight(views: RemoteViews, id: Int, style: StripStyleNative, night: Boolean) {
         val drawable = when (style.shape) {
-            "rounded" -> R.drawable.strip_time_pill
-            "pill" -> R.drawable.strip_cell_pill
-            "outline" -> R.drawable.strip_cell_outline
-            else -> return
+            StripShape.ROUNDED -> R.drawable.strip_time_pill
+            StripShape.PILL -> R.drawable.strip_cell_pill
+            StripShape.OUTLINE -> R.drawable.strip_cell_outline
+            StripShape.NONE -> return
         }
-        val color = style.highlight(night)
-        if (TINTABLE) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             views.setInt(id, "setBackgroundResource", drawable)
-            views.setColorStateList(id, "setBackgroundTintList", ColorStateList.valueOf(color))
+            views.setColorStateList(
+                id, "setBackgroundTintList",
+                ColorStateList.valueOf(style.highlightDay), ColorStateList.valueOf(style.highlightNight),
+            )
         } else {
-            views.setInt(id, "setBackgroundColor", color)
+            views.setInt(id, "setBackgroundColor", style.highlight(night))
         }
     }
 
-    private fun applyBackground(views: RemoteViews, style: StripStyleNative, night: Boolean) {
-        val color = style.background(night) ?: return
-        if (TINTABLE) {
+    private fun applyBackground(views: RemoteViews, style: StripStyleNative, paint: Paint) {
+        if (style.backgroundDay == null && style.backgroundNight == null) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             views.setInt(R.id.strip_root, "setBackgroundResource", R.drawable.strip_notification_bg)
-            views.setColorStateList(R.id.strip_root, "setBackgroundTintList", ColorStateList.valueOf(color))
+            views.setColorStateList(
+                R.id.strip_root, "setBackgroundTintList",
+                ColorStateList.valueOf(style.backgroundDay ?: 0), ColorStateList.valueOf(style.backgroundNight ?: 0),
+            )
         } else {
-            views.setInt(R.id.strip_root, "setBackgroundColor", color)
+            views.setInt(R.id.strip_root, "setBackgroundColor", style.background(paint.night) ?: 0)
         }
         val padH = (4 * context.resources.displayMetrics.density).toInt()
-        val padV = (2 * context.resources.displayMetrics.density).toInt()
-        views.setViewPadding(R.id.strip_root, padH, padV, padH, padV)
+        views.setViewPadding(R.id.strip_root, padH, 0, padH, 0)
     }
 
     companion object {

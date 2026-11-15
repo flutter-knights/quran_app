@@ -109,7 +109,7 @@ void main() {
       expect(s.nextPrayerIndex, 3); // fajr=0,dhuhr=1,asr=2,maghrib=3
     });
 
-    test('builder sets nextLabel per cell and nextTag', () {
+    test('builder sets nextLabel per cell', () {
       final st = PrayerStripStateBuilder.build(
         prayerTimes: pt,
         nextPrayer: PrayerName.asr,
@@ -117,11 +117,8 @@ void main() {
         isFriday: false,
         use24Hour: true,
         nextInLabel: (p) => '$p بعد',
-        nextTag: 'التالية',
       );
       expect(st.cells[2].nextLabel, 'العصر بعد');
-      expect(st.nextTag, 'التالية');
-      expect(st.toJson()['nextTag'], 'التالية');
       expect((st.toJson()['cells'] as List)[2]['nextLabel'], 'العصر بعد');
     });
 
@@ -137,7 +134,7 @@ void main() {
       expect(st.cells[1].nextLabel, 'الجمعة بعد');
     });
 
-    test('labels default to empty without nextInLabel or nextTag', () {
+    test('labels default to empty without nextInLabel', () {
       final st = PrayerStripStateBuilder.build(
         prayerTimes: pt,
         nextPrayer: PrayerName.fajr,
@@ -146,7 +143,6 @@ void main() {
         use24Hour: true,
       );
       expect(st.cells.map((c) => c.nextLabel), everyElement(''));
-      expect(st.nextTag, '');
     });
 
     test('hijri + weekday labels honour locale', () {
@@ -170,6 +166,17 @@ void main() {
       expect(en.weekdayLabel, 'Friday');
     });
 
+    test('timeFull equals the compact time in 24-hour mode', () {
+      final s = PrayerStripStateBuilder.build(
+        prayerTimes: pt,
+        nextPrayer: PrayerName.fajr,
+        localeCode: 'ar',
+        isFriday: false,
+        use24Hour: true,
+      );
+      expect(s.cells[2].timeFull, '١٦:٢٨');
+    });
+
     group('12-hour format (use24Hour=false) — display only', () {
       test('English afternoon uses 12-hour digits, no suffix', () {
         final s = PrayerStripStateBuilder.build(
@@ -183,6 +190,33 @@ void main() {
         expect(s.cells[1].timeFormatted, '12:52'); // Dhuhr (noon boundary)
         expect(s.cells[2].timeFormatted, '04:28'); // Asr 16:28
         expect(s.cells[4].timeFormatted, '09:16'); // Isha 21:16
+      });
+
+      test('timeFull adds AM/PM in English', () {
+        final s = PrayerStripStateBuilder.build(
+          prayerTimes: pt,
+          nextPrayer: PrayerName.fajr,
+          localeCode: 'en',
+          isFriday: false,
+          use24Hour: false,
+        );
+        expect(s.cells[0].timeFull, '04:15 AM');
+        expect(s.cells[1].timeFull, '12:52 PM');
+        expect(s.cells[4].timeFull, '09:16 PM');
+        expect(s.cells[4].timeFormatted, '09:16');
+      });
+
+      test('timeFull adds ص/م with Arabic-Indic digits in Arabic', () {
+        final s = PrayerStripStateBuilder.build(
+          prayerTimes: pt,
+          nextPrayer: PrayerName.fajr,
+          localeCode: 'ar',
+          isFriday: false,
+          use24Hour: false,
+        );
+        expect(s.cells[0].timeFull, '٠٤:١٥ ص');
+        expect(s.cells[2].timeFull, '٠٤:٢٨ م');
+        expect(s.cells[2].timeFormatted, '٠٤:٢٨');
       });
 
       test('midnight 00:00 renders as 12:00', () {

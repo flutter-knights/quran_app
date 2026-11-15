@@ -1,6 +1,5 @@
 package com.example.quran_app
 
-import kotlin.math.roundToInt
 import org.json.JSONObject
 
 data class PrayerCellNative(
@@ -8,6 +7,7 @@ data class PrayerCellNative(
     val time: String,
     val minutes: Int,
     val nextLabel: String = "",
+    val timeFull: String = time,
 )
 
 data class PrayerStripDay(
@@ -17,47 +17,70 @@ data class PrayerStripDay(
     val weekdayLabel: String,
     val localeCode: String,
     val isFriday: Boolean,
-    val nextTag: String = "",
 )
+
+enum class StripShape(val wire: String) {
+    NONE("none"),
+    ROUNDED("rounded"),
+    PILL("pill"),
+    OUTLINE("outline");
+
+    companion object {
+        fun parse(wire: String?) = entries.firstOrNull { it.wire == wire } ?: ROUNDED
+    }
+}
+
+enum class StripCellRole {
+    PASSED,
+    NEXT,
+    UPCOMING;
+
+    companion object {
+        fun of(index: Int, nextIndex: Int) = when {
+            index == nextIndex -> NEXT
+            nextIndex < 0 || index < nextIndex -> PASSED
+            else -> UPCOMING
+        }
+    }
+}
 
 data class StripStyleNative(
     val expanded: Boolean = true,
     val countdown: Boolean = true,
     val highlightDay: Int = 0xFF2E5244.toInt(),
     val highlightNight: Int = 0xFF93BAA8.toInt(),
+    val highlightTextDay: Int = 0xFF2E5244.toInt(),
     val pillTextDay: Int = 0xFFFFFFFF.toInt(),
     val pillTextNight: Int = 0xFF121413.toInt(),
     val backgroundDay: Int? = null,
     val backgroundNight: Int? = null,
-    val shape: String = "rounded",
+    val shape: StripShape = StripShape.ROUNDED,
 ) {
     fun fillsCell(tintable: Boolean) =
-        shape == "rounded" || shape == "pill" || (shape == "outline" && !tintable)
+        shape == StripShape.ROUNDED || shape == StripShape.PILL || (shape == StripShape.OUTLINE && !tintable)
 
     fun highlight(night: Boolean) = if (night) highlightNight else highlightDay
 
     fun background(night: Boolean) = if (night) backgroundNight else backgroundDay
 
-    fun nextTextColor(night: Boolean, tintable: Boolean = true) =
-        if (fillsCell(tintable)) (if (night) pillTextNight else pillTextDay) else highlight(night)
+    fun nextTextColor(night: Boolean, tintable: Boolean = true) = when {
+        fillsCell(tintable) -> if (night) pillTextNight else pillTextDay
+        night -> highlightNight
+        else -> highlightTextDay
+    }
 
     fun mutedText(night: Boolean, default: Int) =
         if (!night && backgroundDay != null) MUTED_ON_DAY_FILL else default
 
     companion object {
-        val SHAPES = setOf("none", "rounded", "pill", "outline")
         const val MUTED_ON_DAY_FILL = 0xA8000000.toInt()
-
-        fun passed(color: Int): Int {
-            val alpha = ((color ushr 24) * 0.6f).roundToInt()
-            return (alpha shl 24) or (color and 0x00FFFFFF)
-        }
     }
 }
 
 data class PrayerStripWindow(
     val days: List<PrayerStripDay>,
     val style: StripStyleNative = StripStyleNative(),
+    val nextTag: String = "",
 ) {
 
     companion object {
@@ -65,13 +88,21 @@ data class PrayerStripWindow(
             val obj = JSONObject(raw)
             val daysArr = obj.getJSONArray("days")
             val days = (0 until daysArr.length()).map { dayFromJson(daysArr.getJSONObject(it)) }
-            return PrayerStripWindow(days, styleFromJson(obj.optJSONObject("style")))
+            val legacyTag = daysArr.optJSONObject(0)?.optString("nextTag", "") ?: ""
+            return PrayerStripWindow(
+                days,
+                styleFromJson(obj.optJSONObject("style")),
+                obj.optString("nextTag", legacyTag),
+            )
         }
+
+        fun parseOrNull(raw: String?): PrayerStripWindow? =
+            raw?.let { runCatching { fromJsonString(it) }.getOrNull() }
 
         fun channelArgsToJson(args: Any?): String? {
             if (args !is Map<*, *>) return null
             val json = runCatching { JSONObject(args).toString() }.getOrNull() ?: return null
-            return json.takeIf { runCatching { fromJsonString(it) }.isSuccess }
+            return json.takeIf { parseOrNull(it) != null }
         }
 
         fun parseArgb(hex: String?): Int? {
@@ -84,11 +115,13 @@ data class PrayerStripWindow(
             val rawCells = obj.getJSONArray("cells")
             val cells = (0 until rawCells.length()).map {
                 val c = rawCells.getJSONObject(it)
+                val time = c.getString("time")
                 PrayerCellNative(
-                    c.getString("label"),
-                    c.getString("time"),
-                    c.getInt("minutes"),
-                    c.optString("nextLabel", ""),
+                    label = c.getString("label"),
+                    time = time,
+                    minutes = c.getInt("minutes"),
+                    nextLabel = c.optString("nextLabel", ""),
+                    timeFull = c.optString("timeFull", time),
                 )
             }
             return PrayerStripDay(
@@ -98,7 +131,6 @@ data class PrayerStripWindow(
                 weekdayLabel = obj.optString("weekdayLabel", ""),
                 localeCode = obj.getString("localeCode"),
                 isFriday = obj.getBoolean("isFriday"),
-                nextTag = obj.optString("nextTag", ""),
             )
         }
 
@@ -111,11 +143,12 @@ data class PrayerStripWindow(
                 countdown = obj.optBoolean("countdown", d.countdown),
                 highlightDay = color("highlightDay") ?: d.highlightDay,
                 highlightNight = color("highlightNight") ?: d.highlightNight,
+                highlightTextDay = color("highlightTextDay") ?: color("highlightDay") ?: d.highlightTextDay,
                 pillTextDay = color("pillTextDay") ?: d.pillTextDay,
                 pillTextNight = color("pillTextNight") ?: d.pillTextNight,
                 backgroundDay = color("backgroundDay"),
                 backgroundNight = color("backgroundNight"),
-                shape = obj.optString("shape", d.shape).takeIf { it in StripStyleNative.SHAPES } ?: d.shape,
+                shape = StripShape.parse(obj.optString("shape", StripShape.ROUNDED.wire)),
             )
         }
     }

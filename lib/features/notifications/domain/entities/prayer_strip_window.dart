@@ -8,14 +8,16 @@ import 'package:quran_app/features/notifications/domain/entities/strip_render_st
 class PrayerStripWindow extends Equatable {
   final List<PrayerStripState> days;
   final StripRenderStyle? style;
+  final String nextTag;
 
-  const PrayerStripWindow({required this.days, this.style});
+  const PrayerStripWindow({required this.days, this.style, this.nextTag = ''});
 
   Map<String, Object> toJson() => {
     'days': days.map((d) => d.toJson()).toList(),
     if (style != null) 'style': style!.toJson(),
+    'nextTag': nextTag,
   };
 
   @override
-  List<Object?> get props => [days, style];
+  List<Object?> get props => [days, style, nextTag];
 }

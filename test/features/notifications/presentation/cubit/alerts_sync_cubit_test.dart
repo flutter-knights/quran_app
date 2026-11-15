@@ -191,9 +191,9 @@ void main() {
       verifyNever(() => disable(any()));
     });
 
-    test('strip window carries the style and Arabic labels', () async {
+    test('strip labels follow the app language, not Intl', () async {
       final previous = Intl.defaultLocale;
-      Intl.defaultLocale = 'ar';
+      Intl.defaultLocale = 'en';
       addTearDown(() => Intl.defaultLocale = previous);
       settingsCubit
         ..updatePrayerStripPinned(true)
@@ -213,6 +213,22 @@ void main() {
       expect(p.style!.highlightDay, 0xFF4B4FA6);
       expect(p.nextTag, 'التالية');
       expect(p.nextInLabel!('العصر'), 'العصر بعد');
+    });
+
+    test('English app language gives English strip labels', () async {
+      final previous = Intl.defaultLocale;
+      Intl.defaultLocale = 'ar';
+      addTearDown(() => Intl.defaultLocale = previous);
+      settingsCubit
+        ..updatePrayerStripPinned(true)
+        ..updateSettings(isArabic: false);
+      await cubit.syncNow();
+      final p =
+          verify(() => build(captureAny())).captured.single
+              as BuildPrayerStripWindowParams;
+      expect(p.localeCode, 'en');
+      expect(p.nextTag, 'Next');
+      expect(p.nextInLabel!('Asr'), 'Asr in');
     });
 
     test('strip pinned with no window skips enable', () async {

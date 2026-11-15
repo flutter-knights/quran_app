@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/strip_render_style.dart';
+import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
 import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
 
 PrayerTimes _pt(String dateKey) => PrayerTimes(
@@ -77,9 +78,10 @@ void main() {
       countdown: true,
       highlightDay: 0xFF2F5F98,
       highlightNight: 0xFF8EBBE3,
+      highlightTextDay: 0xFF2F5F98,
       pillTextDay: 0xFFFFFFFF,
       pillTextNight: 0xFF121413,
-      shape: 'outline',
+      shape: StripShape.outline,
     );
     final w = await useCase.call(
       BuildPrayerStripWindowParams(
@@ -96,6 +98,6 @@ void main() {
     expect(w!.style, style);
     expect(w.days[0].cells[2].nextLabel, 'Asr in');
     expect(w.days[1].cells[0].nextLabel, 'Fajr in');
-    expect(w.days.map((d) => d.nextTag), everyElement('Next'));
+    expect(w.nextTag, 'Next');
   });
 }
