@@ -73,7 +73,15 @@ class AdhanPlaybackService : Service() {
         Log.i(TAG, "onStartCommand action=ACTION_PLAY prayer=$prayer clip=$clipName")
 
         val notif = buildNotification(prayer, localeCode, ongoing = false)
-        startForeground(NOTIFICATION_ID, notif)
+        try {
+            startForeground(NOTIFICATION_ID, notif)
+        } catch (e: Exception) {
+            Log.e(TAG, "handlePlay: startForeground failed for $prayer, posting text", e)
+            currentPrayer = null
+            runCatching { AdhanAlarmReceiver.postAdhanText(this, prayer, localeCode, "tone") }
+            stopSelf()
+            return
+        }
 
         startMediaPlayer(clipName, ringInSilent)
     }
@@ -166,15 +174,7 @@ class AdhanPlaybackService : Service() {
     private fun buildNotification(prayer: String, localeCode: String, ongoing: Boolean): android.app.Notification {
         Locale.setDefault(Locale.forLanguageTag(localeCode))
         val ctx = localizedContext(this, localeCode)
-
-        val titleResId = ctx.resources.getIdentifier(
-            "adhan_title_$prayer", "string", packageName
-        ).let { if (it != 0) it else R.string.adhan_title_fajr }
-        val bodyResId = ctx.resources.getIdentifier(
-            "adhan_body_$prayer", "string", packageName
-        ).let { if (it != 0) it else R.string.adhan_body_fajr }
-        val title = ctx.getString(titleResId)
-        val body = ctx.getString(bodyResId)
+        val (title, body) = adhanText(ctx, prayer)
         val stopLabel = ctx.getString(R.string.adhan_stop)
 
         val openPI = PendingIntent.getActivity(

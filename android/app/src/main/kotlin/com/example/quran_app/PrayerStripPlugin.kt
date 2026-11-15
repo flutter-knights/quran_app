@@ -27,6 +27,7 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        SoundPreviewPlayer.stop()
         channel?.setMethodCallHandler(null)
         channel = null
         appContext = null

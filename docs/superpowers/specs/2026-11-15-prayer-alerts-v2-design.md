@@ -413,7 +413,7 @@ From the stress-test pass of `.claude/skills/feature-flow` (step 2), self-answer
 | iOS: 5 prayers and 5 reminders a day? | 10 requests a day → 6 days within 60 (4 left for the test and slack). |
 | Reminder 1 minute before, while the adhan fires a minute later? | Allowed. The adhan receiver cancels the visible reminder (today's behaviour). |
 | The app was killed in the evening and opened next morning? | Isha's trigger has no record and is within 24 h, so the missed sheet names Isha. |
-| Do notification ids collide with request codes? | No. PendingIntent request codes and notification ids are separate namespaces. Notification ids: strip 100, adhan 200 (one at a time, the newest replaces), late 210, reminders 2300 + prayerIndex. |
+| Do notification ids collide with request codes? | No. PendingIntent request codes and notification ids are separate namespaces. Notification ids: strip 100, adhan playback 200 (one at a time, the newest replaces), adhan text 201 (kept apart so a text alert never replaces a running playback notification), late 210, reminders 2300 + prayerIndex. |
 | Does the slider write on every step? | No. It keeps a local draft and commits once on `onChangeEnd`. The chips commit immediately. |
 
 ## 17. Domain terms

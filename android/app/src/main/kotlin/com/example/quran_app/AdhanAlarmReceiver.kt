@@ -53,11 +53,14 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         val ringInSilent = legacy || intent.getBooleanExtra(EXTRA_RING_IN_SILENT, false)
         val triggerAt = intent.getLongExtra(EXTRA_TRIGGER_AT, 0L).takeIf { it > 0L } ?: nowWall
         val key = intent.getStringExtra(EXTRA_KEY) ?: AlertPlanner.keyFor(triggerAt, prayer, TimeZone.getDefault())
-        AlertChannels.ensureAll(context)
-        val playing = AlertPlanner.plays(sound, ringInSilent, isAudibleNow(context))
+        runCatching { AlertChannels.ensureAll(context) }
+        val audible = runCatching { isAudibleNow(context) }.getOrDefault(false)
+        val playing = AlertPlanner.plays(sound, ringInSilent, audible)
+        val blocked = runCatching { AlertChannels.isBlocked(context, AlertPlanner.deliveryChannel(sound, playing)) }.getOrDefault(false)
+        val enabled = runCatching { NotificationManagerCompat.from(context).areNotificationsEnabled() }.getOrDefault(true)
         val route = AlertPlanner.route(
-            NotificationManagerCompat.from(context).areNotificationsEnabled(),
-            AlertChannels.isBlocked(context, AlertPlanner.deliveryChannel(sound, playing)),
+            enabled,
+            blocked,
             nowWall,
             nowElapsed,
             triggerAt,
@@ -89,6 +92,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG = "AdhanReceiver"
+        const val TEXT_NOTIFICATION_ID = 201
         const val LATE_NOTIFICATION_ID = 210
         const val EXTRA_PRAYER = "prayer"
         const val EXTRA_CLIP = "clip"
@@ -134,17 +138,17 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             postAdhanText(context, prayer, localeCode, sound)
         }
 
-        private fun postAdhanText(context: Context, prayer: String, localeCode: String, sound: String) {
+        fun postAdhanText(context: Context, prayer: String, localeCode: String, sound: String) {
             val channel = AlertPlanner.deliveryChannel(sound, false)
-            val ctx = localizedContext(context, localeCode)
-            val titleRes = ctx.resources.getIdentifier("adhan_title_$prayer", "string", context.packageName)
-                .let { if (it != 0) it else R.string.adhan_title_fajr }
-            val bodyRes = ctx.resources.getIdentifier("adhan_body_$prayer", "string", context.packageName)
-                .let { if (it != 0) it else R.string.adhan_body_fajr }
+            if (AlertChannels.isBlocked(context, channel)) {
+                Log.w(TAG, "postAdhanText: $channel is blocked, nothing posted for $prayer")
+                return
+            }
+            val (title, body) = adhanText(localizedContext(context, localeCode), prayer)
             val builder = NotificationCompat.Builder(context, channel)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(ctx.getString(titleRes))
-                .setContentText(ctx.getString(bodyRes))
+                .setContentTitle(title)
+                .setContentText(body)
                 .setContentIntent(AdhanScheduler.openAppIntent(context))
                 .setAutoCancel(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -154,14 +158,13 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
                 AlertChannels.ALERT_VIBRATE -> builder.setPriority(NotificationCompat.PRIORITY_HIGH).setDefaults(NotificationCompat.DEFAULT_VIBRATE)
                 else -> builder.setPriority(NotificationCompat.PRIORITY_DEFAULT)
             }
-            NotificationManagerCompat.from(context).notify(AdhanPlaybackService.NOTIFICATION_ID, builder.build())
+            NotificationManagerCompat.from(context).notify(TEXT_NOTIFICATION_ID, builder.build())
         }
 
         fun postLate(context: Context, prayer: String, localeCode: String, lateMinutes: Int) {
             AlertChannels.ensureAll(context)
             val ctx = localizedContext(context, localeCode)
-            val nameRes = ctx.resources.getIdentifier("adhan_title_$prayer", "string", context.packageName)
-                .let { if (it != 0) it else R.string.adhan_title_fajr }
+            val prayerName = adhanText(ctx, prayer).first
             val minutesText = ctx.resources.getQuantityString(
                 R.plurals.prayer_late_minutes,
                 lateMinutes,
@@ -170,7 +173,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             val openPI = AdhanScheduler.openAppIntent(context)
             val notification = NotificationCompat.Builder(context, AlertChannels.ALERT_SILENT)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(ctx.getString(R.string.prayer_late_title, ctx.getString(nameRes), minutesText))
+                .setContentTitle(ctx.getString(R.string.prayer_late_title, prayerName, minutesText))
                 .setContentText(ctx.getString(R.string.prayer_late_body))
                 .setStyle(NotificationCompat.BigTextStyle().bigText(ctx.getString(R.string.prayer_late_body)))
                 .setContentIntent(openPI)
