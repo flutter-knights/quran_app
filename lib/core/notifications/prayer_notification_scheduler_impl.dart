@@ -75,7 +75,7 @@ class PrayerNotificationSchedulerImpl implements PrayerNotificationScheduler {
     tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
 
     const initSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      android: AndroidInitializationSettings('@drawable/ic_stat_alfurqan'),
       iOS: DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,

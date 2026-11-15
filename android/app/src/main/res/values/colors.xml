@@ -11,6 +11,7 @@
 
     <!-- Splash screen background — matches Flutter app's onyx dark background -->
     <color name="splashBackground">#FF121413</color>
+    <color name="ic_launcher_background">#FF2E5244</color>
 
     <!-- Strip semantic tokens (used by layouts + renderer).
          Light-mode defaults (Material on-surface). values-night/colors.xml

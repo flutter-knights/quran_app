@@ -77,7 +77,7 @@ class PrayerReminderReceiver : BroadcastReceiver() {
 
         val channel = AlertPlanner.reminderChannel(reminderSound)
         val builder = NotificationCompat.Builder(context, channel)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_alfurqan)
             .setContentTitle(title)
             .setContentText(body)
             .setWhen(prayerTimestampMs)

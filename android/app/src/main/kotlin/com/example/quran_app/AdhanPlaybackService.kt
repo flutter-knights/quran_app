@@ -195,7 +195,7 @@ class AdhanPlaybackService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_alfurqan)
             .setContentTitle(title)
             .setContentText(body)
             .setOngoing(ongoing)

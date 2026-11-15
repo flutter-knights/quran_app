@@ -150,7 +150,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             }
             val (title, body) = adhanText(localizedContext(context, localeCode), label)
             val builder = NotificationCompat.Builder(context, channel)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_alfurqan)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setContentIntent(AdhanScheduler.openAppIntent(context))
@@ -176,7 +176,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             )
             val openPI = AdhanScheduler.openAppIntent(context)
             val notification = NotificationCompat.Builder(context, AlertChannels.ALERT_SILENT)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_alfurqan)
                 .setContentTitle(ctx.getString(R.string.prayer_late_title, prayerName, minutesText))
                 .setContentText(ctx.getString(R.string.prayer_late_body))
                 .setStyle(NotificationCompat.BigTextStyle().bigText(ctx.getString(R.string.prayer_late_body)))
