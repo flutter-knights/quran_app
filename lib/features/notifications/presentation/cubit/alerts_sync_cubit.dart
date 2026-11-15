@@ -37,46 +37,65 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
   final DateTime Function() clock;
 
   Timer? _timer;
+  bool _timerFull = false;
   Future<void>? _running;
-  bool _again = false;
+  bool? _queued;
 
-  static bool listensTo(Settings prev, Settings curr) =>
+  static bool needsSync(Settings prev, Settings curr) =>
       !mapEquals(prev.prayerAlerts, curr.prayerAlerts) ||
-      prev.stripStyle != curr.stripStyle ||
-      prev.isPrayerStripPinned != curr.isPrayerStripPinned ||
       prev.isArabic != curr.isArabic ||
-      prev.isFormat12Hours != curr.isFormat12Hours ||
-      prev.palette != curr.palette ||
       prev.calculationMethod != curr.calculationMethod ||
       prev.asrSchool != curr.asrSchool;
 
-  void requestSync() {
+  static bool needsStripRefresh(Settings prev, Settings curr) =>
+      prev.stripStyle != curr.stripStyle ||
+      prev.isPrayerStripPinned != curr.isPrayerStripPinned ||
+      prev.isFormat12Hours != curr.isFormat12Hours ||
+      prev.palette != curr.palette;
+
+  void requestSync() => _request(full: true);
+
+  void requestStripRefresh() => _request(full: false);
+
+  void _request({required bool full}) {
     if (isClosed) return;
     _timer?.cancel();
-    _timer = Timer(debounce, syncNow);
+    _timerFull |= full;
+    _timer = Timer(debounce, () {
+      final pending = _timerFull;
+      _timerFull = false;
+      _start(full: pending);
+    });
   }
 
-  Future<void> syncNow() {
+  Future<void> syncNow() => _start(full: true);
+
+  Future<void> refreshStripNow() => _start(full: false);
+
+  Future<void> _start({required bool full}) {
     final running = _running;
     if (running != null) {
-      _again = true;
+      _queued = full || (_queued ?? false);
       return running;
     }
-    return _running = _drain();
+    return _running = _drain(full);
   }
 
-  Future<void> _drain() async {
+  Future<void> _drain(bool full) async {
     try {
-      do {
-        _again = false;
-        await _syncOnce();
-      } while (_again && !isClosed);
+      bool? next = full;
+      while (next != null && !isClosed) {
+        _queued = null;
+        await _pass(full: next);
+        next = _queued;
+      }
     } finally {
+      _queued = null;
       _running = null;
     }
   }
 
-  Future<void> _syncOnce() async {
+  Future<void> _pass({required bool full}) async {
     try {
       final s = settingsCubit.state.settingsModel;
       final now = clock();
@@ -88,16 +107,18 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
         _logFailure('strip disable', await disablePrayerStrip(NoParams()));
       }
       if (days.isEmpty) return;
-      _logFailure(
-        'adhan sync',
-        await syncDailyAdhans(
-          SyncDailyAdhansParams(
-            days: days,
-            alerts: s.prayerAlerts,
-            localeCode: localeCode,
+      if (full) {
+        _logFailure(
+          'adhan sync',
+          await syncDailyAdhans(
+            SyncDailyAdhansParams(
+              days: days,
+              alerts: s.prayerAlerts,
+              localeCode: localeCode,
+            ),
           ),
-        ),
-      );
+        );
+      }
       if (s.isPrayerStripPinned) {
         final strings = PendingS.forLanguage(localeCode);
         final window = await buildPrayerStripWindow(
@@ -119,7 +140,7 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
           );
         }
       }
-      if (isClosed) return;
+      if (!full || isClosed) return;
       emit(clock());
     } catch (e, st) {
       debugPrint('[alerts-sync] failed: $e\n$st');

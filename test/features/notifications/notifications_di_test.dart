@@ -7,15 +7,19 @@ import 'package:quran_app/features/notifications/data/datasources/notifications_
 import 'package:quran_app/features/notifications/domain/usecases/get_android_sdk_int.dart';
 import 'package:quran_app/features/notifications/domain/usecases/watch_preview_ended.dart';
 import 'package:quran_app/features/notifications/notifications_di.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/android_sdk_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/sound_preview_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 class _MockScheduler extends Mock implements PrayerNotificationScheduler {}
 
 class _MockPrayerTimesRepository extends Mock
     implements PrayerTimesRepository {}
+
+class _MockSettings extends Mock implements SettingsCubit {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +33,7 @@ void main() {
     sl.registerLazySingleton<PrayerTimesRepository>(
       () => _MockPrayerTimesRepository(),
     );
+    sl.registerSingleton<SettingsCubit>(_MockSettings());
     initNotifications();
 
     expect(sl<WatchPreviewEnded>(), isA<WatchPreviewEnded>());
@@ -40,8 +45,10 @@ void main() {
     final another = sl<SoundPreviewCubit>();
     final sdk = sl<AndroidSdkCubit>();
     expect(identical(preview, another), isFalse);
+    final sync = sl<AlertsSyncCubit>();
+    expect(sl<AlertsSyncCubit>(), same(sync));
 
-    for (final cubit in [reliability, preview, another, today, sdk]) {
+    for (final cubit in [reliability, preview, another, today, sdk, sync]) {
       await cubit.close();
     }
   });

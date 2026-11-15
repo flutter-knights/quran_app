@@ -11,6 +11,7 @@ import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/notifications/domain/entities/reliability_status.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_prompt_gate.dart';
@@ -92,6 +93,7 @@ void main() {
     List<ReliabilityState> states, {
     String locale = 'ar',
     Stream<ReliabilityState>? stream,
+    AlertsSyncCubit? alertsSync,
   }) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
@@ -121,7 +123,12 @@ void main() {
     );
     addTearDown(router.dispose);
     await tester.pumpWidget(
-      alertsRouterApp(settings: settings, router: router, locale: locale),
+      alertsRouterApp(
+        settings: settings,
+        router: router,
+        locale: locale,
+        alertsSync: alertsSync,
+      ),
     );
     await tester.pumpAndSettle();
     return router;
@@ -197,6 +204,14 @@ void main() {
     expect(find.text(upgradeTitle), findsOneWidget);
     expect(find.text(upgradeSilent), findsNothing);
     debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('a completed sync reloads the status', (tester) async {
+    final sync = MockAlertsSync();
+    whenListen(sync, Stream.value(DateTime(2026, 11, 15, 9)));
+    when(() => reliability.load()).thenAnswer((_) async {});
+    await pump(tester, [const ReliabilityLoaded(base)], alertsSync: sync);
+    verify(() => reliability.load()).called(1);
   });
 
   testWidgets('a later reload shows nothing more', (tester) async {

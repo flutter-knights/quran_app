@@ -55,7 +55,7 @@ void initNotifications() {
   sl.registerLazySingleton(
     () => GetCachedPrayerDays(prayerTimesRepository: sl()),
   );
-  sl.registerFactory(
+  sl.registerLazySingleton(
     () => AlertsSyncCubit(
       settingsCubit: sl(),
       getCachedPrayerDays: sl(),

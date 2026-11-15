@@ -19,6 +19,7 @@ import 'package:quran_app/features/notifications/presentation/cubit/reliability_
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_list_parts.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/open_setting_button.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/reload_status_on_sync.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/test_adhan_button.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/xiaomi_checklist.dart';
 import 'package:quran_app/features/notifications/presentation/utils/enum_localization.dart';
@@ -38,33 +39,40 @@ class ReliabilityPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppScreenAppBar(title: PendingS.of(context).rel_title),
-            Expanded(
-              child: BlocBuilder<ReliabilityCubit, ReliabilityState>(
-                builder: (context, state) => ListView(
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32),
-                  children: [
-                    ...switch (state) {
-                      ReliabilityLoaded(:final status) => _sections(status),
-                      ReliabilityLoading() => [
-                        const Skeletonizer(
-                          child: _ChecksCard(status: _placeholder),
-                        ),
-                      ],
-                      ReliabilityUnavailable() => const [],
-                    },
-                    const SizedBox(height: 24),
-                    TestAdhanButton(label: PendingS.of(context).rel_test),
-                  ],
+    return ReloadStatusOnSync(
+      child: Scaffold(
+        backgroundColor: context.colorScheme.surface,
+        body: SafeArea(
+          child: Column(
+            children: [
+              AppScreenAppBar(title: PendingS.of(context).rel_title),
+              Expanded(
+                child: BlocBuilder<ReliabilityCubit, ReliabilityState>(
+                  builder: (context, state) => ListView(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      16,
+                      8,
+                      16,
+                      32,
+                    ),
+                    children: [
+                      ...switch (state) {
+                        ReliabilityLoaded(:final status) => _sections(status),
+                        ReliabilityLoading() => [
+                          const Skeletonizer(
+                            child: _ChecksCard(status: _placeholder),
+                          ),
+                        ],
+                        ReliabilityUnavailable() => const [],
+                      },
+                      const SizedBox(height: 24),
+                      TestAdhanButton(label: PendingS.of(context).rel_test),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

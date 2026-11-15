@@ -22,7 +22,7 @@ void main() {
         year: any(named: 'year'),
         month: any(named: 'month'),
       ),
-    ).thenAnswer((_) async {});
+    ).thenAnswer((_) async => false);
     usecase = PreCachePrayerTimes(prayerTimesRepository: repo);
   });
 
@@ -75,5 +75,40 @@ void main() {
     verify(
       () => repo.preCacheMonth(location: location, year: 2026, month: 1),
     ).called(1);
+  });
+
+  void fetches({required int month, required bool fetched}) {
+    when(
+      () => repo.preCacheMonth(
+        location: any(named: 'location'),
+        year: any(named: 'year'),
+        month: month,
+      ),
+    ).thenAnswer((_) async => fetched);
+  }
+
+  final params = PreCachePrayerTimesParams(
+    location: location,
+    now: DateTime(2025, 5, 15, 10),
+  );
+
+  test('reports nothing fetched when both months were cached', () async {
+    expect(await usecase.call(params), isFalse);
+  });
+
+  test(
+    'reports a fetch of the current month and still fetches the next',
+    () async {
+      fetches(month: 5, fetched: true);
+      expect(await usecase.call(params), isTrue);
+      verify(
+        () => repo.preCacheMonth(location: location, year: 2025, month: 6),
+      ).called(1);
+    },
+  );
+
+  test('reports a fetch of the next month', () async {
+    fetches(month: 6, fetched: true);
+    expect(await usecase.call(params), isTrue);
   });
 }

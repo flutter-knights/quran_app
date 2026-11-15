@@ -6,6 +6,7 @@ import 'package:quran_app/features/notifications/domain/services/alerts_prompt_p
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/missed_sheet.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/reload_status_on_sync.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/upgrade_sheet.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -18,7 +19,7 @@ class AlertsPromptGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<ReliabilityCubit>(),
-      child: _PromptListener(child: child),
+      child: ReloadStatusOnSync(child: _PromptListener(child: child)),
     );
   }
 }

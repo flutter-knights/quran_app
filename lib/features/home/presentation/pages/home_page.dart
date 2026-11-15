@@ -28,7 +28,6 @@ class HomePage extends StatelessWidget {
           },
         ),
         BlocProvider(create: (_) => PrayerCountdownCubit()),
-        BlocProvider(create: (_) => sl<AlertsSyncCubit>()),
       ],
       child: MultiBlocListener(
         listeners: [
@@ -63,8 +62,8 @@ class HomePage extends StatelessWidget {
                     method: settings.calculationMethod,
                     school: settings.asrSchool,
                   ),
-                ).then((_) {
-                  if (context.mounted) {
+                ).then((fetched) {
+                  if (fetched && context.mounted) {
                     context.read<AlertsSyncCubit>().requestSync();
                   }
                 }),
@@ -72,12 +71,20 @@ class HomePage extends StatelessWidget {
             },
           ),
           BlocListener<SettingsCubit, SettingsState>(
-            listenWhen: (prev, curr) => AlertsSyncCubit.listensTo(
+            listenWhen: (prev, curr) => AlertsSyncCubit.needsSync(
               prev.settingsModel,
               curr.settingsModel,
             ),
             listener: (context, _) =>
                 context.read<AlertsSyncCubit>().requestSync(),
+          ),
+          BlocListener<SettingsCubit, SettingsState>(
+            listenWhen: (prev, curr) => AlertsSyncCubit.needsStripRefresh(
+              prev.settingsModel,
+              curr.settingsModel,
+            ),
+            listener: (context, _) =>
+                context.read<AlertsSyncCubit>().requestStripRefresh(),
           ),
           BlocListener<SettingsCubit, SettingsState>(
             listenWhen: (prev, curr) =>

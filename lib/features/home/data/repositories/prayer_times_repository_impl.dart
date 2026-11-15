@@ -95,7 +95,7 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
   }
 
   @override
-  Future<void> preCacheMonth({
+  Future<bool> preCacheMonth({
     required Location location,
     required int year,
     required int month,
@@ -107,7 +107,7 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
       year: year,
       month: month,
     );
-    if (cachedKeys.length >= daysInMonth) return;
+    if (cachedKeys.length >= daysInMonth) return false;
 
     try {
       final List<PrayerTimes> prayerTimesList =
@@ -119,11 +119,12 @@ class PrayerTimesRepositoryImpl extends PrayerTimesRepository {
         school: school,
       );
       await prayerTimesLocalDataSource.cache(prayerTimesList);
+      return true;
     } catch (e) {
       // Pre-caching is best-effort, but a silent swallow hid real failures
       // (network, parse, permission). Log so the failure is diagnosable.
       debugPrint('[prayer] preCacheMonth($year-$month) failed: $e');
-      return;
+      return false;
     }
   }
 }

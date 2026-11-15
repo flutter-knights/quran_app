@@ -16,6 +16,7 @@ import 'package:quran_app/features/notifications/domain/entities/prayer_alert.da
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_list_parts.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_status_line.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/prayer_alert_tile.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/reload_status_on_sync.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/test_adhan_button.dart';
 import 'package:quran_app/features/notifications/presentation/utils/calculation_method_localization.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
@@ -29,54 +30,57 @@ class NotificationsSettingsPage extends StatelessWidget {
     final s = PendingS.of(context);
     final android = defaultTargetPlatform == TargetPlatform.android;
     final ios = defaultTargetPlatform == TargetPlatform.iOS;
-    return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppScreenAppBar(title: S.of(context).adhan_and_reminders),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32),
-                children: [
-                  AlertsStatusLine(
-                    onTap: () => context.push(AppRouter.alertsReliabilityPath),
-                  ),
-                  const SizedBox(height: 16),
-                  AppSectionHeader(label: s.alerts_prayersSection),
-                  const SizedBox(height: 10),
-                  SurfaceCard(
-                    padding: EdgeInsets.zero,
-                    child: Column(
-                      children: [
-                        for (final prayer in alertPrayers) ...[
-                          if (prayer != alertPrayers.first)
-                            const AlertsRowDivider(),
-                          PrayerAlertTile(prayer: prayer),
-                        ],
-                      ],
+    return ReloadStatusOnSync(
+      child: Scaffold(
+        backgroundColor: context.colorScheme.surface,
+        body: SafeArea(
+          child: Column(
+            children: [
+              AppScreenAppBar(title: S.of(context).adhan_and_reminders),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32),
+                  children: [
+                    AlertsStatusLine(
+                      onTap: () =>
+                          context.push(AppRouter.alertsReliabilityPath),
                     ),
-                  ),
-                  AlertsNote(
-                    text: ios ? s.alerts_iosTruth : s.alerts_silentTruth,
-                  ),
-                  if (android) ...[
-                    const SizedBox(height: 8),
-                    const SurfaceCard(
+                    const SizedBox(height: 16),
+                    AppSectionHeader(label: s.alerts_prayersSection),
+                    const SizedBox(height: 10),
+                    SurfaceCard(
                       padding: EdgeInsets.zero,
-                      child: _StripRow(),
+                      child: Column(
+                        children: [
+                          for (final prayer in alertPrayers) ...[
+                            if (prayer != alertPrayers.first)
+                              const AlertsRowDivider(),
+                            PrayerAlertTile(prayer: prayer),
+                          ],
+                        ],
+                      ),
                     ),
+                    AlertsNote(
+                      text: ios ? s.alerts_iosTruth : s.alerts_silentTruth,
+                    ),
+                    if (android) ...[
+                      const SizedBox(height: 8),
+                      const SurfaceCard(
+                        padding: EdgeInsets.zero,
+                        child: _StripRow(),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    AppSectionHeader(label: s.alerts_timesSection),
+                    const SizedBox(height: 10),
+                    const _TimesSection(),
+                    const SizedBox(height: 24),
+                    const TestAdhanButton(),
                   ],
-                  const SizedBox(height: 24),
-                  AppSectionHeader(label: s.alerts_timesSection),
-                  const SizedBox(height: 10),
-                  const _TimesSection(),
-                  const SizedBox(height: 24),
-                  const TestAdhanButton(),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -8,6 +8,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/widgets/design/app_status_badge.dart';
 import 'package:quran_app/features/notifications/domain/entities/reliability_status.dart';
 import 'package:quran_app/features/notifications/domain/entities/system_settings_target.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/reliability_page.dart';
@@ -62,6 +63,7 @@ void main() {
     String locale = 'ar',
     Size size = const Size(400, 1600),
     bool settle = true,
+    AlertsSyncCubit? alertsSync,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -76,6 +78,7 @@ void main() {
       alertsApp(
         settings: settings,
         locale: locale,
+        alertsSync: alertsSync,
         home: BlocProvider<ReliabilityCubit>.value(
           value: reliability,
           child: const ReliabilityPage(),
@@ -86,6 +89,13 @@ void main() {
         ? await tester.pumpAndSettle()
         : await tester.pump(const Duration(milliseconds: 100));
   }
+
+  testWidgets('a completed sync reloads the status', (tester) async {
+    final sync = MockAlertsSync();
+    whenListen(sync, Stream.value(DateTime(2026, 11, 15, 9)));
+    await pump(tester, ReliabilityLoaded(ok), alertsSync: sync);
+    verify(() => reliability.load()).called(1);
+  });
 
   testWidgets('a blocked notifications row asks for action and opens it', (
     tester,

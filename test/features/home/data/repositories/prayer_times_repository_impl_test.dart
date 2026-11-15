@@ -152,7 +152,10 @@ void main() {
       when(() => local.getCachedKeysForMonth(year: 2025, month: 6))
           .thenReturn(cachedKeys);
 
-      await repo.preCacheMonth(location: location, year: 2025, month: 6);
+      expect(
+        await repo.preCacheMonth(location: location, year: 2025, month: 6),
+        isFalse,
+      );
 
       verifyNever(() => remote.getPrayerTimesList(
             any(),
@@ -175,7 +178,10 @@ void main() {
           )).thenAnswer((_) async => [mk('01-07-2025')]);
       when(() => local.cache(any())).thenAnswer((_) async {});
 
-      await repo.preCacheMonth(location: location, year: 2025, month: 7);
+      expect(
+        await repo.preCacheMonth(location: location, year: 2025, month: 7),
+        isTrue,
+      );
 
       verify(() => remote.getPrayerTimesList(
             location,
@@ -200,9 +206,9 @@ void main() {
         requestOptions: RequestOptions(path: ''),
       ));
 
-      await expectLater(
-        repo.preCacheMonth(location: location, year: 2025, month: 7),
-        completes,
+      expect(
+        await repo.preCacheMonth(location: location, year: 2025, month: 7),
+        isFalse,
       );
     });
   });

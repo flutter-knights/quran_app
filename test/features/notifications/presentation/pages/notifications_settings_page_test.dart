@@ -21,6 +21,7 @@ import 'package:quran_app/features/notifications/domain/entities/strip_style.dar
 import 'package:quran_app/features/notifications/domain/usecases/preview_alert_sound.dart';
 import 'package:quran_app/features/notifications/domain/usecases/stop_alert_preview.dart';
 import 'package:quran_app/features/notifications/domain/usecases/watch_preview_ended.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/sound_preview_cubit.dart';
@@ -95,6 +96,7 @@ void main() {
     PrayerTimes? times,
     TodayPrayerTimesState? todayState,
     bool settle = true,
+    AlertsSyncCubit? alertsSync,
   }) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
@@ -118,6 +120,7 @@ void main() {
       alertsApp(
         settings: settings,
         locale: locale,
+        alertsSync: alertsSync,
         home: MultiBlocProvider(
           providers: [
             BlocProvider<ReliabilityCubit>.value(value: reliability),
@@ -148,6 +151,14 @@ void main() {
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -2000));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('a completed sync reloads the status line', (tester) async {
+    final sync = MockAlertsSync();
+    whenListen(sync, Stream.value(DateTime(2026, 11, 15, 9)));
+    when(() => reliability.load()).thenAnswer((_) async {});
+    await pump(tester, alertsSync: sync);
+    verify(() => reliability.load()).called(1);
+  });
 
   testWidgets('loading status renders as a skeleton', (tester) async {
     await pump(tester, state: const ReliabilityLoading(), settle: false);

@@ -333,22 +333,102 @@ void main() {
       verify(() => getDays(any())).called(2);
     });
 
-    test('listensTo ignores unrelated fields', () {
-      final s = settingsCubit.state.settingsModel;
-      expect(
-        AlertsSyncCubit.listensTo(s, s.copyWith(pageBrightness: 0.5)),
-        isFalse,
-      );
-      expect(
-        AlertsSyncCubit.listensTo(
-          s,
-          s.copyWith(stripStyle: const StripStyle(expanded: false)),
-        ),
-        isTrue,
-      );
+    test('strip refresh pushes the window without touching alerts', () async {
+      settingsCubit.updatePrayerStripPinned(true);
+      await cubit.refreshStripNow();
+      verify(() => build(any())).called(1);
+      verify(() => enable(any())).called(1);
+      verifyNever(() => sync(any()));
+      expect(cubit.state, isNull);
     });
 
-    test('listensTo reacts to every scheduling field', () {
+    test('strip refresh hides an unpinned strip even with no days', () async {
+      when(() => getDays(any())).thenAnswer((_) async => []);
+      await cubit.refreshStripNow();
+      verify(() => disable(any())).called(1);
+      verifyNever(() => sync(any()));
+      verifyNever(() => build(any()));
+    });
+
+    test(
+      'a strip request debounced with a sync request runs the full sync',
+      () async {
+        settingsCubit.updatePrayerStripPinned(true);
+        cubit.requestSync();
+        cubit.requestStripRefresh();
+        await Future<void>.delayed(const Duration(milliseconds: 40));
+        verify(() => sync(any())).called(1);
+        verify(() => enable(any())).called(1);
+        expect(cubit.state, now);
+      },
+    );
+
+    test(
+      'a sync request after a strip request upgrades it to a full sync',
+      () async {
+        cubit.requestStripRefresh();
+        cubit.requestSync();
+        await Future<void>.delayed(const Duration(milliseconds: 40));
+        verify(() => sync(any())).called(1);
+      },
+    );
+
+    test('a lone strip request skips the alert sync', () async {
+      settingsCubit.updatePrayerStripPinned(true);
+      cubit.requestStripRefresh();
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+      verify(() => enable(any())).called(1);
+      verifyNever(() => sync(any()));
+    });
+
+    test('a strip request mid-sync queues only a strip pass', () async {
+      settingsCubit.updatePrayerStripPinned(true);
+      final held = Completer<Either<Failure, Unit>>();
+      when(() => sync(any())).thenAnswer((_) => held.future);
+      final first = cubit.syncNow();
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.refreshStripNow(), same(first));
+      held.complete(const Right(unit));
+      await first;
+      verify(() => sync(any())).called(1);
+      verify(() => enable(any())).called(2);
+    });
+
+    test(
+      'a sync request mid-strip pass is kept after a later strip request',
+      () async {
+        settingsCubit.updatePrayerStripPinned(true);
+        final held = Completer<Either<Failure, Unit>>();
+        when(() => enable(any())).thenAnswer((_) => held.future);
+        final first = cubit.refreshStripNow();
+        await Future<void>.delayed(Duration.zero);
+        cubit.syncNow();
+        cubit.refreshStripNow();
+        when(() => enable(any())).thenAnswer((_) async => const Right(unit));
+        held.complete(const Right(unit));
+        await first;
+        verify(() => sync(any())).called(1);
+        verify(() => getDays(any())).called(2);
+        expect(cubit.state, now);
+      },
+    );
+
+    test('needsSync ignores strip-only and unrelated fields', () {
+      final s = settingsCubit.state.settingsModel;
+      final unchanged = [
+        s.copyWith(pageBrightness: 0.5),
+        s.copyWith(stripStyle: const StripStyle(expanded: false)),
+        s.copyWith(isPrayerStripPinned: !s.isPrayerStripPinned),
+        s.copyWith(isFormat12Hours: !s.isFormat12Hours),
+        s.copyWith(palette: ColorPalette.values.last),
+        s.copyWith(prayerAlerts: Map.of(s.prayerAlerts)),
+      ];
+      for (final c in unchanged) {
+        expect(AlertsSyncCubit.needsSync(s, c), isFalse);
+      }
+    });
+
+    test('needsSync reacts to every field the alerts depend on', () {
       final s = settingsCubit.state.settingsModel;
       final changed = [
         s.copyWith(
@@ -357,25 +437,32 @@ void main() {
             PrayerName.fajr: const PrayerAlert(enabled: false),
           },
         ),
-        s.copyWith(isPrayerStripPinned: !s.isPrayerStripPinned),
         s.copyWith(isArabic: !s.isArabic),
-        s.copyWith(isFormat12Hours: !s.isFormat12Hours),
-        s.copyWith(palette: ColorPalette.values.last),
         s.copyWith(calculationMethod: CalculationMethod.values.last),
         s.copyWith(asrSchool: AsrSchool.hanafi),
       ];
       for (final c in changed) {
-        expect(AlertsSyncCubit.listensTo(s, c), isTrue);
+        expect(AlertsSyncCubit.needsSync(s, c), isTrue);
       }
     });
 
-    test('listensTo treats an equal alerts map as unchanged', () {
+    test('needsStripRefresh reacts only to the strip fields', () {
       final s = settingsCubit.state.settingsModel;
+      final changed = [
+        s.copyWith(stripStyle: const StripStyle(expanded: false)),
+        s.copyWith(isPrayerStripPinned: !s.isPrayerStripPinned),
+        s.copyWith(isFormat12Hours: !s.isFormat12Hours),
+        s.copyWith(palette: ColorPalette.values.last),
+      ];
+      for (final c in changed) {
+        expect(AlertsSyncCubit.needsStripRefresh(s, c), isTrue);
+      }
       expect(
-        AlertsSyncCubit.listensTo(
-          s,
-          s.copyWith(prayerAlerts: Map.of(s.prayerAlerts)),
-        ),
+        AlertsSyncCubit.needsStripRefresh(s, s.copyWith(pageBrightness: 0.5)),
+        isFalse,
+      );
+      expect(
+        AlertsSyncCubit.needsStripRefresh(s, s.copyWith(isArabic: !s.isArabic)),
         isFalse,
       );
     });
