@@ -1,7 +1,6 @@
 // test/config/theme/app_palette_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran_app/config/theme/app_colors.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 
@@ -30,19 +29,19 @@ void main() {
   group('bg colors', () {
     test(
       'neutralDark bg',
-      () => expect(ColorPalette.neutralDark.bg, const Color(0xFF0D0D0D)),
+      () => expect(ColorPalette.neutralDark.bg, const Color(0xFF121413)),
     );
     test(
       'neutralLight bg',
-      () => expect(ColorPalette.neutralLight.bg, const Color(0xFFF4F4F4)),
+      () => expect(ColorPalette.neutralLight.bg, const Color(0xFFEDEEEA)),
     );
     test(
       'slateDark bg',
-      () => expect(ColorPalette.slateDark.bg, const Color(0xFF0A0C10)),
+      () => expect(ColorPalette.slateDark.bg, const Color(0xFF121418)),
     );
     test(
       'slateLight bg',
-      () => expect(ColorPalette.slateLight.bg, const Color(0xFFF0F3F8)),
+      () => expect(ColorPalette.slateLight.bg, const Color(0xFFEBEEF2)),
     );
   });
 
@@ -75,57 +74,130 @@ void main() {
       expect(theme.colorScheme.primary, ColorPalette.slateDark.primary);
     });
   });
-  group('alert getters keep today\'s colours', () {
-    test('onPrimary is the old onPrimary on every palette', () {
-      for (final p in ColorPalette.values) {
-        expect(p.onPrimary, const Color(0xFFF5F5F5));
-      }
+
+  group('Appendix B comfort values', () {
+    const table = {
+      ColorPalette.neutralLight: [
+        0xFFEDEEEA,
+        0xFFDCE0DA,
+        0xFF1B1F1D,
+        0xFF545A56,
+        0xFF2E5244,
+        0xFFF5F5F2,
+        0xFF2E5244,
+        0xFFA33A35,
+        0xFFF5F5F2,
+      ],
+      ColorPalette.neutralDark: [
+        0xFF121413,
+        0xFF202421,
+        0xFFE4E6E3,
+        0xFFADB2AE,
+        0xFF2E5244,
+        0xFFECEEEB,
+        0xFF93BAA8,
+        0xFFE68A84,
+        0xFF121413,
+      ],
+      ColorPalette.slateLight: [
+        0xFFEBEEF2,
+        0xFFDBE1E8,
+        0xFF1A1E24,
+        0xFF4C5563,
+        0xFF1C4558,
+        0xFFF3F5F7,
+        0xFF1C4558,
+        0xFFA33A35,
+        0xFFF5F5F2,
+      ],
+      ColorPalette.slateDark: [
+        0xFF121418,
+        0xFF1F242C,
+        0xFFE3E6EA,
+        0xFFADB4BF,
+        0xFF1C4558,
+        0xFFECEEF1,
+        0xFF8DB5CC,
+        0xFFE68A84,
+        0xFF121418,
+      ],
+    };
+    for (final MapEntry(key: p, value: v) in table.entries) {
+      test('$p', () {
+        expect([
+          p.bg,
+          p.surface,
+          p.onSurface,
+          p.onSurfaceVar,
+          p.primary,
+          p.onPrimary,
+          p.primaryInk,
+          p.error,
+          p.onError,
+        ], v.map(Color.new).toList());
+      });
+    }
+    test('primaryTint is primary at 10% in light', () {
+      expect(
+        ColorPalette.neutralLight.primaryTint,
+        const Color(0xFF2E5244).withValues(alpha: 0.10),
+      );
+      expect(
+        ColorPalette.slateLight.primaryTint,
+        const Color(0xFF1C4558).withValues(alpha: 0.10),
+      );
     });
-    test('primaryInk is primary in light and secondary in dark', () {
+    test('primaryTint is secondary at 24% in dark', () {
       expect(
-        ColorPalette.neutralLight.primaryInk,
-        ColorPalette.neutralLight.primary,
+        ColorPalette.neutralDark.primaryTint,
+        const Color(0xFF5C8070).withValues(alpha: 0.24),
       );
       expect(
-        ColorPalette.slateLight.primaryInk,
-        ColorPalette.slateLight.primary,
+        ColorPalette.slateDark.primaryTint,
+        const Color(0xFF4878A0).withValues(alpha: 0.24),
       );
-      expect(
-        ColorPalette.neutralDark.primaryInk,
-        ColorPalette.neutralDark.secondary,
-      );
-      expect(
-        ColorPalette.slateDark.primaryInk,
-        ColorPalette.slateDark.secondary,
-      );
-    });
-    test(
-      'primaryTint is primary at 12% in light and secondary at 22% in dark',
-      () {
-        expect(
-          ColorPalette.neutralLight.primaryTint,
-          ColorPalette.neutralLight.primary.withValues(alpha: 0.12),
-        );
-        expect(
-          ColorPalette.slateDark.primaryTint,
-          ColorPalette.slateDark.secondary.withValues(alpha: 0.22),
-        );
-      },
-    );
-    test('error and onError match the old colour scheme', () {
-      for (final p in ColorPalette.values) {
-        expect(p.error, AppColors.error);
-      }
-      expect(ColorPalette.neutralDark.onError, const Color(0xFF0D0D0D));
-      expect(ColorPalette.slateDark.onError, const Color(0xFF0D0D0D));
-      expect(ColorPalette.neutralLight.onError, const Color(0xFFF5F5F5));
-      expect(ColorPalette.slateLight.onError, const Color(0xFFF5F5F5));
     });
     test('colorScheme reads onPrimary, error and onError from the getters', () {
       for (final p in ColorPalette.values) {
         expect(p.colorScheme.onPrimary, p.onPrimary);
         expect(p.colorScheme.error, p.error);
         expect(p.colorScheme.onError, p.onError);
+      }
+    });
+  });
+
+  group('switchTheme', () {
+    const selected = {WidgetState.selected};
+    test('dark palettes use a primaryInk track and a bg thumb', () {
+      for (final (p, track, thumb) in [
+        (ColorPalette.neutralDark, 0xFF93BAA8, 0xFF121413),
+        (ColorPalette.slateDark, 0xFF8DB5CC, 0xFF121418),
+      ]) {
+        final t = p.toThemeData().switchTheme;
+        expect(t.trackColor!.resolve(selected), Color(track));
+        expect(t.thumbColor!.resolve(selected), Color(thumb));
+      }
+    });
+    test('light palettes use a primary track and an onPrimary thumb', () {
+      for (final (p, track, thumb) in [
+        (ColorPalette.neutralLight, 0xFF2E5244, 0xFFF5F5F2),
+        (ColorPalette.slateLight, 0xFF1C4558, 0xFFF3F5F7),
+      ]) {
+        final t = p.toThemeData().switchTheme;
+        expect(t.trackColor!.resolve(selected), Color(track));
+        expect(t.thumbColor!.resolve(selected), Color(thumb));
+      }
+    });
+    test('unselected and disabled states keep the Material defaults', () {
+      for (final p in ColorPalette.values) {
+        final t = p.toThemeData().switchTheme;
+        for (final states in [
+          <WidgetState>{},
+          {WidgetState.disabled, WidgetState.selected},
+        ]) {
+          expect(t.trackColor!.resolve(states), isNull);
+          expect(t.thumbColor!.resolve(states), isNull);
+        }
       }
     });
   });

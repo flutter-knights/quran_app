@@ -1,6 +1,5 @@
 // lib/config/theme/app_palette.dart
 import 'package:flutter/material.dart';
-import 'package:quran_app/config/theme/app_colors.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 
@@ -9,17 +8,17 @@ extension AppPaletteX on ColorPalette {
       this == ColorPalette.neutralDark || this == ColorPalette.slateDark;
 
   Color get bg => switch (this) {
-    ColorPalette.neutralDark => const Color(0xFF0D0D0D),
-    ColorPalette.neutralLight => const Color(0xFFF4F4F4),
-    ColorPalette.slateDark => const Color(0xFF0A0C10),
-    ColorPalette.slateLight => const Color(0xFFF0F3F8),
+    ColorPalette.neutralDark => const Color(0xFF121413),
+    ColorPalette.neutralLight => const Color(0xFFEDEEEA),
+    ColorPalette.slateDark => const Color(0xFF121418),
+    ColorPalette.slateLight => const Color(0xFFEBEEF2),
   };
 
   Color get surface => switch (this) {
-    ColorPalette.neutralDark => const Color(0xFF1A1A1A),
-    ColorPalette.neutralLight => const Color(0xFFE2E2E2),
-    ColorPalette.slateDark => const Color(0xFF141820),
-    ColorPalette.slateLight => const Color(0xFFD8E2F0),
+    ColorPalette.neutralDark => const Color(0xFF202421),
+    ColorPalette.neutralLight => const Color(0xFFDCE0DA),
+    ColorPalette.slateDark => const Color(0xFF1F242C),
+    ColorPalette.slateLight => const Color(0xFFDBE1E8),
   };
 
   Color get primary => switch (this) {
@@ -37,31 +36,39 @@ extension AppPaletteX on ColorPalette {
   };
 
   Color get onSurface => switch (this) {
-    ColorPalette.neutralDark => const Color(0xFFF5F5F5),
-    ColorPalette.neutralLight => const Color(0xFF141414),
-    ColorPalette.slateDark => const Color(0xFFF0F4F8),
-    ColorPalette.slateLight => const Color(0xFF0A0C12),
+    ColorPalette.neutralDark => const Color(0xFFE4E6E3),
+    ColorPalette.neutralLight => const Color(0xFF1B1F1D),
+    ColorPalette.slateDark => const Color(0xFFE3E6EA),
+    ColorPalette.slateLight => const Color(0xFF1A1E24),
   };
 
   Color get onSurfaceVar => switch (this) {
-    ColorPalette.neutralDark => const Color(0xFF8A8A8A),
-    ColorPalette.neutralLight => const Color(0xFF686868),
-    ColorPalette.slateDark => const Color(0xFF8A92A0),
-    ColorPalette.slateLight => const Color(0xFF5E6880),
+    ColorPalette.neutralDark => const Color(0xFFADB2AE),
+    ColorPalette.neutralLight => const Color(0xFF545A56),
+    ColorPalette.slateDark => const Color(0xFFADB4BF),
+    ColorPalette.slateLight => const Color(0xFF4C5563),
   };
 
-  Color get onPrimary => const Color(0xFFF5F5F5);
+  Color get onPrimary => switch (this) {
+    ColorPalette.neutralDark => const Color(0xFFECEEEB),
+    ColorPalette.neutralLight => const Color(0xFFF5F5F2),
+    ColorPalette.slateDark => const Color(0xFFECEEF1),
+    ColorPalette.slateLight => const Color(0xFFF3F5F7),
+  };
 
-  Color get primaryInk => isDark ? secondary : primary;
+  Color get primaryInk => switch (this) {
+    ColorPalette.neutralDark => const Color(0xFF93BAA8),
+    ColorPalette.slateDark => const Color(0xFF8DB5CC),
+    ColorPalette.neutralLight || ColorPalette.slateLight => primary,
+  };
 
   Color get primaryTint => isDark
-      ? secondary.withValues(alpha: 0.22)
-      : primary.withValues(alpha: 0.12);
+      ? secondary.withValues(alpha: 0.24)
+      : primary.withValues(alpha: 0.10);
 
-  Color get error => AppColors.error;
+  Color get error => isDark ? const Color(0xFFE68A84) : const Color(0xFFA33A35);
 
-  Color get onError =>
-      isDark ? const Color(0xFF0D0D0D) : const Color(0xFFF5F5F5);
+  Color get onError => isDark ? bg : const Color(0xFFF5F5F2);
 
   Color get mushafBg => switch (this) {
     ColorPalette.neutralDark => const Color(0xFF1C1A14),
@@ -110,5 +117,18 @@ extension AppPaletteX on ColorPalette {
       hintStyle: TS.regular15.copyWith(color: onSurface),
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
     ),
+    switchTheme: SwitchThemeData(
+      trackColor: _whenSelected(isDark ? primaryInk : primary),
+      thumbColor: _whenSelected(isDark ? bg : onPrimary),
+    ),
   );
+
+  WidgetStateProperty<Color?> _whenSelected(Color color) =>
+      WidgetStateProperty.resolveWith(
+        (states) =>
+            states.contains(WidgetState.disabled) ||
+                !states.contains(WidgetState.selected)
+            ? null
+            : color,
+      );
 }

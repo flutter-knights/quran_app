@@ -1447,15 +1447,15 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ### Task 13: Comfort theme values (last commit)
 
-This commit changes the palette and getter values and adds the dark `switchTheme` (spec L341); nothing else depends on it, so reverting it alone keeps the build green. The contrast check was run while writing this plan: every proposed value passes (lowest: neutralLight `onSurfaceVar` on `surface` 5.29:1; `primaryInk` on `surface` ≥ 6.53:1), so the slate palettes take the proposed Appendix B values too.
+This commit changes the palette and getter values and adds the `switchTheme` (spec §11, L349; Appendix B); nothing else depends on it, so reverting it alone keeps the build green. The contrast check was run while writing this plan: every proposed value passes (lowest: neutralLight `onSurfaceVar` on `surface` 5.29:1; `primaryInk` on `surface` ≥ 6.53:1), so the slate palettes take the proposed Appendix B values too.
 
 **Files:**
 - Modify: `lib/config/theme/app_palette.dart`
-- Test: `test/config/theme/app_palette_contrast_test.dart` (new), `test/config/theme/app_palette_test.dart` (the `bg colors` group expects the new hex values)
+- Test: `test/config/theme/app_palette_contrast_test.dart` (new), `test/config/theme/app_palette_test.dart` (the `bg colors` group expects the new hex values; the Task 8 group "alert getters keep today's colours" is replaced by a table pinning every Appendix B cell for all four palettes, plus the switch theme on all four palettes)
 
 **Interfaces:**
 - Consumes: the Task 8 getters `onPrimary`, `primaryInk`, `primaryTint`, `error`, `onError`.
-- Produces: Appendix B values; `toThemeData()` gains `switchTheme` (dark palettes: selected track `primaryInk`, selected thumb `bg`; light: selected track `primary`, selected thumb `onPrimary`).
+- Produces: Appendix B values; `toThemeData()` gains `switchTheme` (dark palettes: selected track `primaryInk`, selected thumb `bg`; light: selected track `primary`, selected thumb `onPrimary`; unselected and disabled states resolve to `null` so the Material defaults apply).
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1506,7 +1506,7 @@ Expected: no new analyzer issues; all tests pass; `assets/` clean.
 
 ```bash
 git add lib/config/theme/app_palette.dart test/config/theme/app_palette_contrast_test.dart test/config/theme/app_palette_test.dart
-git commit -m "feat(theme): comfort palette values and dark switch track
+git commit -m "feat(theme): comfort palette values and switch theme
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
