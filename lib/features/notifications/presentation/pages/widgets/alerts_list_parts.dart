@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/widgets/design/directional_icons.dart';
 
 class AlertsNote extends StatelessWidget {
   const AlertsNote({
@@ -47,5 +48,16 @@ class AlertsRowDivider extends StatelessWidget {
     height: 1,
     margin: const EdgeInsetsDirectional.symmetric(horizontal: 16),
     color: context.colorScheme.onSurface.withValues(alpha: 0.06),
+  );
+}
+
+class AlertsChevron extends StatelessWidget {
+  const AlertsChevron({super.key});
+
+  @override
+  Widget build(BuildContext context) => HugeIcon(
+    icon: forwardArrowIcon(context),
+    color: context.colorScheme.onSurfaceVariant,
+    size: 20,
   );
 }

@@ -1,9 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/usecases/get_cached_prayer_days.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_state.dart';
 
-class TodayPrayerTimesCubit extends Cubit<PrayerTimes?> {
-  TodayPrayerTimesCubit(this._getCachedPrayerDays) : super(null);
+class TodayPrayerTimesCubit extends Cubit<TodayPrayerTimesState> {
+  TodayPrayerTimesCubit(this._getCachedPrayerDays)
+    : super(const TodayPrayerTimesLoading());
 
   final GetCachedPrayerDays _getCachedPrayerDays;
 
@@ -11,7 +12,11 @@ class TodayPrayerTimesCubit extends Cubit<PrayerTimes?> {
     final days = await _getCachedPrayerDays(
       const GetCachedPrayerDaysParams(maxDays: 1),
     );
-    if (isClosed || days.isEmpty) return;
-    emit(days.first);
+    if (isClosed) return;
+    emit(
+      days.isEmpty
+          ? const TodayPrayerTimesEmpty()
+          : TodayPrayerTimesLoaded(days.first),
+    );
   }
 }

@@ -737,4 +737,24 @@ void main() {
       verifyZeroInteractions(native);
     });
   });
+
+  group('androidSdkInt', () {
+    test('Android: returns the native SDK level', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(() => native.sdkInt()).thenAnswer((_) async => 30);
+      expect(await repo.androidSdkInt(), const Right(30));
+    });
+
+    test('Android: a native failure is a Left', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(() => native.sdkInt()).thenThrow(Exception('boom'));
+      expect((await repo.androidSdkInt()).isLeft(), isTrue);
+    });
+
+    test('iOS: Right(null) without a native call', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      expect(await repo.androidSdkInt(), const Right(null));
+      verifyZeroInteractions(native);
+    });
+  });
 }

@@ -86,11 +86,19 @@ Color stripInk(StripInk ink, {required bool night}) => switch (ink) {
   StripInk.muted => night ? const Color(0xFF8B9A94) : const Color(0x8A000000),
 };
 
-bool stripFillsCell(StripShape shape) =>
-    shape == StripShape.rounded || shape == StripShape.pill;
+bool stripTintable(int? sdkInt) => sdkInt == null || sdkInt >= 31;
 
-Color stripNextText(StripRenderStyle s, {required bool night}) {
-  if (stripFillsCell(s.shape)) {
+bool stripFillsCell(StripShape shape, {required bool tintable}) =>
+    shape == StripShape.rounded ||
+    shape == StripShape.pill ||
+    (shape == StripShape.outline && !tintable);
+
+Color stripNextText(
+  StripRenderStyle s, {
+  required bool night,
+  required bool tintable,
+}) {
+  if (stripFillsCell(s.shape, tintable: tintable)) {
     return Color(night ? s.pillTextNight : s.pillTextDay);
   }
   return Color(night ? s.highlightNight : s.highlightTextDay);

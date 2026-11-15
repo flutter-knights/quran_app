@@ -162,15 +162,66 @@ void main() {
       ColorPalette.neutralLight,
     );
     for (final shape in [StripShape.rounded, StripShape.pill]) {
-      expect(stripFillsCell(shape), isTrue, reason: shape.name);
-      expect(stripNextText(r(shape), night: false), const Color(0xFFFFFFFF));
-      expect(stripNextText(r(shape), night: true), const Color(0xFF121413));
+      expect(stripFillsCell(shape, tintable: true), isTrue, reason: shape.name);
+      expect(
+        stripNextText(r(shape), night: false, tintable: true),
+        const Color(0xFFFFFFFF),
+      );
+      expect(
+        stripNextText(r(shape), night: true, tintable: true),
+        const Color(0xFF121413),
+      );
     }
     for (final shape in [StripShape.outline, StripShape.none]) {
-      expect(stripFillsCell(shape), isFalse, reason: shape.name);
-      expect(stripNextText(r(shape), night: false), const Color(0xFF406C5C));
-      expect(stripNextText(r(shape), night: true), const Color(0xFF8FC4AE));
+      expect(stripFillsCell(shape, tintable: true), isFalse);
+      expect(
+        stripNextText(r(shape), night: false, tintable: true),
+        const Color(0xFF406C5C),
+      );
+      expect(
+        stripNextText(r(shape), night: true, tintable: true),
+        const Color(0xFF8FC4AE),
+      );
     }
+  });
+
+  test('below API 31 outline fills the cell like rounded and pill', () {
+    StripRenderStyle r(StripShape shape) => stripRenderStyle(
+      StripStyle(highlight: StripHighlight.darkGreen, shape: shape),
+      ColorPalette.neutralLight,
+    );
+    for (final shape in [
+      StripShape.rounded,
+      StripShape.pill,
+      StripShape.outline,
+    ]) {
+      expect(
+        stripFillsCell(shape, tintable: false),
+        isTrue,
+        reason: shape.name,
+      );
+      expect(
+        stripNextText(r(shape), night: false, tintable: false),
+        const Color(0xFFFFFFFF),
+      );
+      expect(
+        stripNextText(r(shape), night: true, tintable: false),
+        const Color(0xFF121413),
+      );
+    }
+    expect(stripFillsCell(StripShape.none, tintable: false), isFalse);
+    expect(
+      stripNextText(r(StripShape.none), night: false, tintable: false),
+      const Color(0xFF406C5C),
+    );
+  });
+
+  test('tinting needs API 31, an unknown level assumes it', () {
+    expect(stripTintable(null), isTrue);
+    expect(stripTintable(31), isTrue);
+    expect(stripTintable(34), isTrue);
+    expect(stripTintable(30), isFalse);
+    expect(stripTintable(24), isFalse);
   });
 
   test('muted text darkens only over a day background fill', () {

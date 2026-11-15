@@ -15,7 +15,7 @@ Before creating ANY widget, check this list. If a match exists, use it. A core w
 - **AppBarCenterTitle**: small uppercase label over the title (`label, title`).
 - **IconChip**: 38×38 app-bar icon button (`icon, onPressed, size, iconSize`).
 - **AppSectionHeader**: accent bar + uppercase label + optional trailing (`label, trailing`).
-- **AppSegmentedSelector\<T\>**: compact segmented control over `SegmentOption<T>(value, label)` (`options, selected, onChanged, expand`).
+- **AppSegmentedSelector\<T\>**: compact segmented control over `SegmentOption<T>(value, label)` (`options, selected, onChanged, expand, enabled`). Each segment is a ≥48-high tap target (the track and pill keep their size, centred in it) announced as a selectable button; `enabled: false` dims it to 38% and ignores taps.
 - **AppStatusBadge**: tinted pill with optional dot (`color, label, showDot`). For any status: hadith grade, download state.
 - **AppSettingsTile**: settings row, min 48 high, title over an optional value subtitle, optional leading and trailing, 38% opacity and no tap when disabled (`title, subtitle, leading, trailing, onTap, enabled`). Group rows in a `SurfaceCard`.
 - **AppOption\<T\>** + **showAppOptionSheet\<T\>** (`app_option_sheet.dart`): pick-one modal sheet, `RadioGroup` over `RadioListTile` rows with an optional `leading` (e.g. a swatch dot) and `trailing` slot per option; selecting calls `onSelected` and closes. `footer` renders under the rows; `onClosed` runs once however the sheet closes.

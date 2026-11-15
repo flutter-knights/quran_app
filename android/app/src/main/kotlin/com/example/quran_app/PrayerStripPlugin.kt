@@ -1,6 +1,7 @@
 package com.example.quran_app
 
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -54,6 +55,7 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 SoundPreviewPlayer.stop()
                 result.success(null)
             }
+            "sdkInt" -> result.success(Build.VERSION.SDK_INT)
             else -> result.notImplemented()
         }
     }

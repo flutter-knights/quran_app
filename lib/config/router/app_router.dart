@@ -10,6 +10,7 @@ import 'package:quran_app/features/bookmarks/presentation/pages/bookmarks_page.d
 import 'package:quran_app/features/qibla/presentation/cubit/qibla_cubit.dart';
 import 'package:quran_app/features/qibla/presentation/pages/qibla_page.dart';
 import 'package:quran_app/features/home/presentation/pages/home_page.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/android_sdk_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/pages/notifications_settings_page.dart';
@@ -97,8 +98,11 @@ abstract class AppRouter {
       GoRoute(
         path: prayerStripPath,
         pageBuilder: GoTransitions.fade.withScale.build(
-          builder: (context, state) => BlocProvider(
-            create: (_) => sl<TodayPrayerTimesCubit>()..load(),
+          builder: (context, state) => MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (_) => sl<TodayPrayerTimesCubit>()..load()),
+              BlocProvider(create: (_) => sl<AndroidSdkCubit>()..load()),
+            ],
             child: const PrayerStripSettingsPage(),
           ),
         ),

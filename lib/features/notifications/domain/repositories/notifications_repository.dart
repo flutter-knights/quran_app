@@ -45,5 +45,6 @@ abstract class NotificationsRepository {
     required PrayerName prayer,
   });
   Future<Either<Failure, Unit>> stopPreview();
+  Future<Either<Failure, int?>> androidSdkInt();
   Stream<PreviewSound> previewEnded();
 }

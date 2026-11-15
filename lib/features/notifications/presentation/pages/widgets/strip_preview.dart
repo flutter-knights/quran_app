@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
-import 'package:quran_app/core/helper%20functions/duration_helpers.dart';
 import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_cell.dart';
@@ -16,26 +15,34 @@ import 'package:skeletonizer/skeletonizer.dart';
 class StripPreview extends StatelessWidget {
   const StripPreview({
     super.key,
-    required this.day,
+    required this.strip,
     required this.style,
     required this.expanded,
     required this.palette,
+    required this.now,
+    this.tintable = true,
   });
 
-  final PrayerStripState? day;
+  final PrayerStripState? strip;
   final StripStyle style;
   final bool expanded;
   final ColorPalette palette;
+  final DateTime now;
+  final bool tintable;
 
   @override
   Widget build(BuildContext context) {
     final night = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
-    final ink = _Ink(stripRenderStyle(style, palette), night);
-    final shown = day ?? _placeholder;
-    final hasFill = ink.render.backgroundDay != null;
+    final colors = _StripColors(
+      stripRenderStyle(style, palette),
+      night: night,
+      tintable: tintable,
+    );
+    final shown = strip ?? _placeholder;
+    final fill = colors.background;
     final body = expanded
-        ? _ExpandedRows(day: shown, ink: ink)
-        : _CompactCells(day: shown, ink: ink);
+        ? _ExpandedRows(strip: shown, colors: colors)
+        : _CompactCells(strip: shown, colors: colors);
     final frame = DecoratedBox(
       decoration: BoxDecoration(
         color: stripShadeColor(night: night),
@@ -47,29 +54,25 @@ class StripPreview extends StatelessWidget {
           spacing: 10,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Header(day: day, ink: ink),
-            if (hasFill)
+            _Header(strip: strip, colors: colors, now: now),
+            if (fill == null)
+              body
+            else
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: Color(
-                    night
-                        ? ink.render.backgroundNight!
-                        : ink.render.backgroundDay!,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
+                  color: fill,
+                  borderRadius: tintable ? BorderRadius.circular(12) : null,
                 ),
                 child: Padding(
                   padding: const EdgeInsetsDirectional.symmetric(horizontal: 4),
                   child: body,
                 ),
-              )
-            else
-              body,
+              ),
           ],
         ),
       ),
     );
-    return day == null ? Skeletonizer(child: frame) : frame;
+    return strip == null ? Skeletonizer(child: frame) : frame;
   }
 }
 
@@ -95,26 +98,32 @@ class StripShapeGlyph extends StatelessWidget {
                 ),
               ),
             )
-          : DecoratedBox(decoration: _highlightBox(shape, color)),
+          : DecoratedBox(
+              decoration: _highlightBox(shape, color, tintable: true),
+            ),
     );
   }
 }
 
-BoxDecoration _highlightBox(StripShape shape, Color color) => switch (shape) {
-  StripShape.rounded => BoxDecoration(
-    color: color,
-    borderRadius: BorderRadius.circular(8),
-  ),
-  StripShape.pill => BoxDecoration(
-    color: color,
-    borderRadius: BorderRadius.circular(999),
-  ),
-  StripShape.outline => BoxDecoration(
-    border: Border.all(color: color, width: 1.5),
-    borderRadius: BorderRadius.circular(8),
-  ),
-  StripShape.none => const BoxDecoration(),
-};
+BoxDecoration _highlightBox(
+  StripShape shape,
+  Color color, {
+  required bool tintable,
+}) {
+  if (shape == StripShape.none) return const BoxDecoration();
+  if (!tintable) return BoxDecoration(color: color);
+  return switch (shape) {
+    StripShape.pill => BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(999),
+    ),
+    StripShape.outline => BoxDecoration(
+      border: Border.all(color: color, width: 1.5),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    _ => BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+  };
+}
 
 final _placeholder = PrayerStripState(
   cells: [
@@ -129,14 +138,26 @@ final _placeholder = PrayerStripState(
   isFriday: false,
 );
 
-class _Ink {
-  const _Ink(this.render, this.night);
+class _StripColors {
+  const _StripColors(
+    this.render, {
+    required this.night,
+    required this.tintable,
+  });
 
   final StripRenderStyle render;
   final bool night;
+  final bool tintable;
+
+  Color? get background {
+    final argb = night ? render.backgroundNight : render.backgroundDay;
+    return argb == null ? null : Color(argb);
+  }
 
   Color text(int index, int next) {
-    if (index == next) return stripNextText(render, night: night);
+    if (index == next) {
+      return stripNextText(render, night: night, tintable: tintable);
+    }
     return stripInk(
       index < next ? StripInk.passed : StripInk.primary,
       night: night,
@@ -147,26 +168,29 @@ class _Ink {
       ? _highlightBox(
           render.shape,
           Color(night ? render.highlightNight : render.highlightDay),
+          tintable: tintable,
         )
       : const BoxDecoration();
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.day, required this.ink});
+  const _Header({required this.strip, required this.colors, required this.now});
 
-  final PrayerStripState? day;
-  final _Ink ink;
+  final PrayerStripState? strip;
+  final _StripColors colors;
+  final DateTime now;
 
   @override
   Widget build(BuildContext context) {
-    final color = stripInk(StripInk.muted, night: ink.night);
+    final color = stripInk(StripInk.muted, night: colors.night);
     final appName = S.of(context).app_name;
-    final next = day?.cells.elementAtOrNull(day!.nextPrayerIndex);
-    final text = ink.render.countdown && next != null
+    final shown = strip;
+    final next = shown?.cells.elementAtOrNull(shown.nextPrayerIndex);
+    final text = colors.render.countdown && shown != null && next != null
         ? [
             appName,
             if (next.nextLabel.isNotEmpty) next.nextLabel,
-            _countdown(next.minutes, day!.localeCode),
+            _countdown(next.minutes, now).toIndicNumerals(shown.localeCode),
           ].join(' · ')
         : appName;
     return Row(
@@ -186,35 +210,34 @@ class _Header extends StatelessWidget {
   }
 }
 
-String _countdown(int minutes, String localeCode) {
-  final now = DateTime.now();
+String _countdown(int minutes, DateTime now) {
   var left =
       Duration(minutes: minutes) -
       Duration(hours: now.hour, minutes: now.minute, seconds: now.second);
   if (left.isNegative) left += const Duration(days: 1);
-  return left
-      .toDigitalClock()
-      .replaceFirst(RegExp('^0'), '')
-      .toIndicNumerals(localeCode);
+  String two(int n) => n.toString().padLeft(2, '0');
+  final mmss =
+      '${two(left.inMinutes.remainder(60))}:${two(left.inSeconds.remainder(60))}';
+  return left.inHours == 0 ? mmss : '${left.inHours}:$mmss';
 }
 
 class _CompactCells extends StatelessWidget {
-  const _CompactCells({required this.day, required this.ink});
+  const _CompactCells({required this.strip, required this.colors});
 
-  final PrayerStripState day;
-  final _Ink ink;
+  final PrayerStripState strip;
+  final _StripColors colors;
 
   @override
   Widget build(BuildContext context) {
-    final next = day.nextPrayerIndex;
+    final next = strip.nextPrayerIndex;
     return Row(
       children: [
-        for (final (i, cell) in day.cells.take(5).indexed)
+        for (final (i, cell) in strip.cells.take(5).indexed)
           Expanded(
             child: Padding(
               padding: const EdgeInsetsDirectional.symmetric(horizontal: 2),
               child: DecoratedBox(
-                decoration: ink.cell(i, next),
+                decoration: colors.cell(i, next),
                 child: Padding(
                   padding: const EdgeInsetsDirectional.symmetric(horizontal: 4),
                   child: Column(
@@ -224,14 +247,14 @@ class _CompactCells extends StatelessWidget {
                         cell.label,
                         TS.bold14.copyWith(
                           fontSize: 13,
-                          color: ink.text(i, next),
+                          color: colors.text(i, next),
                         ),
                       ),
                       _line(
                         cell.timeFormatted,
                         TS.semi12.copyWith(
                           fontSize: 11,
-                          color: ink.text(i, next),
+                          color: colors.text(i, next),
                         ),
                       ),
                     ],
@@ -246,18 +269,18 @@ class _CompactCells extends StatelessWidget {
 }
 
 class _ExpandedRows extends StatelessWidget {
-  const _ExpandedRows({required this.day, required this.ink});
+  const _ExpandedRows({required this.strip, required this.colors});
 
-  final PrayerStripState day;
-  final _Ink ink;
+  final PrayerStripState strip;
+  final _StripColors colors;
 
   @override
   Widget build(BuildContext context) {
-    final next = day.nextPrayerIndex;
-    final tag = PendingS.forLanguage(day.localeCode).strip_next;
+    final next = strip.nextPrayerIndex;
+    final tag = PendingS.forLanguage(strip.localeCode).strip_next;
     final date = [
-      day.weekdayLabel,
-      day.hijriDateLabel,
+      strip.weekdayLabel,
+      strip.hijriDateLabel,
     ].where((part) => part.isNotEmpty).join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -268,14 +291,14 @@ class _ExpandedRows extends StatelessWidget {
             date,
             TS.semi12.copyWith(
               fontSize: 13,
-              color: stripMutedText(ink.render, night: ink.night),
+              color: stripMutedText(colors.render, night: colors.night),
             ),
             align: TextAlign.start,
           ),
         ),
-        for (final (i, cell) in day.cells.take(5).indexed)
+        for (final (i, cell) in strip.cells.take(5).indexed)
           DecoratedBox(
-            decoration: ink.cell(i, next),
+            decoration: colors.cell(i, next),
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 28),
               child: Padding(
@@ -291,14 +314,14 @@ class _ExpandedRows extends StatelessWidget {
                             child: _line(
                               cell.label,
                               (i == next ? TS.bold14 : TS.semi14).copyWith(
-                                color: ink.text(i, next),
+                                color: colors.text(i, next),
                               ),
                             ),
                           ),
                           if (i == next && tag.isNotEmpty)
                             _line(
                               tag,
-                              TS.bold12.copyWith(color: ink.text(i, next)),
+                              TS.bold12.copyWith(color: colors.text(i, next)),
                             ),
                         ],
                       ),
@@ -307,7 +330,7 @@ class _ExpandedRows extends StatelessWidget {
                       cell.timeFull,
                       TS.bold16.copyWith(
                         fontSize: 15,
-                        color: ink.text(i, next),
+                        color: colors.text(i, next),
                       ),
                     ),
                   ],

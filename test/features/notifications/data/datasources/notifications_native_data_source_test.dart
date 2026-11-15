@@ -229,6 +229,23 @@ void main() {
     );
   });
 
+  test('sdkInt returns the native SDK level', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          return 30;
+        });
+    expect(await ds.sdkInt(), 30);
+    expect(calls.single.method, 'sdkInt');
+  });
+
+  test('sdkInt throws PlatformNotImplementedException when the native side '
+      'is missing', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, null);
+    expect(() => ds.sdkInt(), throwsA(isA<PlatformNotImplementedException>()));
+  });
+
   test('openSystemSettings sends the target name', () async {
     await ds.openSystemSettings('xiaomiBattery');
     expect(calls.single.method, 'openSystemSettings');

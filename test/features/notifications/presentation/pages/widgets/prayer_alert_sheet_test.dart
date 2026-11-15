@@ -5,15 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
-import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/prayer_alert_sheet.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
 import '../../alerts_test_harness.dart';
 
-class _MockToday extends MockCubit<PrayerTimes?>
+class _MockToday extends MockCubit<TodayPrayerTimesState>
     implements TodayPrayerTimesCubit {}
 
 void main() {
@@ -27,8 +27,8 @@ void main() {
     today = _MockToday();
     whenListen(
       today,
-      const Stream<PrayerTimes?>.empty(),
-      initialState: cairoToday(),
+      const Stream<TodayPrayerTimesState>.empty(),
+      initialState: TodayPrayerTimesLoaded(cairoToday()),
     );
   });
   tearDown(() => settings.close());
@@ -144,6 +144,25 @@ void main() {
       expect(find.text('يصلك ٤:٤٠ ص'), findsOneWidget);
     },
   );
+
+  for (final state in const [
+    TodayPrayerTimesLoading(),
+    TodayPrayerTimesEmpty(),
+  ]) {
+    testWidgets('${state.runtimeType} hides the time and the arrival line', (
+      tester,
+    ) async {
+      whenListen(
+        today,
+        const Stream<TodayPrayerTimesState>.empty(),
+        initialState: state,
+      );
+      await open(tester, const PrayerAlert(reminderEnabled: true));
+      expect(find.text('٤:٥٠ ص'), findsNothing);
+      expect(find.textContaining('يصلك'), findsNothing);
+      expect(find.text('أذان الفجر'), findsOneWidget);
+    });
+  }
 
   testWidgets('a chip commits the reminder minutes', (tester) async {
     await open(tester, const PrayerAlert(reminderEnabled: true));

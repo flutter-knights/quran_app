@@ -42,6 +42,7 @@ abstract class NotificationsNativeDataSource {
   Future<void> openSystemSettings(String target);
   Future<void> previewSound({required String sound, required String prayer});
   Future<void> stopPreview();
+  Future<int?> sdkInt();
   Stream<String> get previewEnded;
 }
 
@@ -150,4 +151,13 @@ class NotificationsNativeDataSourceImpl
 
   @override
   Future<void> stopPreview() => _invoke('stopPreview');
+
+  @override
+  Future<int?> sdkInt() async {
+    try {
+      return await _channel.invokeMethod<int>('sdkInt');
+    } on MissingPluginException {
+      throw const PlatformNotImplementedException('sdkInt');
+    }
+  }
 }

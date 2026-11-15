@@ -11,7 +11,6 @@ import 'package:quran_app/core/widgets/design/app_option_sheet.dart';
 import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/app_settings_tile.dart';
-import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_list_parts.dart';
@@ -107,11 +106,7 @@ class _StripRow extends StatelessWidget {
               : expanded
               ? s.alerts_stripRow_onExpanded
               : s.alerts_stripRow_on,
-          trailing: HugeIcon(
-            icon: forwardArrowIcon(context),
-            color: context.colorScheme.onSurfaceVariant,
-            size: 20,
-          ),
+          trailing: const AlertsChevron(),
           onTap: () => context.push(AppRouter.prayerStripPath),
         );
       },
@@ -126,11 +121,6 @@ class _TimesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = S.of(context);
     final scheme = context.colorScheme;
-    final chevron = HugeIcon(
-      icon: forwardArrowIcon(context),
-      color: scheme.onSurfaceVariant,
-      size: 20,
-    );
     return BlocSelector<
       SettingsCubit,
       SettingsState,
@@ -158,7 +148,7 @@ class _TimesSection extends StatelessWidget {
                     ),
                     title: l10n.calculationMethod_methodLabel,
                     subtitle: method.localized(context),
-                    trailing: chevron,
+                    trailing: const AlertsChevron(),
                     onTap: () => showAppOptionSheet(
                       context: context,
                       title: l10n.calculationMethod_methodLabel,
@@ -179,7 +169,7 @@ class _TimesSection extends StatelessWidget {
                     ),
                     title: l10n.calculationMethod_schoolLabel,
                     subtitle: school.localized(context),
-                    trailing: chevron,
+                    trailing: const AlertsChevron(),
                     onTap: () => showAppOptionSheet(
                       context: context,
                       title: l10n.calculationMethod_schoolLabel,

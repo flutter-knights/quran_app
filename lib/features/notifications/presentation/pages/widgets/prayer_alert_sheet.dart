@@ -9,11 +9,10 @@ import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/app_settings_tile.dart';
-import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
-import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_list_parts.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_switch_row.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/reminder_picker.dart';
@@ -49,8 +48,8 @@ class PrayerAlertSheet extends StatelessWidget {
         state.settingsModel.is24HourFormat,
       ),
       builder: (context, data) =>
-          BlocSelector<TodayPrayerTimesCubit, PrayerTimes?, String?>(
-            selector: (today) => today?.timings[prayer],
+          BlocSelector<TodayPrayerTimesCubit, TodayPrayerTimesState, String?>(
+            selector: (today) => today.times?.timings[prayer],
             builder: (context, rawTime) => _SheetBody(
               prayer: prayer,
               alert: data.$1,
@@ -90,11 +89,6 @@ class _SheetBody extends StatelessWidget {
       rawTime,
       use24Hour: use24Hour,
       localeCode: lang,
-    );
-    final chevron = HugeIcon(
-      icon: forwardArrowIcon(context),
-      color: scheme.onSurfaceVariant,
-      size: 20,
     );
     return SingleChildScrollView(
       padding: EdgeInsetsDirectional.fromSTEB(
@@ -159,7 +153,7 @@ class _SheetBody extends StatelessWidget {
                             prayer: prayer,
                             ios: ios,
                           ),
-                          trailing: chevron,
+                          trailing: const AlertsChevron(),
                           enabled: alert.enabled,
                           onTap: () => showPrayerSoundPicker(context, prayer),
                         ),
@@ -232,7 +226,7 @@ class _SheetBody extends StatelessWidget {
                             alert.reminderSound,
                             ios: ios,
                           ),
-                          trailing: chevron,
+                          trailing: const AlertsChevron(),
                           enabled: reminderActive,
                           onTap: () => showReminderSoundPicker(context, prayer),
                         ),

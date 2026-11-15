@@ -25,6 +25,7 @@ import 'package:quran_app/features/notifications/presentation/cubit/reliability_
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/sound_preview_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/notifications_settings_page.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -34,7 +35,7 @@ import '../alerts_test_harness.dart';
 class _MockReliability extends MockCubit<ReliabilityState>
     implements ReliabilityCubit {}
 
-class _MockToday extends MockCubit<PrayerTimes?>
+class _MockToday extends MockCubit<TodayPrayerTimesState>
     implements TodayPrayerTimesCubit {}
 
 class _MockPreview extends Mock implements PreviewAlertSound {}
@@ -92,6 +93,7 @@ void main() {
     String locale = 'ar',
     ReliabilityState? state,
     PrayerTimes? times,
+    TodayPrayerTimesState? todayState,
     bool settle = true,
   }) async {
     tester.view.physicalSize = const Size(360, 640);
@@ -102,7 +104,15 @@ void main() {
       const Stream<ReliabilityState>.empty(),
       initialState: state ?? ReliabilityLoaded(ok),
     );
-    whenListen(today, const Stream<PrayerTimes?>.empty(), initialState: times);
+    whenListen(
+      today,
+      const Stream<TodayPrayerTimesState>.empty(),
+      initialState:
+          todayState ??
+          (times == null
+              ? const TodayPrayerTimesEmpty()
+              : TodayPrayerTimesLoaded(times)),
+    );
     settings.updateSettings(isArabic: locale == 'ar');
     await tester.pumpWidget(
       alertsApp(
@@ -176,10 +186,16 @@ void main() {
     expect(find.text('تُختار الطريقة تلقائيًا حسب بلدك.'), findsOneWidget);
   });
 
-  testWidgets('times are hidden without today\'s timings', (tester) async {
-    await pump(tester);
-    expect(find.text('٤:٥٠ ص'), findsNothing);
-  });
+  for (final state in const [
+    TodayPrayerTimesLoading(),
+    TodayPrayerTimesEmpty(),
+  ]) {
+    testWidgets('times are hidden while ${state.runtimeType}', (tester) async {
+      await pump(tester, todayState: state);
+      expect(find.text('٤:٥٠ ص'), findsNothing);
+      expect(find.text('الفجر'), findsOneWidget);
+    });
+  }
 
   testWidgets('status rules map to their lines', (tester) async {
     await pump(
@@ -271,7 +287,11 @@ void main() {
       const Stream<ReliabilityState>.empty(),
       initialState: ReliabilityLoaded(ok),
     );
-    whenListen(today, const Stream<PrayerTimes?>.empty(), initialState: null);
+    whenListen(
+      today,
+      const Stream<TodayPrayerTimesState>.empty(),
+      initialState: const TodayPrayerTimesEmpty(),
+    );
     final router = GoRouter(
       routes: [
         GoRoute(

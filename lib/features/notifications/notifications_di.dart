@@ -7,6 +7,7 @@ import 'package:quran_app/features/notifications/domain/usecases/ack_missed_aler
 import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
 import 'package:quran_app/features/notifications/domain/usecases/disable_prayer_strip.dart';
 import 'package:quran_app/features/notifications/domain/usecases/enable_prayer_strip.dart';
+import 'package:quran_app/features/notifications/domain/usecases/get_android_sdk_int.dart';
 import 'package:quran_app/features/notifications/domain/usecases/get_cached_prayer_days.dart';
 import 'package:quran_app/features/notifications/domain/usecases/get_reliability_status.dart';
 import 'package:quran_app/features/notifications/domain/usecases/open_system_settings.dart';
@@ -17,6 +18,7 @@ import 'package:quran_app/features/notifications/domain/usecases/stop_alert_prev
 import 'package:quran_app/features/notifications/domain/usecases/sync_daily_adhans.dart';
 import 'package:quran_app/features/notifications/domain/usecases/watch_preview_ended.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/android_sdk_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/sound_preview_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
@@ -39,6 +41,7 @@ void initNotifications() {
   sl.registerLazySingleton(() => RefreshPrayerStrip(repository: sl()));
   sl.registerLazySingleton(() => SyncDailyAdhans(repository: sl()));
   sl.registerLazySingleton(() => GetReliabilityStatus(repository: sl()));
+  sl.registerLazySingleton(() => GetAndroidSdkInt(repository: sl()));
   sl.registerLazySingleton(() => AckMissedAlerts(repository: sl()));
   sl.registerLazySingleton(() => OpenSystemSettings(repository: sl()));
   sl.registerLazySingleton(() => PreviewAlertSound(repository: sl()));
@@ -62,4 +65,5 @@ void initNotifications() {
   sl.registerFactory(() => ReliabilityCubit(sl(), sl(), sl()));
   sl.registerFactory(() => SoundPreviewCubit(sl(), sl(), sl()));
   sl.registerFactory(() => TodayPrayerTimesCubit(sl()));
+  sl.registerFactory(() => AndroidSdkCubit(sl()));
 }

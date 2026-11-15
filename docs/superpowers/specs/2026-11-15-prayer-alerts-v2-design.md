@@ -244,6 +244,7 @@ When a preview ends without an explicit `stopPreview()` (the clip completes, `Me
 - Background: tints `strip_root` (API 31+, flat fill below). With a day fill, muted text (the date line) uses about 66% black; a night fill keeps the night muted colour.
 - Countdown: `setWhen(nextPrayerMs) + setUsesChronometer + setChronometerCountDown + setShowWhen`, and `setSubText` with that cell's `nextLabel`. On Android 12+ the system shows the countdown in the notification header, which may appear only when the strip is expanded; this needs device verification.
 - Expanded off: no big content view.
+- `sdkInt` on the notifications channel returns `Build.VERSION.SDK_INT`, so the in-app preview draws the highlight the way this phone's renderer does (tinted shapes on API 31+, a flat fill below).
 - After Isha the strip shows tomorrow's day with Fajr next, when the window has it. Otherwise it highlights nothing.
 - A swiped strip is not re-posted immediately. It returns at the next strip alarm (next prayer or 00:01) or app open.
 - Dart sends the strip the same cached range as the adhans (up to 30 days), not 7.
@@ -299,7 +300,7 @@ Copy is in Appendix A and states in Appendix C.
   - `ReminderPicker`: a local draft, slider 1–60 (59 divisions) committed on `onChangeEnd`, chips 5/10/15/30, ICU-plural text and `alerts_sheet_reminderArrives`.
 - Sound picker: `showAppOptionSheet` with `RadioGroup` + `RadioListTile` rows and an optional trailing slot per row; ▶ is that slot, a separate 48 px `IconButton`, on the adhan and tone rows on Android only (iOS has no preview). Previews come from `SoundPreviewCubit` (factory), which stops on close.
 - `PrayerStripSettingsPage` (new route `/prayerStrip`):
-  - Live Flutter preview with a «مطويّ/موسّع» toggle (`AppSegmentedSelector`).
+  - Live Flutter preview with a «مطويّ/موسّع» toggle (`AppSegmentedSelector`). It mirrors the native renderer for the phone's API level (`androidSdkInt()`; below API 31 rounded, pill and outline draw as a flat filled rectangle with pill text) and the system dark mode, and refreshes once a minute.
   - Switches for show, expanded and countdown (with the digits note).
   - Option rows for highlight, background and shape, plus the note.
 - `ReliabilityPage` (new route `/alertsReliability`; on iOS only the notifications row and the test button show):
@@ -651,7 +652,7 @@ Every state, with the shared rules: Arabic-Indic digits on every surface when th
 | Notifications page | Loading: the status line is a skeleton (`Skeletonizer`) while `ReliabilityCubit` loads; the prayer card renders from settings at once. Status line: off / attention / ok-with-date / ok-without-date (§8 rules). Prayer rows: leading icon (speaker = adhan, bell = tone or vibrate, bell-off = off or silent), title, today's time trailing (hidden when today's timings aren't loaded), summary subtitle built from `alerts_summary_*` and the sound name, joined with «، » / ", ". iOS: no strip row and `alerts_iosTruth` replaces `alerts_silentTruth`. |
 | Prayer sheet | Alert on: everything enabled. Alert off: sound row and silent switch at 38% opacity and inert, the reminder group inert with `alerts_sheet_reminderDisabled`. Sound not adhan: silent switch disabled, value kept. Reminder off: slider, chips and reminder sound inert. iOS: no silent switch, `alerts_sheet_iosNote` under the alert group, sound names use the «مقطع» variants. The «يصلك» time is hidden when today's timing isn't loaded. |
 | Sound picker | One row per option, the current one selected. ▶ idle / playing (stop icon, indeterminate thin progress, `alerts_picker_previewing`). Closing the sheet stops the preview. iOS: no ▶, no vibrate row. |
-| Strip settings | Strip off: the other rows stay visible but inert. Expanded off: the preview toggle is fixed to «مطويّ». Countdown off: no chronometer in the preview. Option sheets show a swatch dot for colours. |
+| Strip settings | Strip off: the other rows stay visible but inert. Expanded off: the preview toggle is fixed to «مطويّ». Countdown off: no chronometer in the preview. Option sheets show a swatch dot for colours. Loading today's times: the preview is a skeleton. No cached times: the preview shows sample times, static, without a skeleton. |
 | Reliability page | Each row shows its `AppStatusBadge` (`rel_working`/`rel_needsAction`), its value (`rel_allowed`/`rel_blocked` or the battery pair), and an action only when blocked. Xiaomi rows show the «تمّ» button until confirmed, then the badge `rel_done`. Scheduled: `rel_scheduledUntil` or `rel_scheduledNone`. |
 | Onboarding alerts step | Defaults adhan + no reminder; reminder chips inert when «بدون تنبيه» is picked; «لاحقًا» keeps defaults. |
 | Onboarding Xiaomi step | Three steps; «تخطٍّ» leaves the flags false. |

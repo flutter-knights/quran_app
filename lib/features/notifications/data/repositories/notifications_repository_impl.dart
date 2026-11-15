@@ -226,6 +226,12 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       _runAndroidOnly(native.stopPreview);
 
   @override
+  Future<Either<Failure, int?>> androidSdkInt() async {
+    if (!_isAndroid) return const Right(null);
+    return _runValue(native.sdkInt);
+  }
+
+  @override
   Stream<PreviewSound> previewEnded() {
     if (!_isAndroid) return const Stream.empty();
     final byName = PreviewSound.values.asNameMap();

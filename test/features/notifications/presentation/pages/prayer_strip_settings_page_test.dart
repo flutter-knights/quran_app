@@ -7,11 +7,12 @@ import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
 import 'package:quran_app/core/widgets/design/app_settings_tile.dart';
-import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/notifications/domain/builders/prayer_strip_state_builder.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_strip_state.dart';
 import 'package:quran_app/features/notifications/domain/entities/strip_style.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/android_sdk_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
+import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/prayer_strip_settings_page.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/strip_preview.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
@@ -19,12 +20,15 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../alerts_test_harness.dart';
 
-class _MockToday extends MockCubit<PrayerTimes?>
+class _MockToday extends MockCubit<TodayPrayerTimesState>
     implements TodayPrayerTimesCubit {}
+
+class _MockSdk extends MockCubit<int?> implements AndroidSdkCubit {}
 
 void main() {
   late SettingsCubit cubit;
   late _MockToday today;
+  late _MockSdk sdk;
 
   setUpAll(() async {
     HydratedBloc.storage = MemStorage();
@@ -34,6 +38,7 @@ void main() {
     await HydratedBloc.storage.clear();
     cubit = SettingsCubit();
     today = _MockToday();
+    sdk = _MockSdk();
   });
   tearDown(() async {
     await cubit.close();
@@ -50,8 +55,9 @@ void main() {
     bool pinned = true,
     StripStyle style = const StripStyle(),
     String locale = 'ar',
-    PrayerTimes? times,
-    bool noTimes = false,
+    TodayPrayerTimesState? todayState,
+    int? sdkInt,
+    DateTime Function()? now,
     bool settle = true,
   }) async {
     phone(tester);
@@ -60,16 +66,22 @@ void main() {
     cubit.updateStripStyle(style);
     whenListen(
       today,
-      const Stream<PrayerTimes?>.empty(),
-      initialState: noTimes ? null : times ?? cairoToday(),
+      const Stream<TodayPrayerTimesState>.empty(),
+      initialState: todayState ?? TodayPrayerTimesLoaded(cairoToday()),
     );
+    whenListen(sdk, const Stream<int?>.empty(), initialState: sdkInt);
     await tester.pumpWidget(
       alertsApp(
         settings: cubit,
         locale: locale,
-        home: BlocProvider<TodayPrayerTimesCubit>.value(
-          value: today,
-          child: const PrayerStripSettingsPage(),
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<TodayPrayerTimesCubit>.value(value: today),
+            BlocProvider<AndroidSdkCubit>.value(value: sdk),
+          ],
+          child: now == null
+              ? const PrayerStripSettingsPage()
+              : PrayerStripSettingsPage(now: now),
         ),
       ),
     );
@@ -77,6 +89,19 @@ void main() {
         ? await tester.pumpAndSettle()
         : await tester.pump(const Duration(milliseconds: 100));
   }
+
+  BoxDecoration cellBox(WidgetTester tester, String label) =>
+      tester
+              .widget<DecoratedBox>(
+                find
+                    .ancestor(
+                      of: find.text(label),
+                      matching: find.byType(DecoratedBox),
+                    )
+                    .first,
+              )
+              .decoration
+          as BoxDecoration;
 
   Future<void> tapVisible(WidgetTester tester, Finder finder) async {
     await tester.ensureVisible(finder);
@@ -129,6 +154,7 @@ void main() {
     ) async {
       await pumpPage(tester, style: const StripStyle(expanded: false));
       expect(toggle(tester).selected, isFalse);
+      expect(toggle(tester).enabled, isFalse);
       await tester.tap(find.text('موسّع'), warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(toggle(tester).selected, isFalse);
@@ -175,18 +201,87 @@ void main() {
       expect(style.highlight, StripHighlight.app);
     });
 
-    testWidgets('the preview is a skeleton until today\'s times load', (
+    testWidgets('the preview is a skeleton while today\'s times load', (
       tester,
     ) async {
-      await pumpPage(tester, noTimes: true, settle: false);
+      await pumpPage(
+        tester,
+        todayState: const TodayPrayerTimesLoading(),
+        settle: false,
+      );
       expect(find.byWidgetPredicate((w) => w is Skeletonizer), findsOneWidget);
+    });
+
+    testWidgets('no cached times shows a static sample, not a skeleton', (
+      tester,
+    ) async {
+      await pumpPage(tester, todayState: const TodayPrayerTimesEmpty());
+      expect(find.byWidgetPredicate((w) => w is Skeletonizer), findsNothing);
+      expect(find.text('الفجر'), findsOneWidget);
+      expect(find.text('٠٤:٥٠ ص'), findsOneWidget);
+    });
+
+    testWidgets('the preview follows the 24-hour setting like the strip', (
+      tester,
+    ) async {
+      cubit.updateSettings(isFormat12Hours: true);
+      await pumpPage(tester);
+      expect(find.text('١٨:١٩'), findsOneWidget);
+      expect(find.text('٠٦:١٩ م'), findsNothing);
+    });
+
+    testWidgets('below API 31 the next cell is a flat filled rectangle', (
+      tester,
+    ) async {
+      await pumpPage(
+        tester,
+        sdkInt: 30,
+        now: () => DateTime(2026, 11, 15, 16, 30),
+        style: const StripStyle(
+          highlight: StripHighlight.maroon,
+          shape: StripShape.outline,
+        ),
+      );
+      final box = cellBox(tester, 'المغرب');
+      expect(box.color, const Color(0xFF9A3B3B));
+      expect(box.border, isNull);
+      expect(box.borderRadius, isNull);
+    });
+
+    testWidgets('API 31 keeps the outline stroke', (tester) async {
+      await pumpPage(
+        tester,
+        sdkInt: 31,
+        now: () => DateTime(2026, 11, 15, 16, 30),
+        style: const StripStyle(
+          highlight: StripHighlight.maroon,
+          shape: StripShape.outline,
+        ),
+      );
+      final box = cellBox(tester, 'المغرب');
+      expect(box.color, isNull);
+      expect(box.border, isNotNull);
+    });
+
+    testWidgets('the preview advances once a minute', (tester) async {
+      var now = DateTime(2026, 11, 15, 16, 58, 30);
+      await pumpPage(tester, now: () => now);
+      expect(cellBox(tester, 'المغرب').color, isNotNull);
+      expect(cellBox(tester, 'العشاء').color, isNull);
+      expect(find.textContaining('المغرب بعد · ٠٠:٣٠'), findsOneWidget);
+      now = DateTime(2026, 11, 15, 16, 59, 30);
+      await tester.pump(const Duration(seconds: 59));
+      expect(cellBox(tester, 'المغرب').color, isNotNull);
+      await tester.pump(const Duration(seconds: 1));
+      expect(cellBox(tester, 'المغرب').color, isNull);
+      expect(cellBox(tester, 'العشاء').color, isNotNull);
+      expect(find.textContaining('العشاء بعد · ١:١٩:٣٠'), findsOneWidget);
     });
 
     for (final locale in ['ar', 'en']) {
       testWidgets('smoke $locale: page and option sheets fit a phone', (
         tester,
       ) async {
-        cubit.updateSettings(isFormat12Hours: true);
         await pumpPage(
           tester,
           locale: locale,
@@ -231,7 +326,7 @@ void main() {
   });
 
   group('StripPreview', () {
-    PrayerStripState day({String locale = 'ar', bool friday = false}) =>
+    PrayerStripState stripFor({String locale = 'ar', bool friday = false}) =>
         PrayerStripStateBuilder.build(
           prayerTimes: cairoToday(),
           nextPrayer: PrayerName.maghrib,
@@ -246,8 +341,9 @@ void main() {
       StripStyle style, {
       bool expanded = false,
       bool night = false,
-      PrayerStripState? state,
+      PrayerStripState? strip,
       String locale = 'ar',
+      bool tintable = true,
     }) async {
       phone(tester);
       tester.platformDispatcher.platformBrightnessTestValue = night
@@ -260,29 +356,18 @@ void main() {
           locale: locale,
           home: Scaffold(
             body: StripPreview(
-              day: state ?? day(locale: locale),
+              strip: strip ?? stripFor(locale: locale),
               style: style,
               expanded: expanded,
               palette: ColorPalette.neutralLight,
+              now: DateTime(2026, 11, 15, 16, 30),
+              tintable: tintable,
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
     }
-
-    BoxDecoration cellBox(WidgetTester tester, String label) =>
-        tester
-                .widget<DecoratedBox>(
-                  find
-                      .ancestor(
-                        of: find.text(label),
-                        matching: find.byType(DecoratedBox),
-                      )
-                      .first,
-                )
-                .decoration
-            as BoxDecoration;
 
     Color? ink(WidgetTester tester, String text) =>
         tester.widget<Text>(find.text(text)).style?.color;
@@ -394,11 +479,65 @@ void main() {
         tester,
         const StripStyle(),
         locale: 'en',
-        state: day(locale: 'en', friday: true),
+        strip: stripFor(locale: 'en', friday: true),
       );
       expect(find.text("Jumu'ah"), findsOneWidget);
       expect(find.text('04:59'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('below API 31 every filled shape is a plain rectangle', (
+      tester,
+    ) async {
+      for (final shape in [
+        StripShape.rounded,
+        StripShape.pill,
+        StripShape.outline,
+      ]) {
+        await pumpPreview(
+          tester,
+          StripStyle(highlight: StripHighlight.blue, shape: shape),
+          tintable: false,
+        );
+        final box = cellBox(tester, 'المغرب');
+        expect(box.color, const Color(0xFF2F5F98), reason: shape.name);
+        expect(box.borderRadius, isNull, reason: shape.name);
+        expect(box.border, isNull, reason: shape.name);
+        expect(ink(tester, 'المغرب'), const Color(0xFFFFFFFF));
+      }
+      await pumpPreview(
+        tester,
+        const StripStyle(
+          highlight: StripHighlight.blue,
+          shape: StripShape.none,
+        ),
+        tintable: false,
+      );
+      expect(cellBox(tester, 'المغرب').color, isNull);
+      expect(ink(tester, 'المغرب'), const Color(0xFF2F5F98));
+    });
+
+    testWidgets('below API 31 the background is a square fill', (tester) async {
+      await pumpPreview(
+        tester,
+        const StripStyle(background: StripBackground.sky),
+        tintable: false,
+      );
+      final fill = tester.widget<DecoratedBox>(
+        find.byWidgetPredicate(
+          (w) =>
+              w is DecoratedBox &&
+              (w.decoration as BoxDecoration).color == const Color(0xFFE3ECF5),
+        ),
+      );
+      expect((fill.decoration as BoxDecoration).borderRadius, isNull);
+    });
+
+    testWidgets('the countdown reads like the phone chronometer', (
+      tester,
+    ) async {
+      await pumpPreview(tester, const StripStyle());
+      expect(find.text('الفرقان · المغرب بعد · ٢٩:٠٠'), findsOneWidget);
     });
   });
 }
