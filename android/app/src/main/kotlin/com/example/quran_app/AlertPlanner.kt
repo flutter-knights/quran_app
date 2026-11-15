@@ -40,7 +40,7 @@ object AlertPlanner {
     private const val MIUI_POWER = "com.miui.powerkeeper"
     private val XIAOMI_BRANDS = setOf("xiaomi", "redmi", "poco")
 
-    private val CANONICAL =listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha")
+    private val CANONICAL = listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha")
     private val DATE = Regex("""(\d{4})-(\d{2})-(\d{2})""")
     private val TIME = Regex("""(\d{1,2}):(\d{2})""")
 
@@ -202,32 +202,35 @@ object AlertPlanner {
     fun statusChannels(alerts: Map<String, AdhanSpec>) =
         alerts.values.flatMap { routeChannels(it.sound) }.toSet() + PLAYBACK_CHANNEL
 
-    fun exactAlarmsAllowed(sdk: Int, canScheduleExact: () -> Boolean) = when {
-        sdk >= 33 -> true
-        sdk >= 31 -> canScheduleExact()
-        else -> true
-    }
+    fun exactAlarmsAllowed(sdk: Int, canScheduleExact: () -> Boolean) = if (sdk >= 31) canScheduleExact() else true
+
+    fun ackCheckpoint(current: Long?, upTo: Long) = maxOf(current ?: upTo, upTo)
 
     fun statusMap(
         os: OsState, usesAlarmClock: Boolean, scheduledUntil: Long?, snapshotUntil: String?,
         missed: List<Miss>, late: List<Miss>,
-    ): Map<String, Any?> = mapOf(
-        "notificationsEnabled" to os.notificationsEnabled,
-        "channelBlocked" to os.channelBlocked,
-        "exactAlarmsAllowed" to os.exactAlarmsAllowed,
-        "batteryUnrestricted" to os.batteryUnrestricted,
-        "isXiaomi" to os.isXiaomi,
-        "usesAlarmClock" to usesAlarmClock,
-        "scheduledUntil" to scheduledUntil,
-        "snapshotUntil" to snapshotUntil,
-        "missed" to missed.map { mapOf("prayer" to it.prayer, "at" to it.at) },
-        "late" to late.map { mapOf("prayer" to it.prayer, "at" to it.at) },
-    )
+    ): Map<String, Any?> {
+        fun entries(list: List<Miss>) = list.map { mapOf("prayer" to it.prayer, "at" to it.at) }
+        return mapOf(
+            "notificationsEnabled" to os.notificationsEnabled,
+            "channelBlocked" to os.channelBlocked,
+            "exactAlarmsAllowed" to os.exactAlarmsAllowed,
+            "batteryUnrestricted" to os.batteryUnrestricted,
+            "isXiaomi" to os.isXiaomi,
+            "usesAlarmClock" to usesAlarmClock,
+            "scheduledUntil" to scheduledUntil,
+            "snapshotUntil" to snapshotUntil,
+            "missed" to entries(missed),
+            "late" to entries(late),
+        )
+    }
 
-    fun settingsCandidates(target: String, packageName: String, label: String): List<IntentSpec> {
+    fun settingsCandidates(target: String, packageName: String, label: String, sdk: Int): List<IntentSpec> {
         val battery = IntentSpec(ACTION_BATTERY_SETTINGS, null, null, emptyMap())
         val specific = when (target) {
-            "notifications" -> listOf(IntentSpec(ACTION_NOTIFICATION_SETTINGS, null, null, mapOf(EXTRA_APP_PACKAGE to packageName)))
+            "notifications" ->
+                if (sdk >= 26) listOf(IntentSpec(ACTION_NOTIFICATION_SETTINGS, null, null, mapOf(EXTRA_APP_PACKAGE to packageName)))
+                else emptyList()
             "exactAlarm" -> listOf(IntentSpec(ACTION_EXACT_ALARM, packageName, null, emptyMap()))
             "battery" -> listOf(battery)
             "autostart" -> listOf(

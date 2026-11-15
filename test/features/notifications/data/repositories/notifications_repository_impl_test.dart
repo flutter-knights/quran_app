@@ -546,7 +546,9 @@ void main() {
         ),
       ).thenAnswer((_) async {});
       when(() => native.stopPreview()).thenAnswer((_) async {});
-      when(() => native.ackMissed()).thenAnswer((_) async {});
+      when(
+        () => native.ackMissed(upTo: any(named: 'upTo')),
+      ).thenAnswer((_) async {});
 
       expect(
         await repo.openSystemSettings(SystemSettingsTarget.xiaomiBattery),
@@ -560,14 +562,21 @@ void main() {
         const Right(unit),
       );
       expect(await repo.stopPreview(), const Right(unit));
-      expect(await repo.ackMissedAlerts(), const Right(unit));
+      expect(
+        await repo.ackMissedAlerts(upTo: DateTime(2026, 11, 15, 12)),
+        const Right(unit),
+      );
 
       verify(() => native.openSystemSettings('xiaomiBattery')).called(1);
       verify(
         () => native.previewSound(sound: 'adhan', prayer: 'fajr'),
       ).called(1);
       verify(() => native.stopPreview()).called(1);
-      verify(() => native.ackMissed()).called(1);
+      verify(
+        () => native.ackMissed(
+          upTo: DateTime(2026, 11, 15, 12).millisecondsSinceEpoch,
+        ),
+      ).called(1);
     });
 
     test('Android: openSystemSettings failure is a Left', () async {
@@ -592,7 +601,10 @@ void main() {
         const Right(unit),
       );
       expect(await repo.stopPreview(), const Right(unit));
-      expect(await repo.ackMissedAlerts(), const Right(unit));
+      expect(
+        await repo.ackMissedAlerts(upTo: DateTime(2026, 11, 15, 12)),
+        const Right(unit),
+      );
       verifyZeroInteractions(native);
     });
   });

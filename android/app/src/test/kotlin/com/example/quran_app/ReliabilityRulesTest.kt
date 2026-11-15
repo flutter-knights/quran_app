@@ -21,7 +21,7 @@ class ReliabilityRulesTest {
     }
 
     @Test fun autostartCandidatesInSpecOrder() {
-        val c = AlertPlanner.settingsCandidates("autostart", "com.example.quran_app", "Al-Furqan")
+        val c = AlertPlanner.settingsCandidates("autostart", "com.example.quran_app", "Al-Furqan", 34)
         assertEquals(3, c.size)
         assertEquals("com.miui.securitycenter", c[0].pkg)
         assertEquals("com.miui.permcenter.autostart.AutoStartManagementActivity", c[0].cls)
@@ -34,7 +34,7 @@ class ReliabilityRulesTest {
     }
 
     @Test fun xiaomiBatteryFallsBackToBatteryThenDetails() {
-        val c = AlertPlanner.settingsCandidates("xiaomiBattery", "com.example.quran_app", "Al-Furqan")
+        val c = AlertPlanner.settingsCandidates("xiaomiBattery", "com.example.quran_app", "Al-Furqan", 34)
         assertEquals("com.miui.powerkeeper", c[0].pkg)
         assertEquals("com.miui.powerkeeper.ui.HiddenAppsConfigActivity", c[0].cls)
         assertEquals(mapOf("package_name" to "com.example.quran_app", "package_label" to "Al-Furqan"), c[0].extras)
@@ -44,7 +44,7 @@ class ReliabilityRulesTest {
     }
 
     @Test fun batteryHasNoPackageDataThenDetails() {
-        val c = AlertPlanner.settingsCandidates("battery", "p", "l")
+        val c = AlertPlanner.settingsCandidates("battery", "p", "l", 34)
         assertEquals(2, c.size)
         assertEquals("android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS", c[0].action)
         assertNull(c[0].pkg)
@@ -52,18 +52,32 @@ class ReliabilityRulesTest {
     }
 
     @Test fun notificationsAndExactAlarmTargets() {
-        val notifications = AlertPlanner.settingsCandidates("notifications", "p", "l")
+        val notifications = AlertPlanner.settingsCandidates("notifications", "p", "l", 34)
         assertEquals("android.settings.APP_NOTIFICATION_SETTINGS", notifications[0].action)
         assertNull(notifications[0].pkg)
         assertEquals(mapOf("android.provider.extra.APP_PACKAGE" to "p"), notifications[0].extras)
         assertEquals(details, notifications.last().action)
-        val exact = AlertPlanner.settingsCandidates("exactAlarm", "p", "l")
+        val exact = AlertPlanner.settingsCandidates("exactAlarm", "p", "l", 34)
         assertEquals("android.settings.REQUEST_SCHEDULE_EXACT_ALARM", exact[0].action)
         assertEquals("p", exact[0].pkg)
         assertEquals(details, exact.last().action)
-        val bogus = AlertPlanner.settingsCandidates("bogus", "p", "l")
+        val bogus = AlertPlanner.settingsCandidates("bogus", "p", "l", 34)
         assertEquals(1, bogus.size)
         assertEquals(details, bogus.single().action)
+    }
+
+    @Test fun notificationsBelowApi26GoStraightToDetails() {
+        val c = AlertPlanner.settingsCandidates("notifications", "p", "l", 25)
+        assertEquals(1, c.size)
+        assertEquals(details, c.single().action)
+        assertEquals("p", c.single().pkg)
+        assertEquals("android.settings.APP_NOTIFICATION_SETTINGS", AlertPlanner.settingsCandidates("notifications", "p", "l", 26)[0].action)
+    }
+
+    @Test fun ackCheckpointNeverMovesBack() {
+        assertEquals(500L, AlertPlanner.ackCheckpoint(null, 500L))
+        assertEquals(900L, AlertPlanner.ackCheckpoint(900L, 500L))
+        assertEquals(1_200L, AlertPlanner.ackCheckpoint(900L, 1_200L))
     }
 
     @Test fun statusChannelsUnionRoutesWithPlayback() {
@@ -77,7 +91,8 @@ class ReliabilityRulesTest {
     }
 
     @Test fun exactAlarmsAllowedByApiLevel() {
-        assertTrue(AlertPlanner.exactAlarmsAllowed(33) { false })
+        assertFalse(AlertPlanner.exactAlarmsAllowed(33) { false })
+        assertTrue(AlertPlanner.exactAlarmsAllowed(34) { true })
         assertFalse(AlertPlanner.exactAlarmsAllowed(31) { false })
         assertTrue(AlertPlanner.exactAlarmsAllowed(32) { true })
         assertTrue(AlertPlanner.exactAlarmsAllowed(30) { throw AssertionError("not called below 31") })

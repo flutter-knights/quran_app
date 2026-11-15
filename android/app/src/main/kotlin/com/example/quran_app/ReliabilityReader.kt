@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Build
 import android.os.PowerManager
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
 
 object ReliabilityReader {
@@ -51,12 +52,12 @@ object ReliabilityReader {
         )
     }
 
-    fun ack(context: Context) {
-        AlertStore.setLong(context, AlertStore.LAST_CHECKED_AT, System.currentTimeMillis())
+    fun ack(context: Context, upTo: Long) {
+        val current = AlertStore.getLong(context, AlertStore.LAST_CHECKED_AT)
+        AlertStore.setLong(context, AlertStore.LAST_CHECKED_AT, AlertPlanner.ackCheckpoint(current, upTo))
     }
 
-    private fun canScheduleExact(context: Context): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
-        return runCatching { (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms() }.getOrDefault(true)
-    }
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun canScheduleExact(context: Context) =
+        runCatching { (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms() }.getOrDefault(true)
 }

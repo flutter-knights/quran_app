@@ -269,9 +269,10 @@ The channel table below is the contract. Tasks 4, 5, 6 and 9 implement its nativ
 | `scheduleDailyAdhans` | `days: [{date: 'yyyy-MM-dd', timings: {fajr, sunrise, dhuhr, asr, maghrib, isha: 'HH:mm'}}]` (all six timings), `alerts: {<prayer>: {sound: 'adhan'\|'tone'\|'vibrate'\|'silent', ringInSilent: bool}}` (enabled prayers only), `localeCode: 'ar'\|'en'` | `null` |
 | `schedulePrayerReminders` | `days` (same), `reminders: {<prayer>: {minutes: 1..60, reminderSound: 'tone'\|'vibrate'\|'silent'}}` (only prayers with `effectiveReminderMinutes != null`), `localeCode` | `null` |
 | `scheduleTestAdhan` | `delaySeconds: int`, `localeCode`, `sound`, `ringInSilent` (from the Dhuhr alert) | `null` |
-| `cancelAllAdhans`, `cancelAllReminders`, `disableStrip`, `ackMissed`, `stopPreview` | none | `null` |
+| `cancelAllAdhans`, `cancelAllReminders`, `disableStrip`, `stopPreview` | none | `null` |
+| `ackMissed` | `upTo: int` (epoch ms, the newest `at` among the missed and late items the user was shown) | `null` |
 | `getReliabilityStatus` | none | `{notificationsEnabled, channelBlocked, exactAlarmsAllowed, batteryUnrestricted, isXiaomi, usesAlarmClock: bool, scheduledUntil: int? (epoch ms), snapshotUntil: String? ('yyyy-MM-dd'), missed: [{prayer: 'isha', at: int}], late: [{prayer, at}]}` |
-| `openSystemSettings` | `target: 'notifications'\|'exactAlarm'\|'battery'\|'autostart'\|'xiaomiBattery'` | `null` |
+| `openSystemSettings` | `target: 'notifications'\|'exactAlarm'\|'battery'\|'autostart'\|'xiaomiBattery'` | `bool` (whether a settings screen opened; Dart ignores it) |
 | `previewSound` | `sound: 'adhan'\|'tone'`, `prayer: 'fajr'…'isha'` | `null` |
 | `enableStrip`, `refreshStrip` (Task 9) | `days: [{dateKey, cells: [{label, time, minutes, nextLabel}], nextTag, hijriDateLabel, weekdayLabel, localeCode, isFriday}]`, `style: {expanded, countdown: bool, highlightDay, highlightNight, pillTextDay, pillTextNight: '#AARRGGBB', backgroundDay?, backgroundNight?: '#AARRGGBB', shape: 'none'\|'rounded'\|'pill'\|'outline'}` | `null` |
 
@@ -290,10 +291,10 @@ Channel key renames: `scheduleDailyAdhans` drops `clips` and `volume` and adds `
   - `ReliabilityStatus.copyWith({bool? notificationsEnabled, bool? channelBlocked, bool? exactAlarmsAllowed, bool? batteryUnrestricted, bool? isXiaomi, bool? usesAlarmClock, DateTime? scheduledUntil, bool clearScheduledUntil = false, DateTime? snapshotUntil, List<MissedAlert>? missed, List<MissedAlert>? late})` (used by Tasks 8 and 11).
   - `class ReliabilityStatus extends Equatable` with `const ReliabilityStatus({required this.notificationsEnabled, required this.channelBlocked, required this.exactAlarmsAllowed, required this.batteryUnrestricted, required this.isXiaomi, required this.usesAlarmClock, this.scheduledUntil, this.snapshotUntil, this.missed = const [], this.late = const []})` (bools, `DateTime?`, `List<MissedAlert>`); `const ReliabilityStatus.ios({required bool notificationsEnabled, DateTime? scheduledUntil})` (exact alarms and battery true, Xiaomi false, `usesAlarmClock` false, no misses).
   - `enum SystemSettingsTarget { notifications, exactAlarm, battery, autostart, xiaomiBattery }`; `enum PreviewSound { adhan, tone }`.
-  - `NotificationsRepository`: `scheduleDailyAdhans({required List<PrayerTimes> days, required Map<PrayerName, PrayerAlert> alerts, required String localeCode})`, `schedulePrayerReminders({same})`, `scheduleTestAdhan({required PrayerAlert alert, required String localeCode, Duration delay = const Duration(seconds: 5)})`, `Future<Either<Failure, ReliabilityStatus>> getReliabilityStatus()`, `ackMissedAlerts()`, `openSystemSettings(SystemSettingsTarget target)`, `previewSound({required PreviewSound sound, required PrayerName prayer})`, `stopPreview()`; all others return `Either<Failure, Unit>`.
-  - Use cases (lazy singletons): `GetReliabilityStatus` (`NoParams`), `AckMissedAlerts` (`NoParams`), `OpenSystemSettings` (`SystemSettingsTarget`), `PreviewAlertSound` (`PreviewAlertSoundParams({required PreviewSound sound, required PrayerName prayer})`), `StopAlertPreview` (`NoParams`), `ScheduleTestAdhan` (`ScheduleTestAdhanParams({required PrayerAlert alert, required String localeCode})`).
+  - `NotificationsRepository`: `scheduleDailyAdhans({required List<PrayerTimes> days, required Map<PrayerName, PrayerAlert> alerts, required String localeCode})`, `schedulePrayerReminders({same})`, `scheduleTestAdhan({required PrayerAlert alert, required String localeCode, Duration delay = const Duration(seconds: 5)})`, `Future<Either<Failure, ReliabilityStatus>> getReliabilityStatus()`, `ackMissedAlerts({required DateTime upTo})`, `openSystemSettings(SystemSettingsTarget target)`, `previewSound({required PreviewSound sound, required PrayerName prayer})`, `stopPreview()`; all others return `Either<Failure, Unit>`.
+  - Use cases (lazy singletons): `GetReliabilityStatus` (`NoParams`), `AckMissedAlerts` (`AckMissedAlertsParams({required DateTime upTo})`), `OpenSystemSettings` (`SystemSettingsTarget`), `PreviewAlertSound` (`PreviewAlertSoundParams({required PreviewSound sound, required PrayerName prayer})`), `StopAlertPreview` (`NoParams`), `ScheduleTestAdhan` (`ScheduleTestAdhanParams({required PrayerAlert alert, required String localeCode})`).
   - `SyncDailyAdhansParams({required List<PrayerTimes> days, required Map<PrayerName, PrayerAlert> alerts, required String localeCode})` (no `audio`, no maps).
-  - Data source: `scheduleDailyAdhans({required List<Map<String, dynamic>> days, required Map<String, Map<String, Object>> alerts, required String localeCode})`, `schedulePrayerReminders({days, required Map<String, Map<String, Object>> reminders, localeCode})`, `scheduleTestAdhan({Duration delay, String localeCode, required String sound, required bool ringInSilent})`, `Future<Map<String, Object?>> getReliabilityStatus()`, `ackMissed()`, `openSystemSettings(String target)`, `previewSound({required String sound, required String prayer})`, `stopPreview()`.
+  - Data source: `scheduleDailyAdhans({required List<Map<String, dynamic>> days, required Map<String, Map<String, Object>> alerts, required String localeCode})`, `schedulePrayerReminders({days, required Map<String, Map<String, Object>> reminders, localeCode})`, `scheduleTestAdhan({Duration delay, String localeCode, required String sound, required bool ringInSilent})`, `Future<Map<String, Object?>> getReliabilityStatus()`, `ackMissed({required int upTo})` (sends `{'upTo': upTo}`), `openSystemSettings(String target)`, `previewSound({required String sound, required String prayer})`, `stopPreview()`.
 
 - [ ] **Step 1: Write the failing data-source tests** (replace the two tests at `notifications_native_data_source_test.dart:65-84` and `:103-121`, which use the removed `clipAssetByPrayer`/`volume`/`remindersByPrayer`; keep the strip, cancel and missing-plugin tests)
 
@@ -373,7 +374,7 @@ test('iOS: getReliabilityStatus is Right with the permission flag', () async {
   expect(r, const Right(ReliabilityStatus.ios(notificationsEnabled: false)));
   debugDefaultTargetPlatformOverride = null;
 });
-test('iOS: openSystemSettings, previewSound, ackMissedAlerts are Right no-ops', () async { ... verifyZeroInteractions(native) ... });
+test('iOS: openSystemSettings, previewSound, ackMissedAlerts(upTo: …) are Right no-ops', () async { ... verifyZeroInteractions(native) ... });
 test('Android: getReliabilityStatus maps PlatformNotImplemented to Left(PlatformNotSupportedFailure)', () async { ... });
 ```
 
@@ -713,9 +714,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: Task 3 rows `getReliabilityStatus`, `ackMissed`, `openSystemSettings`; Task 4 `AlertStore`, `AlertPlanner.detectMisses`, `lateSince`, `snapshotUntil`, `parseAdhanSnapshot`, `AdhanScheduler.USE_ALARM_CLOCK`; Task 5 `AlertPlanner.routeChannels`, `AlertChannels.isBlocked`.
 - Produces:
-  - Pure: `AlertPlanner.isXiaomi(manufacturer: String?, brand: String?): Boolean` (lower-cased ∈ {xiaomi, redmi, poco}); `data class IntentSpec(val action: String?, val pkg: String?, val cls: String?, val extras: Map<String, String>)`; `AlertPlanner.settingsCandidates(target: String, packageName: String, label: String): List<IntentSpec>` (last entry always app details).
-  - `object ReliabilityReader { fun read(context): Map<String, Any?> }` returning exactly the Task 3 keys; `fun ack(context)` sets `last_checked_at = now`.
-  - `object SystemSettingsLauncher { fun open(context, target: String) }`.
+  - Pure: `AlertPlanner.isXiaomi(manufacturer: String?, brand: String?): Boolean` (lower-cased ∈ {xiaomi, redmi, poco}); `data class IntentSpec(val action: String?, val pkg: String?, val cls: String?, val extras: Map<String, String>)`; `AlertPlanner.settingsCandidates(target: String, packageName: String, label: String, sdk: Int): List<IntentSpec>` (last entry always app details; below API 26 `notifications` goes straight to app details, because `APP_NOTIFICATION_SETTINGS` there reads `app_package`/`app_uid` and closes at once); `AlertPlanner.ackCheckpoint(current: Long?, upTo: Long): Long` = max(current, upTo).
+  - `object ReliabilityReader { fun read(context): Map<String, Any?> }` returning exactly the Task 3 keys; `fun ack(context, upTo: Long)` sets `last_checked_at = max(current, upTo)`, where `upTo` is the newest trigger time the user was shown.
+  - `object SystemSettingsLauncher { fun open(context, target: String): Boolean }` (true when a screen opened).
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -727,23 +728,23 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     assertFalse(AlertPlanner.isXiaomi(null, null))
 }
 @Test fun autostartCandidatesInSpecOrder() {
-    val c = AlertPlanner.settingsCandidates("autostart", "com.example.quran_app", "Al-Furqan")
+    val c = AlertPlanner.settingsCandidates("autostart", "com.example.quran_app", "Al-Furqan", 34)
     assertEquals("com.miui.permcenter.autostart.AutoStartManagementActivity", c[0].cls)
     assertEquals("com.miui.permcenter.permissions.PermissionsEditorActivity", c[1].cls)
     assertEquals("com.example.quran_app", c[1].extras["extra_pkgname"])
     assertEquals("android.settings.APPLICATION_DETAILS_SETTINGS", c.last().action)
 }
 @Test fun xiaomiBatteryFallsBackToBatteryThenDetails() {
-    val c = AlertPlanner.settingsCandidates("xiaomiBattery", "com.example.quran_app", "Al-Furqan")
+    val c = AlertPlanner.settingsCandidates("xiaomiBattery", "com.example.quran_app", "Al-Furqan", 34)
     assertEquals("com.miui.powerkeeper.ui.HiddenAppsConfigActivity", c[0].cls)
     assertEquals(mapOf("package_name" to "com.example.quran_app", "package_label" to "Al-Furqan"), c[0].extras)
     assertEquals("android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS", c[1].action)
     assertEquals("android.settings.APPLICATION_DETAILS_SETTINGS", c[2].action)
 }
 @Test fun notificationsAndExactAlarmTargets() {
-    assertEquals("android.settings.APP_NOTIFICATION_SETTINGS", AlertPlanner.settingsCandidates("notifications", "p", "l")[0].action)
-    assertEquals("android.settings.REQUEST_SCHEDULE_EXACT_ALARM", AlertPlanner.settingsCandidates("exactAlarm", "p", "l")[0].action)
-    assertEquals(1, AlertPlanner.settingsCandidates("bogus", "p", "l").size)
+    assertEquals("android.settings.APP_NOTIFICATION_SETTINGS", AlertPlanner.settingsCandidates("notifications", "p", "l", 34)[0].action)
+    assertEquals("android.settings.REQUEST_SCHEDULE_EXACT_ALARM", AlertPlanner.settingsCandidates("exactAlarm", "p", "l", 34)[0].action)
+    assertEquals(1, AlertPlanner.settingsCandidates("bogus", "p", "l", 34).size)
 }
 ```
 
@@ -756,9 +757,9 @@ Expected: compilation failure.
 
 - [ ] **Step 3: Implement**
 
-- `ReliabilityReader.read` runs on the executor (the plugin posts to `AlertStore` and replies on the main looper). Fields: `notificationsEnabled` from `NotificationManagerCompat.areNotificationsEnabled`; `channelBlocked` = any channel in the union of `routeChannels(spec.sound)` over the stored adhan snapshot's alerts, plus `prayer_adhan_channel`, is blocked; `exactAlarmsAllowed` = `canScheduleExactAlarms()` on API 31+, `true` below, and `true` on API 33+ because `USE_EXACT_ALARM` is declared; `batteryUnrestricted` = `PowerManager.isIgnoringBatteryOptimizations(packageName)`; `isXiaomi(Build.MANUFACTURER, Build.BRAND)`; `scheduledUntil` = `scheduled_until` or `null`; `snapshotUntil` = `snapshotUntil(days)`; `missed` = `detectMisses(readArmed, readRecords, last_checked_at, last_boot_handled_at, last_clock_change_at, now)` and `late` = `lateSince(records, last_checked_at)`, each as `[{prayer, at}]`; `usesAlarmClock = AdhanScheduler.USE_ALARM_CLOCK`.
+- `ReliabilityReader.read` runs on the executor (the plugin posts to `AlertStore` and replies on the main looper). Fields: `notificationsEnabled` from `NotificationManagerCompat.areNotificationsEnabled`; `channelBlocked` = any channel in the union of `routeChannels(spec.sound)` over the stored adhan snapshot's alerts, plus `prayer_adhan_channel`, is blocked; `exactAlarmsAllowed` = `canScheduleExactAlarms()` on API 31+ (it reads true on API 33+ while `USE_EXACT_ALARM` is declared), `true` below; `batteryUnrestricted` = `PowerManager.isIgnoringBatteryOptimizations(packageName)`; `isXiaomi(Build.MANUFACTURER, Build.BRAND)`; `scheduledUntil` = `scheduled_until` or `null`; `snapshotUntil` = `snapshotUntil(days)`; `missed` = `detectMisses(readArmed, readRecords, last_checked_at, last_boot_handled_at, last_clock_change_at, now)` and `late` = `lateSince(records, last_checked_at)`, each as `[{prayer, at}]`; `usesAlarmClock = AdhanScheduler.USE_ALARM_CLOCK`.
 - `SystemSettingsLauncher.open`: for each `IntentSpec` build an `Intent` (action or explicit component, extras, `data = package:<pkg>` for app details, notification settings get `Settings.EXTRA_APP_PACKAGE`, `FLAG_ACTIVITY_NEW_TASK`) and `startActivity`; catch `ActivityNotFoundException` and `SecurityException` and try the next one.
-- Plugin: `getReliabilityStatus` → `result.success(map)`; `ackMissed` → `ReliabilityReader.ack`; `openSystemSettings` → `SystemSettingsLauncher.open(ctx, target)`.
+- Plugin: `getReliabilityStatus` → `result.success(map)`; `ackMissed` → `ReliabilityReader.ack(ctx, upTo)` (missing `upTo` → `BAD_ARGS`); `openSystemSettings` → `result.success(SystemSettingsLauncher.open(ctx, target))`.
 - Manifest `<queries>`: add `<package android:name="com.miui.securitycenter" />` and `<package android:name="com.miui.powerkeeper" />` beside the existing `PROCESS_TEXT` intent.
 
 - [ ] **Step 4: Run the Kotlin tests and compile**
@@ -949,7 +950,7 @@ Widget files live beside the page that uses them. `NotificationsSettingsPage` an
   - `AppSettingsTile({Key? key, required String title, String? subtitle, Widget? leading, Widget? trailing, VoidCallback? onTap, bool enabled = true})`: min height 48, `EdgeInsetsDirectional` padding 16, `TS.bold16`/`TS.regular14`, 38% opacity and no tap when disabled. Replaces `_ReadingSettingsRow` and `_NotificationRow`.
   - `class AppOption<T> { const AppOption({required this.value, required this.label, this.subtitle, this.leading, this.trailing}); }` and `Future<void> showAppOptionSheet<T>({required BuildContext context, required String title, required List<AppOption<T>> options, required T selected, required ValueChanged<T> onSelected, Widget? footer, VoidCallback? onClosed})`: modal bottom sheet, `RadioGroup<T>` over `RadioListTile<T>` rows with `secondary` = `trailing`, then `footer` under the rows when non-null; selecting calls `onSelected` and pops; `onClosed` runs once when the sheet is dismissed by any means (`.whenComplete`).
   - `enum AlertsStatusKind { allOff, off, attention, ok, okNoDate }`; `AlertsStatusKind resolveAlertsStatus({required int enabledCount, required ReliabilityStatus status, required bool isAndroid, required DateTime now})`.
-  - `ReliabilityCubit(GetReliabilityStatus, AckMissedAlerts, OpenSystemSettings)` factory; states `sealed ReliabilityState`, `ReliabilityLoading`, `ReliabilityLoaded(ReliabilityStatus status)`, `ReliabilityUnavailable`; methods `Future<void> load()`, `Future<void> ackMissed()`, `Future<void> openSettings(SystemSettingsTarget target)`; reloads on resume through an `AppLifecycleListener` disposed in `close()`; `load()` runs in the constructor.
+  - `ReliabilityCubit(GetReliabilityStatus, AckMissedAlerts, OpenSystemSettings)` factory; states `sealed ReliabilityState`, `ReliabilityLoading`, `ReliabilityLoaded(ReliabilityStatus status)`, `ReliabilityUnavailable`; methods `Future<void> load()`, `Future<void> ackMissed(ReliabilityStatus shown)` (calls `AckMissedAlerts` with `upTo` = the newest `at` across `shown.missed` and `shown.late`; no call when both are empty), `Future<void> openSettings(SystemSettingsTarget target)`; reloads on resume through an `AppLifecycleListener` disposed in `close()`; `load()` runs in the constructor.
   - `SoundPreviewCubit(PreviewAlertSound, StopAlertPreview) extends Cubit<PreviewSound?>`: `play(PreviewSound sound, PrayerName prayer)` (playing the same sound again stops it), `stop()`, `close()` stops.
   - `TodayPrayerTimesCubit(GetCachedPrayerDays) extends Cubit<PrayerTimes?>`: `load()` reads `maxDays: 1`.
   - `enum_localization.dart`: `String prayerLabel(BuildContext context, PrayerName p)` (existing `S.of(context).fajr`…), `String prayerSoundLabel(PendingS s, PrayerSound sound, {required PrayerName prayer, required bool ios})` (adhan → `alerts_sound_fajrAdhan`/`alerts_sound_adhan`, clip variants on iOS), `String reminderSoundLabel(PendingS s, ReminderSound sound)`, `String minutesLabel(PendingS s, int minutes, String localeCode)`, `String enabledCountLabel(PendingS s, int count, String localeCode)`, `String alertSummary(PendingS s, PrayerAlert a, {required PrayerName prayer, required bool ios, required String localeCode})`, `HugeIcon`-ready `List<List<dynamic>> prayerAlertIcon(PrayerAlert a)` (`strokeRoundedVolumeHigh` for adhan, `strokeRoundedNotification01` for tone/vibrate, `strokeRoundedNotificationOff01` for off or silent). Every number goes through `toIndicNumerals(localeCode)`.
@@ -1008,7 +1009,8 @@ blocTest<ReliabilityCubit, ReliabilityState>('loads on create',
   build: () { when(() => get(any())).thenAnswer((_) async => Right(status)); return cubit(); },
   expect: () => [ReliabilityLoaded(status)]);
 blocTest<ReliabilityCubit, ReliabilityState>('failure emits unavailable', ... expect: () => [const ReliabilityUnavailable()]);
-blocTest<ReliabilityCubit, ReliabilityState>('ackMissed acks then reloads', act: (c) => c.ackMissed(), verify: (_) { verify(() => ack(any())).called(1); verify(() => get(any())).called(2); });
+blocTest<ReliabilityCubit, ReliabilityState>('ackMissed acks up to the newest shown alert then reloads', act: (c) => c.ackMissed(statusWithIshaMissAndAsrLate), verify: (_) { verify(() => ack(AckMissedAlertsParams(upTo: newestOfTheTwo))).called(1); verify(() => get(any())).called(2); });
+blocTest<ReliabilityCubit, ReliabilityState>('ackMissed with nothing shown does not ack', act: (c) => c.ackMissed(status), verify: (_) => verifyNever(() => ack(any())));
 blocTest<SoundPreviewCubit, PreviewSound?>('play then play same stops', act: (c) { c.play(PreviewSound.adhan, PrayerName.fajr); c.play(PreviewSound.adhan, PrayerName.fajr); }, expect: () => [PreviewSound.adhan, null]);
 test('SoundPreviewCubit.close stops the preview', () async { await cubit.close(); verify(() => stop(any())).called(1); });
 ```
@@ -1253,7 +1255,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Test: `test/features/notifications/domain/services/alerts_prompt_picker_test.dart`, `test/features/notifications/presentation/pages/reliability_page_test.dart`, `test/features/notifications/presentation/pages/widgets/alerts_prompt_gate_test.dart`, `test/features/onboarding/alerts_step_test.dart`, `test/features/onboarding/apply_alerts_choice_test.dart`
 
 **Interfaces:**
-- Consumes: `ReliabilityCubit` (`load`, `ackMissed`, `openSettings`), `AppSettingsTile`, `AppStatusBadge`, `TestAdhanButton`, `AlertsStatusLine({onTap})` (Task 8); `SettingsCubit.markAlertsIntroSeen`, `applyAlertToAll`, `setXiaomiAutostartConfirmed`, `setXiaomiBatteryConfirmed`, `clearXiaomiConfirmations`, `completeOnboarding` (Task 2); `ReliabilityStatus`, `SystemSettingsTarget` (Task 3).
+- Consumes: `ReliabilityCubit` (`load`, `ackMissed(ReliabilityStatus shown)`, `openSettings`), `AppSettingsTile`, `AppStatusBadge`, `TestAdhanButton`, `AlertsStatusLine({onTap})` (Task 8); `SettingsCubit.markAlertsIntroSeen`, `applyAlertToAll`, `setXiaomiAutostartConfirmed`, `setXiaomiBatteryConfirmed`, `clearXiaomiConfirmations`, `completeOnboarding` (Task 2); `ReliabilityStatus`, `SystemSettingsTarget` (Task 3).
 - Produces: `enum AlertsPrompt { upgrade, missed, late }`; `({AlertsPrompt prompt, PrayerName? prayer})? pickAlertsPrompt({required bool alertsIntroSeen, required bool onboardingComplete, required ReliabilityStatus status})`; `AppRouter.alertsReliabilityPath`; `ReliabilityPage()`; `XiaomiChecklist({required bool autostartConfirmed, required bool batteryConfirmed})`; `AlertsPromptGate({required Widget child})`; `UpgradeSheet.show(BuildContext, {required bool isXiaomi})`; `MissedSheet.show(BuildContext, {required AlertsPrompt kind, required PrayerName prayer, required bool isXiaomi})`; `AlertsStep({required ValueChanged<AlertsChoice> onChanged})` with `class AlertsChoice extends Equatable { const AlertsChoice({this.sound, this.reminderMinutes}); final PrayerSound? sound; final int? reminderMinutes; }` (`props` = both fields) (`sound == null` = «بدون تنبيه», `reminderMinutes == null` = none); `void applyAlertsChoice(SettingsCubit cubit, AlertsChoice choice)` (pure mapping onto `applyAlertToAll`); `XiaomiStep()`.
 
 - [ ] **Step 1: Write the failing picker tests**
@@ -1306,7 +1308,7 @@ group('applyAlertsChoice', () {
 
 Widget tests that use a real `SettingsCubit` install storage with `setUpAll(() => HydratedBloc.storage = _MemStorage())` (a local copy of the private `_MemStorage` in `settings_cubit_test.dart`) and share one cubit per file through `setUp(() async { await HydratedBloc.storage.clear(); settingsCubit = SettingsCubit(); })`.
 
-- `alerts_prompt_gate_test.dart`: with `alertsIntroSeen: true` and a loaded status holding one Isha miss on Xiaomi, the gate shows one sheet with «فاتك تنبيه العشاء» and `missed_body`, calls `ackMissed` once, and both Xiaomi flags read `false` afterwards; on a non-Xiaomi status the body is `missed_bodyGeneric` and the flags are untouched; with `alertsIntroSeen: false` it shows `upg_title`, sets `alertsIntroSeen`, and shows no missed sheet in the same session; a second rebuild shows nothing more.
+- `alerts_prompt_gate_test.dart`: with `alertsIntroSeen: true` and a loaded status holding one Isha miss on Xiaomi, the gate shows one sheet with «فاتك تنبيه العشاء» and `missed_body`, calls `ackMissed` once with the status it showed, and both Xiaomi flags read `false` afterwards; on a non-Xiaomi status the body is `missed_bodyGeneric` and the flags are untouched; with `alertsIntroSeen: false` it shows `upg_title`, sets `alertsIntroSeen`, and shows no missed sheet in the same session; a second rebuild shows nothing more.
 - `reliability_page_test.dart`: a blocked notifications row shows `rel_needsAction`, `rel_blocked` and «فتح الإعداد», and tapping it calls `openSettings(SystemSettingsTarget.notifications)`; `channelBlocked` alone also reads blocked; Xiaomi rows show the «تمّ» button until confirmed, then the `rel_done` badge while «فتح الإعداد» stays (both read «تمّ», so assert with `find.widgetWithText(TextButton, 'تمّ')` and `find.widgetWithText(AppStatusBadge, 'تمّ')`, never a bare `find.text`); confirming calls `load()` on the cubit; non-Xiaomi hides the Xiaomi section; iOS (`debugDefaultTargetPlatformOverride`) shows only the notifications row and the test button; `scheduledUntil == null` shows `rel_scheduledNone`.
 - `alerts_step_test.dart` (the step alone, no cubit): picking «بدون تنبيه» makes the reminder chips inert (`onSelected` null); picking tone then chip 15 makes the last `onChanged` payload `AlertsChoice(sound: PrayerSound.tone, reminderMinutes: 15)`. The cubit mapping is covered by `apply_alerts_choice_test.dart`.
 
@@ -1319,7 +1321,7 @@ Expected: compile errors.
 
 - `ReliabilityPage` (route provides `ReliabilityCubit`): rows for notifications (blocked when `!notificationsEnabled || channelBlocked`, target `notifications`), exact alarms (`exactAlarm`), battery (`rel_batteryRestricted`/`rel_batteryUnrestricted`, hint `rel_batteryHint`, target `battery`); each row an `AppSettingsTile` with an `AppStatusBadge` (`rel_working` with `color: context.colorScheme.primary`, `rel_needsAction` with `color: context.colorScheme.onSurfaceVariant`; never `error`, per Appendix C) and an action only when blocked. Xiaomi section (`rel_xiaomiSection`, `rel_unverifiable`) holds `XiaomiChecklist`. Then «مجدولة حتى …» (`rel_scheduledUntil(date)` or `rel_scheduledNone`, subtitle `rel_scheduledSub`) and `TestAdhanButton`. On iOS only the notifications row and the test button render.
 - `XiaomiChecklist`: autostart (`rel_autostart`/`rel_autostartSub`, target `autostart`) and battery saver (`rel_xiaomiBattery`/`rel_xiaomiBatterySub`, target `xiaomiBattery`), each with «فتح الإعداد» and a «تمّ» `TextButton` (calls the matching `setXiaomi…Confirmed(true)` then `context.read<ReliabilityCubit>().load()` unconditionally: both hosts, the reliability route and the onboarding route, provide the cubit); a confirmed row replaces the button with an `AppStatusBadge(label: rel_done, color: context.colorScheme.primary)`; third row `rel_lockApp`/`rel_lockAppSub` is text only.
-- `AlertsPromptGate`: provides `BlocProvider(create: (_) => sl<ReliabilityCubit>())`; a `BlocListener` with `listenWhen: (p, c) => p is ReliabilityLoading && c is! ReliabilityLoading` shows at most one sheet per gate lifetime (guard with a `bool` in the gate's `State`), using `pickAlertsPrompt`. Upgrade: `markAlertsIntroSeen()` when shown. Missed/late: `ackMissed()` when shown, and on Xiaomi `clearXiaomiConfirmations()`.
+- `AlertsPromptGate`: provides `BlocProvider(create: (_) => sl<ReliabilityCubit>())`; a `BlocListener` with `listenWhen: (p, c) => p is ReliabilityLoading && c is! ReliabilityLoading` shows at most one sheet per gate lifetime (guard with a `bool` in the gate's `State`), using `pickAlertsPrompt`. Upgrade: `markAlertsIntroSeen()` when shown. Missed/late: `ackMissed(status)` with the status the sheet was built from, when shown, and on Xiaomi `clearXiaomiConfirmations()`.
 - `UpgradeSheet`: `upg_title`, `upg_silent`, `upg_reminder`, `upg_xiaomi` (Xiaomi only); «مراجعة الإعدادات» pushes `notificationsPath` and, on Xiaomi, then `alertsReliabilityPath` on top; «لاحقًا» (`onb_later`) closes.
 - `MissedSheet`: title `missed_title(prayerLabel)` or `late_title(prayerLabel)`; body `missed_body` (Xiaomi) or `missed_bodyGeneric`; «إصلاح الآن» (`missed_fix`) pushes `alertsReliabilityPath`; «لاحقًا» closes.
 - `HomePage`: `child: _StripResumeGuard(child: AlertsPromptGate(child: HomeView()))`.

@@ -38,7 +38,7 @@ abstract class NotificationsRepository {
   });
 
   Future<Either<Failure, ReliabilityStatus>> getReliabilityStatus();
-  Future<Either<Failure, Unit>> ackMissedAlerts();
+  Future<Either<Failure, Unit>> ackMissedAlerts({required DateTime upTo});
   Future<Either<Failure, Unit>> openSystemSettings(SystemSettingsTarget target);
   Future<Either<Failure, Unit>> previewSound({
     required PreviewSound sound,

@@ -36,7 +36,7 @@ abstract class NotificationsNativeDataSource {
     required bool ringInSilent,
   });
   Future<Map<String, Object?>> getReliabilityStatus();
-  Future<void> ackMissed();
+  Future<void> ackMissed({required int upTo});
   Future<void> openSystemSettings(String target);
   Future<void> previewSound({required String sound, required String prayer});
   Future<void> stopPreview();
@@ -120,7 +120,8 @@ class NotificationsNativeDataSourceImpl
   }
 
   @override
-  Future<void> ackMissed() => _invoke('ackMissed');
+  Future<void> ackMissed({required int upTo}) =>
+      _invoke('ackMissed', {'upTo': upTo});
 
   @override
   Future<void> openSystemSettings(String target) =>

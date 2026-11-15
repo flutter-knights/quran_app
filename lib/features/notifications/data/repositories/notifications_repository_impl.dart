@@ -213,8 +213,10 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> ackMissedAlerts() =>
-      _runAndroidOnly(native.ackMissed);
+  Future<Either<Failure, Unit>> ackMissedAlerts({required DateTime upTo}) =>
+      _runAndroidOnly(
+        () => native.ackMissed(upTo: upTo.millisecondsSinceEpoch),
+      );
 
   @override
   Future<Either<Failure, Unit>> openSystemSettings(

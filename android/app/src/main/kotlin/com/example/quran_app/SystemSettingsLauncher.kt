@@ -4,18 +4,19 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 
 object SystemSettingsLauncher {
 
     private const val TAG = "SystemSettings"
 
-    fun open(context: Context, target: String) {
+    fun open(context: Context, target: String): Boolean {
         val label = runCatching { context.applicationInfo.loadLabel(context.packageManager).toString() }.getOrDefault(context.packageName)
-        for (spec in AlertPlanner.settingsCandidates(target, context.packageName, label)) {
+        for (spec in AlertPlanner.settingsCandidates(target, context.packageName, label, Build.VERSION.SDK_INT)) {
             try {
                 context.startActivity(intentFor(spec))
-                return
+                return true
             } catch (e: ActivityNotFoundException) {
                 Log.w(TAG, "open: $target unavailable via ${spec.cls ?: spec.action}")
             } catch (e: SecurityException) {
@@ -23,6 +24,7 @@ object SystemSettingsLauncher {
             }
         }
         Log.e(TAG, "open: no settings screen for $target")
+        return false
     }
 
     private fun intentFor(spec: AlertPlanner.IntentSpec) = Intent().apply {

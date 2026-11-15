@@ -33,12 +33,13 @@ void main() {
     );
   });
 
-  test('AckMissedAlerts delegates to ackMissedAlerts', () async {
+  test('AckMissedAlerts passes upTo', () async {
+    final upTo = DateTime(2026, 11, 15, 12);
     when(
-      () => repo.ackMissedAlerts(),
+      () => repo.ackMissedAlerts(upTo: upTo),
     ).thenAnswer((_) async => const Right(unit));
-    await AckMissedAlerts(repository: repo)(NoParams());
-    verify(() => repo.ackMissedAlerts()).called(1);
+    await AckMissedAlerts(repository: repo)(AckMissedAlertsParams(upTo: upTo));
+    verify(() => repo.ackMissedAlerts(upTo: upTo)).called(1);
   });
 
   test('OpenSystemSettings passes the target', () async {

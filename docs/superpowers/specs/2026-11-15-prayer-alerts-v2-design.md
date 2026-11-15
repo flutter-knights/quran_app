@@ -213,8 +213,8 @@ The reminder sets `setTimeoutAfter(prayerTime − now)` (API 26+), and the recei
 - The 24 h reach covers a user who opens the app the morning after a killed evening. The armed log is independent of the snapshot, so the order of sync and status read doesn't matter.
 - Records and armed-log entries older than 48 h are pruned on every write.
 - Triggers before `lastBootHandledAt` are never reported: a reboot wipes alarms, and on encrypted phones BOOT_COMPLETED only arrives after the first unlock, so a trigger between a night-time reboot and the morning unlock is lost without the app being at fault. Direct-boot support is out of scope (§13).
-- `ackMissed` advances `lastCheckedAt`. The missed sheet acks when it shows, so each miss or late delivery is surfaced once; afterwards the status line no longer reflects it and the reliability page carries the fix.
-- The other fields come from `NotificationManagerCompat.areNotificationsEnabled`, `AlarmManager.canScheduleExactAlarms` (API 31+, else true), `PowerManager.isIgnoringBatteryOptimizations`, and `Build.MANUFACTURER`/`BRAND` lower-cased ∈ {xiaomi, redmi, poco}. On API 33+ with `USE_EXACT_ALARM` declared, exact alarms always read allowed.
+- `ackMissed(upTo)` sets `lastCheckedAt` = max(current, upTo), where `upTo` is the newest trigger time the user was shown (the newest `at` across the `missed` and `late` items the sheet displayed). The max keeps it monotonic, so a clock moved back never lowers it, and a trigger not yet judged at ack time, or one that becomes reportable between the status read and the ack, is still reported later. The missed sheet acks when it shows, so each miss or late delivery is surfaced once; afterwards the status line no longer reflects it and the reliability page carries the fix.
+- The other fields come from `NotificationManagerCompat.areNotificationsEnabled`, `AlarmManager.canScheduleExactAlarms` (API 31+, else true), `PowerManager.isIgnoringBatteryOptimizations`, and `Build.MANUFACTURER`/`BRAND` lower-cased ∈ {xiaomi, redmi, poco}. On API 31+ the value is always `canScheduleExactAlarms()`, which reads true on API 33+ while `USE_EXACT_ALARM` is declared.
 
 ### Settings intents
 
@@ -256,7 +256,7 @@ The reminder sets `setTimeoutAfter(prayerTime − now)` (API 26+), and the recei
 - `NotificationsRepository.scheduleDailyAdhans` and `schedulePrayerReminders` take `Map<PrayerName, PrayerAlert>` instead of the two maps. `SyncDailyAdhans` keeps its shape with `alerts`. Reminders for disabled prayers are never sent.
 - New repository calls (with use cases):
   - `getReliabilityStatus()`
-  - `ackMissedAlerts()`
+  - `ackMissedAlerts(upTo: DateTime)` (the newest `at` among the missed and late items shown)
   - `openSystemSettings(SystemSettingsTarget)`
   - `previewSound(PrayerSound|ReminderSound, PrayerName)` / `stopPreview()`
 - On iOS each call returns `Right`: `getReliabilityStatus` gives `notificationsEnabled` from the plugin's permission check, `exactAlarmsAllowed` and `batteryUnrestricted` true, `isXiaomi` false, `scheduledUntil` the last scheduled iOS adhan and no misses; the other calls are no-ops. No `Failure` reaches the UI for an unsupported call.
@@ -303,7 +303,7 @@ Copy is in Appendix A and states in Appendix C.
   - «مجدولة حتى …» and the test button.
 - Prompts: `AlertsPromptGate` wraps `HomeView`, provides a `ReliabilityCubit` and, after its first load, shows at most one modal sheet:
   - The upgrade sheet if `!alertsIntroSeen` and onboarding is complete, then marks it seen.
-  - Else the missed sheet if `missed` or `late` is not empty (ack on show acknowledges both). Its title is `missed_title` for a miss, else `late_title`, naming the most recent prayer. Its body is `missed_body` on Xiaomi and `missed_bodyGeneric` elsewhere. On Xiaomi, showing it clears `xiaomiAutostartConfirmed` and `xiaomiBatteryConfirmed` (MIUI can revert those settings, e.g. after an update), so the checklist asks again. Confirmed Xiaomi rows keep their «فتح الإعداد» action.
+  - Else the missed sheet if `missed` or `late` is not empty (ack on show acknowledges both, up to the newest `at` among them). Its title is `missed_title` for a miss, else `late_title`, naming the most recent prayer. Its body is `missed_body` on Xiaomi and `missed_bodyGeneric` elsewhere. On Xiaomi, showing it clears `xiaomiAutostartConfirmed` and `xiaomiBatteryConfirmed` (MIUI can revert those settings, e.g. after an update), so the checklist asks again. Confirmed Xiaomi rows keep their «فتح الإعداد» action.
 - Home's own widgets are unchanged.
 - Onboarding: after the notification-permission step, insert «تنبيهات الصلاة»: the choice applies to all 5 prayers (adhan → `enabled` + `sound = adhan`; tone → `enabled` + `sound = tone`; «بدون تنبيه» → `enabled = false`), and the reminder chips none/5/10/15/30 set `reminderEnabled` and `reminderMinutes`. On Xiaomi only, add the reliability step next; it reuses the Xiaomi checklist widget from `ReliabilityPage`. Completion sets `alertsIntroSeen`.
 - New shared widgets: `core/widgets/design/app_settings_tile.dart` (replaces the private `_ReadingSettingsRow` and `_NotificationRow` in settings_page.dart) and `app_option_sheet.dart` (`showAppOptionSheet<T>`; no generic pick-one sheet exists today), registered in `core-widgets.md`.

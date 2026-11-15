@@ -190,11 +190,29 @@ void main() {
     expect(calls.single.arguments, {'sound': 'adhan', 'prayer': 'fajr'});
   });
 
-  test('ackMissed and stopPreview invoke the channel', () async {
-    await ds.ackMissed();
-    await ds.stopPreview();
-    expect(calls.map((c) => c.method), ['ackMissed', 'stopPreview']);
+  test('ackMissed sends upTo', () async {
+    await ds.ackMissed(upTo: 1763190000000);
+    expect(calls.single.method, 'ackMissed');
+    expect(calls.single.arguments, {'upTo': 1763190000000});
   });
+
+  test('stopPreview invokes the channel', () async {
+    await ds.stopPreview();
+    expect(calls.single.method, 'stopPreview');
+  });
+
+  test(
+    'openSystemSettings completes when native replies with a bool',
+    () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            return false;
+          });
+      await ds.openSystemSettings('autostart');
+      expect(calls.single.arguments, {'target': 'autostart'});
+    },
+  );
 
   test('cancelAllReminders invokes the channel', () async {
     await ds.cancelAllReminders();

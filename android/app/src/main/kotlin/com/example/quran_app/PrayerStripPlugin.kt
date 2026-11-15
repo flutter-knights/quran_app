@@ -47,7 +47,7 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "schedulePrayerReminders" -> handleSchedulePrayerReminders(ctx, call, result)
             "cancelAllReminders" -> handleCancelAllReminders(ctx, result)
             "getReliabilityStatus" -> replyFromStore(ctx, result) { ReliabilityReader.read(it) }
-            "ackMissed" -> runInStore(ctx, result) { ReliabilityReader.ack(it) }
+            "ackMissed" -> handleAckMissed(ctx, call, result)
             "openSystemSettings" -> handleOpenSystemSettings(ctx, call, result)
             "previewSound" -> handlePreviewSound(ctx, call, result)
             "stopPreview" -> {
@@ -137,8 +137,16 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             result.error("BAD_ARGS", "Expected {target}", null)
             return
         }
-        SystemSettingsLauncher.open(ctx, target)
-        result.success(null)
+        result.success(SystemSettingsLauncher.open(ctx, target))
+    }
+
+    private fun handleAckMissed(ctx: Context, call: MethodCall, result: MethodChannel.Result) {
+        val upTo = ((call.arguments as? Map<*, *>)?.get("upTo") as? Number)?.toLong()
+        if (upTo == null) {
+            result.error("BAD_ARGS", "Expected {upTo}", null)
+            return
+        }
+        runInStore(ctx, result) { ReliabilityReader.ack(it, upTo) }
     }
 
     private fun handlePreviewSound(ctx: Context, call: MethodCall, result: MethodChannel.Result) {
@@ -182,7 +190,7 @@ class PrayerStripPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         AlertStore.post(ctx) {
             val outcome = try {
                 Result.success(block(it))
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Log.e(TAG, "replyFromStore: failed", e)
                 Result.failure(e)
             }
