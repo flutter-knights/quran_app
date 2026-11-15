@@ -40,9 +40,7 @@ void initNotifications() {
   sl.registerLazySingleton(() => PreviewAlertSound(repository: sl()));
   sl.registerLazySingleton(() => StopAlertPreview(repository: sl()));
   sl.registerLazySingleton(() => ScheduleTestAdhan(repository: sl()));
-  sl.registerLazySingleton(
-    () => BuildPrayerStripWindow(prayerTimesRepository: sl()),
-  );
+  sl.registerLazySingleton(() => BuildPrayerStripWindow());
   sl.registerLazySingleton(
     () => GetCachedPrayerDays(prayerTimesRepository: sl()),
   );

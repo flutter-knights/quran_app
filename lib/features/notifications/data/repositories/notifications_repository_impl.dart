@@ -16,10 +16,12 @@ import 'package:quran_app/features/notifications/domain/repositories/notificatio
 class NotificationsRepositoryImpl implements NotificationsRepository {
   final NotificationsNativeDataSource native;
   final PrayerNotificationScheduler legacyScheduler;
+  final DateTime Function() clock;
 
   NotificationsRepositoryImpl({
     required this.native,
     required this.legacyScheduler,
+    this.clock = DateTime.now,
   });
 
   bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -69,11 +71,11 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
 
   @override
   Future<Either<Failure, Unit>> enableStrip(PrayerStripWindow window) =>
-      _run(() => native.enableStrip(window));
+      _runAndroidOnly(() => native.enableStrip(window));
 
   @override
   Future<Either<Failure, Unit>> disableStrip() =>
-      _run(() => native.disableStrip());
+      _runAndroidOnly(native.disableStrip);
 
   @override
   Future<Either<Failure, Unit>> refreshStrip(PrayerStripWindow window) =>
@@ -97,7 +99,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         localeCode: localeCode,
       );
     } else {
-      await legacyScheduler.scheduleDailyPrayerNotifications(days.first);
+      await legacyScheduler.scheduleDailyPrayerNotifications(_iosDay(days));
     }
   });
 
@@ -132,27 +134,15 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         localeCode: localeCode,
       );
     } else {
-      final prayerTimes = days.first;
+      final prayerTimes = _iosDay(days);
       await legacyScheduler.cancelAllStaticReminders();
       final date = _parseGregorian(prayerTimes.date.gregorianDate);
       if (date == null) return;
       for (final p in alertPrayers) {
         final minutes = alerts[p]?.effectiveReminderMinutes;
         if (minutes == null) continue;
-        final hhmm = prayerTimes.timings[p];
-        if (hhmm == null) continue;
-        final parts = hhmm.split(':');
-        if (parts.length != 2) continue;
-        final hour = int.tryParse(parts[0]);
-        final minute = int.tryParse(parts[1]);
-        if (hour == null || minute == null) continue;
-        final prayerAt = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          hour,
-          minute,
-        );
+        final prayerAt = _timeOn(date, prayerTimes.timings[p]);
+        if (prayerAt == null) continue;
         await legacyScheduler.scheduleStaticReminder(
           prayer: p,
           at: prayerAt.subtract(Duration(minutes: minutes)),
@@ -244,6 +234,26 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
         },
       },
   ];
+
+  PrayerTimes _iosDay(List<PrayerTimes> days) {
+    final now = clock();
+    return days.firstWhere((day) {
+      final date = _parseGregorian(day.date.gregorianDate);
+      if (date == null) return false;
+      return alertPrayers.any(
+        (p) => _timeOn(date, day.timings[p])?.isAfter(now) ?? false,
+      );
+    }, orElse: () => days.first);
+  }
+
+  DateTime? _timeOn(DateTime date, String? hhmm) {
+    final parts = hhmm?.split(':');
+    if (parts == null || parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    return DateTime(date.year, date.month, date.day, hour, minute);
+  }
 
   DateTime? _parseGregorian(String s) {
     // PrayerTimes.date.gregorianDate is "dd-MM-yyyy".

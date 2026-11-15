@@ -36,6 +36,8 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
   final DateTime Function() clock;
 
   Timer? _timer;
+  Future<void>? _running;
+  bool _again = false;
 
   static bool listensTo(Settings prev, Settings curr) =>
       !mapEquals(prev.prayerAlerts, curr.prayerAlerts) ||
@@ -53,7 +55,27 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
     _timer = Timer(debounce, syncNow);
   }
 
-  Future<void> syncNow() async {
+  Future<void> syncNow() {
+    final running = _running;
+    if (running != null) {
+      _again = true;
+      return running;
+    }
+    return _running = _drain();
+  }
+
+  Future<void> _drain() async {
+    try {
+      do {
+        _again = false;
+        await _syncOnce();
+      } while (_again && !isClosed);
+    } finally {
+      _running = null;
+    }
+  }
+
+  Future<void> _syncOnce() async {
     try {
       final s = settingsCubit.state.settingsModel;
       final now = clock();
@@ -62,10 +84,10 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
         GetCachedPrayerDaysParams(now: now),
       );
       if (!s.isPrayerStripPinned) {
-        _log('strip disable', await disablePrayerStrip(NoParams()));
+        _logFailure('strip disable', await disablePrayerStrip(NoParams()));
       }
       if (days.isEmpty) return;
-      _log(
+      _logFailure(
         'adhan sync',
         await syncDailyAdhans(
           SyncDailyAdhansParams(
@@ -87,7 +109,7 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
           ),
         );
         if (window != null) {
-          _log(
+          _logFailure(
             'strip enable',
             await enablePrayerStrip(EnablePrayerStripParams(window: window)),
           );
@@ -100,7 +122,7 @@ class AlertsSyncCubit extends Cubit<DateTime?> {
     }
   }
 
-  void _log(String step, Either<Failure, Unit> result) => result.fold(
+  void _logFailure(String step, Either<Failure, Unit> result) => result.fold(
     (f) => debugPrint('[alerts-sync] $step failed: ${f.message}'),
     (_) {},
   );

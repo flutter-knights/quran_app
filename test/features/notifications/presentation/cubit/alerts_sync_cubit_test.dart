@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -91,7 +93,11 @@ void main() {
       const SyncDailyAdhansParams(days: [], alerts: {}, localeCode: 'ar'),
     );
     registerFallbackValue(
-      const BuildPrayerStripWindowParams(localeCode: 'ar', use24Hour: true),
+      const BuildPrayerStripWindowParams(
+        localeCode: 'ar',
+        use24Hour: true,
+        cachedDays: [],
+      ),
     );
     registerFallbackValue(const EnablePrayerStripParams(window: window));
     registerFallbackValue(NoParams());
@@ -245,6 +251,46 @@ void main() {
       });
       await expectLater(cubit.syncNow(), completes);
       expect(cubit.state, isNull);
+    });
+
+    test(
+      'a sync requested mid-pass runs once more with fresh settings',
+      () async {
+        settingsCubit.updatePrayerStripPinned(true);
+        final held = Completer<Either<Failure, Unit>>();
+        when(() => enable(any())).thenAnswer((_) => held.future);
+        final first = cubit.syncNow();
+        await Future<void>.delayed(Duration.zero);
+        settingsCubit.updatePrayerStripPinned(false);
+        final second = cubit.syncNow();
+        final third = cubit.syncNow();
+        expect(second, same(first));
+        expect(third, same(first));
+        held.complete(const Right(unit));
+        await first;
+        verify(() => getDays(any())).called(2);
+        verifyInOrder([() => enable(any()), () => disable(any())]);
+        verifyNever(() => enable(any()));
+        verifyNoMoreInteractions(disable);
+      },
+    );
+
+    test('a close mid-pass skips the queued pass', () async {
+      final held = Completer<Either<Failure, Unit>>();
+      when(() => sync(any())).thenAnswer((_) => held.future);
+      final first = cubit.syncNow();
+      await Future<void>.delayed(Duration.zero);
+      cubit.syncNow();
+      await cubit.close();
+      held.complete(const Right(unit));
+      await first;
+      verify(() => getDays(any())).called(1);
+    });
+
+    test('a new sync starts after the previous one finished', () async {
+      await cubit.syncNow();
+      await cubit.syncNow();
+      verify(() => getDays(any())).called(2);
     });
 
     test('listensTo ignores unrelated fields', () {

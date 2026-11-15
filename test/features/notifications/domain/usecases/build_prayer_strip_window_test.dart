@@ -1,11 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
-import 'package:quran_app/features/home/domain/repositories/prayer_times_repository.dart';
 import 'package:quran_app/features/notifications/domain/usecases/build_prayer_strip_window.dart';
-
-class _MockRepo extends Mock implements PrayerTimesRepository {}
 
 PrayerTimes _pt(String dateKey) => PrayerTimes(
   key: dateKey,
@@ -29,99 +25,48 @@ PrayerTimes _pt(String dateKey) => PrayerTimes(
 );
 
 void main() {
-  setUpAll(() => registerFallbackValue(DateTime(2026)));
+  final useCase = BuildPrayerStripWindow();
+  final cachedDays = [for (var d = 22; d <= 26; d++) _pt('$d-05-2026')];
 
-  late _MockRepo repo;
-  late BuildPrayerStripWindow useCase;
-
-  setUp(() {
-    repo = _MockRepo();
-    useCase = BuildPrayerStripWindow(prayerTimesRepository: repo);
-  });
-
-  test('builds up to N consecutive cached days starting today', () async {
-    final now = DateTime(2026, 5, 22, 6, 0);
-    when(() => repo.getCachedForDate(any())).thenAnswer((inv) async {
-      final d = inv.positionalArguments.first as DateTime;
-      final key =
-          '${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}';
-      return _pt(key);
-    });
-
+  test('builds up to N cached days starting today', () async {
     final window = await useCase.call(
       BuildPrayerStripWindowParams(
         localeCode: 'en',
         use24Hour: true,
-        now: now,
+        now: DateTime(2026, 5, 22, 6),
         days: 3,
+        cachedDays: cachedDays,
       ),
     );
 
-    expect(window, isNotNull);
     expect(window!.days.length, 3);
     expect(window.days[0].dateKey, '22-05-2026');
     expect(window.days[1].dateKey, '23-05-2026');
-    expect(window.days[0].cells.length, 5); // sunrise dropped
+    expect(window.days[0].cells.length, 5);
   });
 
-  test('stops at the first cache gap', () async {
-    final now = DateTime(2026, 5, 22, 6, 0);
-    when(() => repo.getCachedForDate(any())).thenAnswer((inv) async {
-      final d = inv.positionalArguments.first as DateTime;
-      if (d.day >= 24) return null; // 24th onward missing
-      final key =
-          '${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}';
-      return _pt(key);
-    });
-
-    final window = await useCase.call(
-      BuildPrayerStripWindowParams(
-        localeCode: 'en',
-        use24Hour: true,
-        now: now,
-        days: 7,
-      ),
-    );
-
-    expect(window!.days.length, 2); // 22nd, 23rd
-  });
-
-  test('cachedDays bypasses the repository', () async {
+  test('stops when cachedDays runs out', () async {
     final w = await useCase.call(
       BuildPrayerStripWindowParams(
         localeCode: 'ar',
         use24Hour: true,
-        now: DateTime(2026, 11, 15, 9),
-        cachedDays: [_pt('15-11-2026'), _pt('16-11-2026')],
+        now: DateTime(2026, 5, 22, 9),
+        days: 30,
+        cachedDays: cachedDays.take(2).toList(),
       ),
     );
     expect(w!.days.length, 2);
-    verifyNever(() => repo.getCachedForDate(any()));
   });
 
-  test('empty cachedDays returns null without the repository', () async {
+  test('empty cachedDays returns null', () async {
     final w = await useCase.call(
       BuildPrayerStripWindowParams(
         localeCode: 'ar',
         use24Hour: true,
-        now: DateTime(2026, 11, 15, 9),
+        now: DateTime(2026, 5, 22, 9),
         cachedDays: const [],
       ),
     );
     expect(w, isNull);
-    verifyNever(() => repo.getCachedForDate(any()));
-  });
-
-  test('returns null when today is not cached', () async {
-    when(() => repo.getCachedForDate(any())).thenAnswer((_) async => null);
-    final window = await useCase.call(
-      BuildPrayerStripWindowParams(
-        localeCode: 'en',
-        use24Hour: true,
-        now: DateTime(2026, 5, 22),
-        days: 7,
-      ),
-    );
-    expect(window, isNull);
   });
 }

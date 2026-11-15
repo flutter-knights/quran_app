@@ -43,25 +43,22 @@ void main() {
     ).called(1);
   });
 
-  test(
-    'within last 7 days of month: pre-caches current AND next month',
-    () async {
-      // 28 May 2025: daysLeft = 31 - 28 = 3 <= 7
-      await usecase.call(
-        PreCachePrayerTimesParams(
-          location: location,
-          now: DateTime(2025, 5, 28, 10),
-        ),
-      );
+  test('end of month: pre-caches current and next month', () async {
+    // 28 May 2025: daysLeft = 31 - 28 = 3 <= 7
+    await usecase.call(
+      PreCachePrayerTimesParams(
+        location: location,
+        now: DateTime(2025, 5, 28, 10),
+      ),
+    );
 
-      verify(
-        () => repo.preCacheMonth(location: location, year: 2025, month: 5),
-      ).called(1);
-      verify(
-        () => repo.preCacheMonth(location: location, year: 2025, month: 6),
-      ).called(1);
-    },
-  );
+    verify(
+      () => repo.preCacheMonth(location: location, year: 2025, month: 5),
+    ).called(1);
+    verify(
+      () => repo.preCacheMonth(location: location, year: 2025, month: 6),
+    ).called(1);
+  });
 
   test('December rollover: next month is January of next year', () async {
     // 30 Dec 2025: daysLeft = 31 - 30 = 1 <= 7

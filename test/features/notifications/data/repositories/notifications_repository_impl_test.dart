@@ -127,6 +127,115 @@ void main() {
     );
   });
 
+  group('iOS strip calls', () {
+    test(
+      'enableStrip and disableStrip are Right without a channel call',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        expect(await repo.enableStrip(window), const Right(unit));
+        expect(await repo.disableStrip(), const Right(unit));
+        verifyZeroInteractions(native);
+      },
+    );
+
+    test('Android: disableStrip reaches native', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      when(() => native.disableStrip()).thenAnswer((_) async {});
+      expect(await repo.disableStrip(), const Right(unit));
+      verify(() => native.disableStrip()).called(1);
+    });
+  });
+
+  group('iOS picks the first day with a future alert time', () {
+    PrayerTimes dayOf(String key) => PrayerTimes(
+      key: key,
+      timings: pt.timings,
+      date: Date(
+        month: 'ذو الحجة',
+        weekDay: 'السبت',
+        day: '6',
+        year: '1447',
+        enMonth: 'Dhul-Hijjah',
+        enWeekDay: 'Saturday',
+        gregorianDate: key,
+      ),
+    );
+    final tomorrow = dayOf('23-05-2026');
+    NotificationsRepositoryImpl repoAt(DateTime now) =>
+        NotificationsRepositoryImpl(
+          native: native,
+          legacyScheduler: scheduler,
+          clock: () => now,
+        );
+
+    setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      when(
+        () => scheduler.scheduleDailyPrayerNotifications(any()),
+      ).thenAnswer((_) async {});
+      when(() => scheduler.cancelAllStaticReminders()).thenAnswer((_) async {});
+      when(
+        () => scheduler.scheduleStaticReminder(
+          prayer: any(named: 'prayer'),
+          at: any(named: 'at'),
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer((_) async {});
+    });
+
+    test('after Isha the adhans go to tomorrow', () async {
+      await repoAt(DateTime(2026, 5, 22, 22)).scheduleDailyAdhans(
+        days: [pt, tomorrow],
+        alerts: Settings.defaultPrayerAlerts,
+        localeCode: 'en',
+      );
+      verify(
+        () => scheduler.scheduleDailyPrayerNotifications(tomorrow),
+      ).called(1);
+    });
+
+    test('before Isha the adhans stay on today', () async {
+      await repoAt(DateTime(2026, 5, 22, 20)).scheduleDailyAdhans(
+        days: [pt, tomorrow],
+        alerts: Settings.defaultPrayerAlerts,
+        localeCode: 'en',
+      );
+      verify(() => scheduler.scheduleDailyPrayerNotifications(pt)).called(1);
+    });
+
+    test('after Isha the reminders go to tomorrow', () async {
+      await repoAt(DateTime(2026, 5, 22, 22)).schedulePrayerReminders(
+        days: [pt, tomorrow],
+        alerts: {
+          ...Settings.defaultPrayerAlerts,
+          PrayerName.maghrib: const PrayerAlert(
+            reminderEnabled: true,
+            reminderMinutes: 5,
+          ),
+        },
+        localeCode: 'en',
+      );
+      verify(
+        () => scheduler.scheduleStaticReminder(
+          prayer: PrayerName.maghrib,
+          at: DateTime(2026, 5, 23, 19, 41),
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+        ),
+      ).called(1);
+    });
+
+    test('every day past falls back to the first day', () async {
+      await repoAt(DateTime(2026, 5, 24)).scheduleDailyAdhans(
+        days: [pt, tomorrow],
+        alerts: Settings.defaultPrayerAlerts,
+        localeCode: 'en',
+      );
+      verify(() => scheduler.scheduleDailyPrayerNotifications(pt)).called(1);
+    });
+  });
+
   group('scheduleDailyAdhans', () {
     test(
       'Android: sends all six timings and only enabled prayers in alerts',

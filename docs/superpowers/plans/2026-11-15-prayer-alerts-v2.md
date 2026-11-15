@@ -780,16 +780,20 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Create: `lib/features/notifications/domain/usecases/get_cached_prayer_days.dart`, `lib/features/notifications/presentation/cubit/alerts_sync_cubit.dart`
-- Modify: `lib/features/home/presentation/pages/home_page.dart`, `lib/features/home/presentation/cubit/prayer_countdown_cubit.dart`, `lib/features/home/domain/usecases/pre_cache_prayer_times.dart`, `lib/features/notifications/domain/usecases/build_prayer_strip_window.dart`, `lib/features/notifications/notifications_di.dart`
-- Test: `test/features/notifications/domain/usecases/get_cached_prayer_days_test.dart` (new), `test/features/notifications/domain/usecases/build_prayer_strip_window_test.dart`, `test/features/notifications/presentation/cubit/alerts_sync_cubit_test.dart` (new), `test/features/home/presentation/cubit/prayer_countdown_cubit_test.dart`, `test/features/home/domain/usecases/pre_cache_prayer_times_test.dart` (the case "mid-month: pre-caches only current month" inverts)
+- Modify: `lib/features/home/presentation/pages/home_page.dart`, `lib/features/home/presentation/cubit/prayer_countdown_cubit.dart`, `lib/features/home/domain/usecases/pre_cache_prayer_times.dart`, `lib/features/notifications/domain/usecases/build_prayer_strip_window.dart`, `lib/features/notifications/notifications_di.dart`, `lib/features/notifications/data/repositories/notifications_repository_impl.dart` (iOS day pick, Android-only strip calls)
+- Test: `test/features/notifications/domain/usecases/get_cached_prayer_days_test.dart` (new), `test/features/notifications/domain/usecases/build_prayer_strip_window_test.dart`, `test/features/notifications/data/repositories/notifications_repository_impl_test.dart`, `test/features/notifications/presentation/cubit/alerts_sync_cubit_test.dart` (new), `test/features/home/presentation/cubit/prayer_countdown_cubit_test.dart`, `test/features/home/domain/usecases/pre_cache_prayer_times_test.dart` (the case "mid-month: pre-caches only current month" inverts)
 
 **Interfaces:**
 - Consumes: `SyncDailyAdhans`/`SyncDailyAdhansParams` (Task 3), `Settings.prayerAlerts`, `stripStyle`, `isPrayerStripPinned` (Task 2), existing `BuildPrayerStripWindow`, `EnablePrayerStrip`, `DisablePrayerStrip`, `PrayerTimesRepository.getCachedForDate`.
 - Produces:
   - `GetCachedPrayerDays extends UseCase<List<PrayerTimes>, GetCachedPrayerDaysParams>`, `GetCachedPrayerDaysParams({DateTime? now, int maxDays = 30})`: days from today on, stopping at the first gap. Registered with `sl.registerLazySingleton(() => GetCachedPrayerDays(prayerTimesRepository: sl()))` in `initNotifications()`.
-  - `BuildPrayerStripWindowParams` gains `final List<PrayerTimes>? cachedDays`: when non-null the use case builds from it (first `days` entries) and never calls `getCachedForDate`, so one sync reads the cache once.
-  - `AlertsSyncCubit extends Cubit<DateTime?>` (state = time of the last completed sync) with `AlertsSyncCubit({required SettingsCubit settingsCubit, required GetCachedPrayerDays getCachedPrayerDays, required SyncDailyAdhans syncDailyAdhans, required BuildPrayerStripWindow buildPrayerStripWindow, required EnablePrayerStrip enablePrayerStrip, required DisablePrayerStrip disablePrayerStrip, Duration debounce = const Duration(milliseconds: 300), DateTime Function() clock = DateTime.now})`, `void requestSync()`, `Future<void> syncNow()` (visible for tests), `close()` cancels the timer. Registered as a factory in `initNotifications()`.
+  - `BuildPrayerStripWindowParams` gains `required List<PrayerTimes> cachedDays`: the use case builds from its first `days` entries, so one sync reads the cache once. `BuildPrayerStripWindow()` loses `prayerTimesRepository` and its `getCachedForDate` loop, which had no other caller (registered as `sl.registerLazySingleton(() => BuildPrayerStripWindow())`).
+  - `AlertsSyncCubit extends Cubit<DateTime?>` (state = time of the last completed sync) with `AlertsSyncCubit({required SettingsCubit settingsCubit, required GetCachedPrayerDays getCachedPrayerDays, required SyncDailyAdhans syncDailyAdhans, required BuildPrayerStripWindow buildPrayerStripWindow, required EnablePrayerStrip enablePrayerStrip, required DisablePrayerStrip disablePrayerStrip, Duration debounce = const Duration(milliseconds: 300), DateTime Function() clock = DateTime.now})`, `void requestSync()`, `Future<void> syncNow()` (visible for tests; coalesces: while a pass runs, callers get the running future and one more pass runs with freshly read settings when it ends, unless the cubit closed), `close()` cancels the timer. Registered as a factory in `initNotifications()`.
   - `AlertsSyncCubit.listensTo(Settings prev, Settings curr): bool` (static, used by HomePage's `listenWhen`): true when `prayerAlerts`, `stripStyle`, `isPrayerStripPinned`, `isArabic`, `isFormat12Hours`, `palette`, `calculationMethod` or `asrSchool` differ.
+  - `NotificationsRepositoryImpl` gains `DateTime Function() clock = DateTime.now`. On iOS, `scheduleDailyAdhans` and `schedulePrayerReminders` use the first day in `days` with an alert-prayer time after `clock()` (else `days.first`), because `days` now starts today and after Isha that day has nothing left. `enableStrip` and `disableStrip` go through `_runAndroidOnly` (Right on iOS, no channel call).
+  - Declared exception: `AlertsSyncCubit` holds a bare `DateTime?` state instead of a sealed `Equatable` state, because it is a side-effect cubit whose only state is "last synced at".
+  - Declared exception: `GetCachedPrayerDays` returns a plain `List`, not `Either`, because it reads only the local cache and has no failure worth surfacing.
+  - Known trade-off: HomePage no longer re-pushes the strip when the countdown's next prayer changes (spec §8 lists four triggers). `PrayerStripController`'s exact alarms move the pill, so while exact alarms are denied the pill can lag in the foreground until the next resume.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -845,10 +849,9 @@ group('AlertsSyncCubit', () {
 ```
 
 ```dart
-test('cachedDays bypasses the repository', () async {
-  final w = await usecase(BuildPrayerStripWindowParams(localeCode: 'ar', use24Hour: true, now: DateTime(2026, 11, 15, 9), cachedDays: [fakePrayerTimes(DateTime(2026, 11, 15)), fakePrayerTimes(DateTime(2026, 11, 16))]));
+test('builds the window from cachedDays', () async {
+  final w = await usecase(BuildPrayerStripWindowParams(localeCode: 'ar', use24Hour: true, now: DateTime(2026, 11, 15, 9), days: 30, cachedDays: [fakePrayerTimes(DateTime(2026, 11, 15)), fakePrayerTimes(DateTime(2026, 11, 16))]));
   expect(w!.days.length, 2);
-  verifyNever(() => repo.getCachedForDate(any()));
 });
 ```
 
@@ -905,7 +908,7 @@ Expected: failures (missing classes; countdown returns sunrise; precache skips J
 
 - [ ] **Step 3: Implement**
 
-- `BuildPrayerStripWindow.call`: `final pt = params.cachedDays != null ? (i < params.cachedDays!.length ? params.cachedDays![i] : null) : await prayerTimesRepository.getCachedForDate(date);` and the loop keeps its first-gap break.
+- `BuildPrayerStripWindow.call`: loop over the first `min(params.days, params.cachedDays.length)` entries of `cachedDays`; the repository dependency goes.
 - `PreCachePrayerTimes`: always call `preCacheMonth` for the next month after the current one (the repository already skips a fully cached month, so "whenever it isn't cached" needs no new check). Delete `_daysInMonth`.
 - `PrayerCountdownCubit._emitTick`: in the loop, when `prayerName == PrayerName.sunrise` and `now` is not after it, `continue` without selecting it as next; `currentPrayer` logic is unchanged.
 - `AlertsSyncCubit.syncNow()`: read `settingsCubit.state.settingsModel`; read `clock()` once as `now`; `days = await getCachedPrayerDays(GetCachedPrayerDaysParams(now: now))`; if `!s.isPrayerStripPinned`, `disablePrayerStrip(NoParams())` first (so an unpin hides the strip even with an empty cache); if `days` is empty return; `await syncDailyAdhans(SyncDailyAdhansParams(days: days, alerts: s.prayerAlerts, localeCode: s.isArabic ? 'ar' : 'en'))`; if `s.isPrayerStripPinned`, build the window with `BuildPrayerStripWindowParams(localeCode: …, use24Hour: s.is24HourFormat, accentColor: s.palette.primary.toARGB32(), now: now, days: 30, cachedDays: days)` and enable it when non-null; log failures with `debugPrint`, never throw; `if (isClosed) return;` before `emit(clock())`. `requestSync()` cancels and restarts the timer.
