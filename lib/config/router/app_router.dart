@@ -15,6 +15,7 @@ import 'package:quran_app/features/notifications/presentation/cubit/reliability_
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/pages/notifications_settings_page.dart';
 import 'package:quran_app/features/notifications/presentation/pages/prayer_strip_settings_page.dart';
+import 'package:quran_app/features/notifications/presentation/pages/reliability_page.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:quran_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:quran_app/features/splash/pages/splash_page.dart';
@@ -31,6 +32,7 @@ abstract class AppRouter {
   static const String homePath = "/home";
   static const String notificationsPath = "/notifications";
   static const String prayerStripPath = "/prayerStrip";
+  static const String alertsReliabilityPath = "/alertsReliability";
   static const String splashPath = "/splash";
   static const String onboardingPath = "/onboarding";
   static const String mushafPath = "/mushaf";
@@ -104,6 +106,15 @@ abstract class AppRouter {
               BlocProvider(create: (_) => sl<AndroidSdkCubit>()..load()),
             ],
             child: const PrayerStripSettingsPage(),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: alertsReliabilityPath,
+        pageBuilder: GoTransitions.fade.withScale.build(
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<ReliabilityCubit>(),
+            child: const ReliabilityPage(),
           ),
         ),
       ),

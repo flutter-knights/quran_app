@@ -278,7 +278,9 @@ void main() {
     debugDefaultTargetPlatformOverride = null;
   });
 
-  testWidgets('the strip row opens the strip settings route', (tester) async {
+  testWidgets('the strip row and the status line open their routes', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -308,6 +310,10 @@ void main() {
           path: AppRouter.prayerStripPath,
           builder: (context, state) => const Text('strip-page'),
         ),
+        GoRoute(
+          path: AppRouter.alertsReliabilityPath,
+          builder: (context, state) => const Text('reliability-page'),
+        ),
       ],
     );
     addTearDown(router.dispose);
@@ -317,6 +323,14 @@ void main() {
     await tester.pumpAndSettle();
     await tapAndSettle(tester, find.text('شريط أوقات الصلاة'));
     expect(find.text('strip-page'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, 2000));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('التنبيهات تعمل'));
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pumpAndSettle();
+    expect(find.text('reliability-page'), findsOneWidget);
   });
 
   for (final locale in ['ar', 'en']) {

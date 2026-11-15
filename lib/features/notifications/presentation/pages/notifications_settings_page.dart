@@ -39,7 +39,9 @@ class NotificationsSettingsPage extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 32),
                 children: [
-                  const AlertsStatusLine(),
+                  AlertsStatusLine(
+                    onTap: () => context.push(AppRouter.alertsReliabilityPath),
+                  ),
                   const SizedBox(height: 16),
                   AppSectionHeader(label: s.alerts_prayersSection),
                   const SizedBox(height: 10),
