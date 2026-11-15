@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
@@ -20,7 +21,7 @@ Future<void> showPrayerSoundPicker(BuildContext context, PrayerName prayer) {
   final settings = context.read<SettingsCubit>();
   final current = _alertOf(settings, prayer).sound;
   final preview = ios ? null : sl<SoundPreviewCubit>();
-  return showAppOptionSheet<PrayerSound>(
+  return showAppOptionSheet(
     context: context,
     title: s.alerts_picker_prayerSound,
     selected: ios && current == PrayerSound.vibrate
@@ -62,7 +63,7 @@ Future<void> showReminderSoundPicker(BuildContext context, PrayerName prayer) {
   final settings = context.read<SettingsCubit>();
   final current = _alertOf(settings, prayer).reminderSound;
   final preview = ios ? null : sl<SoundPreviewCubit>();
-  return showAppOptionSheet<ReminderSound>(
+  return showAppOptionSheet(
     context: context,
     title: s.alerts_sheet_reminderSound,
     selected: ios && current == ReminderSound.vibrate
@@ -128,6 +129,9 @@ class _PreviewButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = PendingS.of(context);
+    final ink = context.select(
+      (SettingsCubit c) => c.state.settingsModel.palette.primaryInk,
+    );
     return BlocSelector<SoundPreviewCubit, PreviewSound?, bool>(
       selector: (playing) => playing == sound,
       builder: (context, playing) => IconButton(
@@ -140,7 +144,7 @@ class _PreviewButton extends StatelessWidget {
           icon: playing
               ? HugeIcons.strokeRoundedStopCircle
               : HugeIcons.strokeRoundedPlayCircle,
-          color: context.colorScheme.primary,
+          color: ink,
           size: 24,
         ),
       ),

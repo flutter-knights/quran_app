@@ -75,6 +75,18 @@ void main() {
     expect(switchTitled(tester, 'يرن حتى في الوضع الصامت').onChanged, isNull);
   });
 
+  testWidgets(
+    'alert off reads the reminder as off and keeps the stored value',
+    (tester) async {
+      await open(
+        tester,
+        const PrayerAlert(enabled: false, reminderEnabled: true),
+      );
+      expect(switchTitled(tester, 'تذكير قبل الصلاة').value, isFalse);
+      expect(fajr().reminderEnabled, isTrue);
+    },
+  );
+
   testWidgets('a tone makes ring in silent inert and keeps its value', (
     tester,
   ) async {

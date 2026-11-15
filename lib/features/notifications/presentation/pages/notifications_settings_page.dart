@@ -151,7 +151,7 @@ class _TimesSection extends StatelessWidget {
                     title: l10n.calculationMethod_methodLabel,
                     subtitle: method.localized(context),
                     trailing: chevron,
-                    onTap: () => showAppOptionSheet<CalculationMethod>(
+                    onTap: () => showAppOptionSheet(
                       context: context,
                       title: l10n.calculationMethod_methodLabel,
                       selected: method,
@@ -172,7 +172,7 @@ class _TimesSection extends StatelessWidget {
                     title: l10n.calculationMethod_schoolLabel,
                     subtitle: school.localized(context),
                     trailing: chevron,
-                    onTap: () => showAppOptionSheet<AsrSchool>(
+                    onTap: () => showAppOptionSheet(
                       context: context,
                       title: l10n.calculationMethod_schoolLabel,
                       selected: school,

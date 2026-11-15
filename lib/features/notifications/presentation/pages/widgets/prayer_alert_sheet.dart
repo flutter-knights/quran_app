@@ -186,7 +186,7 @@ class _SheetBody extends StatelessWidget {
               children: [
                 _SwitchRow(
                   title: s.alerts_sheet_reminderSwitch,
-                  value: alert.reminderEnabled,
+                  value: reminderActive,
                   onChanged: alert.enabled
                       ? (v) =>
                             _update(context, alert.copyWith(reminderEnabled: v))
