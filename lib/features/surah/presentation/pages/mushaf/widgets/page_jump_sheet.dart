@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 /// Modal sheet to jump to a Mushaf page. Resolves with the chosen page (1–604)
@@ -55,7 +56,7 @@ class _PageJumpSheetState extends State<PageJumpSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.goToPage, style: Theme.of(context).textTheme.titleMedium),
+            Text(s.goToPage, style: TS.medium16),
             const SizedBox(height: 12),
             TextField(
               controller: _controller,
@@ -74,7 +75,7 @@ class _PageJumpSheetState extends State<PageJumpSheet> {
               child: FilledButton(
                 key: const ValueKey('page-jump-go'),
                 onPressed: _submit,
-                child: Text(s.goToPage),
+                child: Text(s.goToPage, style: TS.medium14),
               ),
             ),
           ],

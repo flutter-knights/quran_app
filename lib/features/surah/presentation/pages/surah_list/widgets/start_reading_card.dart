@@ -33,11 +33,7 @@ class StartReadingCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   S.of(context).start_reading_subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
                 ),
               ],
             ),

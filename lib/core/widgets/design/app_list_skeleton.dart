@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 
 /// Shimmer placeholder list for screens that load asynchronously. Drop it
@@ -25,12 +26,12 @@ class AppListSkeleton extends StatelessWidget {
             children: [
               Text(
                 'عنوان تجريبي للعنصر قيد التحميل',
-                style: TextStyle(fontSize: 16, color: scheme.onSurface),
+                style: TS.regular16.copyWith(color: scheme.onSurface),
               ),
               const SizedBox(height: 8),
               Text(
                 'سطر فرعي يوضح حالة التحميل',
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                style: TS.regular12.copyWith(color: scheme.onSurfaceVariant),
               ),
             ],
           ),

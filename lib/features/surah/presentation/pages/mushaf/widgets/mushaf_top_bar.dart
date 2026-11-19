@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 
 /// Slim frosted top bar shown with the Mushaf chrome: back, current surah,
@@ -48,11 +49,7 @@ class MushafTopBar extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
+                  style: TS.semi16.copyWith(color: Colors.white),
                 ),
               ),
               GestureDetector(
@@ -60,20 +57,22 @@ class MushafTopBar extends StatelessWidget {
                 onTap: onJump,
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.menu_book_outlined,
-                          color: Colors.white, size: 18),
+                      const Icon(
+                        Icons.menu_book_outlined,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         pageStr,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
+                        style: TS.semi14.copyWith(color: Colors.white),
                       ),
                     ],
                   ),

@@ -52,11 +52,7 @@ class LastReadCard extends StatelessWidget {
                 ),
                 child: Text(
                   S.of(context).page_label(last.page.toLocalized(context)),
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.secondary,
-                  ),
+                  style: TS.bold12.copyWith(color: scheme.secondary),
                 ),
               ),
               const SizedBox(width: 8),
@@ -70,11 +66,7 @@ class LastReadCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 S.of(context).progress_complete(percent.toLocalized(context)),
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -95,13 +87,15 @@ class LastReadCard extends StatelessWidget {
               Flexible(
                 child: Text(
                   progress.ayahBased
-                      ? S.of(context).surah_ayah_label(
-                            progress.surahArabicName,
-                            progress.ayahCurrent!.toLocalized(context),
-                          )
-                      : S.of(context).page_label(
-                            last.page.toLocalized(context),
-                          ),
+                      ? S
+                            .of(context)
+                            .surah_ayah_label(
+                              progress.surahArabicName,
+                              progress.ayahCurrent!.toLocalized(context),
+                            )
+                      : S
+                            .of(context)
+                            .page_label(last.page.toLocalized(context)),
                   style: TS.bold14.cairo.copyWith(color: scheme.onSurface),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -129,13 +123,7 @@ class LastReadCard extends StatelessWidget {
                   color: Colors.white,
                   size: 11,
                 ),
-                label: Text(
-                  S.of(context).continue_reading,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                label: Text(S.of(context).continue_reading, style: TS.bold12),
               ),
             ],
           ),

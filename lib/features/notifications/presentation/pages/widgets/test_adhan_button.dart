@@ -26,7 +26,9 @@ class TestAdhanButton extends StatelessWidget {
     if (reliability case ReliabilityLoaded(
       :final status,
     ) when !status.notificationsEnabled) {
-      messenger.showSnackBar(SnackBar(content: Text(s.alerts_testBlocked)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(s.alerts_testBlocked, style: TS.regular14)),
+      );
       return;
     }
     final exactDenied = switch (reliability) {
@@ -45,7 +47,9 @@ class TestAdhanButton extends StatelessWidget {
       true => s.alerts_testCaption,
       false => s.alerts_testFailed,
     };
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    messenger.showSnackBar(
+      SnackBar(content: Text(message, style: TS.regular14)),
+    );
   }
 
   @override

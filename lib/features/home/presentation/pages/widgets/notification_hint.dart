@@ -60,7 +60,9 @@ class _NotificationHintState extends State<NotificationHint>
     try {
       final enabled = await _scheduler.areNotificationsEnabled();
       if (mounted) setState(() => _enabled = enabled);
-    } catch (_) {/* leave hidden on error */}
+    } catch (_) {
+      /* leave hidden on error */
+    }
   }
 
   @override
@@ -97,7 +99,7 @@ class _NotificationHintState extends State<NotificationHint>
               await _refresh();
               if (mounted && !_enabled) await widget.onOpenSettings();
             },
-            child: Text(s.home_notifHint_allow),
+            child: Text(s.home_notifHint_allow, style: TS.medium14),
           ),
           IconButton(
             icon: Icon(Icons.close, size: 18, color: scheme.onSurface),

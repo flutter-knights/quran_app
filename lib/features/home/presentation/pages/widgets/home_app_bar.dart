@@ -47,10 +47,7 @@ class HomeAppBar extends StatelessWidget {
                     isAr ? date.month : date.enMonth,
                     date.year.toLocalized(context),
                   ),
-                  style: TS.bold16.cairo.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TS.extra20.cairo,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
@@ -65,12 +62,8 @@ class HomeAppBar extends StatelessWidget {
                     Flexible(
                       child: Text(
                         place,
-                        style: TS.medium14
-                            .copyWith(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: scheme.onSurfaceVariant,
-                            )
+                        style: TS.bold12
+                            .copyWith(color: scheme.onSurfaceVariant)
                             .cairo,
                         overflow: TextOverflow.ellipsis,
                       ),

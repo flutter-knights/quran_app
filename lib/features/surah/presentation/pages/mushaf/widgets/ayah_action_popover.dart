@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus;
 
+import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../generated/l10n.dart';
 import '../../../../../bookmarks/presentation/cubit/bookmark_cubit.dart';
 import '../../../../../bookmarks/presentation/cubit/bookmark_state.dart';
@@ -78,12 +79,12 @@ class AyahActionPopover {
 
 class _PopoverStrings {
   _PopoverStrings(S s)
-      : tafsir = s.tafsir,
-        translation = s.translation,
-        bookmark = s.bookmark,
-        share = s.share,
-        comingSoon = s.coming_soon,
-        shareFailed = s.share_failed;
+    : tafsir = s.tafsir,
+      translation = s.translation,
+      bookmark = s.bookmark,
+      share = s.share,
+      comingSoon = s.coming_soon,
+      shareFailed = s.share_failed;
 
   final String tafsir;
   final String translation;
@@ -206,7 +207,12 @@ class _AyahActionPopoverContent extends StatelessWidget {
                     onTap: () {
                       // coming soon — keep popover open
                       scaffoldMessenger.showSnackBar(
-                        SnackBar(content: Text(strings.comingSoon)),
+                        SnackBar(
+                          content: Text(
+                            strings.comingSoon,
+                            style: TS.regular14,
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -216,7 +222,12 @@ class _AyahActionPopoverContent extends StatelessWidget {
                     onTap: () {
                       // coming soon — keep popover open
                       scaffoldMessenger.showSnackBar(
-                        SnackBar(content: Text(strings.comingSoon)),
+                        SnackBar(
+                          content: Text(
+                            strings.comingSoon,
+                            style: TS.regular14,
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -245,7 +256,7 @@ class _AyahActionPopoverContent extends StatelessWidget {
     } catch (_) {
       onDismiss();
       scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text(strings.shareFailed)),
+        SnackBar(content: Text(strings.shareFailed, style: TS.regular14)),
       );
     }
   }
@@ -278,7 +289,7 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, size: 22),
             const SizedBox(height: 2),
-            Text(label, style: const TextStyle(fontSize: 10)),
+            Text(label, style: TS.regular10),
           ],
         ),
       ),

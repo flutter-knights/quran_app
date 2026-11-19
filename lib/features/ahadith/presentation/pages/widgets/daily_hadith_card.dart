@@ -63,15 +63,13 @@ class _DailyHadithCardView extends StatelessWidget {
                         children: [
                           Text(
                             'صحيح',
-                            style: TextStyle(
-                              fontSize: 11,
+                            style: TS.regular12.copyWith(
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
                           Text(
                             'كتاب · ٠٠٠',
-                            style: TextStyle(
-                              fontSize: 11,
+                            style: TS.regular12.copyWith(
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
@@ -82,7 +80,7 @@ class _DailyHadithCardView extends StatelessWidget {
                         'حديث تجريبي قيد التحميل لعرض حالة الهيكل العظمي للبطاقة',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16, color: scheme.onSurface),
+                        style: TS.regular16.copyWith(color: scheme.onSurface),
                       ),
                     ],
                   ),
@@ -106,9 +104,7 @@ class _DailyHadithCardView extends StatelessWidget {
                         ),
                         Text(
                           '${_bookTitle(context, state.bookSlug)} · #${state.hadith.hadithNumber.toLocalized(context)}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                          style: TS.semi12.copyWith(
                             color: scheme.onSurfaceVariant,
                           ),
                         ),

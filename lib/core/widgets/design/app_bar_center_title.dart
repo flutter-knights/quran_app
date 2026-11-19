@@ -18,20 +18,9 @@ class AppBarCenterTitle extends StatelessWidget {
         if (label != null)
           Text(
             label!.toUpperCase(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: scheme.onSurfaceVariant,
-              letterSpacing: 0.5,
-            ),
+            style: TS.medium12.copyWith(color: scheme.onSurfaceVariant),
           ),
-        Text(
-          title,
-          style: TS.bold16.copyWith(
-            fontSize: 15,
-            color: scheme.onSurface,
-          ),
-        ),
+        Text(title, style: TS.bold16.copyWith(color: scheme.onSurface)),
       ],
     );
   }

@@ -35,8 +35,8 @@ class HomeView extends StatelessWidget {
           listener: (context, state) {
             if (state is DailyPrayerContextLoaded) {
               context.read<PrayerCountdownCubit>().startTimer(
-                    state.dailyPrayerContext,
-                  );
+                state.dailyPrayerContext,
+              );
             }
           },
           child: BlocBuilder<DailyPrayerContextCubit, DailyPrayerContextState>(
@@ -78,7 +78,7 @@ class HomeView extends StatelessWidget {
                     onAction: () => Geolocator.openLocationSettings(),
                   );
                 }
-                return Center(child: Text(state.message));
+                return Center(child: Text(state.message, style: TS.regular14));
               }
               if (state is DailyPrayerContextLoaded) {
                 final ctx = state.dailyPrayerContext;
@@ -146,7 +146,9 @@ class HomeView extends StatelessWidget {
                                 textAlign: TextAlign.center,
                                 style: TS.bold16.scheherazade.copyWith(
                                   fontSize: 11,
-                                  color: scheme.onSurface.withValues(alpha: 0.4),
+                                  color: scheme.onSurface.withValues(
+                                    alpha: 0.4,
+                                  ),
                                   height: 1.9,
                                 ),
                               ),

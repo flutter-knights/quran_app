@@ -7,6 +7,7 @@ import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.da
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/generated/l10n.dart';
 
+import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../core/di/dependency_injection.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -332,7 +333,10 @@ class _MushafPageViewState extends State<MushafPageView>
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(S.of(context).pageRemovedFromBookmarks),
+        content: Text(
+          S.of(context).pageRemovedFromBookmarks,
+          style: TS.regular14,
+        ),
         action: SnackBarAction(
           label: S.of(context).undo,
           onPressed: () => cubit.toggle(widget.pageNumber),

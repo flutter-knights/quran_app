@@ -30,8 +30,7 @@ class UpcomingPrayer extends StatelessWidget {
       TextSpan(
         children: [
           TextSpan(text: timePart, style: timeStyle),
-          if (period.isNotEmpty)
-            TextSpan(text: ' $period', style: periodStyle),
+          if (period.isNotEmpty) TextSpan(text: ' $period', style: periodStyle),
         ],
       ),
     );
@@ -44,10 +43,9 @@ class UpcomingPrayer extends StatelessWidget {
       builder: (context, state) {
         if (state is! PrayerCountdownTick) return const SizedBox();
 
-        final remaining =
-            state.prayerCountdown.remainingTime.toDigitalClock().toLocalized(
-                  context,
-                );
+        final remaining = state.prayerCountdown.remainingTime
+            .toDigitalClock()
+            .toLocalized(context);
         final nextPrayer = state.prayerCountdown.nextPrayer;
         // On Friday, Dhuhr is announced as Jumu'ah (matches the prayers row).
         final isFriday = DateTime.now().weekday == DateTime.friday;
@@ -63,17 +61,14 @@ class UpcomingPrayer extends StatelessWidget {
           ),
         };
         final heroStyle = TS.extra36.cairo.copyWith(
-          fontSize: 46,
-          fontWeight: FontWeight.w800,
           letterSpacing: -1.5,
           height: 1,
           color: scheme.onSurface,
         );
         // AM/PM (ص/م) sits well below the time's scale.
-        final periodStyle = heroStyle.copyWith(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0,
+        final periodStyle = TS.bold20.copyWith(
+          height: 1,
+          color: scheme.onSurface,
         );
 
         return Column(

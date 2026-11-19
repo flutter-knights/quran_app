@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -50,11 +51,7 @@ class QuickAccessGrid extends StatelessWidget {
 }
 
 class _QuickTile extends StatelessWidget {
-  const _QuickTile({
-    required this.icon,
-    required this.label,
-    this.onTap,
-  });
+  const _QuickTile({required this.icon, required this.label, this.onTap});
 
   final List<List<dynamic>> icon;
   final String label;
@@ -74,24 +71,19 @@ class _QuickTile extends StatelessWidget {
       child: HugeIcon(icon: icon, size: 24, color: scheme.onSurface),
     );
     return Column(
-        children: [
-          Expanded(
-            child: PrettierTap(onTap: onTap, child: tile),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurface,
-              height: 1.3,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+      children: [
+        Expanded(
+          child: PrettierTap(onTap: onTap, child: tile),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TS.semi12.copyWith(color: scheme.onSurface, height: 1.3),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }

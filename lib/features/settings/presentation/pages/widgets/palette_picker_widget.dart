@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 
 class PalettePickerWidget extends StatelessWidget {
@@ -46,11 +47,11 @@ class _PaletteTile extends StatelessWidget {
   final VoidCallback onTap;
 
   String get _label => switch (palette) {
-        ColorPalette.neutralDark => 'Neutral Dark',
-        ColorPalette.neutralLight => 'Neutral Light',
-        ColorPalette.slateDark => 'Slate Dark',
-        ColorPalette.slateLight => 'Slate Light',
-      };
+    ColorPalette.neutralDark => 'Neutral Dark',
+    ColorPalette.neutralLight => 'Neutral Light',
+    ColorPalette.slateDark => 'Slate Dark',
+    ColorPalette.slateLight => 'Slate Light',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -72,11 +73,7 @@ class _PaletteTile extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(10, 8, 30, 0),
               child: Text(
                 _label,
-                style: TextStyle(
-                  color: palette.onSurface,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TS.bold12.copyWith(color: palette.onSurface),
                 maxLines: 2,
               ),
             ),
@@ -98,8 +95,9 @@ class _PaletteTile extends StatelessWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: palette.primary,
-                  borderRadius:
-                      const BorderRadius.vertical(bottom: Radius.circular(10)),
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(10),
+                  ),
                 ),
               ),
             ),

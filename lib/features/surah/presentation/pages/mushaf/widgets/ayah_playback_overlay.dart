@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as q;
 
+import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../generated/l10n.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../../quran_playback/domain/entities/reciter.dart';
@@ -194,8 +195,10 @@ class _MiniPlayer extends StatelessWidget {
                         a.isLoading != b.isLoading ||
                         a.currentAyah != b.currentAyah,
                     builder: (context, p) {
-                      final matchesTarget =
-                          _currentMatchesTarget(p.currentAyah, target);
+                      final matchesTarget = _currentMatchesTarget(
+                        p.currentAyah,
+                        target,
+                      );
                       final isTargetPlaying = p.isPlaying && matchesTarget;
                       final isResumable = p.isPaused && matchesTarget;
                       return Row(
@@ -207,8 +210,8 @@ class _MiniPlayer extends StatelessWidget {
                             onTap: _isFirst
                                 ? null
                                 : () => context
-                                    .read<PlaybackCubit>()
-                                    .skipPrevious(),
+                                      .read<PlaybackCubit>()
+                                      .skipPrevious(),
                           ),
                           _PlayPauseBtn(
                             target: target,
@@ -222,7 +225,7 @@ class _MiniPlayer extends StatelessWidget {
                             onTap: _isLast
                                 ? null
                                 : () =>
-                                    context.read<PlaybackCubit>().skipNext(),
+                                      context.read<PlaybackCubit>().skipNext(),
                           ),
                         ],
                       );
@@ -262,14 +265,9 @@ class _InfoColumn extends StatelessWidget {
       children: [
         if (target != null)
           Text(
-            s.ayah_label(
-                target!.surah.toString(), target!.ayah.toString()),
+            s.ayah_label(target!.surah.toString(), target!.ayah.toString()),
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TS.semi12.copyWith(color: Colors.white),
             overflow: TextOverflow.ellipsis,
           ),
         BlocBuilder<PlaybackCubit, PlaybackState>(
@@ -283,13 +281,13 @@ class _InfoColumn extends StatelessWidget {
             final repeatTxt = p.infiniteRepeat
                 ? ' · ↻∞'
                 : (p.eachAyahRepeat > 1
-                    ? ' · ↻${p.currentAyahPlayCount}/${p.eachAyahRepeat}'
-                    : '');
+                      ? ' · ↻${p.currentAyahPlayCount}/${p.eachAyahRepeat}'
+                      : '');
             final speedTxt = p.speed != 1.0 ? ' · ${p.speed}x' : '';
             return Text(
               '${p.reciter.arabicName}$speedTxt$repeatTxt',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white60, fontSize: 10),
+              style: TS.regular10.copyWith(color: Colors.white60),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             );
@@ -317,8 +315,7 @@ class _ReciterSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(S.of(context).reciter_label,
-                style: Theme.of(context).textTheme.titleSmall),
+            Text(S.of(context).reciter_label, style: TS.medium14),
             const SizedBox(height: 12),
             _ReciterGrid(),
           ],
@@ -345,8 +342,7 @@ class _OptionsSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(S.of(context).playback_speed,
-                style: Theme.of(context).textTheme.labelMedium),
+            Text(S.of(context).playback_speed, style: TS.medium12),
             const SizedBox(height: 6),
             _SpeedGrid(),
             const SizedBox(height: 16),
@@ -440,8 +436,7 @@ class _Chip extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 13,
+          style: TS.regular14.copyWith(
             color: selected ? scheme.onPrimary : scheme.onSurface,
           ),
         ),
@@ -455,11 +450,7 @@ class _Chip extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _Btn extends StatelessWidget {
-  const _Btn({
-    required this.icon,
-    required this.onTap,
-    this.tooltip,
-  });
+  const _Btn({required this.icon, required this.onTap, this.tooltip});
   final IconData icon;
   final VoidCallback? onTap;
   final String? tooltip;
@@ -508,7 +499,9 @@ class _PlayPauseBtn extends StatelessWidget {
             width: 22,
             height: 22,
             child: CircularProgressIndicator(
-                strokeWidth: 2.5, color: Colors.white),
+              strokeWidth: 2.5,
+              color: Colors.white,
+            ),
           ),
         ),
       );
@@ -530,7 +523,9 @@ class _PlayPauseBtn extends StatelessWidget {
                 cubit.playRange(
                   start: start,
                   end: AyahIdentifier(
-                      surah: t.surah, ayah: q.getVerseCount(t.surah)),
+                    surah: t.surah,
+                    ayah: q.getVerseCount(t.surah),
+                  ),
                 );
               }
             },

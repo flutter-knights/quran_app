@@ -104,6 +104,7 @@ extension AppPaletteX on ColorPalette {
 
   ThemeData toThemeData() => ThemeData(
     useMaterial3: true,
+    fontFamily: TS.fontFamily,
     colorScheme: colorScheme,
     inputDecorationTheme: InputDecorationTheme(
       filled: true,

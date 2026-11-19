@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 
@@ -44,11 +45,7 @@ class _PageCell extends StatelessWidget {
         ),
         child: Text(
           page.toLocalized(context),
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: scheme.onSurface,
-          ),
+          style: TS.bold14.copyWith(color: scheme.onSurface),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 
 class MushafPageNumberText extends StatelessWidget {
   const MushafPageNumberText({super.key, required this.pageNumber});
@@ -17,8 +18,7 @@ class MushafPageNumberText extends StatelessWidget {
       child: Text(
         _arabic,
         locale: const Locale('ar'),
-        style: TextStyle(
-          fontSize: 16,
+        style: TS.regular16.copyWith(
           color: Theme.of(context).colorScheme.onSurface,
         ),
       ),

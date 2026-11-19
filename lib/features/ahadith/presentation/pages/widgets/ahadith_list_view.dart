@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
@@ -60,9 +61,11 @@ class _AhadithListViewState extends State<AhadithListView> {
 
   void _onQueryChanged(String value) {
     setState(() => _query = value);
-    context
-        .read<SearchHadithCubit>()
-        .searchAhadith(value, widget.bookSlug, filter: _filter);
+    context.read<SearchHadithCubit>().searchAhadith(
+      value,
+      widget.bookSlug,
+      filter: _filter,
+    );
   }
 
   void _clearSearch() {
@@ -77,7 +80,10 @@ class _AhadithListViewState extends State<AhadithListView> {
         .state
         .downloadedBooks
         .contains(widget.bookSlug);
-    context.read<AhadithCubit>().applyFilter(filter, isDownloaded: isDownloaded);
+    context.read<AhadithCubit>().applyFilter(
+      filter,
+      isDownloaded: isDownloaded,
+    );
     // Keep an active search in sync with the filter.
     context.read<SearchHadithCubit>().reapplyFilter(filter);
   }
@@ -142,8 +148,9 @@ class _AhadithListViewState extends State<AhadithListView> {
             ),
             BlocBuilder<AhadithCubit, AhadithState>(
               builder: (context, _) {
-                final available =
-                    context.read<AhadithCubit>().availableStatuses;
+                final available = context
+                    .read<AhadithCubit>()
+                    .availableStatuses;
                 // A single-grade book (e.g. all-Sahih) has nothing to filter.
                 if (available.length <= 1) return const SizedBox.shrink();
                 return _StatusChipsRow(
@@ -170,7 +177,7 @@ class _AhadithListViewState extends State<AhadithListView> {
     return BlocBuilder<AhadithCubit, AhadithState>(
       builder: (context, state) {
         if (state is AhadithError && !state.paginationError) {
-          return const Center(child: Text('error'));
+          return Center(child: Text('error', style: TS.regular14));
         }
         if (state is AhadithLoading) {
           return const AppListSkeleton();
@@ -179,8 +186,9 @@ class _AhadithListViewState extends State<AhadithListView> {
           final List<Hadith> all = (state is AhadithLoaded)
               ? state.ahadith
               : (state as AhadithLoadingMore).oldAhadith;
-          final bool lastPage =
-              (state is AhadithLoaded) ? state.lastPage : false;
+          final bool lastPage = (state is AhadithLoaded)
+              ? state.lastPage
+              : false;
           final ahadith = applyHadithFilters(all, _filter);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -190,17 +198,15 @@ class _AhadithListViewState extends State<AhadithListView> {
                 child: AppSectionHeader(
                   label: S.of(context).ahadith_section,
                   trailing: Text(
-                    S.of(context).ahadith_count(
+                    S
+                        .of(context)
+                        .ahadith_count(
                           (_filter.isActive
                                   ? ahadith.length
                                   : (_bookHadithCount(context) ?? all.length))
                               .toLocalized(context),
                         ),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: scheme.secondary,
-                    ),
+                    style: TS.semi12.copyWith(color: scheme.secondary),
                   ),
                 ),
               ),
@@ -237,12 +243,14 @@ class _AhadithListViewState extends State<AhadithListView> {
           return const AppListSkeleton();
         }
         if (state is SearchHadithError) {
-          return Center(child: Text(state.message));
+          return Center(child: Text(state.message, style: TS.regular14));
         }
         if (state is SearchHadithLoaded) {
           final results = applyHadithFilters(state.hadithList, _filter);
           if (results.isEmpty) {
-            return Center(child: Text(S.of(context).search_no_results));
+            return Center(
+              child: Text(S.of(context).search_no_results, style: TS.regular14),
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
@@ -276,12 +284,12 @@ class _LoadMoreSkeleton extends StatelessWidget {
           children: [
             Text(
               'عنوان تجريبي قيد التحميل',
-              style: TextStyle(fontSize: 15, color: scheme.onSurface),
+              style: TS.regular15.copyWith(color: scheme.onSurface),
             ),
             const SizedBox(height: 8),
             Text(
               'سطر فرعي يوضح حالة التحميل',
-              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              style: TS.regular12.copyWith(color: scheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -310,14 +318,11 @@ class _SearchField extends StatelessWidget {
         controller: controller,
         onChanged: onChanged,
         textInputAction: TextInputAction.search,
-        style: TextStyle(fontSize: 14, color: scheme.onSurface),
+        style: TS.regular14.copyWith(color: scheme.onSurface),
         decoration: InputDecoration(
           isDense: true,
           hintText: S.of(context).search_hadith_hint,
-          hintStyle: TextStyle(
-            fontSize: 14,
-            color: scheme.onSurfaceVariant,
-          ),
+          hintStyle: TS.regular14.copyWith(color: scheme.onSurfaceVariant),
           prefixIcon: HugeIcon(
             icon: HugeIcons.strokeRoundedSearch01,
             size: 18,
@@ -370,14 +375,14 @@ class _StatusChipsRow extends StatelessWidget {
           // Iterate the enum for canonical order, keeping only available grades.
           for (final status in HadithStatus.values)
             if (statuses.contains(status)) ...[
-            _StatusChip(
-              label: statusLabel(context, status),
-              color: statusColor(status),
-              selected: filter.status == status,
-              onTap: () => onToggle(status),
-            ),
-            const SizedBox(width: 8),
-          ],
+              _StatusChip(
+                label: statusLabel(context, status),
+                color: statusColor(status),
+                selected: filter.status == status,
+                onTap: () => onToggle(status),
+              ),
+              const SizedBox(width: 8),
+            ],
         ],
       ),
     );
@@ -409,9 +414,7 @@ class _StatusChip extends StatelessWidget {
           color: selected ? color.withValues(alpha: 0.16) : scheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected
-                ? color
-                : scheme.onSurface.withValues(alpha: 0.12),
+            color: selected ? color : scheme.onSurface.withValues(alpha: 0.12),
           ),
         ),
         child: Row(
@@ -424,9 +427,7 @@ class _StatusChip extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              style: TS.semi12.copyWith(
                 color: selected ? color : scheme.onSurfaceVariant,
               ),
             ),
@@ -510,18 +511,14 @@ class _FilterSheetState extends State<_FilterSheet> {
               children: [
                 Text(
                   S.of(context).filters_title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurface,
-                  ),
+                  style: TS.bold16.copyWith(color: scheme.onSurface),
                 ),
                 TextButton(
                   onPressed: () {
                     _apply(const HadithListFilter());
                     Navigator.of(context).pop();
                   },
-                  child: Text(S.of(context).filter_clear),
+                  child: Text(S.of(context).filter_clear, style: TS.medium14),
                 ),
               ],
             ),
@@ -529,11 +526,7 @@ class _FilterSheetState extends State<_FilterSheet> {
               const SizedBox(height: 6),
               Text(
                 S.of(context).filter_status_label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -554,19 +547,17 @@ class _FilterSheetState extends State<_FilterSheet> {
             const SizedBox(height: 14),
             Text(
               S.of(context).filter_chapter_label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurfaceVariant,
-              ),
+              style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             InkWell(
               onTap: widget.chapters.isEmpty ? null : _openChapterPicker,
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: scheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
@@ -580,11 +571,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                             : '${selected.chapterNumber}. ${isRtl ? selected.chapterArabic : selected.chapterEnglish}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.onSurface,
-                        ),
+                        style: TS.semi14.copyWith(color: scheme.onSurface),
                       ),
                     ),
                     Icon(
@@ -640,9 +627,7 @@ class _GradePill extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              style: TS.semi12.copyWith(
                 color: selected ? color : scheme.onSurfaceVariant,
               ),
             ),

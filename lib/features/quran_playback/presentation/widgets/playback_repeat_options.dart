@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as quran;
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/playback_range_validator.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -32,7 +33,7 @@ class PlaybackRepeatOptions extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.range, style: Theme.of(context).textTheme.labelMedium),
+            Text(s.range, style: TS.medium12),
             const SizedBox(height: 6),
             Row(
               children: [
@@ -43,9 +44,14 @@ class PlaybackRepeatOptions extends StatelessWidget {
                     value: from,
                     onChanged: (v) {
                       final nf = PlaybackRangeValidator.clampFrom(
-                          surah: surah, value: v);
+                        surah: surah,
+                        value: v,
+                      );
                       final nt = PlaybackRangeValidator.clampTo(
-                          surah: surah, from: nf, value: to);
+                        surah: surah,
+                        from: nf,
+                        value: to,
+                      );
                       cubit.playRange(
                         start: AyahIdentifier(surah: surah, ayah: nf),
                         end: AyahIdentifier(surah: surah, ayah: nt),
@@ -61,16 +67,18 @@ class PlaybackRepeatOptions extends StatelessWidget {
                     value: to,
                     onChanged: (v) {
                       final nt = PlaybackRangeValidator.clampTo(
-                          surah: surah, from: from, value: v);
-                      cubit.setRangeEnd(
-                          AyahIdentifier(surah: surah, ayah: nt));
+                        surah: surah,
+                        from: from,
+                        value: v,
+                      );
+                      cubit.setRangeEnd(AyahIdentifier(surah: surah, ayah: nt));
                     },
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Text(s.repeat, style: Theme.of(context).textTheme.labelMedium),
+            Text(s.repeat, style: TS.medium12),
             const SizedBox(height: 6),
             Row(
               children: [
@@ -80,7 +88,8 @@ class PlaybackRepeatOptions extends StatelessWidget {
                     label: s.eachAyah,
                     value: st.eachAyahRepeat,
                     onChanged: (v) => cubit.setEachAyahRepeat(
-                        PlaybackRangeValidator.clampRepeat(v)),
+                      PlaybackRangeValidator.clampRepeat(v),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -90,14 +99,17 @@ class PlaybackRepeatOptions extends StatelessWidget {
                     label: s.wholeRange,
                     value: st.rangeRepeat,
                     onChanged: (v) => cubit.setRangeRepeat(
-                        PlaybackRangeValidator.clampRepeat(v)),
+                      PlaybackRangeValidator.clampRepeat(v),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 _InfiniteToggle(
                   on: st.infiniteRepeat,
                   onTap: () => cubit.setInfiniteRepeat(
-                      !st.infiniteRepeat, RepeatTarget.range),
+                    !st.infiniteRepeat,
+                    RepeatTarget.range,
+                  ),
                 ),
               ],
             ),
@@ -134,11 +146,12 @@ class _Counter extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              final parsed =
-                  PlaybackRangeValidator.parseCounter(controller.text);
+              final parsed = PlaybackRangeValidator.parseCounter(
+                controller.text,
+              );
               Navigator.pop(ctx, parsed); // null reverts to last valid
             },
-            child: Text(S.of(context).filter_apply),
+            child: Text(S.of(context).filter_apply, style: TS.medium14),
           ),
         ],
       ),
@@ -172,10 +185,8 @@ class _Counter extends StatelessWidget {
               onTap: () => _typeValue(context),
               child: Column(
                 children: [
-                  Text('$value',
-                      style: Theme.of(context).textTheme.titleMedium),
-                  Text(label,
-                      style: Theme.of(context).textTheme.labelSmall),
+                  Text('$value', style: TS.medium16),
+                  Text(label, style: TS.medium12),
                 ],
               ),
             ),
@@ -210,9 +221,7 @@ class _InfiniteToggle extends StatelessWidget {
         ),
         child: Text(
           '∞',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          style: TS.bold20.copyWith(
             color: on ? scheme.onPrimary : scheme.onSurface,
           ),
         ),
