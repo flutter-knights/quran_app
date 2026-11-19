@@ -80,7 +80,9 @@ class _BookmarksView extends StatelessWidget {
                         return Center(
                           child: Text(
                             S.of(context).no_bookmarks_yet,
-                            style: TextStyle(color: scheme.onSurfaceVariant),
+                            style: TS.regular14.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
                           ),
                         );
                       }
@@ -165,19 +167,12 @@ class _QuranBookmarkTile extends StatelessWidget {
               children: [
                 Text(
                   surahName,
-                  style: TS.bold16.copyWith(
-                    fontSize: 14,
-                    color: scheme.onSurface,
-                  ),
+                  style: TS.bold14.copyWith(color: scheme.onSurface),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${ayah.surah.toLocalized(context)} : ${ayah.ayah.toLocalized(context)}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
                 ),
               ],
             ),
@@ -217,21 +212,11 @@ class _PageBookmarkTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  desc,
-                  style: TS.bold16.copyWith(
-                    fontSize: 14,
-                    color: scheme.onSurface,
-                  ),
-                ),
+                Text(desc, style: TS.bold14.copyWith(color: scheme.onSurface)),
                 const SizedBox(height: 2),
                 Text(
                   '${S.of(context).pageByPage} ${page.toLocalized(context)}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
                 ),
               ],
             ),
@@ -275,14 +260,16 @@ class _AhadithBookmarkTileState extends State<_AhadithBookmarkTile> {
     if (!mounted) return;
     setState(() => _loading = false);
     result.fold(
-      (failure) => ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(failure.message))),
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(failure.message, style: TS.regular14)),
+      ),
       (hadith) {
         if (hadith == null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(S.of(context).coming_soon)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(S.of(context).coming_soon, style: TS.regular14),
+            ),
+          );
         } else {
           context.push(
             AppRouter.hadithPath,
@@ -311,7 +298,7 @@ class _AhadithBookmarkTileState extends State<_AhadithBookmarkTile> {
           Expanded(
             child: Text(
               '${_bookTitle(context)} · #${widget.bookmark.hadithNumber.toLocalized(context)}',
-              style: TS.bold16.copyWith(fontSize: 14, color: scheme.onSurface),
+              style: TS.bold14.copyWith(color: scheme.onSurface),
             ),
           ),
           if (_loading)
