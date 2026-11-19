@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/prayers_list_constants.dart';
 import 'package:quran_app/features/home/domain/entities/daily_prayer_context.dart';
 import 'package:quran_app/features/home/domain/entities/location.dart';
+import 'package:quran_app/features/home/domain/entities/prayer_countdown.dart';
 import 'package:quran_app/features/home/domain/entities/prayer_times.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 
@@ -170,30 +171,92 @@ void main() {
       await cubit.close();
     },
   );
-  test('next prayer skips sunrise', () async {
-    final now = DateTime.now();
-    const offsets = {
-      PrayerName.fajr: -2,
-      PrayerName.sunrise: 2,
-      PrayerName.dhuhr: 4,
-      PrayerName.asr: 6,
-      PrayerName.maghrib: 8,
-      PrayerName.isha: 10,
+  group('next prayer with a fixed clock', () {
+    const timings = {
+      PrayerName.fajr: '04:52',
+      PrayerName.sunrise: '06:18',
+      PrayerName.dhuhr: '11:41',
+      PrayerName.asr: '14:40',
+      PrayerName.maghrib: '17:00',
+      PrayerName.isha: '18:20',
     };
-    if (now.subtract(const Duration(minutes: 3)).day != now.day ||
-        now.add(const Duration(minutes: 11)).day != now.day) {
-      markTestSkipped('fixture would cross midnight');
-      return;
+
+    DailyPrayerContext dayCtx(DateTime day) {
+      final base = ctxFor(day);
+      return DailyPrayerContext(
+        location: base.location,
+        date: base.date,
+        prayerTimes: PrayerTimes(
+          key: base.prayerTimes.key,
+          timings: timings,
+          date: base.prayerTimes.date,
+        ),
+      );
     }
-    final cubit = PrayerCountdownCubit();
-    cubit.startTimer(contextWithOffsets(now, offsets));
-    final tick = cubit.state as PrayerCountdownTick;
-    expect(tick.prayerCountdown.nextPrayer, PrayerName.dhuhr);
-    expect(tick.prayerCountdown.currentPrayer, PrayerName.fajr);
-    expect(
-      tick.prayerCountdown.remainingTime.inMinutes,
-      inInclusiveRange(2, 4),
-    );
-    await cubit.close();
+
+    Future<PrayerCountdown> firstTick(
+      DateTime now, {
+      DateTime? contextDay,
+    }) async {
+      final cubit = PrayerCountdownCubit(clock: () => now);
+      final tick = cubit.stream
+          .firstWhere((s) => s is PrayerCountdownTick)
+          .then((s) => (s as PrayerCountdownTick).prayerCountdown);
+      cubit.startTimer(dayCtx(contextDay ?? now));
+      final countdown = await tick;
+      await cubit.close();
+      return countdown;
+    }
+
+    final day = DateTime(2026, 11, 15);
+
+    test('before Fajr counts down to Fajr', () async {
+      final c = await firstTick(day.add(const Duration(hours: 4)));
+      expect(c.nextPrayer, PrayerName.fajr);
+      expect(c.remainingTime, const Duration(minutes: 52));
+    });
+
+    test('between Fajr and sunrise counts down to sunrise', () async {
+      final c = await firstTick(day.add(const Duration(hours: 5, minutes: 30)));
+      expect(c.currentPrayer, PrayerName.fajr);
+      expect(c.nextPrayer, PrayerName.sunrise);
+      expect(c.remainingTime, const Duration(minutes: 48));
+    });
+
+    test('exactly at sunrise still counts sunrise as upcoming', () async {
+      final c = await firstTick(day.add(const Duration(hours: 6, minutes: 18)));
+      expect(c.nextPrayer, PrayerName.sunrise);
+      expect(c.remainingTime, Duration.zero);
+    });
+
+    test('one second after sunrise counts down to Dhuhr', () async {
+      final c = await firstTick(
+        day.add(const Duration(hours: 6, minutes: 18, seconds: 1)),
+      );
+      expect(c.currentPrayer, PrayerName.sunrise);
+      expect(c.nextPrayer, PrayerName.dhuhr);
+    });
+
+    test('between sunrise and Dhuhr counts down to Dhuhr', () async {
+      final c = await firstTick(day.add(const Duration(hours: 9)));
+      expect(c.currentPrayer, PrayerName.sunrise);
+      expect(c.nextPrayer, PrayerName.dhuhr);
+      expect(c.remainingTime, const Duration(hours: 2, minutes: 41));
+    });
+
+    test('after Isha counts down to tomorrow\'s Fajr', () async {
+      final now = day.add(const Duration(hours: 20));
+      final sameDay = await firstTick(now);
+      expect(sameDay.currentPrayer, PrayerName.isha);
+      expect(sameDay.nextPrayer, PrayerName.fajr);
+      expect(sameDay.remainingTime, const Duration(hours: 8, minutes: 52));
+
+      final rolled = await firstTick(
+        now,
+        contextDay: day.add(const Duration(days: 1)),
+      );
+      expect(rolled.nextPrayer, PrayerName.fajr);
+      expect(rolled.remainingTime, const Duration(hours: 8, minutes: 52));
+    });
   });
 }

@@ -174,13 +174,6 @@ class _SheetBody extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (ios)
-                    AlertsNote(
-                      padding: const EdgeInsetsDirectional.symmetric(
-                        horizontal: 16,
-                      ),
-                      text: s.alerts_sheet_iosNote,
-                    ),
                 ],
               ),
               Column(

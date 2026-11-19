@@ -77,6 +77,16 @@ void main() {
     expect(cubit.state.settingsModel.enabledAlertCount, 0);
   });
 
+  test('notifications are needed by any alert or the strip', () {
+    final cubit = SettingsCubit();
+    cubit.applyAlertToAll(enabled: true);
+    expect(cubit.state.settingsModel.usesNotifications, isTrue);
+    cubit.applyAlertToAll(enabled: false);
+    expect(cubit.state.settingsModel.usesNotifications, isFalse);
+    cubit.updatePrayerStripPinned(true);
+    expect(cubit.state.settingsModel.usesNotifications, isTrue);
+  });
+
   test('updateStripStyle stores the style', () {
     final cubit = SettingsCubit();
     cubit.updateStripStyle(const StripStyle(shape: StripShape.pill));

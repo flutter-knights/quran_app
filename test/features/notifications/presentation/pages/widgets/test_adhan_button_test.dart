@@ -67,7 +67,7 @@ void main() {
         settings: settings,
         home: BlocProvider<ReliabilityCubit>.value(
           value: reliability,
-          child: const Scaffold(body: TestAdhanButton()),
+          child: const Scaffold(body: TestAdhanButton(label: 'اختبار الأذان')),
         ),
       ),
     );
@@ -81,7 +81,7 @@ void main() {
         tester,
         ReliabilityLoaded(ok.copyWith(notificationsEnabled: false)),
       );
-      await tester.tap(find.text('تشغيل أذان تجريبي'));
+      await tester.tap(find.text('اختبار الأذان'));
       await tester.pumpAndSettle();
       expect(
         find.text('لن يعمل الأذان: الإشعارات غير مسموحة.'),
@@ -99,7 +99,7 @@ void main() {
         const PrayerAlert(sound: PrayerSound.tone),
       );
       await pump(tester, const ReliabilityLoaded(ok));
-      await tester.tap(find.text('تشغيل أذان تجريبي'));
+      await tester.tap(find.text('اختبار الأذان'));
       await tester.pumpAndSettle();
       final p =
           verify(() => schedule(captureAny())).captured.single
@@ -120,7 +120,7 @@ void main() {
         tester,
         ReliabilityLoaded(ok.copyWith(exactAlarmsAllowed: false)),
       );
-      await tester.tap(find.text('تشغيل أذان تجريبي'));
+      await tester.tap(find.text('اختبار الأذان'));
       await tester.pumpAndSettle();
       verify(() => schedule(any())).called(1);
       expect(
@@ -133,7 +133,7 @@ void main() {
 
   testWidgets('a status still loading does not block the test', (tester) async {
     await pump(tester, const ReliabilityLoading());
-    await tester.tap(find.text('تشغيل أذان تجريبي'));
+    await tester.tap(find.text('اختبار الأذان'));
     await tester.pumpAndSettle();
     verify(() => schedule(any())).called(1);
   });
@@ -144,7 +144,7 @@ void main() {
       () => schedule(any()),
     ).thenAnswer((_) async => const Left(UnknownNotificationFailure('boom')));
     await pump(tester, const ReliabilityLoaded(ok));
-    await tester.tap(find.text('تشغيل أذان تجريبي'));
+    await tester.tap(find.text('اختبار الأذان'));
     await tester.pumpAndSettle();
     expect(
       find.text('تعذّر جدولة الأذان التجريبي، حاول مرة أخرى.'),

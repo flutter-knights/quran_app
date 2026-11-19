@@ -10,7 +10,7 @@ import 'package:quran_app/generated/l10n.dart';
 
 class _FakeScheduler implements PrayerNotificationScheduler {
   _FakeScheduler(this.enabled);
-  final bool enabled;
+  bool enabled;
   @override
   Future<bool> areNotificationsEnabled() async => enabled;
   @override
@@ -48,8 +48,9 @@ void main() {
     await tester.pumpWidget(
       host(
         NotificationHint(
-          dismissed: false,
+          hidden: false,
           onAllow: () async {},
+          onOpenSettings: () async {},
           onDismiss: () {},
           scheduler: _FakeScheduler(true),
         ),
@@ -64,8 +65,9 @@ void main() {
     await tester.pumpWidget(
       host(
         NotificationHint(
-          dismissed: false,
+          hidden: false,
           onAllow: () async {},
+          onOpenSettings: () async {},
           onDismiss: () => dismissed = true,
           scheduler: _FakeScheduler(false),
         ),
@@ -81,14 +83,60 @@ void main() {
     await tester.pumpWidget(
       host(
         NotificationHint(
-          dismissed: true,
+          hidden: true,
           onAllow: () async {},
+          onOpenSettings: () async {},
           onDismiss: () {},
           scheduler: _FakeScheduler(false),
         ),
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.byType(TextButton), findsNothing);
+  });
+
+  testWidgets('allow that leaves notifications off opens the settings', (
+    tester,
+  ) async {
+    var opened = 0;
+    await tester.pumpWidget(
+      host(
+        NotificationHint(
+          hidden: false,
+          onAllow: () async {},
+          onOpenSettings: () async => opened++,
+          onDismiss: () {},
+          scheduler: _FakeScheduler(false),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(TextButton));
+    await tester.pumpAndSettle();
+    expect(opened, 1);
+    expect(find.byType(TextButton), findsOneWidget);
+  });
+
+  testWidgets('allow that grants hides the hint without opening settings', (
+    tester,
+  ) async {
+    var opened = 0;
+    final scheduler = _FakeScheduler(false);
+    await tester.pumpWidget(
+      host(
+        NotificationHint(
+          hidden: false,
+          onAllow: () async => scheduler.enabled = true,
+          onOpenSettings: () async => opened++,
+          onDismiss: () {},
+          scheduler: scheduler,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(TextButton));
+    await tester.pumpAndSettle();
+    expect(opened, 0);
     expect(find.byType(TextButton), findsNothing);
   });
 }

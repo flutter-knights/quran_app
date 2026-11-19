@@ -106,9 +106,6 @@ String? prayerTimeLabel(
   ).format(time).toIndicNumerals(localeCode);
 }
 
-String alertsDateLabel(DateTime date, String localeCode) =>
-    DateFormat('d MMMM', localeCode).format(date).toIndicNumerals(localeCode);
-
 String stripHighlightLabel(PendingS s, StripHighlight h) => switch (h) {
   StripHighlight.app => s.strip_color_app,
   StripHighlight.darkGreen => s.strip_color_darkGreen,

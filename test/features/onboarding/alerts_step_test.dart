@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -89,5 +90,59 @@ void main() {
       chips(tester).singleWhere((c) => c.selected).label,
       isA<Text>().having((t) => t.data, 'label', '٣٠ دقيقة'),
     );
+  });
+
+  Switch switchFor(WidgetTester tester, String label) => tester.widget<Switch>(
+    find.descendant(
+      of: find.ancestor(of: find.text(label), matching: find.byType(Row)),
+      matching: find.byType(Switch),
+    ),
+  );
+
+  testWidgets('Android shows ring in silent and strip switches, both off', (
+    tester,
+  ) async {
+    await pump(tester, const AlertsChoice(sound: PrayerSound.adhan));
+    expect(switchFor(tester, 'يرن حتى في الوضع الصامت').value, isFalse);
+    expect(switchFor(tester, 'شريط أوقات الصلاة').value, isFalse);
+  });
+
+  testWidgets('toggling the switches reports them', (tester) async {
+    await pump(tester, const AlertsChoice(sound: PrayerSound.adhan));
+    await tester.tap(find.text('يرن حتى في الوضع الصامت'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('شريط أوقات الصلاة'));
+    await tester.pumpAndSettle();
+    expect(
+      changes.last,
+      const AlertsChoice(
+        sound: PrayerSound.adhan,
+        ringInSilent: true,
+        stripPinned: true,
+      ),
+    );
+  });
+
+  testWidgets('ring in silent is inert unless the sound is adhan', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      const AlertsChoice(sound: PrayerSound.adhan, ringInSilent: true),
+    );
+    await tester.tap(find.text('نغمة الإشعار'));
+    await tester.pumpAndSettle();
+    final ring = switchFor(tester, 'يرن حتى في الوضع الصامت');
+    expect(ring.onChanged, isNull);
+    expect(ring.value, isFalse);
+    expect(changes.last.ringInSilent, isTrue);
+    expect(switchFor(tester, 'شريط أوقات الصلاة').onChanged, isNotNull);
+  });
+
+  testWidgets('iOS shows neither switch', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    await pump(tester, const AlertsChoice(sound: PrayerSound.adhan));
+    expect(find.byType(Switch), findsNothing);
   });
 }

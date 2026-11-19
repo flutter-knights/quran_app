@@ -171,7 +171,7 @@ void main() {
     await pump(tester, [ReliabilityLoaded(xiaomiMiss)]);
     expect(find.text(upgradeTitle), findsOneWidget);
     expect(find.text(upgradeSilent), findsOneWidget);
-    expect(find.text(upgradeXiaomi), findsOneWidget);
+    expect(find.text(upgradeXiaomi), findsNothing);
     expect(find.text(missedTitle), findsNothing);
     expect(settings.state.settingsModel.alertsIntroSeen, isTrue);
     verifyNever(() => reliability.ackMissed(any()));
@@ -198,11 +198,11 @@ void main() {
     verify(() => reliability.ackMissed(status)).called(1);
   });
 
-  testWidgets('the upgrade sheet leaves out the Xiaomi line elsewhere', (
+  testWidgets('the upgrade sheet leaves out the Xiaomi line before a miss', (
     tester,
   ) async {
     await asUpgrader();
-    await pump(tester, [const ReliabilityLoaded(base)]);
+    await pump(tester, [ReliabilityLoaded(base.copyWith(isXiaomi: true))]);
     expect(find.text(upgradeTitle), findsOneWidget);
     expect(find.text(upgradeXiaomi), findsNothing);
   });
@@ -353,16 +353,13 @@ void main() {
     expect(find.text('home-view'), findsOneWidget);
   });
 
-  testWidgets('review on Xiaomi opens the reliability page over the alerts '
-      'page', (tester) async {
+  testWidgets('review on Xiaomi opens only the alerts page', (tester) async {
     await asUpgrader();
-    final router = await pump(tester, [ReliabilityLoaded(xiaomiMiss)]);
+    await pump(tester, [ReliabilityLoaded(base.copyWith(isXiaomi: true))]);
     await tester.tap(find.text('مراجعة الإعدادات'));
     await tester.pumpAndSettle();
-    expect(find.text('reliability-page'), findsOneWidget);
-    router.pop();
-    await tester.pumpAndSettle();
     expect(find.text('notifications-page'), findsOneWidget);
+    expect(find.text('reliability-page'), findsNothing);
   });
 
   testWidgets('review elsewhere opens the alerts page', (tester) async {

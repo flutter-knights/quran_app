@@ -18,7 +18,6 @@ import 'package:quran_app/features/notifications/presentation/pages/widgets/aler
 import 'package:quran_app/features/notifications/presentation/pages/widgets/prayer_alert_tile.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/reload_status_on_sync.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/reload_times_on_sync.dart';
-import 'package:quran_app/features/notifications/presentation/pages/widgets/test_adhan_button.dart';
 import 'package:quran_app/features/notifications/presentation/utils/calculation_method_localization.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -81,8 +80,6 @@ class NotificationsSettingsPage extends StatelessWidget {
                       AppSectionHeader(label: s.alerts_timesSection),
                       const SizedBox(height: 10),
                       const _TimesSection(),
-                      const SizedBox(height: 24),
-                      const TestAdhanButton(),
                     ],
                   ),
                 ),

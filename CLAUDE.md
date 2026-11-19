@@ -28,6 +28,12 @@ There is no CI workflow. Run `analyze` and `test` locally before pushing; both m
 Localization regenerates from `lib/l10n/intl_*.arb` through the flutter_intl IDE extension on save.
 Do not run `intl_utils:generate` by hand, and never edit `lib/generated/`.
 
+## Git workflow
+
+- Work on a branch, never directly on `main`.
+- Changes reach `main` only through a GitHub pull request (`gh pr create --base main`). Never merge or push to `main` locally.
+- Open the PR only after `analyze` and `test` are clean, and leave the merge to the owner unless they ask you to merge it.
+
 ## Architecture
 
 Clean Architecture with Cubit. Each feature is self-contained:

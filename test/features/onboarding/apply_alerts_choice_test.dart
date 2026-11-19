@@ -51,7 +51,56 @@ void main() {
     );
   });
 
+  test('ring in silent applies to every prayer', () {
+    applyAlertsChoice(
+      cubit,
+      const AlertsChoice(sound: PrayerSound.adhan, ringInSilent: true),
+    );
+    expect(
+      cubit.state.settingsModel.prayerAlerts.values.every(
+        (a) => a.ringInSilent,
+      ),
+      isTrue,
+    );
+  });
+
+  test('ring in silent is not stored for a non-adhan sound', () {
+    applyAlertsChoice(
+      cubit,
+      const AlertsChoice(sound: PrayerSound.tone, ringInSilent: true),
+    );
+    expect(
+      cubit.state.settingsModel.prayerAlerts.values.any((a) => a.ringInSilent),
+      isFalse,
+    );
+  });
+
+  test('the strip follows the choice even with no alert', () {
+    applyAlertsChoice(cubit, const AlertsChoice(stripPinned: true));
+    final model = cubit.state.settingsModel;
+    expect(model.isPrayerStripPinned, isTrue);
+    expect(model.prayerAlerts.values.every((a) => !a.enabled), isTrue);
+  });
+
   group('alertsChoiceFrom', () {
+    test('reads ring in silent and the stored strip', () {
+      final alerts = {
+        for (final p in alertPrayers) p: const PrayerAlert(ringInSilent: true),
+      };
+      expect(
+        alertsChoiceFrom(alerts, stripPinned: true),
+        const AlertsChoice(
+          sound: PrayerSound.adhan,
+          ringInSilent: true,
+          stripPinned: true,
+        ),
+      );
+      expect(
+        alertsChoiceFrom(const {}, stripPinned: true),
+        const AlertsChoice(stripPinned: true),
+      );
+    });
+
     test('reads the first enabled prayer', () {
       final alerts = {
         PrayerName.fajr: const PrayerAlert(enabled: false),

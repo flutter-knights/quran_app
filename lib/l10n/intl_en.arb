@@ -14,9 +14,7 @@
 "twentyFourHourFormat": "24-Hour Format" ,
 "arabicLanguage": "Arabic Language",
 "pinnedPrayerTimes": "Pinned prayer times",
-"pinnedPrayerTimesSubtitle": "Show today's prayers in your notification shade.",
 "notifications": "Notifications",
-"notificationsScreenSubtitle": "Manage prayer-time notifications.",
 
 
 "hadith_number_label": "Hadith No.",
@@ -106,8 +104,6 @@
 "@reminderMinutesBefore": {
   "placeholders": { "minutes": { "type": "int" } }
 },
-"playTestAdhan": "Play test adhan",
-"testAdhanScheduledSnack": "Test adhan in 5 seconds",
 
 "prayers": "Prayers",
 "lastRead": "Last Read",
@@ -283,11 +279,7 @@
   "calculationMethod_russia": "Russia",
   "asrSchool_shafi": "Standard (Shafiʿi, Maliki, Hanbali)",
   "asrSchool_hanafi": "Hanafi",
-  "alerts_status_ok": "Alerts are on, scheduled until {date}",
-  "@alerts_status_ok": {
-    "placeholders": { "date": { "type": "String" } }
-  },
-  "alerts_status_okNoDate": "Alerts are on",
+  "alerts_status_ok": "Alerts are on",
   "alerts_status_attention": "A setting needs attention",
   "alerts_status_off": "Notifications are off, so no adhan will arrive",
   "alerts_prayersSection": "Prayers",
@@ -332,7 +324,6 @@
   },
   "alerts_sheet_reminderSound": "Reminder sound",
   "alerts_sheet_reminderDisabled": "The reminder is off while the prayer-time alert is off.",
-  "alerts_sheet_iosNote": "Plays a short clip and follows the phone's mute switch.",
   "alerts_picker_prayerSound": "Prayer-time sound",
   "alerts_picker_silentSub": "The notification shows without sound",
   "alerts_picker_preview": "Preview {sound}",
@@ -394,28 +385,17 @@
   "rel_lockApp": "Lock the app in recent apps",
   "rel_lockAppSub": "Pull its card down until the lock shows, and avoid «Clear all» before that.",
   "rel_done": "Done",
-  "rel_scheduledUntil": "Scheduled until {date}",
-  "@rel_scheduledUntil": {
-    "placeholders": { "date": { "type": "String" } }
-  },
-  "rel_scheduledNone": "Nothing scheduled yet",
-  "rel_scheduledSub": "Scheduling extends each time the app opens and after every adhan.",
   "rel_test": "Test the adhan",
   "onb_alerts_title": "Prayer alerts",
   "onb_alerts_atTime": "At prayer time",
   "onb_alerts_none": "No alert",
   "onb_alerts_reminder": "Reminder before prayer",
   "onb_alerts_reminderNone": "None",
-  "onb_alerts_note": "Sound follows silent mode; each prayer can be adjusted later in Settings.",
   "onb_later": "Later",
-  "onb_skip": "Skip",
-  "onb_xiaomi_title": "Keep the adhan working on Xiaomi phones",
-  "onb_xiaomi_lead": "Xiaomi's system stops apps in the background. Three steps keep the adhan on time.",
   "onb_exactAlarmsWhy": "Needed for the adhan to arrive right on time.",
   "upg_title": "Prayer alerts improved",
   "upg_silent": "The adhan now follows silent mode. To ring anyway, turn on «Ring even in silent mode» for a prayer.",
   "upg_reminder": "A reminder from 1 to 60 minutes before, with its own sound.",
-  "upg_xiaomi": "On Xiaomi phones two settings keep the adhan from stopping.",
   "upg_exactAlarms": "Exact alarms are not allowed, so the adhan may be late.",
   "upg_review": "Review settings",
   "missed_title": "You missed the {prayer} alert",
@@ -430,6 +410,10 @@
     "placeholders": { "prayer": { "type": "String" } }
   },
   "missed_fix": "Fix now",
+  "home_untilSunrise": "{time} remaining until sunrise",
+  "@home_untilSunrise": {
+    "placeholders": { "time": { "type": "String" } }
+  },
   "alerts_minutes": "{count, plural, =1{1 minute} other{{count} minutes}}",
   "@alerts_minutes": {
     "placeholders": { "count": { "type": "num" } }

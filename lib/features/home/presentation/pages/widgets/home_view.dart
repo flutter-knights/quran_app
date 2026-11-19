@@ -93,11 +93,12 @@ class HomeView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             NotificationHint(
-                              dismissed: context
-                                  .watch<SettingsCubit>()
-                                  .state
-                                  .settingsModel
-                                  .notificationHintDismissed,
+                              hidden: context.select((SettingsCubit c) {
+                                final m = c.state.settingsModel;
+                                return m.notificationHintDismissed ||
+                                    !m.usesNotifications;
+                              }),
+                              onOpenSettings: Geolocator.openAppSettings,
                               onDismiss: () => context
                                   .read<SettingsCubit>()
                                   .dismissNotificationHint(),

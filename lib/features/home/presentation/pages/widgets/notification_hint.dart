@@ -9,18 +9,21 @@ import 'package:quran_app/generated/l10n.dart';
 /// Slim, dismissible Home hint shown only when notifications are OS-disabled
 /// and the user hasn't dismissed it. [onAllow] should request permission and
 /// then trigger a context re-fetch (which reschedules adhans); [onDismiss]
-/// persists the dismissal. [dismissed] reflects the settings flag.
+/// persists the dismissal. [hidden] is set when the hint was dismissed or no
+/// alert or strip needs notifications.
 class NotificationHint extends StatefulWidget {
   const NotificationHint({
     super.key,
-    required this.dismissed,
+    required this.hidden,
     required this.onAllow,
+    required this.onOpenSettings,
     required this.onDismiss,
     this.scheduler,
   });
 
-  final bool dismissed;
+  final bool hidden;
   final Future<void> Function() onAllow;
+  final Future<void> Function() onOpenSettings;
   final VoidCallback onDismiss;
   final PrayerNotificationScheduler? scheduler;
 
@@ -62,7 +65,7 @@ class _NotificationHintState extends State<NotificationHint>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.dismissed || _enabled) return const SizedBox.shrink();
+    if (widget.hidden || _enabled) return const SizedBox.shrink();
     final scheme = context.colorScheme;
     final s = S.of(context);
     return Container(
@@ -90,7 +93,9 @@ class _NotificationHintState extends State<NotificationHint>
           TextButton(
             onPressed: () async {
               await widget.onAllow();
-              if (mounted) await _refresh();
+              if (!mounted) return;
+              await _refresh();
+              if (mounted && !_enabled) await widget.onOpenSettings();
             },
             child: Text(s.home_notifHint_allow),
           ),

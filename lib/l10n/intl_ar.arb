@@ -14,9 +14,7 @@
 "twentyFourHourFormat": "تنسيق 24 ساعة" ,
 "arabicLanguage": "اللغة العربية",
 "pinnedPrayerTimes": "أوقات الصلاة المثبتة",
-"pinnedPrayerTimesSubtitle": "اعرض صلوات اليوم في شريط الإشعارات",
 "notifications": "الإشعارات",
-"notificationsScreenSubtitle": "إدارة إشعارات أوقات الصلاة.",
 
 "hadith_number_label": "حديث رقم",
 "hadith_total_label": "إجمالي الأحاديث",
@@ -98,8 +96,6 @@
 "@reminderMinutesBefore": {
   "placeholders": { "minutes": { "type": "int" } }
 },
-"playTestAdhan": "تشغيل أذان تجريبي",
-"testAdhanScheduledSnack": "أذان تجريبي خلال ٥ ثوانٍ",
 
 "prayers": "الصلوات",
 "lastRead": "آخر قراءة",
@@ -267,11 +263,7 @@
   "calculationMethod_russia": "روسيا",
   "asrSchool_shafi": "الافتراضي (الشافعي، المالكي، الحنبلي)",
   "asrSchool_hanafi": "الحنفي",
-  "alerts_status_ok": "التنبيهات تعمل، ومجدولة حتى {date}",
-  "@alerts_status_ok": {
-    "placeholders": { "date": { "type": "String" } }
-  },
-  "alerts_status_okNoDate": "التنبيهات تعمل",
+  "alerts_status_ok": "التنبيهات تعمل",
   "alerts_status_attention": "إعداد يحتاج إلى إجراء",
   "alerts_status_off": "الإشعارات غير مسموحة، فلن يصل الأذان",
   "alerts_prayersSection": "الصلوات",
@@ -316,7 +308,6 @@
   },
   "alerts_sheet_reminderSound": "صوت التذكير",
   "alerts_sheet_reminderDisabled": "يتوقف التذكير مع إيقاف تنبيه وقت الصلاة.",
-  "alerts_sheet_iosNote": "يعمل الصوت مقطعًا قصيرًا، ويتبع زر الصامت في الهاتف.",
   "alerts_picker_prayerSound": "صوت وقت الصلاة",
   "alerts_picker_silentSub": "يظهر الإشعار دون صوت",
   "alerts_picker_preview": "معاينة {sound}",
@@ -378,28 +369,17 @@
   "rel_lockApp": "قفل التطبيق في التطبيقات الأخيرة",
   "rel_lockAppSub": "بسحب بطاقته إلى الأسفل حتى يظهر القفل، وتجنّب «مسح الكل» قبل ذلك.",
   "rel_done": "تمّ",
-  "rel_scheduledUntil": "مجدولة حتى {date}",
-  "@rel_scheduledUntil": {
-    "placeholders": { "date": { "type": "String" } }
-  },
-  "rel_scheduledNone": "لا تنبيهات مجدولة بعد",
-  "rel_scheduledSub": "تمتد الجدولة عند كل فتح للتطبيق وبعد كل أذان.",
   "rel_test": "اختبار الأذان",
   "onb_alerts_title": "تنبيهات الصلاة",
   "onb_alerts_atTime": "عند وقت الصلاة",
   "onb_alerts_none": "بدون تنبيه",
   "onb_alerts_reminder": "تذكير قبل الصلاة",
   "onb_alerts_reminderNone": "بدون",
-  "onb_alerts_note": "الصوت يتبع وضع الهاتف الصامت، ويمكن ضبط كل صلاة لاحقًا من الإعدادات.",
   "onb_later": "لاحقًا",
-  "onb_skip": "تخطٍّ",
-  "onb_xiaomi_title": "حتى لا يتوقف الأذان على هواتف شاومي",
-  "onb_xiaomi_lead": "يوقف نظام شاومي التطبيقات في الخلفية. ثلاث خطوات تُبقي الأذان في وقته.",
   "onb_exactAlarmsWhy": "يلزم السماح بها ليصل الأذان في وقته تمامًا.",
   "upg_title": "تحسينات في تنبيهات الصلاة",
   "upg_silent": "يتبع الأذان الآن وضع الهاتف الصامت. لتشغيله رغم الصامت: «يرن حتى في الوضع الصامت» لكل صلاة.",
   "upg_reminder": "تذكير قبل الصلاة من دقيقة إلى ٦٠ دقيقة، بصوت مستقل.",
-  "upg_xiaomi": "على هواتف شاومي يلزم إعدادان حتى لا يتوقف الأذان.",
   "upg_exactAlarms": "المنبهات الدقيقة غير مسموحة، فقد يتأخر الأذان.",
   "upg_review": "مراجعة الإعدادات",
   "missed_title": "فاتك تنبيه {prayer}",
@@ -414,6 +394,10 @@
     "placeholders": { "prayer": { "type": "String" } }
   },
   "missed_fix": "إصلاح الآن",
+  "home_untilSunrise": "متبقي {time} على الشروق",
+  "@home_untilSunrise": {
+    "placeholders": { "time": { "type": "String" } }
+  },
   "alerts_minutes": "{count, plural, =1{دقيقة واحدة} =2{دقيقتين} few{{count} دقائق} other{{count} دقيقة}}",
   "@alerts_minutes": {
     "placeholders": { "count": { "type": "num" } }

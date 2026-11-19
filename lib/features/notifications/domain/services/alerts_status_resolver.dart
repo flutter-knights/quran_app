@@ -1,6 +1,6 @@
 import 'package:quran_app/features/notifications/domain/entities/reliability_status.dart';
 
-enum AlertsStatusKind { allOff, off, attention, ok, okNoDate }
+enum AlertsStatusKind { allOff, off, attention, ok }
 
 AlertsStatusKind resolveAlertsStatus({
   required int enabledCount,
@@ -21,5 +21,5 @@ AlertsStatusKind resolveAlertsStatus({
       (batteryMatters && !status.batteryUnrestricted)) {
     return AlertsStatusKind.attention;
   }
-  return until != null ? AlertsStatusKind.ok : AlertsStatusKind.okNoDate;
+  return AlertsStatusKind.ok;
 }

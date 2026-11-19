@@ -78,7 +78,6 @@ class _PromptListenerState extends State<_PromptListener> {
         await _show(
           UpgradeSheet.show(
             context,
-            isXiaomi: status.isXiaomi,
             exactAlarmsAllowed: status.exactAlarmsAllowed,
           ),
         );

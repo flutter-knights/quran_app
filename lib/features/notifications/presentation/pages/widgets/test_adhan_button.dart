@@ -13,12 +13,11 @@ import 'package:quran_app/features/notifications/domain/usecases/schedule_test_a
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/reliability_state.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:quran_app/generated/l10n.dart';
 
 class TestAdhanButton extends StatelessWidget {
-  const TestAdhanButton({super.key, this.label});
+  const TestAdhanButton({super.key, required this.label});
 
-  final String? label;
+  final String label;
 
   Future<void> _onPressed(BuildContext context) async {
     final s = PendingS.current;
@@ -65,7 +64,7 @@ class TestAdhanButton extends StatelessWidget {
         color: context.palette.primaryInk,
         size: 22,
       ),
-      label: Text(label ?? S.of(context).playTestAdhan, style: TS.semi16),
+      label: Text(label, style: TS.semi16),
     );
   }
 }

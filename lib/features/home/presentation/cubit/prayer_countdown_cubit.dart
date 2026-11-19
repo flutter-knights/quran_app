@@ -11,7 +11,11 @@ import 'package:quran_app/features/home/domain/entities/prayer_countdown.dart';
 part 'prayer_countdown_state.dart';
 
 class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
-  PrayerCountdownCubit() : super(PrayerCountdownInitial());
+  PrayerCountdownCubit({DateTime Function() clock = DateTime.now})
+    : _clock = clock,
+      super(PrayerCountdownInitial());
+
+  final DateTime Function() _clock;
 
   DailyPrayerContext? _dailyPrayerContext;
 
@@ -45,7 +49,7 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
     final ctx = _dailyPrayerContext;
     if (ctx == null) return;
 
-    final now = DateTime.now();
+    final now = _clock();
     final contextDate = ctx.date.gregorianDate();
 
     PrayerName currentPrayer = PrayerName.isha;
@@ -64,7 +68,6 @@ class PrayerCountdownCubit extends Cubit<PrayerCountdownState> {
         currentPrayer = prayerName;
         continue;
       }
-      if (prayerName == PrayerName.sunrise) continue;
       // now <= prayerTime -> first upcoming (exact-equal counts as upcoming)
       targetNextPrayerTime = prayerTime;
       nextPrayer = prayerName;

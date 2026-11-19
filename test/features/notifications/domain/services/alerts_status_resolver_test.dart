@@ -85,7 +85,7 @@ void main() {
           const ReliabilityStatus.ios(notificationsEnabled: true),
           android: false,
         ),
-        AlertsStatusKind.okNoDate,
+        AlertsStatusKind.ok,
       );
     });
   });

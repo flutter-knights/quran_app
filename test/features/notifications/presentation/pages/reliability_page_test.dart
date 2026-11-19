@@ -143,26 +143,18 @@ void main() {
     ).called(1);
   });
 
-  testWidgets('everything allowed shows no action and the scheduled date', (
+  testWidgets('everything allowed shows no action and no scheduled date', (
     tester,
   ) async {
     await pump(tester, ReliabilityLoaded(ok));
     expect(find.text('يعمل'), findsNWidgets(3));
     expect(find.text('بدون قيود'), findsOneWidget);
     expect(find.text('فتح الإعداد'), findsNothing);
-    expect(find.text('مجدولة حتى ٢١ نوفمبر'), findsOneWidget);
+    expect(find.textContaining('مجدولة حتى'), findsNothing);
     expect(
       find.widgetWithText(TestAdhanButton, 'اختبار الأذان'),
       findsOneWidget,
     );
-  });
-
-  testWidgets('nothing scheduled reads as not scheduled yet', (tester) async {
-    await pump(
-      tester,
-      ReliabilityLoaded(ok.copyWith(clearScheduledUntil: true)),
-    );
-    expect(find.text('لا تنبيهات مجدولة بعد'), findsOneWidget);
   });
 
   testWidgets('non-Xiaomi hides the Xiaomi section', (tester) async {
@@ -216,7 +208,6 @@ void main() {
     expect(find.text('الإشعارات'), findsOneWidget);
     expect(find.text('المنبهات الدقيقة'), findsNothing);
     expect(find.text('تحسين البطارية'), findsNothing);
-    expect(find.text('لا تنبيهات مجدولة بعد'), findsNothing);
     expect(find.byType(TestAdhanButton), findsOneWidget);
     debugDefaultTargetPlatformOverride = null;
   });

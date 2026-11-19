@@ -62,6 +62,8 @@ class Settings extends Equatable {
   int get enabledAlertCount =>
       prayerAlerts.values.where((a) => a.enabled).length;
 
+  bool get usesNotifications => enabledAlertCount > 0 || isPrayerStripPinned;
+
   const Settings({
     required this.isFormat12Hours,
     required this.isArabic,

@@ -11,18 +11,12 @@ import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/alerts_sheet_actions.dart';
 
 class UpgradeSheet extends StatelessWidget {
-  const UpgradeSheet({
-    super.key,
-    required this.isXiaomi,
-    required this.exactAlarmsAllowed,
-  });
+  const UpgradeSheet({super.key, required this.exactAlarmsAllowed});
 
-  final bool isXiaomi;
   final bool exactAlarmsAllowed;
 
   static Future<void> show(
     BuildContext context, {
-    required bool isXiaomi,
     required bool exactAlarmsAllowed,
   }) {
     return showModalBottomSheet<void>(
@@ -31,10 +25,7 @@ class UpgradeSheet extends StatelessWidget {
       useSafeArea: true,
       showDragHandle: true,
       backgroundColor: context.colorScheme.surface,
-      builder: (_) => UpgradeSheet(
-        isXiaomi: isXiaomi,
-        exactAlarmsAllowed: exactAlarmsAllowed,
-      ),
+      builder: (_) => UpgradeSheet(exactAlarmsAllowed: exactAlarmsAllowed),
     );
   }
 
@@ -60,8 +51,6 @@ class UpgradeSheet extends StatelessWidget {
               icon: HugeIcons.strokeRoundedAlarmClock,
               text: s.upg_exactAlarms,
             ),
-          if (isXiaomi)
-            _Line(icon: HugeIcons.strokeRoundedSettings02, text: s.upg_xiaomi),
           const SizedBox(height: 4),
           AlertsSheetActions(
             primaryLabel: s.upg_review,
@@ -70,7 +59,7 @@ class UpgradeSheet extends StatelessWidget {
               final router = GoRouter.of(context);
               Navigator.of(context).pop();
               router.push(AppRouter.notificationsPath);
-              if (isXiaomi || !exactAlarmsAllowed) {
+              if (!exactAlarmsAllowed) {
                 router.push(AppRouter.alertsReliabilityPath);
               }
             },
