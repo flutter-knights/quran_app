@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 
 /// Pill with optional dot, tinted background, and 1px border in the same color.
 /// Color-driven so it can serve any status (hadith grade, download state, etc).
@@ -37,14 +38,7 @@ class AppStatusBadge extends StatelessWidget {
             ),
             const SizedBox(width: 5),
           ],
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
-          ),
+          Text(label, style: TS.bold12.copyWith(color: color)),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 
 /// `[3×16 secondary bar] [uppercase letter-spaced label] [optional trailing]`
 class AppSectionHeader extends StatelessWidget {
@@ -25,12 +26,7 @@ class AppSectionHeader extends StatelessWidget {
         Expanded(
           child: Text(
             label.toUpperCase(),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: scheme.onSurface,
-              letterSpacing: 1.2,
-            ),
+            style: TS.bold12.copyWith(color: scheme.onSurface),
           ),
         ),
         if (trailing != null) trailing!,

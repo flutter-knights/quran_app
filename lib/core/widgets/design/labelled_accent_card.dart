@@ -29,12 +29,7 @@ class LabelledAccentCard extends StatelessWidget {
         children: [
           Text(
             label.toUpperCase(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: accentColor,
-              letterSpacing: 1,
-            ),
+            style: TS.bold12.copyWith(color: accentColor),
           ),
           const SizedBox(height: 5),
           Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 
 /// Shimmer placeholder mirroring the home layout (app-bar row, time hero,
@@ -11,8 +12,8 @@ class HomeSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
-    final boxText = TextStyle(fontSize: 14, color: scheme.onSurface);
-    final subText = TextStyle(fontSize: 11, color: scheme.onSurfaceVariant);
+    final boxText = TS.regular14.copyWith(color: scheme.onSurface);
+    final subText = TS.regular12.copyWith(color: scheme.onSurfaceVariant);
     return Skeletonizer(
       enabled: true,
       child: Padding(
@@ -45,11 +46,7 @@ class HomeSkeleton extends StatelessWidget {
             Center(
               child: Text(
                 '12:00',
-                style: TextStyle(
-                  fontSize: 58,
-                  fontWeight: FontWeight.w800,
-                  color: scheme.onSurface,
-                ),
+                style: TS.extra36.copyWith(color: scheme.onSurface),
               ),
             ),
             const SizedBox(height: 8),
@@ -65,8 +62,7 @@ class HomeSkeleton extends StatelessWidget {
                         children: [
                           Text(
                             'صلاة',
-                            style: TextStyle(
-                              fontSize: 10,
+                            style: TS.regular10.copyWith(
                               color: scheme.onSurface,
                             ),
                           ),
@@ -82,8 +78,7 @@ class HomeSkeleton extends StatelessWidget {
                           const SizedBox(height: 8),
                           Text(
                             '00:00',
-                            style: TextStyle(
-                              fontSize: 10,
+                            style: TS.regular10.copyWith(
                               color: scheme.onSurfaceVariant,
                             ),
                           ),

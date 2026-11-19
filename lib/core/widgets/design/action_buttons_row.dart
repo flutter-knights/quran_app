@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 
 /// Row of equal-flex 44h buttons. Use `ActionBtn.primary` for the filled
 /// emphasis variant.
@@ -90,8 +91,5 @@ class ActionBtn extends StatelessWidget {
     child: icon,
   );
 
-  Widget _label(Color fg) => Text(
-    label,
-    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg),
-  );
+  Widget _label(Color fg) => Text(label, style: TS.semi12.copyWith(color: fg));
 }

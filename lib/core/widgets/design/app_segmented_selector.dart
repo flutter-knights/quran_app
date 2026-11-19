@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 
 class SegmentOption<T> {
   const SegmentOption({required this.value, required this.label});
@@ -126,9 +127,7 @@ class _Segment extends StatelessWidget {
                   child: Text(
                     label,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                    style: TS.semi12.copyWith(
                       color: selected
                           ? scheme.onPrimary
                           : scheme.onSurfaceVariant,

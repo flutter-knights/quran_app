@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -71,13 +72,7 @@ class _HeaderToolbar extends StatelessWidget {
             ? _SmartStyle.apply(context, leading!)
             : _AutoBackButton(),
         middle: title != null
-            ? DefaultTextStyle(
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-                child: title!,
-              )
+            ? DefaultTextStyle(style: TS.semi20, child: title!)
             : const SizedBox.shrink(),
         trailing: trailing != null
             ? _SmartStyle.apply(context, trailing!)
@@ -100,11 +95,7 @@ class _SmartStyle {
 
     if (resolved is Text || resolved is TextButton) {
       return DefaultTextStyle.merge(
-        style: const TextStyle(
-          color: Colors.teal,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TS.bold16.copyWith(color: Colors.teal),
         child: child,
       );
     }
