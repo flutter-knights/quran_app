@@ -141,8 +141,8 @@ void main() {
 
   testWidgets('iOS shows neither switch', (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     await pump(tester, const AlertsChoice(sound: PrayerSound.adhan));
     expect(find.byType(Switch), findsNothing);
+    debugDefaultTargetPlatformOverride = null;
   });
 }

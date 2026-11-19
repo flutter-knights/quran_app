@@ -85,9 +85,9 @@ Pass `code-review` both:
 ## Step 10 commands
 
 ```bash
-fvm dart format <branch-touched .dart files>
-fvm flutter analyze --no-fatal-infos
-fvm flutter test
+dart format <branch-touched .dart files>
+flutter analyze --no-fatal-infos
+flutter test
 ```
 
 Compare against `main`: a failure that `main` doesn't have is a regression, not noise. The test count changes per branch; never quote one from memory. Quote real output before claiming done.
