@@ -56,11 +56,7 @@ class _JuzTile extends StatelessWidget {
               ),
               child: Text(
                 entry.number.toLocalized(context),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: scheme.onSurface,
-                ),
+                style: TS.extra16.copyWith(color: scheme.onSurface),
               ),
             ),
             const SizedBox(width: 12),
@@ -75,11 +71,7 @@ class _JuzTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${entry.firstSurahArabicName} – ${entry.lastSurahArabicName}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
                   ),
                 ],
               ),

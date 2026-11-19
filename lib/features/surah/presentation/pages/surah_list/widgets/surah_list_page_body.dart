@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/app_list_skeleton.dart';
 import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
@@ -128,11 +129,7 @@ class _SurahListPageBodyState extends State<SurahListPageBody> {
             label: S.of(context).all_surahs,
             trailing: Text(
               S.of(context).surahs_count(surahs.length.toLocalized(context)),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: scheme.secondary,
-              ),
+              style: TS.semi12.copyWith(color: scheme.secondary),
             ),
           ),
         ),
@@ -180,14 +177,11 @@ class _SearchHeader extends StatelessWidget {
             focusNode: focusNode,
             onChanged: onQueryChanged,
             textInputAction: TextInputAction.search,
-            style: TextStyle(fontSize: 14, color: scheme.onSurface),
+            style: TS.regular14.copyWith(color: scheme.onSurface),
             decoration: InputDecoration(
               isDense: true,
               hintText: S.of(context).search_quran_hint,
-              hintStyle: TextStyle(
-                fontSize: 14,
-                color: scheme.onSurfaceVariant,
-              ),
+              hintStyle: TS.regular14.copyWith(color: scheme.onSurfaceVariant),
               prefixIcon: HugeIcon(
                 icon: HugeIcons.strokeRoundedSearch01,
                 size: 18,

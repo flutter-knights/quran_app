@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/surah/presentation/utils/printed_chrome_resolver.dart';
 
@@ -101,9 +102,8 @@ class MushafPrintedChrome extends StatelessWidget {
                   child: Text(
                     '﴿ ${_ar(pageNumber)} ﴾',
                     key: const ValueKey('printed-chrome-page'),
-                    style: TextStyle(
+                    style: TS.bold12.copyWith(
                       fontSize: footerFontSize,
-                      fontWeight: FontWeight.w700,
                       color: colors.accent,
                     ),
                   ),

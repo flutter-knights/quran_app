@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as q;
 
+import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../generated/l10n.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../../quran_playback/domain/entities/reciter.dart';
@@ -266,11 +267,7 @@ class _InfoColumn extends StatelessWidget {
           Text(
             s.ayah_label(target!.surah.toString(), target!.ayah.toString()),
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TS.semi12.copyWith(color: Colors.white),
             overflow: TextOverflow.ellipsis,
           ),
         BlocBuilder<PlaybackCubit, PlaybackState>(
@@ -290,7 +287,7 @@ class _InfoColumn extends StatelessWidget {
             return Text(
               '${p.reciter.arabicName}$speedTxt$repeatTxt',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white60, fontSize: 10),
+              style: TS.regular10.copyWith(color: Colors.white60),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             );
@@ -318,10 +315,7 @@ class _ReciterSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              S.of(context).reciter_label,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            Text(S.of(context).reciter_label, style: TS.medium14),
             const SizedBox(height: 12),
             _ReciterGrid(),
           ],
@@ -348,10 +342,7 @@ class _OptionsSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              S.of(context).playback_speed,
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
+            Text(S.of(context).playback_speed, style: TS.medium12),
             const SizedBox(height: 6),
             _SpeedGrid(),
             const SizedBox(height: 16),
@@ -445,8 +436,7 @@ class _Chip extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 13,
+          style: TS.regular14.copyWith(
             color: selected ? scheme.onPrimary : scheme.onSurface,
           ),
         ),

@@ -73,8 +73,7 @@ class SurahListTile extends StatelessWidget {
                 children: [
                   Text(
                     surah.name,
-                    style: TS.bold16.copyWith(
-                      fontSize: 18,
+                    style: TS.bold20.copyWith(
                       color: scheme.onSurface,
                       height: 1.3,
                     ),
@@ -82,11 +81,7 @@ class SurahListTile extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     meta,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -105,11 +100,7 @@ class SurahListTile extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 surah.number.toLocalized(context),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: scheme.onSurface,
-                ),
+                style: TS.extra16.copyWith(color: scheme.onSurface),
               ),
             ),
           ],

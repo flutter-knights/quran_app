@@ -61,11 +61,7 @@ class AyahResultTile extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               meta,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurfaceVariant,
-              ),
+              style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
             ),
           ],
         ),

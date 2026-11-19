@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
@@ -30,11 +31,7 @@ Widget searchResultsSliver(BuildContext context, SearchState search) {
         child: Center(
           child: Text(
             S.of(context).quran_search_no_results,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurfaceVariant,
-            ),
+            style: TS.semi14.copyWith(color: scheme.onSurfaceVariant),
           ),
         ),
       ),
@@ -109,11 +106,7 @@ Widget searchResultsSliver(BuildContext context, SearchState search) {
           sliver: SliverToBoxAdapter(
             child: Text(
               S.of(context).search_more_results(hidden.toLocalized(context)),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurfaceVariant,
-              ),
+              style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
             ),
           ),
         ),
@@ -133,11 +126,7 @@ Widget _header(BuildContext context, String label, String count) {
         label: label,
         trailing: Text(
           count,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: context.colorScheme.secondary,
-          ),
+          style: TS.semi12.copyWith(color: context.colorScheme.secondary),
         ),
       ),
     ),
@@ -167,14 +156,7 @@ class _JumpTile extends StatelessWidget {
           children: [
             Icon(Icons.arrow_forward, size: 16, color: scheme.primary),
             const SizedBox(width: 10),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: scheme.primary,
-              ),
-            ),
+            Text(label, style: TS.bold14.copyWith(color: scheme.primary)),
           ],
         ),
       ),
