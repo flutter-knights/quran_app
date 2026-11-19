@@ -23,6 +23,10 @@ fvm dart run build_runner build --delete-conflicting-outputs
 `flutter test` takes a folder or a file to run part of the suite. `build_runner` only generates the
 Hive adapters, for `*_model.dart` files (`build.yaml`).
 
+`test/tools/generate_mushaf_assets_test.dart` rewrites `assets/mushaf/**`, so it is skipped unless
+`GENERATE_MUSHAF_ASSETS=true` is set. Regenerate the mushaf only when its layout or fonts change:
+`GENERATE_MUSHAF_ASSETS=true fvm flutter test test/tools/generate_mushaf_assets_test.dart --concurrency=1`.
+
 There is no CI workflow. Run `analyze` and `test` locally before pushing; both must be clean.
 
 Localization regenerates from `lib/l10n/intl_*.arb` through the flutter_intl IDE extension on save.

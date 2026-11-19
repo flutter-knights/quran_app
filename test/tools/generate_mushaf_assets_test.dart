@@ -111,6 +111,15 @@ Rect? _frameInk;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  if (Platform.environment['GENERATE_MUSHAF_ASSETS'] != 'true') {
+    test(
+      'generate mushaf assets',
+      () {},
+      skip: 'opt-in: run with GENERATE_MUSHAF_ASSETS=true',
+    );
+    return;
+  }
+
   setUpAll(() async {
     await _loadFontFromTtf(_headerFontFamily, _headerFontPath);
     await _loadFontFromTtf(_metaFontFamily, _metaFontPath);
