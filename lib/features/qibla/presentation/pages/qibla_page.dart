@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/icon_chip.dart';
@@ -113,6 +114,6 @@ class QiblaPage extends StatelessWidget {
         onAction: () => Geolocator.openLocationSettings(),
       );
     }
-    return Center(child: Text(failure.message));
+    return Center(child: Text(failure.message, style: TS.regular14));
   }
 }

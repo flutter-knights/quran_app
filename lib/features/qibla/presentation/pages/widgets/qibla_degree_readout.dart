@@ -23,11 +23,7 @@ class QiblaDegreeReadout extends StatelessWidget {
       children: [
         Text(
           '$deg°',
-          style: TS.bold16.copyWith(
-            fontSize: 40,
-            height: 1,
-            color: scheme.onSurface,
-          ),
+          style: TS.bold32.copyWith(height: 1, color: scheme.onSurface),
         ),
         const SizedBox(height: 4),
         Text(

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 
 /// Qibla compass: a fixed dial (ticks + N/E/S/W) with a Kaaba needle that
 /// rotates to point at the Qibla. With a live heading the needle angle is the
@@ -123,14 +124,7 @@ class _Letter extends StatelessWidget {
     alignment: alignment,
     child: Padding(
       padding: const EdgeInsets.all(10),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontWeight: FontWeight.w700,
-          color: color,
-          fontSize: 14,
-        ),
-      ),
+      child: Text(text, style: TS.bold14.copyWith(color: color)),
     ),
   );
 }
