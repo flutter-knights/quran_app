@@ -78,7 +78,7 @@ class HomeView extends StatelessWidget {
                     onAction: () => Geolocator.openLocationSettings(),
                   );
                 }
-                return Center(child: Text(state.message));
+                return Center(child: Text(state.message, style: TS.regular14));
               }
               if (state is DailyPrayerContextLoaded) {
                 final ctx = state.dailyPrayerContext;

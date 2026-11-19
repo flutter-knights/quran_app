@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/helper%20functions/time_helpers.dart';
 import 'package:quran_app/core/widgets/toggle_widget.dart';
@@ -24,11 +25,7 @@ class SinglePrayerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
     final fg = isNext ? scheme.secondary : scheme.onSurfaceVariant;
-    final timeStyle = TextStyle(
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-      color: fg,
-    );
+    final timeStyle = TS.semi12.copyWith(color: fg);
     return Expanded(
       child: Container(
         padding: const EdgeInsetsDirectional.fromSTEB(4, 10, 4, 11),
@@ -43,9 +40,7 @@ class SinglePrayerCard extends StatelessWidget {
           children: [
             Text(
               prayerName,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
+              style: TS.bold12.copyWith(
                 color: isNext ? scheme.secondary : scheme.onSurface,
               ),
             ),

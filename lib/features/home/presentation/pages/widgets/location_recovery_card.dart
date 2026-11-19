@@ -49,7 +49,10 @@ class LocationRecoveryCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              FilledButton(onPressed: onAction, child: Text(actionLabel)),
+              FilledButton(
+                onPressed: onAction,
+                child: Text(actionLabel, style: TS.medium14),
+              ),
             ],
           ),
         ),

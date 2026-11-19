@@ -110,7 +110,7 @@ class _ReminderPickerState extends State<ReminderPicker> {
             children: [
               for (final m in ReminderPicker.chipMinutes)
                 ChoiceChip(
-                  label: Text(minutesLabel(s, m, lang)),
+                  label: Text(minutesLabel(s, m, lang), style: TS.medium14),
                   selected: _draft == m,
                   onSelected: enabled ? (_) => _commit(m) : null,
                 ),

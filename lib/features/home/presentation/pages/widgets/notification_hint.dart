@@ -94,7 +94,7 @@ class _NotificationHintState extends State<NotificationHint>
               await widget.onAllow();
               if (mounted) await _refresh();
             },
-            child: Text(s.home_notifHint_allow),
+            child: Text(s.home_notifHint_allow, style: TS.medium14),
           ),
           IconButton(
             icon: Icon(Icons.close, size: 18, color: scheme.onSurface),

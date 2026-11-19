@@ -52,17 +52,14 @@ class UpcomingPrayer extends StatelessWidget {
             ? S.of(context).jumuah
             : prayersMap[nextPrayer]!.prayerName;
         final heroStyle = TS.extra36.cairo.copyWith(
-          fontSize: 46,
-          fontWeight: FontWeight.w800,
           letterSpacing: -1.5,
           height: 1,
           color: scheme.onSurface,
         );
         // AM/PM (ص/م) sits well below the time's scale.
-        final periodStyle = heroStyle.copyWith(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0,
+        final periodStyle = TS.bold20.copyWith(
+          height: 1,
+          color: scheme.onSurface,
         );
 
         return Column(

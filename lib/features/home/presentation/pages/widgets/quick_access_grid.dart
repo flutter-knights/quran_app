@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -78,12 +79,7 @@ class _QuickTile extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: scheme.onSurface,
-            height: 1.3,
-          ),
+          style: TS.semi12.copyWith(color: scheme.onSurface, height: 1.3),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
