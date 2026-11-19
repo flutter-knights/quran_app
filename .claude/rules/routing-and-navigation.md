@@ -12,8 +12,10 @@ GoRouter, built once by `AppRouter.createRouter(initialLocation:)` in `lib/confi
 - camelCase paths (`/surahList`, `/mushafImage`) to match the existing ones.
 
 ## Transitions
-- Every route uses `pageBuilder: GoTransitions.<…>.build(builder: …)`, never a bare `builder:`.
-- Pushed screens use `GoTransitions.fade.withScale`. Home and splash keep their own (`slide.toTop.withFade`, `fade.withScale`). Match the surrounding routes; don't invent a timing.
+- Every route uses a `pageBuilder`, never a bare `builder:`.
+- Pushed screens use `pageBuilder: _fadePage(builder: …)` in `app_router.dart`, which builds a `FadePage` (`fade_page.dart`): a 180 ms fade in, 150 ms out, no scale or slide. Don't add a per-route timing.
+- Only the three entry routes keep `GoTransitions`: splash (`fade.withScale`), home (`slide.toTop.withFade`, 500 ms, the splash hand-off) and onboarding (`fade`, 450 ms). They share the `SplashBackdrop`.
+- `test/config/router/app_router_test.dart` pins this: exactly three `GoTransitions` uses, and every other `GoRoute` goes through `_fadePage`.
 
 ## Params via `state.extra`
 - Pass a primitive, an entity, an args object or a record in `extra`, never path or query params:
