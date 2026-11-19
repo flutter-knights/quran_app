@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/bookmarks/domain/usecases/get_page_bookmarks.dart';
 import 'package:quran_app/features/bookmarks/domain/usecases/toggle_page_bookmark.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';

@@ -8,16 +8,16 @@ settings.
 
 ## Build & Run Commands
 
-Flutter is pinned to **3.50.0 via FVM** (`.fvmrc`). Hive is `hive_ce` (adapters from `hive_ce_generator`,
-registered through `lib/hive_registrar.g.dart`). Prefix every command with `fvm`:
+The project builds with the global **Flutter 3.47.8** on `PATH`; it does not use FVM. Hive is `hive_ce`
+(adapters from `hive_ce_generator`, registered through `lib/hive_registrar.g.dart`):
 
 ```bash
-fvm flutter pub get
-fvm flutter run
-fvm flutter analyze
-fvm flutter test
-fvm flutter test test/features/surah
-fvm dart run build_runner build --delete-conflicting-outputs
+flutter pub get
+flutter run
+flutter analyze
+flutter test
+flutter test test/features/surah
+dart run build_runner build --delete-conflicting-outputs
 ```
 
 `flutter test` takes a folder or a file to run part of the suite. `build_runner` only generates the
@@ -25,7 +25,7 @@ Hive adapters, for `*_model.dart` files (`build.yaml`).
 
 `test/tools/generate_mushaf_assets_test.dart` rewrites `assets/mushaf/**`, so it is skipped unless
 `GENERATE_MUSHAF_ASSETS=true` is set. Regenerate the mushaf only when its layout or fonts change:
-`GENERATE_MUSHAF_ASSETS=true fvm flutter test test/tools/generate_mushaf_assets_test.dart --concurrency=1`.
+`GENERATE_MUSHAF_ASSETS=true flutter test test/tools/generate_mushaf_assets_test.dart --concurrency=1`.
 
 There is no CI workflow. Run `analyze` and `test` locally before pushing; both must be clean.
 
