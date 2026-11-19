@@ -122,6 +122,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
     final storedAlerts = context.select(
       (SettingsCubit c) => c.state.settingsModel.prayerAlerts,
     );
+    final stripPinned = context.select(
+      (SettingsCubit c) => c.state.settingsModel.isPrayerStripPinned,
+    );
     return Scaffold(
       body: SplashBackdrop(
         child: SafeArea(
@@ -162,7 +165,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           : null,
                     ),
                     AlertsStep(
-                      choice: _alertsChoice ?? alertsChoiceFrom(storedAlerts),
+                      choice:
+                          _alertsChoice ??
+                          alertsChoiceFrom(
+                            storedAlerts,
+                            stripPinned: stripPinned,
+                          ),
                       onChanged: (c) => setState(() {
                         _alertsChoice = c;
                         _alertsDeferred = false;

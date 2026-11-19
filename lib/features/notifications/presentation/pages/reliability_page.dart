@@ -6,7 +6,6 @@ import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/palette_context.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
-import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
@@ -22,7 +21,6 @@ import 'package:quran_app/features/notifications/presentation/pages/widgets/open
 import 'package:quran_app/features/notifications/presentation/pages/widgets/reload_status_on_sync.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/test_adhan_button.dart';
 import 'package:quran_app/features/notifications/presentation/pages/widgets/xiaomi_checklist.dart';
-import 'package:quran_app/features/notifications/presentation/utils/enum_localization.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ReliabilityPage extends StatelessWidget {
@@ -85,10 +83,6 @@ class ReliabilityPage extends StatelessWidget {
       if (android && status.isXiaomi) ...[
         const SizedBox(height: 24),
         const _XiaomiSection(),
-      ],
-      if (android) ...[
-        const SizedBox(height: 24),
-        _ScheduledCard(until: status.scheduledUntil),
       ],
     ];
   }
@@ -216,32 +210,6 @@ class _XiaomiSection extends StatelessWidget {
         ),
         XiaomiChecklist(ink: context.palette.primaryInk),
       ],
-    );
-  }
-}
-
-class _ScheduledCard extends StatelessWidget {
-  const _ScheduledCard({required this.until});
-
-  final DateTime? until;
-
-  @override
-  Widget build(BuildContext context) {
-    final s = PendingS.of(context);
-    final until = this.until;
-    return SurfaceCard(
-      padding: EdgeInsets.zero,
-      child: AppSettingsTile(
-        leading: HugeIcon(
-          icon: HugeIcons.strokeRoundedCalendar03,
-          color: context.colorScheme.onSurface,
-          size: 20,
-        ),
-        title: until == null
-            ? s.rel_scheduledNone
-            : s.rel_scheduledUntil(alertsDateLabel(until, context.langCode)),
-        subtitle: s.rel_scheduledSub,
-      ),
     );
   }
 }

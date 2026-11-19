@@ -117,6 +117,7 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
   void applyAlertToAll({
     required bool enabled,
     PrayerSound? sound,
+    bool? ringInSilent,
     bool? reminderEnabled,
     int? reminderMinutes,
   }) {
@@ -127,6 +128,7 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
           (current[p] ?? const PrayerAlert()).copyWith(
             enabled: enabled,
             sound: sound,
+            ringInSilent: ringInSilent,
             reminderEnabled: reminderEnabled,
             reminderMinutes: reminderMinutes,
           ),

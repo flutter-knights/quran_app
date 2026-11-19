@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
@@ -83,26 +84,48 @@ class AlertsStep extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            s.onb_alerts_note,
-            textAlign: TextAlign.center,
-            style: TS.regular12.copyWith(
-              color: Colors.white.withValues(alpha: 0.75),
-              height: 1.6,
+          if (defaultTargetPlatform == TargetPlatform.android) ...[
+            const SizedBox(height: 18),
+            _SwitchCard(
+              children: [
+                _SwitchRow(
+                  label: s.alerts_sheet_ringInSilent,
+                  value:
+                      choice.ringInSilent && choice.sound == PrayerSound.adhan,
+                  onChanged: choice.sound == PrayerSound.adhan
+                      ? (v) => onChanged(choice.copyWith(ringInSilent: v))
+                      : null,
+                ),
+                _SwitchRow(
+                  label: s.strip_title,
+                  value: choice.stripPinned,
+                  onChanged: (v) => onChanged(choice.copyWith(stripPinned: v)),
+                ),
+              ],
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
   void _pickSound(PrayerSound? sound) => onChanged(
-    AlertsChoice(sound: sound, reminderMinutes: choice.reminderMinutes),
+    AlertsChoice(
+      sound: sound,
+      reminderMinutes: choice.reminderMinutes,
+      ringInSilent: choice.ringInSilent,
+      stripPinned: choice.stripPinned,
+    ),
   );
 
-  void _pickMinutes(int? minutes) =>
-      onChanged(AlertsChoice(sound: choice.sound, reminderMinutes: minutes));
+  void _pickMinutes(int? minutes) => onChanged(
+    AlertsChoice(
+      sound: choice.sound,
+      reminderMinutes: minutes,
+      ringInSilent: choice.ringInSilent,
+      stripPinned: choice.stripPinned,
+    ),
+  );
 }
 
 class _Label extends StatelessWidget {
@@ -201,6 +224,84 @@ class _ReminderChip extends StatelessWidget {
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onSelected: onSelected == null ? null : (_) => onSelected(),
+    );
+  }
+}
+
+class _SwitchCard extends StatelessWidget {
+  const _SwitchCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (final (i, child) in children.indexed) ...[
+            if (i > 0)
+              Divider(height: 1, color: Colors.white.withValues(alpha: 0.2)),
+            child,
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SwitchRow extends StatelessWidget {
+  const _SwitchRow({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final onChanged = this.onChanged;
+    return MergeSemantics(
+      child: InkWell(
+        onTap: onChanged == null ? null : () => onChanged(!value),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 56),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 12, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TS.semi16.copyWith(
+                      color: Colors.white.withValues(
+                        alpha: onChanged == null ? 0.38 : 1,
+                      ),
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: value,
+                  activeThumbColor: context.colorScheme.primary,
+                  activeTrackColor: Colors.white,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  onChanged: onChanged,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

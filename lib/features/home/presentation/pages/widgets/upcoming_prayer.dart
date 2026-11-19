@@ -7,6 +7,7 @@ import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/helper%20functions/duration_helpers.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/helper%20functions/time_helpers.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/toggle_widget.dart';
 import 'package:quran_app/features/home/presentation/cubit/prayer_countdown_cubit.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
@@ -50,9 +51,17 @@ class UpcomingPrayer extends StatelessWidget {
         final nextPrayer = state.prayerCountdown.nextPrayer;
         // On Friday, Dhuhr is announced as Jumu'ah (matches the prayers row).
         final isFriday = DateTime.now().weekday == DateTime.friday;
-        final upcomingPrayer = (isFriday && nextPrayer == PrayerName.dhuhr)
-            ? S.of(context).jumuah
-            : prayersMap[nextPrayer]!.prayerName;
+        final s = S.of(context);
+        final remainingLabel = switch (nextPrayer) {
+          PrayerName.sunrise =>
+            PendingS.of(context).home_untilSunrise(remaining),
+          PrayerName.dhuhr when isFriday =>
+            s.remainingTimeLabel(remaining, s.jumuah),
+          _ => s.remainingTimeLabel(
+            remaining,
+            prayersMap[nextPrayer]!.prayerName,
+          ),
+        };
         final heroStyle = TS.extra36.cairo.copyWith(
           fontSize: 46,
           fontWeight: FontWeight.w800,
@@ -92,7 +101,7 @@ class UpcomingPrayer extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  S.of(context).remainingTimeLabel(remaining, upcomingPrayer),
+                  remainingLabel,
                   style: TS.medium14
                       .copyWith(color: scheme.onSurfaceVariant)
                       .cairo,

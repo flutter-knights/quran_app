@@ -187,7 +187,8 @@ void main() {
     settings.updatePrayerStripPinned(true);
     settings.updateStripStyle(const StripStyle());
     await pump(tester, times: cairoToday());
-    expect(find.textContaining('التنبيهات تعمل، ومجدولة حتى '), findsOneWidget);
+    expect(find.text('التنبيهات تعمل'), findsOneWidget);
+    expect(find.textContaining('مجدولة حتى'), findsNothing);
     expect(
       find.text('أذان الفجر، يرن في الوضع الصامت، تذكير قبل ١٠ دقائق'),
       findsOneWidget,

@@ -59,9 +59,7 @@ class AlertsStatusLine extends StatelessWidget {
             ? HugeIcons.strokeRoundedCheckmarkCircle02
             : HugeIcons.strokeRoundedNotification01,
         iconColor: muted,
-        text: loading
-            ? s.alerts_status_ok(alertsDateLabel(DateTime.now(), lang))
-            : s.alerts_status_okNoDate,
+        text: s.alerts_status_ok,
         onTap: loading ? null : onTap,
       );
       return loading ? Skeletonizer(child: row) : row;
@@ -77,22 +75,17 @@ class AlertsStatusLine extends StatelessWidget {
         AlertsStatusKind.allOff ||
         AlertsStatusKind.off => HugeIcons.strokeRoundedNotificationOff01,
         AlertsStatusKind.attention => HugeIcons.strokeRoundedInformationCircle,
-        AlertsStatusKind.ok ||
-        AlertsStatusKind.okNoDate => HugeIcons.strokeRoundedCheckmarkCircle02,
+        AlertsStatusKind.ok => HugeIcons.strokeRoundedCheckmarkCircle02,
       },
       iconColor: switch (kind) {
-        AlertsStatusKind.ok ||
-        AlertsStatusKind.okNoDate => context.palette.primaryInk,
+        AlertsStatusKind.ok => context.palette.primaryInk,
         _ => muted,
       },
       text: switch (kind) {
         AlertsStatusKind.allOff => enabledCountLabel(s, 0, lang),
         AlertsStatusKind.off => s.alerts_status_off,
         AlertsStatusKind.attention => s.alerts_status_attention,
-        AlertsStatusKind.ok => s.alerts_status_ok(
-          alertsDateLabel(status.scheduledUntil!, lang),
-        ),
-        AlertsStatusKind.okNoDate => s.alerts_status_okNoDate,
+        AlertsStatusKind.ok => s.alerts_status_ok,
       },
       onTap: onTap,
     );

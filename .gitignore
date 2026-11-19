@@ -56,3 +56,7 @@ Quran App.html
 .superpowers/
 Quran App (2).html
 /android/build/
+
+# Local design mockups and tooling (design-mockups runs)
+/docs/design-audit/
+/mobile/

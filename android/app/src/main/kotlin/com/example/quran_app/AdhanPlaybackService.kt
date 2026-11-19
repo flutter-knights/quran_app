@@ -142,6 +142,7 @@ class AdhanPlaybackService : Service() {
         }
         mediaPlayer = null
         stopForeground(STOP_FOREGROUND_REMOVE)
+        NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID)
         stopSelf()
     }
 

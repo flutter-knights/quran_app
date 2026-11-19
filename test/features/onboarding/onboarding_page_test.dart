@@ -169,6 +169,21 @@ void main() {
     expect(find.text('home-page'), findsOneWidget);
   });
 
+  testWidgets('continue applies ring in silent and the strip', (tester) async {
+    await pump(tester);
+    await toNotificationsStep(tester);
+    await secondary(tester);
+    for (final label in ['يرن حتى في الوضع الصامت', 'شريط أوقات الصلاة']) {
+      await tester.ensureVisible(find.text(label));
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+    await primary(tester);
+    final model = settings.state.settingsModel;
+    expect(model.isPrayerStripPinned, isTrue);
+    expect(model.prayerAlerts.values.every((a) => a.ringInSilent), isTrue);
+  });
+
   testWidgets('an untouched continue keeps the stored alerts', (tester) async {
     settings.updatePrayerAlert(
       PrayerName.isha,
@@ -184,6 +199,7 @@ void main() {
     await secondary(tester);
     await primary(tester);
     expect(settings.state.settingsModel.prayerAlerts, before);
+    expect(settings.state.settingsModel.isPrayerStripPinned, isFalse);
     expect(find.text('home-page'), findsOneWidget);
   });
 

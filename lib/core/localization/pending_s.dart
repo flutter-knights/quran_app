@@ -16,10 +16,7 @@ class PendingS {
   static PendingS get current =>
       PendingS._(Intl.getCurrentLocale().startsWith('ar'));
 
-  String alerts_status_ok(String date) => _ar
-      ? 'التنبيهات تعمل، ومجدولة حتى $date'
-      : 'Alerts are on, scheduled until $date';
-  String get alerts_status_okNoDate => _ar ? 'التنبيهات تعمل' : 'Alerts are on';
+  String get alerts_status_ok => _ar ? 'التنبيهات تعمل' : 'Alerts are on';
   String get alerts_status_attention =>
       _ar ? 'إعداد يحتاج إلى إجراء' : 'A setting needs attention';
   String get alerts_status_off => _ar
@@ -86,9 +83,6 @@ class PendingS {
   String get alerts_sheet_reminderDisabled => _ar
       ? 'يتوقف التذكير مع إيقاف تنبيه وقت الصلاة.'
       : 'The reminder is off while the prayer-time alert is off.';
-  String get alerts_sheet_iosNote => _ar
-      ? 'يعمل الصوت مقطعًا قصيرًا، ويتبع زر الصامت في الهاتف.'
-      : 'Plays a short clip and follows the phone\'s mute switch.';
   String get alerts_picker_prayerSound =>
       _ar ? 'صوت وقت الصلاة' : 'Prayer-time sound';
   String get alerts_picker_silentSub =>
@@ -165,13 +159,6 @@ class PendingS {
       ? 'بسحب بطاقته إلى الأسفل حتى يظهر القفل، وتجنّب «مسح الكل» قبل ذلك.'
       : 'Pull its card down until the lock shows, and avoid «Clear all» before that.';
   String get rel_done => _ar ? 'تمّ' : 'Done';
-  String rel_scheduledUntil(String date) =>
-      _ar ? 'مجدولة حتى $date' : 'Scheduled until $date';
-  String get rel_scheduledNone =>
-      _ar ? 'لا تنبيهات مجدولة بعد' : 'Nothing scheduled yet';
-  String get rel_scheduledSub => _ar
-      ? 'تمتد الجدولة عند كل فتح للتطبيق وبعد كل أذان.'
-      : 'Scheduling extends each time the app opens and after every adhan.';
   String get rel_test => _ar ? 'اختبار الأذان' : 'Test the adhan';
   String get onb_alerts_title => _ar ? 'تنبيهات الصلاة' : 'Prayer alerts';
   String get onb_alerts_atTime => _ar ? 'عند وقت الصلاة' : 'At prayer time';
@@ -179,9 +166,6 @@ class PendingS {
   String get onb_alerts_reminder =>
       _ar ? 'تذكير قبل الصلاة' : 'Reminder before prayer';
   String get onb_alerts_reminderNone => _ar ? 'بدون' : 'None';
-  String get onb_alerts_note => _ar
-      ? 'الصوت يتبع وضع الهاتف الصامت، ويمكن ضبط كل صلاة لاحقًا من الإعدادات.'
-      : 'Sound follows silent mode; each prayer can be adjusted later in Settings.';
   String get onb_later => _ar ? 'لاحقًا' : 'Later';
   String get onb_skip => _ar ? 'تخطٍّ' : 'Skip';
   String get onb_xiaomi_title => _ar
@@ -219,6 +203,8 @@ class PendingS {
   String late_title(String prayer) =>
       _ar ? 'تأخّر تنبيه $prayer' : 'The $prayer alert was late';
   String get missed_fix => _ar ? 'إصلاح الآن' : 'Fix now';
+  String home_untilSunrise(String time) =>
+      _ar ? 'متبقي $time على الشروق' : '$time remaining until sunrise';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

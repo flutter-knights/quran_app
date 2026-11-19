@@ -208,11 +208,6 @@ void main() {
     }
   });
 
-  test('alertsDateLabel reads day and month with locale digits', () {
-    expect(alertsDateLabel(DateTime(2026, 11, 22), 'ar'), '٢٢ نوفمبر');
-    expect(alertsDateLabel(DateTime(2026, 11, 22), 'en'), '22 November');
-  });
-
   testWidgets('strip option labels in both languages', (tester) async {
     final ar = await pendingFor(tester, 'ar');
     expect(stripHighlightLabel(ar, StripHighlight.maroon), 'عنابي');

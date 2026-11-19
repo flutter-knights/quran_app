@@ -181,10 +181,7 @@ void main() {
       find.widgetWithText(SwitchListTile, 'يرن حتى في الوضع الصامت'),
       findsNothing,
     );
-    expect(
-      find.text('يعمل الصوت مقطعًا قصيرًا، ويتبع زر الصامت في الهاتف.'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('زر الصامت'), findsNothing);
     expect(find.text('مقطع من أذان الفجر'), findsOneWidget);
     debugDefaultTargetPlatformOverride = null;
   });
