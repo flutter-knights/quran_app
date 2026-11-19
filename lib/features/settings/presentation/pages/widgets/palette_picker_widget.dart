@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 
 class PalettePickerWidget extends StatelessWidget {
@@ -72,11 +73,7 @@ class _PaletteTile extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(10, 8, 30, 0),
               child: Text(
                 _label,
-                style: TextStyle(
-                  color: palette.onSurface,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TS.bold12.copyWith(color: palette.onSurface),
                 maxLines: 2,
               ),
             ),
