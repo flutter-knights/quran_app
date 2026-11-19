@@ -13,9 +13,9 @@ GoRouter, built once by `AppRouter.createRouter(initialLocation:)` in `lib/confi
 
 ## Transitions
 - Every route uses a `pageBuilder`, never a bare `builder:`.
-- Pushed screens use `pageBuilder: _fadePage(builder: …)` in `app_router.dart`, which builds a `FadePage` (`fade_page.dart`): a 180 ms fade in, 150 ms out, no scale or slide. Don't add a per-route timing.
-- Only the three entry routes keep `GoTransitions`: splash (`fade.withScale`), home (`slide.toTop.withFade`, 500 ms, the splash hand-off) and onboarding (`fade`, 450 ms). They share the `SplashBackdrop`.
-- `test/config/router/app_router_test.dart` pins this: exactly three `GoTransitions` uses, and every other `GoRoute` goes through `_fadePage`.
+- Pushed screens use `pageBuilder: _fadePage(builder: …)` in `app_router.dart`: `GoTransitions.fade.withStyle(curve: Curves.easeInOut)` at 200 ms, no scale or slide. Don't add a per-route timing; change the helper to change every screen.
+- The three entry routes keep their own `GoTransitions`: splash (`fade.withScale`), home (`slide.toTop.withFade`, 500 ms, the splash hand-off) and onboarding (`fade`, 450 ms). They share the `SplashBackdrop`.
+- `test/config/router/app_router_test.dart` pins this: four `GoTransitions` uses (the entry routes and `_fadePage`), every other `GoRoute` goes through `_fadePage`, and the helper is a 200 ms `easeInOut` fade.
 
 ## Params via `state.extra`
 - Pass a primitive, an entity, an args object or a record in `extra`, never path or query params:

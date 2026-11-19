@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_transitions/go_transitions.dart';
-import 'package:quran_app/config/router/fade_page.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/ahadith_list_page.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/books_list_page.dart';
@@ -130,9 +129,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: booksPath,
-        pageBuilder: _fadePage(
-          builder: (context, state) => BooksListPage(),
-        ),
+        pageBuilder: _fadePage(builder: (context, state) => BooksListPage()),
       ),
       GoRoute(
         path: bookmarksPath,
@@ -229,8 +226,12 @@ MushafArgs _mushafArgsFrom(Object? extra) {
   return const MushafArgs(page: 1);
 }
 
-GoRouterPageBuilder _fadePage({
-  required Widget Function(BuildContext context, GoRouterState state) builder,
-}) =>
-    (context, state) =>
-        FadePage(key: state.pageKey, child: builder(context, state));
+GoRouterPageBuilder _fadePage({required GoRouterWidgetBuilder builder}) =>
+    GoTransitions.fade
+        .withStyle(curve: Curves.easeInOut)
+        .build(
+          settings: const GoTransitionSettings(
+            duration: Duration(milliseconds: 200),
+          ),
+          builder: builder,
+        );
