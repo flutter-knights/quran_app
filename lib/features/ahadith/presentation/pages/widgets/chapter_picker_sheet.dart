@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/features/ahadith/domain/entities/chapter.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -87,17 +88,13 @@ class _ChapterPickerSheetState extends State<ChapterPickerSheet> {
                 const SizedBox(height: 14),
                 Text(
                   S.of(context).filter_chapter_label,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurface,
-                  ),
+                  style: TS.bold16.copyWith(color: scheme.onSurface),
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   autofocus: false,
                   onChanged: (v) => setState(() => _query = v),
-                  style: TextStyle(fontSize: 14, color: scheme.onSurface),
+                  style: TS.regular14.copyWith(color: scheme.onSurface),
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: S.of(context).filter_chapter_label,
@@ -172,9 +169,7 @@ class _PickerRow extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                style: (selected ? TS.bold14 : TS.medium14).copyWith(
                   color: selected ? scheme.primary : scheme.onSurface,
                 ),
               ),

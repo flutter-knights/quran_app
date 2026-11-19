@@ -40,12 +40,7 @@ class AhadithListItem extends StatelessWidget {
               ),
               Text(
                 '#${hadith.hadithNumber.toLocalized(context)}',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.secondary,
-                  letterSpacing: 0.5,
-                ),
+                style: TS.bold14.copyWith(color: scheme.secondary),
               ),
             ],
           ),
@@ -66,11 +61,7 @@ class AhadithListItem extends StatelessWidget {
               hadith.chapter!.chapterArabic,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurfaceVariant,
-              ),
+              style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
             ),
           ],
         ],

@@ -53,7 +53,6 @@ class HadithBookListItem extends StatelessWidget {
                         Text(
                           bookInfo.title,
                           style: TS.bold16.copyWith(
-                            fontSize: 17,
                             color: scheme.onSurface,
                             height: 1.25,
                           ),
@@ -61,19 +60,14 @@ class HadithBookListItem extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           bookInfo.arabicTitle,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                          style: TS.semi12.copyWith(
                             color: scheme.onSurfaceVariant,
-                            letterSpacing: 0.3,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${bookInfo.author} · ${bookInfo.hadithCount.toLocalized(context)} ${S.of(context).hadith_total_label}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                          style: TS.medium12.copyWith(
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
@@ -137,7 +131,7 @@ class _BookAction extends StatelessWidget {
       fg = scheme.secondary;
       content = Text(
         '${progressPct.toLocalized(context)}%',
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: fg),
+        style: TS.bold12.copyWith(color: fg),
       );
     } else {
       bg = scheme.onSurface.withValues(alpha: 0.06);

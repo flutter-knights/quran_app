@@ -48,9 +48,11 @@ class HadithView extends StatelessWidget {
       );
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(S.of(context).share_failed)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(S.of(context).share_failed, style: TS.regular14),
+          ),
+        );
       }
     }
   }
@@ -159,9 +161,7 @@ class HadithView extends StatelessWidget {
                                       if (hadith.chapter != null)
                                         Text(
                                           '${S.of(context).chapter_label} ${hadith.chapter!.chapterNumber.toLocalized(context)}',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
+                                          style: TS.semi12.copyWith(
                                             color: scheme.onSurfaceVariant,
                                           ),
                                         ),
@@ -178,8 +178,7 @@ class HadithView extends StatelessWidget {
                                     const SizedBox(height: 12),
                                     Text(
                                       hadith.chapter!.chapterArabic,
-                                      style: TS.bold16.copyWith(
-                                        fontSize: 18,
+                                      style: TS.bold20.copyWith(
                                         color: scheme.secondary,
                                         height: 1.6,
                                       ),
@@ -187,9 +186,7 @@ class HadithView extends StatelessWidget {
                                     const SizedBox(height: 4),
                                     Text(
                                       hadith.chapter!.chapterEnglish,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
+                                      style: TS.medium14.copyWith(
                                         color: scheme.onSurfaceVariant,
                                       ),
                                     ),
