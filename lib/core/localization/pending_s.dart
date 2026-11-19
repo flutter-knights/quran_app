@@ -167,13 +167,6 @@ class PendingS {
       _ar ? 'تذكير قبل الصلاة' : 'Reminder before prayer';
   String get onb_alerts_reminderNone => _ar ? 'بدون' : 'None';
   String get onb_later => _ar ? 'لاحقًا' : 'Later';
-  String get onb_skip => _ar ? 'تخطٍّ' : 'Skip';
-  String get onb_xiaomi_title => _ar
-      ? 'حتى لا يتوقف الأذان على هواتف شاومي'
-      : 'Keep the adhan working on Xiaomi phones';
-  String get onb_xiaomi_lead => _ar
-      ? 'يوقف نظام شاومي التطبيقات في الخلفية. ثلاث خطوات تُبقي الأذان في وقته.'
-      : 'Xiaomi\'s system stops apps in the background. Three steps keep the adhan on time.';
   String get onb_exactAlarmsWhy => _ar
       ? 'يلزم السماح بها ليصل الأذان في وقته تمامًا.'
       : 'Needed for the adhan to arrive right on time.';
@@ -185,9 +178,6 @@ class PendingS {
   String get upg_reminder => _ar
       ? 'تذكير قبل الصلاة من دقيقة إلى ٦٠ دقيقة، بصوت مستقل.'
       : 'A reminder from 1 to 60 minutes before, with its own sound.';
-  String get upg_xiaomi => _ar
-      ? 'على هواتف شاومي يلزم إعدادان حتى لا يتوقف الأذان.'
-      : 'On Xiaomi phones two settings keep the adhan from stopping.';
   String get upg_exactAlarms => _ar
       ? 'المنبهات الدقيقة غير مسموحة، فقد يتأخر الأذان.'
       : 'Exact alarms are not allowed, so the adhan may be late.';

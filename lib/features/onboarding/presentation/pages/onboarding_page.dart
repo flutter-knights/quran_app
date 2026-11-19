@@ -17,7 +17,6 @@ import 'package:quran_app/features/onboarding/presentation/pages/widgets/exact_a
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/language_step.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/permission_step.dart';
 import 'package:quran_app/features/onboarding/presentation/pages/widgets/welcome_step.dart';
-import 'package:quran_app/features/onboarding/presentation/pages/widgets/xiaomi_step.dart';
 import 'package:quran_app/features/onboarding/presentation/utils/apply_alerts_choice.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -37,19 +36,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
   static const _locationStep = 3;
   static const _notificationsStep = 4;
   static const _alertsStep = 5;
-  static const _xiaomiStep = 6;
+  static const _stepCount = 6;
+  static const _lastStep = _stepCount - 1;
 
   final _controller = PageController();
   int _index = 0;
   bool _leaving = false;
-  bool _isXiaomi = false;
   bool? _exactAlarmsAllowed;
   bool _exactAlarmsAsked = false;
   AlertsChoice? _alertsChoice;
   bool _alertsDeferred = false;
-
-  int get _stepCount => _isXiaomi ? 7 : 6;
-  int get _lastStep => _stepCount - 1;
 
   @override
   void dispose() {
@@ -107,16 +103,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final (xiaomiNow, exactAllowed) = context.select(
+    final exactAllowed = context.select(
       (ReliabilityCubit c) => switch (c.state) {
-        ReliabilityLoaded(:final status) => (
-          status.isXiaomi,
-          status.exactAlarmsAllowed,
-        ),
-        _ => (false, null),
+        ReliabilityLoaded(:final status) => status.exactAlarmsAllowed,
+        _ => null,
       },
     );
-    _isXiaomi = _isXiaomi || xiaomiNow;
     _exactAlarmsAllowed = exactAllowed ?? _exactAlarmsAllowed;
     _exactAlarmsAsked = _exactAlarmsAsked || exactAllowed == false;
     final storedAlerts = context.select(
@@ -176,7 +168,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         _alertsDeferred = false;
                       }),
                     ),
-                    if (_isXiaomi) const XiaomiStep(),
                   ],
                 ),
               ),
@@ -198,7 +189,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
     final primaryLabel = isPermissionStep ? s.onb_enable : s.onb_continue;
     final secondaryLabel = switch (_index) {
       _alertsStep => pending.onb_later,
-      _xiaomiStep => pending.onb_skip,
       _ => s.onb_not_now,
     };
 

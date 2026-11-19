@@ -28,6 +28,7 @@ import 'package:quran_app/features/notifications/presentation/cubit/sound_previe
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/today_prayer_times_state.dart';
 import 'package:quran_app/features/notifications/presentation/pages/notifications_settings_page.dart';
+import 'package:quran_app/features/notifications/presentation/pages/widgets/test_adhan_button.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -197,7 +198,7 @@ void main() {
     expect(find.text('متوقف'), findsOneWidget);
     await scrollToEnd(tester);
     expect(find.text('مفعّل، عرض موسّع'), findsOneWidget);
-    expect(find.text('تشغيل أذان تجريبي'), findsOneWidget);
+    expect(find.byType(TestAdhanButton), findsNothing);
     expect(find.text('تُختار الطريقة تلقائيًا حسب بلدك.'), findsOneWidget);
   });
 

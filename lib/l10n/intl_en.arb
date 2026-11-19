@@ -104,8 +104,6 @@
 "@reminderMinutesBefore": {
   "placeholders": { "minutes": { "type": "int" } }
 },
-"playTestAdhan": "Play test adhan",
-"testAdhanScheduledSnack": "Test adhan in 5 seconds",
 
 "prayers": "Prayers",
 "lastRead": "Last Read",
@@ -394,14 +392,10 @@
   "onb_alerts_reminder": "Reminder before prayer",
   "onb_alerts_reminderNone": "None",
   "onb_later": "Later",
-  "onb_skip": "Skip",
-  "onb_xiaomi_title": "Keep the adhan working on Xiaomi phones",
-  "onb_xiaomi_lead": "Xiaomi's system stops apps in the background. Three steps keep the adhan on time.",
   "onb_exactAlarmsWhy": "Needed for the adhan to arrive right on time.",
   "upg_title": "Prayer alerts improved",
   "upg_silent": "The adhan now follows silent mode. To ring anyway, turn on «Ring even in silent mode» for a prayer.",
   "upg_reminder": "A reminder from 1 to 60 minutes before, with its own sound.",
-  "upg_xiaomi": "On Xiaomi phones two settings keep the adhan from stopping.",
   "upg_exactAlarms": "Exact alarms are not allowed, so the adhan may be late.",
   "upg_review": "Review settings",
   "missed_title": "You missed the {prayer} alert",

@@ -43,7 +43,6 @@ void main() {
   const alertsTitle = 'تنبيهات الصلاة';
   const exactTitle = 'المنبهات الدقيقة';
   final exactOpen = find.widgetWithText(OutlinedButton, 'فتح الإعداد');
-  const xiaomiTitle = 'حتى لا يتوقف الأذان على هواتف شاومي';
 
   setUpAll(() async {
     HydratedBloc.storage = MemStorage();
@@ -219,109 +218,15 @@ void main() {
     expect(find.text('home-page'), findsOneWidget);
   });
 
-  testWidgets('Xiaomi adds the checklist step, skip leaves the flags off', (
+  testWidgets('Xiaomi has no checklist step before any missed adhan', (
     tester,
   ) async {
     await pump(tester, xiaomi: true);
     await toNotificationsStep(tester);
     await secondary(tester);
     await primary(tester);
-    expect(find.text(xiaomiTitle), findsOneWidget);
-    expect(find.text('تخطٍّ'), findsOneWidget);
-    await secondary(tester);
-    final model = settings.state.settingsModel;
-    expect(model.xiaomiAutostartConfirmed, isFalse);
-    expect(model.xiaomiBatteryConfirmed, isFalse);
-    expect(model.hasCompletedOnboarding, isTrue);
     expect(find.text('home-page'), findsOneWidget);
-  });
-
-  testWidgets('the Xiaomi step confirms a setting and continue finishes', (
-    tester,
-  ) async {
-    await pump(tester, xiaomi: true);
-    await toNotificationsStep(tester);
-    await secondary(tester);
-    await secondary(tester);
-    expect(find.text(xiaomiTitle), findsOneWidget);
-    await tester.tap(find.text('فتح الإعداد').first);
-    verify(
-      () => reliability.openSettings(SystemSettingsTarget.autostart),
-    ).called(1);
-    await tester.tap(find.widgetWithText(TextButton, 'تمّ').first);
-    await tester.pumpAndSettle();
-    expect(settings.state.settingsModel.xiaomiAutostartConfirmed, isTrue);
-    verify(() => reliability.load()).called(1);
-    await primary(tester);
-    expect(find.text('home-page'), findsOneWidget);
-  });
-
-  testWidgets('going back from the Xiaomi step keeps the alerts choice', (
-    tester,
-  ) async {
-    await pump(tester, xiaomi: true);
-    await toNotificationsStep(tester);
-    await secondary(tester);
-    await tester.tap(find.text('نغمة الإشعار'));
-    await tester.pumpAndSettle();
-    await primary(tester);
-    expect(find.text(xiaomiTitle), findsOneWidget);
-    await tester.tap(find.byType(IconButton));
-    await tester.pumpAndSettle();
-    final radios = tester.widget<RadioGroup<PrayerSound?>>(
-      find.byType(RadioGroup<PrayerSound?>),
-    );
-    expect(radios.groupValue, PrayerSound.tone);
-  });
-
-  testWidgets('a choice swiped past on Xiaomi still applies at the end', (
-    tester,
-  ) async {
-    await pump(tester, xiaomi: true);
-    await toNotificationsStep(tester);
-    await secondary(tester);
-    await tester.tap(find.text('نغمة الإشعار'));
-    await tester.pumpAndSettle();
-    await tester.drag(find.byType(PageView), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    expect(find.text(xiaomiTitle), findsOneWidget);
-    await primary(tester);
-    final alerts = settings.state.settingsModel.prayerAlerts.values;
-    expect(alerts.every((a) => a.sound == PrayerSound.tone), isTrue);
-    expect(find.text('home-page'), findsOneWidget);
-  });
-
-  testWidgets('later on alerts keeps the defaults through the Xiaomi step', (
-    tester,
-  ) async {
-    await pump(tester, xiaomi: true);
-    await toNotificationsStep(tester);
-    await secondary(tester);
-    await tester.tap(find.text('نغمة الإشعار'));
-    await tester.pumpAndSettle();
-    await secondary(tester);
-    expect(find.text(xiaomiTitle), findsOneWidget);
-    await secondary(tester);
-    final alerts = settings.state.settingsModel.prayerAlerts.values;
-    expect(alerts.every((a) => a.sound == PrayerSound.adhan), isTrue);
-    expect(find.text('home-page'), findsOneWidget);
-  });
-
-  testWidgets('a later unavailable status keeps the Xiaomi step', (
-    tester,
-  ) async {
-    final states = StreamController<ReliabilityState>();
-    addTearDown(states.close);
-    await pump(tester, xiaomi: true, states: states.stream);
-    await toNotificationsStep(tester);
-    await secondary(tester);
-    await secondary(tester);
-    expect(find.text(xiaomiTitle), findsOneWidget);
-    states.add(const ReliabilityUnavailable());
-    await tester.pumpAndSettle();
-    expect(find.text(xiaomiTitle), findsOneWidget);
-    await primary(tester);
-    expect(find.text('home-page'), findsOneWidget);
+    expect(settings.state.settingsModel.hasCompletedOnboarding, isTrue);
   });
 
   testWidgets('the alerts step starts from the stored alerts', (tester) async {
@@ -414,7 +319,7 @@ void main() {
   }
 
   for (final locale in ['ar', 'en']) {
-    testWidgets('smoke $locale: alerts and Xiaomi steps fit a phone', (
+    testWidgets('smoke $locale: the alerts step fits a phone', (
       tester,
     ) async {
       await pump(tester, xiaomi: true, locale: locale);
@@ -426,8 +331,7 @@ void main() {
       expect(find.byType(RadioGroup<PrayerSound?>), findsOneWidget);
       expect(tester.takeException(), isNull);
       await primary(tester);
-      expect(find.byType(TextButton), findsWidgets);
-      expect(tester.takeException(), isNull);
+      expect(find.text('home-page'), findsOneWidget);
     });
   }
 }
