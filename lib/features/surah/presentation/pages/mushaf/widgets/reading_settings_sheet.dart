@@ -53,8 +53,10 @@ class _ReadingSettingsSheetState extends State<ReadingSettingsSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(s.readingSettings,
-                      style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    s.readingSettings,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 16),
                   Text(s.paper, style: Theme.of(context).textTheme.labelMedium),
                   const SizedBox(height: 8),
@@ -84,8 +86,10 @@ class _ReadingSettingsSheetState extends State<ReadingSettingsSheet> {
                     }).toList(),
                   ),
                   const SizedBox(height: 24),
-                  Text(s.brightness,
-                      style: Theme.of(context).textTheme.labelMedium),
+                  Text(
+                    s.brightness,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
                   Slider(
                     key: const ValueKey('reading-brightness-slider'),
                     min: 0.3,
@@ -96,8 +100,10 @@ class _ReadingSettingsSheetState extends State<ReadingSettingsSheet> {
                     onChangeEnd: (_) => setState(() => _dragging = false),
                   ),
                   const SizedBox(height: 8),
-                  Text(s.readingMode,
-                      style: Theme.of(context).textTheme.labelMedium),
+                  Text(
+                    s.readingMode,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
                   const SizedBox(height: 8),
                   AppSegmentedSelector<MushafReadingMode>(
                     key: const ValueKey('reading-mode-toggle'),

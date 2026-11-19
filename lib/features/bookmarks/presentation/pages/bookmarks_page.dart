@@ -56,20 +56,25 @@ class _BookmarksView extends StatelessWidget {
                   return BlocBuilder<HadithBookmarkCubit, HadithBookmarkState>(
                     builder: (context, hadithState) {
                       final ayahs = ayahState.bookmarks.toList()
-                        ..sort((a, b) => a.surah != b.surah
-                            ? a.surah.compareTo(b.surah)
-                            : a.ayah.compareTo(b.ayah));
+                        ..sort(
+                          (a, b) => a.surah != b.surah
+                              ? a.surah.compareTo(b.surah)
+                              : a.ayah.compareTo(b.ayah),
+                        );
                       final hadiths = hadithState.bookmarks.toList()
-                        ..sort((a, b) => a.bookSlug != b.bookSlug
-                            ? a.bookSlug.compareTo(b.bookSlug)
-                            : a.hadithNumber.compareTo(b.hadithNumber));
+                        ..sort(
+                          (a, b) => a.bookSlug != b.bookSlug
+                              ? a.bookSlug.compareTo(b.bookSlug)
+                              : a.hadithNumber.compareTo(b.hadithNumber),
+                        );
 
-                      final pages = context
-                          .watch<PageBookmarkCubit>()
-                          .state
-                          .pages
-                          .toList()
-                        ..sort();
+                      final pages =
+                          context
+                              .watch<PageBookmarkCubit>()
+                              .state
+                              .pages
+                              .toList()
+                            ..sort();
 
                       if (ayahs.isEmpty && hadiths.isEmpty && pages.isEmpty) {
                         return Center(
@@ -160,7 +165,10 @@ class _QuranBookmarkTile extends StatelessWidget {
               children: [
                 Text(
                   surahName,
-                  style: TS.bold16.copyWith(fontSize: 14, color: scheme.onSurface),
+                  style: TS.bold16.copyWith(
+                    fontSize: 14,
+                    color: scheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -211,7 +219,10 @@ class _PageBookmarkTile extends StatelessWidget {
               children: [
                 Text(
                   desc,
-                  style: TS.bold16.copyWith(fontSize: 14, color: scheme.onSurface),
+                  style: TS.bold16.copyWith(
+                    fontSize: 14,
+                    color: scheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -264,14 +275,14 @@ class _AhadithBookmarkTileState extends State<_AhadithBookmarkTile> {
     if (!mounted) return;
     setState(() => _loading = false);
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
-      ),
+      (failure) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failure.message))),
       (hadith) {
         if (hadith == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(S.of(context).coming_soon)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(S.of(context).coming_soon)));
         } else {
           context.push(
             AppRouter.hadithPath,

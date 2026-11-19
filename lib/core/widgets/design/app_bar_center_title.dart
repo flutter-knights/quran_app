@@ -27,10 +27,7 @@ class AppBarCenterTitle extends StatelessWidget {
           ),
         Text(
           title,
-          style: TS.bold16.copyWith(
-            fontSize: 15,
-            color: scheme.onSurface,
-          ),
+          style: TS.bold16.copyWith(fontSize: 15, color: scheme.onSurface),
         ),
       ],
     );

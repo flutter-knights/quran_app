@@ -194,8 +194,10 @@ class _MiniPlayer extends StatelessWidget {
                         a.isLoading != b.isLoading ||
                         a.currentAyah != b.currentAyah,
                     builder: (context, p) {
-                      final matchesTarget =
-                          _currentMatchesTarget(p.currentAyah, target);
+                      final matchesTarget = _currentMatchesTarget(
+                        p.currentAyah,
+                        target,
+                      );
                       final isTargetPlaying = p.isPlaying && matchesTarget;
                       final isResumable = p.isPaused && matchesTarget;
                       return Row(
@@ -207,8 +209,8 @@ class _MiniPlayer extends StatelessWidget {
                             onTap: _isFirst
                                 ? null
                                 : () => context
-                                    .read<PlaybackCubit>()
-                                    .skipPrevious(),
+                                      .read<PlaybackCubit>()
+                                      .skipPrevious(),
                           ),
                           _PlayPauseBtn(
                             target: target,
@@ -222,7 +224,7 @@ class _MiniPlayer extends StatelessWidget {
                             onTap: _isLast
                                 ? null
                                 : () =>
-                                    context.read<PlaybackCubit>().skipNext(),
+                                      context.read<PlaybackCubit>().skipNext(),
                           ),
                         ],
                       );
@@ -262,8 +264,7 @@ class _InfoColumn extends StatelessWidget {
       children: [
         if (target != null)
           Text(
-            s.ayah_label(
-                target!.surah.toString(), target!.ayah.toString()),
+            s.ayah_label(target!.surah.toString(), target!.ayah.toString()),
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
@@ -283,8 +284,8 @@ class _InfoColumn extends StatelessWidget {
             final repeatTxt = p.infiniteRepeat
                 ? ' · ↻∞'
                 : (p.eachAyahRepeat > 1
-                    ? ' · ↻${p.currentAyahPlayCount}/${p.eachAyahRepeat}'
-                    : '');
+                      ? ' · ↻${p.currentAyahPlayCount}/${p.eachAyahRepeat}'
+                      : '');
             final speedTxt = p.speed != 1.0 ? ' · ${p.speed}x' : '';
             return Text(
               '${p.reciter.arabicName}$speedTxt$repeatTxt',
@@ -317,8 +318,10 @@ class _ReciterSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(S.of(context).reciter_label,
-                style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              S.of(context).reciter_label,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 12),
             _ReciterGrid(),
           ],
@@ -345,8 +348,10 @@ class _OptionsSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(S.of(context).playback_speed,
-                style: Theme.of(context).textTheme.labelMedium),
+            Text(
+              S.of(context).playback_speed,
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
             const SizedBox(height: 6),
             _SpeedGrid(),
             const SizedBox(height: 16),
@@ -455,11 +460,7 @@ class _Chip extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _Btn extends StatelessWidget {
-  const _Btn({
-    required this.icon,
-    required this.onTap,
-    this.tooltip,
-  });
+  const _Btn({required this.icon, required this.onTap, this.tooltip});
   final IconData icon;
   final VoidCallback? onTap;
   final String? tooltip;
@@ -508,7 +509,9 @@ class _PlayPauseBtn extends StatelessWidget {
             width: 22,
             height: 22,
             child: CircularProgressIndicator(
-                strokeWidth: 2.5, color: Colors.white),
+              strokeWidth: 2.5,
+              color: Colors.white,
+            ),
           ),
         ),
       );
@@ -530,7 +533,9 @@ class _PlayPauseBtn extends StatelessWidget {
                 cubit.playRange(
                   start: start,
                   end: AyahIdentifier(
-                      surah: t.surah, ayah: q.getVerseCount(t.surah)),
+                    surah: t.surah,
+                    ayah: q.getVerseCount(t.surah),
+                  ),
                 );
               }
             },

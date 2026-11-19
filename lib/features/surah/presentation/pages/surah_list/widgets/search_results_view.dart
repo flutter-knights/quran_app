@@ -57,8 +57,13 @@ Widget searchResultsSliver(BuildContext context, SearchState search) {
   // resolved from the loaded SurahCubit list (entity #n is at index n-1).
   if (r.surahs.isNotEmpty) {
     final entities = context.read<SurahCubit>().state;
-    groups.add(_header(context, S.of(context).search_section_surahs,
-        r.surahs.length.toLocalized(context)));
+    groups.add(
+      _header(
+        context,
+        S.of(context).search_section_surahs,
+        r.surahs.length.toLocalized(context),
+      ),
+    );
     groups.add(
       SliverPadding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
@@ -79,8 +84,13 @@ Widget searchResultsSliver(BuildContext context, SearchState search) {
 
   // Ayahs.
   if (r.ayahs.isNotEmpty) {
-    groups.add(_header(context, S.of(context).search_section_ayahs,
-        r.ayahTotalMatches.toLocalized(context)));
+    groups.add(
+      _header(
+        context,
+        S.of(context).search_section_ayahs,
+        r.ayahTotalMatches.toLocalized(context),
+      ),
+    );
     groups.add(
       SliverPadding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
@@ -145,8 +155,7 @@ class _JumpTile extends StatelessWidget {
         ? S.of(context).go_to_page(suggestion.number.toLocalized(context))
         : S.of(context).go_to_juz(suggestion.number.toLocalized(context));
     return PrettierTap(
-      onTap: () =>
-          context.push(AppRouter.mushafPath, extra: suggestion.page),
+      onTap: () => context.push(AppRouter.mushafPath, extra: suggestion.page),
       child: Container(
         padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 14, 12),
         decoration: BoxDecoration(

@@ -46,11 +46,11 @@ class _PaletteTile extends StatelessWidget {
   final VoidCallback onTap;
 
   String get _label => switch (palette) {
-        ColorPalette.neutralDark => 'Neutral Dark',
-        ColorPalette.neutralLight => 'Neutral Light',
-        ColorPalette.slateDark => 'Slate Dark',
-        ColorPalette.slateLight => 'Slate Light',
-      };
+    ColorPalette.neutralDark => 'Neutral Dark',
+    ColorPalette.neutralLight => 'Neutral Light',
+    ColorPalette.slateDark => 'Slate Dark',
+    ColorPalette.slateLight => 'Slate Light',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -98,8 +98,9 @@ class _PaletteTile extends StatelessWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: palette.primary,
-                  borderRadius:
-                      const BorderRadius.vertical(bottom: Radius.circular(10)),
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(10),
+                  ),
                 ),
               ),
             ),

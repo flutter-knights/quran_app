@@ -78,12 +78,12 @@ class AyahActionPopover {
 
 class _PopoverStrings {
   _PopoverStrings(S s)
-      : tafsir = s.tafsir,
-        translation = s.translation,
-        bookmark = s.bookmark,
-        share = s.share,
-        comingSoon = s.coming_soon,
-        shareFailed = s.share_failed;
+    : tafsir = s.tafsir,
+      translation = s.translation,
+      bookmark = s.bookmark,
+      share = s.share,
+      comingSoon = s.coming_soon,
+      shareFailed = s.share_failed;
 
   final String tafsir;
   final String translation;

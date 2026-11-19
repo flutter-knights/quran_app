@@ -32,8 +32,7 @@ class _JuzTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.colorScheme;
     return PrettierTap(
-      onTap: () =>
-          context.push(AppRouter.mushafPath, extra: entry.firstPage),
+      onTap: () => context.push(AppRouter.mushafPath, extra: entry.firstPage),
       child: Container(
         padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 12, 12),
         decoration: BoxDecoration(

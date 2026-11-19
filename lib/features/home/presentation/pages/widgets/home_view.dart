@@ -35,8 +35,8 @@ class HomeView extends StatelessWidget {
           listener: (context, state) {
             if (state is DailyPrayerContextLoaded) {
               context.read<PrayerCountdownCubit>().startTimer(
-                    state.dailyPrayerContext,
-                  );
+                state.dailyPrayerContext,
+              );
             }
           },
           child: BlocBuilder<DailyPrayerContextCubit, DailyPrayerContextState>(
@@ -145,7 +145,9 @@ class HomeView extends StatelessWidget {
                                 textAlign: TextAlign.center,
                                 style: TS.bold16.scheherazade.copyWith(
                                   fontSize: 11,
-                                  color: scheme.onSurface.withValues(alpha: 0.4),
+                                  color: scheme.onSurface.withValues(
+                                    alpha: 0.4,
+                                  ),
                                   height: 1.9,
                                 ),
                               ),

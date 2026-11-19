@@ -82,7 +82,8 @@ class _SurahListPageBodyState extends State<SurahListPageBody> {
                           SliverPadding(
                             padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
                             sliver: SliverToBoxAdapter(
-                              child: LastReadCard.maybeBuild(context) ??
+                              child:
+                                  LastReadCard.maybeBuild(context) ??
                                   const StartReadingCard(),
                             ),
                           ),
@@ -183,8 +184,10 @@ class _SearchHeader extends StatelessWidget {
             decoration: InputDecoration(
               isDense: true,
               hintText: S.of(context).search_quran_hint,
-              hintStyle:
-                  TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+              hintStyle: TextStyle(
+                fontSize: 14,
+                color: scheme.onSurfaceVariant,
+              ),
               prefixIcon: HugeIcon(
                 icon: HugeIcons.strokeRoundedSearch01,
                 size: 18,

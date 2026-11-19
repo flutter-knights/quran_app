@@ -26,7 +26,8 @@ class HadithBookListItem extends StatelessWidget {
       builder: (context, state) {
         final downloading = state.isCurrentlyDownloading(bookInfo.slug);
         final downloaded = state.downloadedBooks.contains(bookInfo.slug);
-        final progress = int.tryParse(state.getBookProgress(bookInfo.slug)) ?? 0;
+        final progress =
+            int.tryParse(state.getBookProgress(bookInfo.slug)) ?? 0;
 
         return SurfaceCard(
           padding: const EdgeInsets.all(14),

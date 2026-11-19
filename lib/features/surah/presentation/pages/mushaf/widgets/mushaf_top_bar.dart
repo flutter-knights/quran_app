@@ -60,12 +60,18 @@ class MushafTopBar extends StatelessWidget {
                 onTap: onJump,
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.menu_book_outlined,
-                          color: Colors.white, size: 18),
+                      const Icon(
+                        Icons.menu_book_outlined,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         pageStr,

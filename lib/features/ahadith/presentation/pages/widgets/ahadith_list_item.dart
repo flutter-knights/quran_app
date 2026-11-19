@@ -10,7 +10,11 @@ import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class AhadithListItem extends StatelessWidget {
-  const AhadithListItem({super.key, required this.hadith, required this.bookSlug});
+  const AhadithListItem({
+    super.key,
+    required this.hadith,
+    required this.bookSlug,
+  });
   final Hadith hadith;
   final String bookSlug;
 
@@ -76,13 +80,13 @@ class AhadithListItem extends StatelessWidget {
 }
 
 Color statusColor(HadithStatus s) => switch (s) {
-      HadithStatus.sahih => const Color(0xFF3D9E6E),
-      HadithStatus.hasan => const Color(0xFFC8882A),
-      HadithStatus.daeef => const Color(0xFFD05050),
-    };
+  HadithStatus.sahih => const Color(0xFF3D9E6E),
+  HadithStatus.hasan => const Color(0xFFC8882A),
+  HadithStatus.daeef => const Color(0xFFD05050),
+};
 
 String statusLabel(BuildContext context, HadithStatus s) => switch (s) {
-      HadithStatus.sahih => S.of(context).status_sahih,
-      HadithStatus.hasan => S.of(context).status_hasan,
-      HadithStatus.daeef => S.of(context).status_daeef,
-    };
+  HadithStatus.sahih => S.of(context).status_sahih,
+  HadithStatus.hasan => S.of(context).status_hasan,
+  HadithStatus.daeef => S.of(context).status_daeef,
+};

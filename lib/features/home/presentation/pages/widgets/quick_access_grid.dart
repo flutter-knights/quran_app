@@ -50,11 +50,7 @@ class QuickAccessGrid extends StatelessWidget {
 }
 
 class _QuickTile extends StatelessWidget {
-  const _QuickTile({
-    required this.icon,
-    required this.label,
-    this.onTap,
-  });
+  const _QuickTile({required this.icon, required this.label, this.onTap});
 
   final List<List<dynamic>> icon;
   final String label;
@@ -74,24 +70,24 @@ class _QuickTile extends StatelessWidget {
       child: HugeIcon(icon: icon, size: 24, color: scheme.onSurface),
     );
     return Column(
-        children: [
-          Expanded(
-            child: PrettierTap(onTap: onTap, child: tile),
+      children: [
+        Expanded(
+          child: PrettierTap(onTap: onTap, child: tile),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: scheme.onSurface,
+            height: 1.3,
           ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurface,
-              height: 1.3,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }

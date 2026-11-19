@@ -92,9 +92,10 @@ class _QiblaCompassDialState extends State<QiblaCompassDial> {
             duration: const Duration(milliseconds: 400),
             curve: Curves.easeOut,
             child: _Needle(
-                size: widget.size,
-                color: scheme.primary,
-                accent: scheme.secondary),
+              size: widget.size,
+              color: scheme.primary,
+              accent: scheme.secondary,
+            ),
           ),
           // Center hub.
           Container(
@@ -119,18 +120,27 @@ class _Letter extends StatelessWidget {
   final Color color;
   @override
   Widget build(BuildContext context) => Align(
-        alignment: alignment,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Text(text,
-              style: TextStyle(
-                  fontWeight: FontWeight.w700, color: color, fontSize: 14)),
+    alignment: alignment,
+    child: Padding(
+      padding: const EdgeInsets.all(10),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: color,
+          fontSize: 14,
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _Needle extends StatelessWidget {
-  const _Needle({required this.size, required this.color, required this.accent});
+  const _Needle({
+    required this.size,
+    required this.color,
+    required this.accent,
+  });
   final double size;
   final Color color;
   final Color accent;

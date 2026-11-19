@@ -73,9 +73,10 @@ class ActionBtn extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              for (final w in iconTrailing
-                  ? [_label(fg), const SizedBox(width: 6), _icon(fg)]
-                  : [_icon(fg), const SizedBox(width: 6), _label(fg)])
+              for (final w
+                  in iconTrailing
+                      ? [_label(fg), const SizedBox(width: 6), _icon(fg)]
+                      : [_icon(fg), const SizedBox(width: 6), _label(fg)])
                 w,
             ],
           ),
@@ -84,11 +85,13 @@ class ActionBtn extends StatelessWidget {
     );
   }
 
-  Widget _icon(Color fg) =>
-      IconTheme(data: IconThemeData(color: fg, size: 14), child: icon);
+  Widget _icon(Color fg) => IconTheme(
+    data: IconThemeData(color: fg, size: 14),
+    child: icon,
+  );
 
   Widget _label(Color fg) => Text(
-        label,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg),
-      );
+    label,
+    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg),
+  );
 }

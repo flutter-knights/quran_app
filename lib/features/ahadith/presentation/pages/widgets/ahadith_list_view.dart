@@ -60,9 +60,11 @@ class _AhadithListViewState extends State<AhadithListView> {
 
   void _onQueryChanged(String value) {
     setState(() => _query = value);
-    context
-        .read<SearchHadithCubit>()
-        .searchAhadith(value, widget.bookSlug, filter: _filter);
+    context.read<SearchHadithCubit>().searchAhadith(
+      value,
+      widget.bookSlug,
+      filter: _filter,
+    );
   }
 
   void _clearSearch() {
@@ -77,7 +79,10 @@ class _AhadithListViewState extends State<AhadithListView> {
         .state
         .downloadedBooks
         .contains(widget.bookSlug);
-    context.read<AhadithCubit>().applyFilter(filter, isDownloaded: isDownloaded);
+    context.read<AhadithCubit>().applyFilter(
+      filter,
+      isDownloaded: isDownloaded,
+    );
     // Keep an active search in sync with the filter.
     context.read<SearchHadithCubit>().reapplyFilter(filter);
   }
@@ -142,8 +147,9 @@ class _AhadithListViewState extends State<AhadithListView> {
             ),
             BlocBuilder<AhadithCubit, AhadithState>(
               builder: (context, _) {
-                final available =
-                    context.read<AhadithCubit>().availableStatuses;
+                final available = context
+                    .read<AhadithCubit>()
+                    .availableStatuses;
                 // A single-grade book (e.g. all-Sahih) has nothing to filter.
                 if (available.length <= 1) return const SizedBox.shrink();
                 return _StatusChipsRow(
@@ -179,8 +185,9 @@ class _AhadithListViewState extends State<AhadithListView> {
           final List<Hadith> all = (state is AhadithLoaded)
               ? state.ahadith
               : (state as AhadithLoadingMore).oldAhadith;
-          final bool lastPage =
-              (state is AhadithLoaded) ? state.lastPage : false;
+          final bool lastPage = (state is AhadithLoaded)
+              ? state.lastPage
+              : false;
           final ahadith = applyHadithFilters(all, _filter);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -190,7 +197,9 @@ class _AhadithListViewState extends State<AhadithListView> {
                 child: AppSectionHeader(
                   label: S.of(context).ahadith_section,
                   trailing: Text(
-                    S.of(context).ahadith_count(
+                    S
+                        .of(context)
+                        .ahadith_count(
                           (_filter.isActive
                                   ? ahadith.length
                                   : (_bookHadithCount(context) ?? all.length))
@@ -314,10 +323,7 @@ class _SearchField extends StatelessWidget {
         decoration: InputDecoration(
           isDense: true,
           hintText: S.of(context).search_hadith_hint,
-          hintStyle: TextStyle(
-            fontSize: 14,
-            color: scheme.onSurfaceVariant,
-          ),
+          hintStyle: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
           prefixIcon: HugeIcon(
             icon: HugeIcons.strokeRoundedSearch01,
             size: 18,
@@ -370,14 +376,14 @@ class _StatusChipsRow extends StatelessWidget {
           // Iterate the enum for canonical order, keeping only available grades.
           for (final status in HadithStatus.values)
             if (statuses.contains(status)) ...[
-            _StatusChip(
-              label: statusLabel(context, status),
-              color: statusColor(status),
-              selected: filter.status == status,
-              onTap: () => onToggle(status),
-            ),
-            const SizedBox(width: 8),
-          ],
+              _StatusChip(
+                label: statusLabel(context, status),
+                color: statusColor(status),
+                selected: filter.status == status,
+                onTap: () => onToggle(status),
+              ),
+              const SizedBox(width: 8),
+            ],
         ],
       ),
     );
@@ -409,9 +415,7 @@ class _StatusChip extends StatelessWidget {
           color: selected ? color.withValues(alpha: 0.16) : scheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected
-                ? color
-                : scheme.onSurface.withValues(alpha: 0.12),
+            color: selected ? color : scheme.onSurface.withValues(alpha: 0.12),
           ),
         ),
         child: Row(
@@ -565,8 +569,10 @@ class _FilterSheetState extends State<_FilterSheet> {
               onTap: widget.chapters.isEmpty ? null : _openChapterPicker,
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: scheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),

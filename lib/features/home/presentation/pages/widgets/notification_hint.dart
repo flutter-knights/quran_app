@@ -57,7 +57,9 @@ class _NotificationHintState extends State<NotificationHint>
     try {
       final enabled = await _scheduler.areNotificationsEnabled();
       if (mounted) setState(() => _enabled = enabled);
-    } catch (_) {/* leave hidden on error */}
+    } catch (_) {
+      /* leave hidden on error */
+    }
   }
 
   @override

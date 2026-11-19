@@ -95,13 +95,15 @@ class LastReadCard extends StatelessWidget {
               Flexible(
                 child: Text(
                   progress.ayahBased
-                      ? S.of(context).surah_ayah_label(
-                            progress.surahArabicName,
-                            progress.ayahCurrent!.toLocalized(context),
-                          )
-                      : S.of(context).page_label(
-                            last.page.toLocalized(context),
-                          ),
+                      ? S
+                            .of(context)
+                            .surah_ayah_label(
+                              progress.surahArabicName,
+                              progress.ayahCurrent!.toLocalized(context),
+                            )
+                      : S
+                            .of(context)
+                            .page_label(last.page.toLocalized(context)),
                   style: TS.bold14.cairo.copyWith(color: scheme.onSurface),
                   overflow: TextOverflow.ellipsis,
                 ),

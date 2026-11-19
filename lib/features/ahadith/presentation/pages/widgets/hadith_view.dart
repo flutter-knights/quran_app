@@ -116,9 +116,7 @@ class HadithView extends StatelessWidget {
                   title:
                       '${S.of(context).hadith_number_label} ${hadith.hadithNumber.toLocalized(context)}',
                   trailing: IconChip(
-                    icon: const HugeIcon(
-                      icon: HugeIcons.strokeRoundedShare08,
-                    ),
+                    icon: const HugeIcon(icon: HugeIcons.strokeRoundedShare08),
                     onPressed: () => _onShare(context, hadith, bookSlug),
                   ),
                 ),
@@ -131,156 +129,168 @@ class HadithView extends StatelessWidget {
                       duration: const Duration(milliseconds: 260),
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.easeIn,
-                      transitionBuilder: (child, animation) =>
-                          _swapTransition(context, navState.navDirection, child,
-                              animation),
+                      transitionBuilder: (child, animation) => _swapTransition(
+                        context,
+                        navState.navDirection,
+                        child,
+                        animation,
+                      ),
                       child: SingleChildScrollView(
                         key: ValueKey(hadith.hadithNumber),
                         padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                          SurfaceCard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    AppStatusBadge(
-                                      color: statusColor(hadith.status),
-                                      label: statusLabel(context, hadith.status),
-                                    ),
-                                    if (hadith.chapter != null)
-                                      Text(
-                                        '${S.of(context).chapter_label} ${hadith.chapter!.chapterNumber.toLocalized(context)}',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: scheme.onSurfaceVariant,
+                            SurfaceCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      AppStatusBadge(
+                                        color: statusColor(hadith.status),
+                                        label: statusLabel(
+                                          context,
+                                          hadith.status,
                                         ),
                                       ),
+                                      if (hadith.chapter != null)
+                                        Text(
+                                          '${S.of(context).chapter_label} ${hadith.chapter!.chapterNumber.toLocalized(context)}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  if (hadith.chapter != null) ...[
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      height: 1,
+                                      color: scheme.onSurface.withValues(
+                                        alpha: 0.06,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      hadith.chapter!.chapterArabic,
+                                      style: TS.bold16.copyWith(
+                                        fontSize: 18,
+                                        color: scheme.secondary,
+                                        height: 1.6,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      hadith.chapter!.chapterEnglish,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                   ],
-                                ),
-                                if (hadith.chapter != null) ...[
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    height: 1,
-                                    color: scheme.onSurface
-                                        .withValues(alpha: 0.06),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    hadith.chapter!.chapterArabic,
-                                    style: TS.bold16.copyWith(
-                                      fontSize: 18,
-                                      color: scheme.secondary,
-                                      height: 1.6,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    hadith.chapter!.chapterEnglish,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: scheme.onSurfaceVariant,
-                                    ),
-                                  ),
                                 ],
-                              ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 14),
-                          AppSectionHeader(label: S.of(context).arabic_label),
-                          const SizedBox(height: 10),
-                          ArabicQuoteBlock(hadith.arabicHadith),
-                          const SizedBox(height: 14),
-                          const OrnamentDivider(),
-                          const SizedBox(height: 14),
-                          AppSectionHeader(
-                            label: S.of(context).translation_label,
-                          ),
-                          const SizedBox(height: 10),
-                          // The translation and narrator are English-only data
-                          // (the API has no Arabic narrator — the Arabic isnad
-                          // lives inside the Arabic text), so force LTR even in
-                          // Arabic mode.
-                          Text(
-                            hadith.englishHadith,
-                            textDirection: TextDirection.ltr,
-                            textAlign: TextAlign.left,
-                            style: TS.regular15.copyWith(
-                              color: scheme.onSurface,
-                              height: 1.78,
-                            ),
-                          ),
-                          if (hadith.englishNarrator.isNotEmpty) ...[
                             const SizedBox(height: 14),
-                            Directionality(
+                            AppSectionHeader(label: S.of(context).arabic_label),
+                            const SizedBox(height: 10),
+                            ArabicQuoteBlock(hadith.arabicHadith),
+                            const SizedBox(height: 14),
+                            const OrnamentDivider(),
+                            const SizedBox(height: 14),
+                            AppSectionHeader(
+                              label: S.of(context).translation_label,
+                            ),
+                            const SizedBox(height: 10),
+                            // The translation and narrator are English-only data
+                            // (the API has no Arabic narrator — the Arabic isnad
+                            // lives inside the Arabic text), so force LTR even in
+                            // Arabic mode.
+                            Text(
+                              hadith.englishHadith,
                               textDirection: TextDirection.ltr,
-                              child: LabelledAccentCard(
-                                label: S.of(context).narrator_label,
-                                body: hadith.englishNarrator,
-                                accentColor: scheme.secondary,
+                              textAlign: TextAlign.left,
+                              style: TS.regular15.copyWith(
+                                color: scheme.onSurface,
+                                height: 1.78,
                               ),
                             ),
-                          ],
-                          const SizedBox(height: 14),
-                          ActionButtonsRow(
-                            children: [
-                              ActionBtn(
-                                icon: HugeIcon(icon: backArrowIcon(context)),
-                                label: S.of(context).previous_hadith,
-                                onPressed: navState.canGoPrevious
-                                    ? () =>
-                                        context.read<HadithNavCubit>().goPrevious()
-                                    : null,
-                              ),
-                              ActionBtn.primary(
-                                icon: HugeIcon(
-                                  icon: forwardArrowIcon(context),
-                                  color: Colors.white,
+                            if (hadith.englishNarrator.isNotEmpty) ...[
+                              const SizedBox(height: 14),
+                              Directionality(
+                                textDirection: TextDirection.ltr,
+                                child: LabelledAccentCard(
+                                  label: S.of(context).narrator_label,
+                                  body: hadith.englishNarrator,
+                                  accentColor: scheme.secondary,
                                 ),
-                                label: S.of(context).next_hadith,
-                                iconTrailing: true,
-                                onPressed: navState.canGoNext
-                                    ? () =>
-                                        context.read<HadithNavCubit>().goNext()
-                                    : null,
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 10),
-                          BlocBuilder<HadithBookmarkCubit, HadithBookmarkState>(
-                            builder: (context, state) {
-                              final marked = state.contains(bookmark);
-                              return ActionButtonsRow(
-                                children: [
-                                  ActionBtn(
-                                    icon: HugeIcon(
-                                      icon: marked
-                                          ? HugeIcons.strokeRoundedBookmark01
-                                          : HugeIcons.strokeRoundedBookmark02,
-                                    ),
-                                    label: S.of(context).bookmark,
-                                    onPressed: () => context
-                                        .read<HadithBookmarkCubit>()
-                                        .toggle(bookmark),
+                            const SizedBox(height: 14),
+                            ActionButtonsRow(
+                              children: [
+                                ActionBtn(
+                                  icon: HugeIcon(icon: backArrowIcon(context)),
+                                  label: S.of(context).previous_hadith,
+                                  onPressed: navState.canGoPrevious
+                                      ? () => context
+                                            .read<HadithNavCubit>()
+                                            .goPrevious()
+                                      : null,
+                                ),
+                                ActionBtn.primary(
+                                  icon: HugeIcon(
+                                    icon: forwardArrowIcon(context),
+                                    color: Colors.white,
                                   ),
-                                  ActionBtn(
-                                    icon: const HugeIcon(
-                                      icon: HugeIcons.strokeRoundedShare08,
+                                  label: S.of(context).next_hadith,
+                                  iconTrailing: true,
+                                  onPressed: navState.canGoNext
+                                      ? () => context
+                                            .read<HadithNavCubit>()
+                                            .goNext()
+                                      : null,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            BlocBuilder<
+                              HadithBookmarkCubit,
+                              HadithBookmarkState
+                            >(
+                              builder: (context, state) {
+                                final marked = state.contains(bookmark);
+                                return ActionButtonsRow(
+                                  children: [
+                                    ActionBtn(
+                                      icon: HugeIcon(
+                                        icon: marked
+                                            ? HugeIcons.strokeRoundedBookmark01
+                                            : HugeIcons.strokeRoundedBookmark02,
+                                      ),
+                                      label: S.of(context).bookmark,
+                                      onPressed: () => context
+                                          .read<HadithBookmarkCubit>()
+                                          .toggle(bookmark),
                                     ),
-                                    label: S.of(context).share,
-                                    onPressed: () =>
-                                        _onShare(context, hadith, bookSlug),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                                    ActionBtn(
+                                      icon: const HugeIcon(
+                                        icon: HugeIcons.strokeRoundedShare08,
+                                      ),
+                                      label: S.of(context).share,
+                                      onPressed: () =>
+                                          _onShare(context, hadith, bookSlug),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),

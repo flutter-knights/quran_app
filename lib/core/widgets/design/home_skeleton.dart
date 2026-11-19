@@ -63,7 +63,13 @@ class HomeSkeleton extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 3),
                       child: Column(
                         children: [
-                          Text('صلاة', style: TextStyle(fontSize: 10, color: scheme.onSurface)),
+                          Text(
+                            'صلاة',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: scheme.onSurface,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           Container(
                             width: 18,
@@ -74,7 +80,13 @@ class HomeSkeleton extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text('00:00', style: TextStyle(fontSize: 10, color: scheme.onSurfaceVariant)),
+                          Text(
+                            '00:00',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
                         ],
                       ),
                     ),

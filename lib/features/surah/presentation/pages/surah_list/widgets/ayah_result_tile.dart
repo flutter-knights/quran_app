@@ -20,7 +20,9 @@ class AyahResultTile extends StatelessWidget {
     final scheme = context.colorScheme;
     final meta = [
       result.surahArabicName,
-      S.of(context).ayah_label(
+      S
+          .of(context)
+          .ayah_label(
             result.surah.toLocalized(context),
             result.ayah.toLocalized(context),
           ),
@@ -32,8 +34,7 @@ class AyahResultTile extends StatelessWidget {
         AppRouter.mushafPath,
         extra: MushafArgs(
           page: result.page,
-          focusAyah:
-              AyahIdentifier(surah: result.surah, ayah: result.ayah),
+          focusAyah: AyahIdentifier(surah: result.surah, ayah: result.ayah),
         ),
       ),
       child: Container(
