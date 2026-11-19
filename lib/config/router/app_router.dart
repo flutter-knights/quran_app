@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_transitions/go_transitions.dart';
+import 'package:quran_app/config/router/fade_page.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/ahadith_list_page.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/books_list_page.dart';
@@ -90,7 +91,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: notificationsPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) => MultiBlocProvider(
             providers: [
               BlocProvider(create: (_) => sl<ReliabilityCubit>()),
@@ -102,7 +103,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: prayerStripPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) => MultiBlocProvider(
             providers: [
               BlocProvider(create: (_) => sl<TodayPrayerTimesCubit>()..load()),
@@ -114,7 +115,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: alertsReliabilityPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) => BlocProvider(
             create: (_) => sl<ReliabilityCubit>(),
             child: const ReliabilityPage(),
@@ -123,25 +124,25 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: settingsPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) => const SettingsPage(),
         ),
       ),
       GoRoute(
         path: booksPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) => BooksListPage(),
         ),
       ),
       GoRoute(
         path: bookmarksPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) => const BookmarksPage(),
         ),
       ),
       GoRoute(
         path: qiblaPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) => BlocProvider(
             create: (_) => sl<QiblaCubit>()..start(),
             child: const QiblaPage(),
@@ -150,7 +151,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: surahListPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) => MultiBlocProvider(
             providers: [
               BlocProvider(create: (_) => sl<SurahCubit>()..fetchSurahs()),
@@ -162,7 +163,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: mushafPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) {
             final args = _mushafArgsFrom(state.extra);
             return BlocProvider(
@@ -181,7 +182,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: mushafImagePath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) {
             final args = _mushafArgsFrom(state.extra);
             return BlocProvider(
@@ -201,7 +202,7 @@ abstract class AppRouter {
       GoRoute(
         path: ahadithPath,
 
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) {
             final bookSlug = state.extra as String;
 
@@ -211,7 +212,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: hadithPath,
-        pageBuilder: GoTransitions.fade.withScale.build(
+        pageBuilder: _fadePage(
           builder: (context, state) {
             final extra = state.extra as ({Hadith hadith, String bookSlug});
             return HadithPage(hadith: extra.hadith, bookSlug: extra.bookSlug);
@@ -227,3 +228,9 @@ MushafArgs _mushafArgsFrom(Object? extra) {
   if (extra is int) return MushafArgs(page: extra);
   return const MushafArgs(page: 1);
 }
+
+GoRouterPageBuilder _fadePage({
+  required Widget Function(BuildContext context, GoRouterState state) builder,
+}) =>
+    (context, state) =>
+        FadePage(key: state.pageKey, child: builder(context, state));
