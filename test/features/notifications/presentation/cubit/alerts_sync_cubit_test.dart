@@ -417,7 +417,7 @@ void main() {
       final s = settingsCubit.state.settingsModel;
       final unchanged = [
         s.copyWith(pageBrightness: 0.5),
-        s.copyWith(stripStyle: const StripStyle(expanded: false)),
+        s.copyWith(stripStyle: const StripStyle(expanded: true)),
         s.copyWith(isPrayerStripPinned: !s.isPrayerStripPinned),
         s.copyWith(isFormat12Hours: !s.isFormat12Hours),
         s.copyWith(palette: ColorPalette.values.last),
@@ -449,7 +449,7 @@ void main() {
     test('needsStripRefresh reacts only to the strip fields', () {
       final s = settingsCubit.state.settingsModel;
       final changed = [
-        s.copyWith(stripStyle: const StripStyle(expanded: false)),
+        s.copyWith(stripStyle: const StripStyle(expanded: true)),
         s.copyWith(isPrayerStripPinned: !s.isPrayerStripPinned),
         s.copyWith(isFormat12Hours: !s.isFormat12Hours),
         s.copyWith(palette: ColorPalette.values.last),

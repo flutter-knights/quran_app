@@ -14,7 +14,7 @@ class StripStyle extends Equatable {
   final StripShape shape;
 
   const StripStyle({
-    this.expanded = true,
+    this.expanded = false,
     this.showCountdown = true,
     this.highlight = StripHighlight.app,
     this.background = StripBackground.auto,

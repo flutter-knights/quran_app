@@ -197,7 +197,7 @@ void main() {
     expect(find.text('٤:٥٠ ص'), findsOneWidget);
     expect(find.text('متوقف'), findsOneWidget);
     await scrollToEnd(tester);
-    expect(find.text('مفعّل، عرض موسّع'), findsOneWidget);
+    expect(find.text('مفعّل'), findsOneWidget);
     expect(find.byType(TestAdhanButton), findsNothing);
     expect(find.text('تُختار الطريقة تلقائيًا حسب بلدك.'), findsOneWidget);
   });

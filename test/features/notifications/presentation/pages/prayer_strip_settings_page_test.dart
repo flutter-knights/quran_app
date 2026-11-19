@@ -145,7 +145,7 @@ void main() {
     testWidgets('expanded on opens the preview on the expanded view', (
       tester,
     ) async {
-      await pumpPage(tester);
+      await pumpPage(tester, style: const StripStyle(expanded: true));
       expect(toggle(tester).selected, isTrue);
       expect(find.text('التالية'), findsOneWidget);
       await tapVisible(tester, find.text('مطويّ'));
@@ -165,7 +165,7 @@ void main() {
     });
 
     testWidgets('the expanded switch writes the style', (tester) async {
-      await pumpPage(tester);
+      await pumpPage(tester, style: const StripStyle(expanded: true));
       await tapVisible(tester, find.text('استخدام عرض موسّع'));
       expect(cubit.state.settingsModel.stripStyle.expanded, isFalse);
       expect(toggle(tester).selected, isFalse);
@@ -219,7 +219,11 @@ void main() {
     testWidgets('no cached times shows a static sample, not a skeleton', (
       tester,
     ) async {
-      await pumpPage(tester, todayState: const TodayPrayerTimesEmpty());
+      await pumpPage(
+        tester,
+        style: const StripStyle(expanded: true),
+        todayState: const TodayPrayerTimesEmpty(),
+      );
       expect(find.byWidgetPredicate((w) => w is Skeletonizer), findsNothing);
       expect(find.text('الفجر'), findsOneWidget);
       expect(find.text('٠٤:٥٠ ص'), findsOneWidget);
