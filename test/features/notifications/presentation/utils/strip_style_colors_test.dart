@@ -10,6 +10,7 @@ void main() {
   test('stripRenderStyle maps enums to day and night ARGB', () {
     final r = stripRenderStyle(
       const StripStyle(
+        expanded: true,
         highlight: StripHighlight.maroon,
         background: StripBackground.sand,
         shape: StripShape.pill,

@@ -38,7 +38,7 @@ void main() {
     expect(
       const StripStyle(),
       const StripStyle(
-        expanded: true,
+        expanded: false,
         showCountdown: true,
         highlight: StripHighlight.app,
         background: StripBackground.auto,

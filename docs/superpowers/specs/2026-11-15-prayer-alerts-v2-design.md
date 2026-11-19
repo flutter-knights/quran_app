@@ -117,7 +117,7 @@ class PrayerAlert {
   - `reminderMinutes` = the legacy value if it is > 0, else 10.
   - The rest use defaults.
 - Values out of range are clamped to 1..60. Unknown enum names fall back to the default. `fromMap` never throws.
-- Strip: `StripStyle { expanded=true, showCountdown=true, highlight=StripHighlight.app, background=StripBackground.auto, shape=StripShape.rounded }`. The enums carry no colours in domain. Colours live in a presentation/data mapping that sends day and night ARGB values to native.
+- Strip: `StripStyle { expanded=false, showCountdown=true, highlight=StripHighlight.app, background=StripBackground.auto, shape=StripShape.rounded }`. The enums carry no colours in domain. Colours live in a presentation/data mapping that sends day and night ARGB values to native.
   - Highlight: app, darkGreen, emerald, blue, indigo, maroon, bronze.
   - Background: auto, mint, sand, sky, rose.
   - Shape: none, rounded, pill, outline.
