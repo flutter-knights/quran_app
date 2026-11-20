@@ -42,7 +42,7 @@
 
 ## Review Focus
 
-1. **A follow turn interrupted by a drag.** If the reader grabs the page mid-animation, the next manual swipe must count as manual. Task 5 pins this with `PageTurnTracker` tests: `end()` after an interrupted `begin()`, and a jump to the current page.
+1. **A follow turn interrupted by a drag.** If the reader grabs the page mid-animation, the next manual swipe must count as manual. Task 1 pins this with `PageTurnTracker` tests: `end()` after an interrupted `begin()`, and a jump to the current page.
 2. **The basmala as the playing ayah.** `CurrentAyahNotifier` reports `(s, 0)`, and `quran.getPageNumber(s, 0)` matches phantom page-data entries (4:0 resolves to p.76 while the banner is on p.77). Every page lookup of a playing ayah maps ayah 0 to ayah 1. Task 5 adds a `playingPage` test for (4,0) → 77.
 3. **Fast swipes and the bounds load.** A late `GetMushafPage` result for page N must not overwrite the bounds of page N+1. Task 5 adds a completer-ordered race test.
 4. **Coming back online.** After an offline failure, a retry must download again and must not play a truncated file. Task 3 pins this with repository tests: the in-flight entry is cleared and the partial file is deleted.
@@ -482,7 +482,7 @@ Ledger items 13 and 17, plus the §1A caller table.
 - Create: `test/features/surah/presentation/pages/mushaf/mushaf_args_test.dart`
 
 **Interfaces:**
-- Consumes: `MushafArgs`, `MushafOrigin`, `MushafArgs.focus` and `PageTurnTracker` (Task 5).
+- Consumes: `MushafArgs`, `MushafOrigin` and `MushafArgs.focus` (Task 5), and `PageTurnTracker` (Task 1).
 - Produces: `LastRead({required int page, AyahIdentifier? ayah, DateTime? updatedAt})` with `updatedAt` in `props`. `LastReadHiveModel` gains `@HiveField(3) DateTime? updatedAt` (typeId 5 unchanged; old records read null).
 - Produces on `LastReadSaver({required LastRead Function() readCurrent, required Future<void> Function(LastRead) persist, required MushafOrigin origin, DateTime Function() now = DateTime.now, Duration debounce = const Duration(milliseconds: 800), Duration dwell = const Duration(seconds: 20)})`:
   - `bool get guarded` is `origin == jump` at construction.
