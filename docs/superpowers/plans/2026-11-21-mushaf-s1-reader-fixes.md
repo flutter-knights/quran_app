@@ -8,7 +8,7 @@
 
 **Tech Stack:** Flutter 3.47.8 (global, no FVM), flutter_bloc + bloc_test, mocktail, fake_async, dartz, equatable, hive_ce + hive_ce_generator, GoRouter, the vendored `quran` package (`quran-1.4.1/`).
 
-**Spec:** `docs/superpowers/specs/2026-11-21-mushaf-leaf-ribbon-design.md` (§1, §1A, §2, §3.7 S1 line, §7). Where the spec and this plan disagree, the spec wins. Raise any disagreement in the task report.
+**Spec:** `docs/superpowers/specs/2026-11-21-mushaf-leaf-ribbon-design.md` (§1, §1A, §2, §3.7 S1 line, §7). Where the spec and this plan disagree, the spec wins, except for the **Deliberate readings** below, where the plan governs. Raise any other disagreement in the task report.
 
 ## Global Constraints
 
@@ -22,6 +22,23 @@
 - Mushaf and playback widgets keep Material `Icons.*` (`icons.md`: match the surrounding set).
 - Every task ends at baseline or better: `flutter analyze --no-fatal-infos` gives 0 errors, 0 warnings and ≤ 70 infos, and `flutter test` passes in full (835 at start plus the tests this plan adds, 1 skipped). Run `dart format` on touched files.
 - Rule catalogues change in the task that changes the code they describe (spec §3.8).
+
+## Deliberate readings (the plan governs here)
+
+1. **Landing by hand on the playing page re-arms follow.** `followAfterManualTurn` returns true, which counts the same as «العودة إلى الآية المتلوّة». The spec lists only the button and a new play.
+2. **A next-ayah preload failure surfaces on advance, not at preload time.** It reaches `error` when the engine advances to that ayah and the retried download fails, so `requestedAyah` names the right ayah. A preload-time emit would name the ayah that is still playing.
+3. **The ayah-0 long-press popover has one banner action**, «استماع من بداية السورة». «استماع الصفحة كاملة» stays on the browse bar's ▶ until S3 builds the banner leaf.
+4. **The player title shows a selected banner (ayah 0) as ayah 1**, since playback starts there. It never reads «الآية ٠».
+5. **Skips are new plays.** ⏮ and ⏭ clear `error`, just as `playSelected`, `playRange` and `retry` do.
+
+## Three kinds of page turn
+
+| Turn | How `MushafPage` sees it | `MushafCubit.setPage` | `LastReadSaver` |
+|---|---|---|---|
+| Playback-driven (follow) | `_turns.begin(target)` … `animateTo(...).whenComplete(_turns.end)` | `byUser: false`: keeps selection and follow | `schedule()` only (restarts the dwell when guarded) |
+| Swipe or scroll by hand | `_turns.isManual(page)` is true | `byUser: true`: clears selection, applies `followAfterManualTurn` | `onManualTurn()`, then `schedule()` |
+| In-place jump (`PageJumpSheet`) | `_turns.begin(page)`, jump, explicit `setPage(page, byUser: true)`, post-frame `_turns.end()`. The `onPageChanged` echo is suppressed. | `byUser: true`: clears selection; follow goes false when the jump leaves the playing page | `rearm()`, never `onManualTurn()` |
+| Mode-switch and rotation re-sync (`mushaf_page.dart:421-430, 457-462`) | wrapped in `_turns.begin(currentPage)` … post-frame `_turns.end()` | echo is `byUser: false` | nothing |
 
 ## Review Focus
 
@@ -48,10 +65,13 @@ Ledger items 7 and 20, plus the pure halves of items 1 and 8.
 - Modify: `lib/features/quran_playback/domain/services/playback_range_validator.dart` (`parseCounter`)
 - Modify: `lib/features/surah/presentation/pages/mushaf/widgets/page_jump_sheet.dart:33-41,61-69`
 - Create: `lib/features/surah/presentation/utils/page_bounds.dart`
+- Create: `lib/features/surah/presentation/utils/follow_playback.dart`
+- Create: `lib/features/surah/presentation/pages/mushaf/page_turn_tracker.dart`
 - Modify: `lib/features/quran_playback/domain/services/quran_meta_service.dart:36-62`
 - Modify: `.claude/rules/core-utilities.md`, `.claude/rules/feature-widgets.md` (surah utils line)
 - Modify: `test/core/helper functions/numeral_helpers_test.dart` (add a `toAsciiDigits` group)
 - Create: `test/features/surah/presentation/utils/page_bounds_test.dart`
+- Create: `test/features/surah/presentation/utils/follow_playback_test.dart`, `test/features/surah/presentation/pages/mushaf/page_turn_tracker_test.dart`
 - Modify: `test/features/surah/presentation/pages/mushaf/widgets/page_jump_sheet_test.dart:45-47`
 - Modify: `test/features/quran_playback/domain/services/quran_meta_service_test.dart`
 
@@ -60,6 +80,8 @@ Ledger items 7 and 20, plus the pure halves of items 1 and 8.
 - Produces (in `page_bounds.dart`): `int? resolveRunningSurah({required List<AyahBoundEntity> ayahs, AyahIdentifier? selected, AyahIdentifier? playing, int? openedSurah})`.
 - Produces (in `page_bounds.dart`): `({AyahIdentifier start, AyahIdentifier end})? pagePlaybackRange(List<AyahBoundEntity> ayahs)`.
 - Produces: `QuranMetaService.getPageMeta(page)` reports juz, hizb and rub at the page's **last** ayah.
+- Produces (in `follow_playback.dart`): `int? nextFollowAction({required bool followPlayback, required int currentPage, required int? playingPage})` returns the page to turn to, or null. It also produces `bool followAfterManualTurn({required bool followPlayback, required int newPage, required int? playingPage})`. Both truth tables are in Task 5 and are pinned here, one test per row.
+- Produces: `class PageTurnTracker { void begin(int page); void end(); bool isManual(int page); }`. `isManual` returns true when nothing has begun. Otherwise it returns false and clears the target once `page == target`.
 
 - [ ] **Step 1: Write failing tests**
   - `numeral_helpers_test.dart`: `toAsciiDigits('٤٢')` → `'42'`, `toAsciiDigits('۶۰۴')` → `'604'`, `toAsciiDigits('1٢3')` → `'123'`, `toAsciiDigits('abc')` → `'abc'`.
@@ -87,6 +109,13 @@ Ledger items 7 and 20, plus the pure halves of items 1 and 8.
     - `svc.getPageMeta(page).hizb == 2 * j - 1`
     - `svc.getPageMeta(page - 1).juz == j - 1`
   - Pages 62, 121, 201 and 502 start mid-page, so their juz only shows at the last ayah. Keep the four existing tests.
+  - `follow_playback_test.dart`: both truth tables in Task 5, one test per row.
+  - `page_turn_tracker_test.dart`:
+    - With no `begin`, `isManual(5)` is true.
+    - `begin(51)`: `isManual(51)` is false, then `isManual(52)` is true.
+    - `begin(60)`: `isManual(58)` is false, `isManual(60)` is false, then `isManual(61)` is true.
+    - `begin(51)`, `end()`: `isManual(50)` is true (an interrupted animation).
+    - `begin(5)` (a jump to the current page), `end()`: `isManual(6)` is true.
   - `page_jump_sheet_test.dart`: rewrite the `'abc'` case as `'returns null for letters (filtered by the formatter)'`. Add `'accepts Arabic-Indic digits'`: input `'٤٢'` → 42. Add `'accepts Extended Arabic-Indic digits'`: input `'۶۰۴'` → 604.
 
 - [ ] **Step 2: Run and see them fail**
@@ -104,14 +133,14 @@ Ledger items 7 and 20, plus the pure halves of items 1 and 8.
   - `pagePlaybackRange`: the first and last bound with `ayah > 0`, in list order. Return null if there is none.
   - `QuranMetaServiceImpl.getPageMeta`: compute the position from a private `_lastAyahOfPage(page)`, the last `quran.getPageData(page)` entry with `end > 0`, as `(surah, end)`. Use it for both `juz` (`quran.getJuzNumber`) and the rub search. `surah` stays the first ayah's surah. `QuranPageService` is unchanged, so `_StubPageService` keeps compiling.
   - **Fallback (spec item 20):** the 29 juz-start rows in `_rubBoundaries` already match the spec list, so a failing pin points at the last-ayah lookup. Fix that first. If a hizb pin still cannot pass, keep the `juz` and `getPageNumber` asserts, drop only the `hizb` assert for that page, and say in the task report: "S3 head must show only الجزء".
-  - Rules: add `toAsciiDigits(String)` to the helper list in `core-utilities.md` ("folds Arabic-Indic and Extended Arabic-Indic digits to ASCII before parsing user input"). Add `page_bounds.dart` (`resolveRunningSurah`, `pagePlaybackRange`) to the `surah` utils line in `feature-widgets.md`.
+  - Rules: add `toAsciiDigits(String)` to the helper list in `core-utilities.md` ("folds Arabic-Indic and Extended Arabic-Indic digits to ASCII before parsing user input"). Add `page_bounds.dart` (`resolveRunningSurah`, `pagePlaybackRange`) and `follow_playback.dart` (`nextFollowAction`, `followAfterManualTurn`) to the `surah` utils line in `feature-widgets.md`.
 
 - [ ] **Step 4: Run the scoped tests (same command), expect PASS. Then run `flutter analyze --no-fatal-infos` and `flutter test`.**
 
 - [ ] **Step 5: Commit**
 ```bash
-git add "lib/core/helper functions/numeral_helpers.dart" lib/features/quran_playback/domain/services/playback_range_validator.dart lib/features/surah/presentation/pages/mushaf/widgets/page_jump_sheet.dart lib/features/surah/presentation/utils/page_bounds.dart lib/features/quran_playback/domain/services/quran_meta_service.dart .claude/rules/core-utilities.md .claude/rules/feature-widgets.md "test/core/helper functions/numeral_helpers_test.dart" test/features/surah/presentation/utils/page_bounds_test.dart test/features/surah/presentation/pages/mushaf/widgets/page_jump_sheet_test.dart test/features/quran_playback/domain/services/quran_meta_service_test.dart
-git commit -m "fix(mushaf): Arabic-Indic page jump, bounds-based page rules, juz at last ayah" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git add "lib/core/helper functions/numeral_helpers.dart" lib/features/quran_playback/domain/services/playback_range_validator.dart lib/features/surah/presentation/pages/mushaf/widgets/page_jump_sheet.dart lib/features/surah/presentation/utils/page_bounds.dart lib/features/surah/presentation/utils/follow_playback.dart lib/features/surah/presentation/pages/mushaf/page_turn_tracker.dart lib/features/quran_playback/domain/services/quran_meta_service.dart .claude/rules/core-utilities.md .claude/rules/feature-widgets.md "test/core/helper functions/numeral_helpers_test.dart" test/features/surah/presentation/utils/page_bounds_test.dart test/features/surah/presentation/utils/follow_playback_test.dart test/features/surah/presentation/pages/mushaf/page_turn_tracker_test.dart test/features/surah/presentation/pages/mushaf/widgets/page_jump_sheet_test.dart test/features/quran_playback/domain/services/quran_meta_service_test.dart
+git commit -m "fix(mushaf): Arabic-Indic page jump, bounds and follow rules, juz at last ayah" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -207,7 +236,7 @@ Ledger items 6 (engine) and 14.
 - Produces on `PlaybackCubit`: `Future<void> retry()`.
 - Behaviour:
   - `playSelected`, `playRange` and every `_playAyah(ayah)` set `requestedAyah: ayah` synchronously in their first emit.
-  - `playSelected`, `playRange`, `retry` and `stop` pass `clearError: true`.
+  - `playSelected`, `playRange`, `retry`, `skipNext`, `skipPrevious` and `stop` pass `clearError: true`. A skip is a new play (Deliberate reading 5). Task 4 adds the clamp to the skips; here they only emit `clearError: true` before `_playAyah`.
   - `stop` also passes `clearRequested: true`.
   - A failed prepare, a failed `playPreparedAudio` or a failed `playPreparedAudioSequence` emits `isPlaying: false, isLoading: false, isPlayingBasmala: false, error: failure.message`.
   - `error` stays a raw `String`. The widget builds the localized copy, which names `requestedAyah ?? currentAyah` (Task 7).
@@ -227,6 +256,8 @@ Ledger items 6 (engine) and 14.
     - `retry clears error and replays requestedAyah`: prepare returns Left, then Right. After `retry()`, `notifyAyahChanged(2:5)` is called once and `error == null`.
     - `playPreparedAudio Left feeds error`, plus the same for `playPreparedAudioSequence` (ayah 2:1, so the basmala path runs).
     - `stop clears requestedAyah and error`.
+    - `skipNext clears a stale error`: start from a failed state (`error: 'x'`, `currentAyah: 2:5`). After `skipNext()` succeeds for 2:6, `error == null`.
+    - `a repeat failure after a skip shows again`: two different emissions carry a non-null `error`, with a null between them.
     - `advancing to an ayah whose preload failed surfaces the error naming it`. Use a `StreamController<void>` for `onAudioCompleted`. Start the state at `currentAyah 2:5, isAutoPlaying: true`, stub `seq.getNextAyah` → 2:6, and have prepare for 2:6 return Left. Fire completion, then expect `requestedAyah == 2:6` and `error != null`.
   - Repository test `quran_playback_repo_impl_test.dart`. Mock `AudioPlayer`, `QuranPlaybackRemoteDataSource` and `QuranPlaybackLocalDataSource` (`extends Mock implements …`), and use a temp `Directory`:
     - `failed download is not reused and leaves no partial file`. The first `downloadAudio` writes bytes to the save path and then throws `DioException(requestOptions: RequestOptions())`; the second returns the path. Expect the first call `isLeft()` with `File(path).existsSync() == false` afterwards, and the second call `isRight()`.
@@ -316,8 +347,6 @@ Ledger items 4 and 5 (state and rule), plus §1A in the cubit and router. The re
 **Files:**
 - Modify: `lib/features/surah/presentation/pages/mushaf/mushaf_args.dart`
 - Modify: `lib/features/surah/presentation/cubit/mushaf/mushaf_state.dart`, `mushaf_cubit.dart`
-- Create: `lib/features/surah/presentation/utils/follow_playback.dart`
-- Create: `lib/features/surah/presentation/pages/mushaf/page_turn_tracker.dart`
 - Delete: `lib/features/surah/presentation/pages/mushaf/auto_swap_helper.dart`, `test/features/surah/presentation/pages/mushaf/auto_swap_helper_test.dart`
 - Modify: `lib/features/surah/presentation/pages/mushaf/mushaf_di.dart`
 - Modify: `lib/config/router/app_router.dart:161-197,223-227`
@@ -330,8 +359,7 @@ Ledger items 4 and 5 (state and rule), plus §1A in the cubit and router. The re
   - `_onPlayPage` (256): `toggleHighlight` becomes `toggleSelection`
 - Modify: `lib/features/surah/presentation/pages/mushaf/widgets/mushaf_page_view.dart:118-157,219-240,302-327` (rename only)
 - Modify: `lib/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay.dart:46-48,70-79` (rename only)
-- Modify: `.claude/rules/feature-widgets.md` (surah utils line)
-- Create: `test/features/surah/presentation/utils/follow_playback_test.dart`, `test/features/surah/presentation/pages/mushaf/page_turn_tracker_test.dart`
+- Modify: `lib/features/surah/presentation/pages/surah_list/widgets/ayah_result_tile.dart:33-39` (`origin: MushafOrigin.jump`, `openedSurah: result.surah`; moved here from Task 6 so search keeps its focus between tasks)
 - Modify (rewrite to the new API): `test/features/surah/presentation/cubit/mushaf/mushaf_cubit_clear_highlight_test.dart`, `test/features/surah/presentation/cubit/mushaf/mushaf_cubit_auto_follow_test.dart`, `test/features/surah/presentation/cubit/mushaf_image/mushaf_image_cubit_test.dart` (it tests `MushafCubit`), `test/features/surah/presentation/cubit/mushaf_chrome_test.dart`
 - Modify (fakes and renames): `test/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay_test.dart`, `test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart`
 
@@ -349,13 +377,10 @@ Ledger items 4 and 5 (state and rule), plus §1A in the cubit and router. The re
   - `void resumeFollow()`
   - `int? get playingPage`: null when there is no playing ayah. Otherwise `pageService.getPageForAyah(s, a == 0 ? 1 : a)`.
   - `pinOverlay`, `unpinOverlay` (still clears the selection), `toggleChrome`, `setChrome` and `setHighlightBounds` are unchanged. `debugNotifier` stays.
-- Produces in `follow_playback.dart`:
-  - `int? nextFollowAction({required bool followPlayback, required int currentPage, required int? playingPage})` returns the page to turn to, or null.
-  - `bool followAfterManualTurn({required bool followPlayback, required int newPage, required int? playingPage})`.
-- Produces: `class PageTurnTracker { void begin(int page); void end(); bool isManual(int page); }`.
+- Consumes (Task 1): `nextFollowAction`, `followAfterManualTurn` and `PageTurnTracker`.
 - Produces: `MushafPage({super.key, required this.args})` with `final MushafArgs args`. `MushafPage.initialPage` is removed. Router builders: `sl<MushafCubit>(param1: args)` and `MushafPage(args: args)`. The router-side `toggleHighlight(focus)` is deleted because `MushafState.initial` handles focus.
 
-**Truth tables (pin each row in a test):**
+**Truth tables (each row is pinned in Task 1):**
 
 `nextFollowAction`:
 
@@ -389,13 +414,6 @@ Ledger items 4 and 5 (state and rule), plus §1A in the cubit and router. The re
 `resumeFollow()` emits `followPlayback: true` and nothing else.
 
 - [ ] **Step 1: Write failing tests**
-  - `follow_playback_test.dart`: both tables, one test per row.
-  - `page_turn_tracker_test.dart`:
-    - With no `begin`, `isManual(5)` is true.
-    - `begin(51)`: `isManual(51)` is false, then `isManual(52)` is true.
-    - `begin(60)`: `isManual(58)` is false, `isManual(60)` is false, then `isManual(61)` is true.
-    - `begin(51)`, `end()`: `isManual(50)` is true (an interrupted animation).
-    - `begin(5)` (a jump to the current page), `end()`: `isManual(6)` is true.
   - Rewritten cubit tests. Build with a `_StubMushafRepo` that returns `MushafPageEntity(pageNumber: p, ayahs: <bounds from JSON or const []>)`, a stub page service, and `MushafArgs`.
     - `initial: normal origin selects nothing`
     - `initial: jump with focus 2:255 selects it`
@@ -405,6 +423,7 @@ Ledger items 4 and 5 (state and rule), plus §1A in the cubit and router. The re
     - `setPage(byUser: true) away from the playing page clears selection and sets follow false`
     - `setPage(byUser: true) onto the playing page sets follow true`
     - `resumeFollow sets follow true`
+    - `in-place jump away while playing`: from page 50 with the playing page at 50 and follow true, `setPage(60, byUser: true)` clears the selection and sets follow false
     - `notifier null → A sets follow true`
     - the existing auto-follow and no-auto-follow cases, renamed to `selectedAyah`
     - `clearSelection` and `toggleSelection`
@@ -417,26 +436,26 @@ Ledger items 4 and 5 (state and rule), plus §1A in the cubit and router. The re
 - [ ] **Step 2: Run** `flutter test test/features/surah`. Expected: compile errors or FAIL.
 
 - [ ] **Step 3: Implement**
-  - **Cubit, state and pure functions:** implement per the tables. DI: `sl.registerFactoryParam<MushafCubit, MushafArgs, void>((args, _) => MushafCubit(args: args, currentAyahNotifier: sl<CurrentAyahNotifier>(), pageService: sl(), getMushafPage: sl()))`. `_mushafArgsFrom` keeps its shape. A bare `int` becomes `MushafArgs(page: extra)`, which is `normal` by default.
+  - **Cubit and state:** implement per the tables. DI: `sl.registerFactoryParam<MushafCubit, MushafArgs, void>((args, _) => MushafCubit(args: args, currentAyahNotifier: sl<CurrentAyahNotifier>(), pageService: sl(), getMushafPage: sl()))`. `_mushafArgsFrom` keeps its shape. A bare `int` becomes `MushafArgs(page: extra)`, which is `normal` by default.
   - **`MushafPage`:**
     - Add a field `final _turns = PageTurnTracker();`.
     - Page mode: `onPageChanged: (i) => _mushafCubit.setPage(i + 1, byUser: _turns.isManual(i + 1))`.
     - Scroll mode: `_onScroll` does the same with its computed page.
     - The follow listener becomes `listenWhen: (a, b) => a.playingAyah != b.playingAyah || (!a.followPlayback && b.followPlayback)`. Its listener computes `nextFollowAction(followPlayback: s.followPlayback, currentPage: s.currentPage, playingPage: _mushafCubit.playingPage)`. When the result is non-null, it calls `_turns.begin(target)`, then `animateToPage(target - 1, …).whenComplete(_turns.end)`; in scroll mode it uses `animateTo(...).whenComplete(_turns.end)`.
-    - `_onJumpToPage` calls `_turns.begin(page)` before `jumpToPage` / `jumpTo`, then `_mushafCubit.setPage(page, byUser: false)` and `WidgetsBinding.instance.addPostFrameCallback((_) => _turns.end())`.
+    - `_onJumpToPage` follows the "Three kinds of page turn" table. It calls `_turns.begin(page)` before `jumpToPage` / `jumpTo`, then `_mushafCubit.setPage(page, byUser: true)` (a reader-initiated turn: it clears the selection and can drop follow), then `WidgetsBinding.instance.addPostFrameCallback((_) => _turns.end())`.
+    - The two mode-switch re-syncs (scroll `jumpTo` at 421-430, page `jumpToPage` at 457-462) are wrapped in `_turns.begin(_mushafCubit.state.currentPage)` … post-frame `_turns.end()`. Their echoes are then `byUser: false`, so they do not disarm the last-read guard in Task 6.
     - Delete `auto_swap_helper.dart` and its test (§3.8 folds it into `nextFollowAction`).
     - `widget.initialPage` becomes `widget.args.page` everywhere.
   - **Fakes:**
     - Both `_FakeMushaf` classes (overlay test, dispose test) gain `@override dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);`. Drop overrides of renamed methods, or rename them.
     - The dispose test uses `MushafPage(args: const MushafArgs(page: 7))`, and its expectation stays (page 7, ayah 2:5, one stop).
     - In the overlay test only `highlightedAyah:` becomes `selectedAyah:`. Task 7 rewrites its behaviour.
-  - Add `follow_playback.dart` (`nextFollowAction`, `followAfterManualTurn`) to the surah utils line in `feature-widgets.md`.
 
 - [ ] **Step 4: Run** `flutter test test/features/surah test/config`, then analyze and the full suite. Expected: PASS. Then run `grep -rn "highlightedAyah\b\|toggleHighlight\|clearHighlight\|computeAutoSwapTargetIndex" lib test`. Expected: only `AyahHighlightPainter`'s own `highlightedAyah`/`prevHighlightedAyah` parameters, which stay until S3.
 
 - [ ] **Step 5: Commit**
 ```bash
-git add lib/features/surah/presentation/pages/mushaf/mushaf_args.dart lib/features/surah/presentation/cubit/mushaf/mushaf_state.dart lib/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart lib/features/surah/presentation/utils/follow_playback.dart lib/features/surah/presentation/pages/mushaf/page_turn_tracker.dart lib/features/surah/presentation/pages/mushaf/auto_swap_helper.dart lib/features/surah/presentation/pages/mushaf/mushaf_di.dart lib/config/router/app_router.dart lib/features/surah/presentation/pages/mushaf/mushaf_page.dart lib/features/surah/presentation/pages/mushaf/widgets/mushaf_page_view.dart lib/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay.dart .claude/rules/feature-widgets.md test/features/surah/presentation/utils/follow_playback_test.dart test/features/surah/presentation/pages/mushaf/page_turn_tracker_test.dart test/features/surah/presentation/pages/mushaf/auto_swap_helper_test.dart test/features/surah/presentation/cubit/mushaf/mushaf_cubit_clear_highlight_test.dart test/features/surah/presentation/cubit/mushaf/mushaf_cubit_auto_follow_test.dart test/features/surah/presentation/cubit/mushaf_image/mushaf_image_cubit_test.dart test/features/surah/presentation/cubit/mushaf_chrome_test.dart test/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay_test.dart test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart
+git add lib/features/surah/presentation/pages/mushaf/mushaf_args.dart lib/features/surah/presentation/cubit/mushaf/mushaf_state.dart lib/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart lib/features/surah/presentation/pages/mushaf/auto_swap_helper.dart lib/features/surah/presentation/pages/mushaf/mushaf_di.dart lib/config/router/app_router.dart lib/features/surah/presentation/pages/mushaf/mushaf_page.dart lib/features/surah/presentation/pages/mushaf/widgets/mushaf_page_view.dart lib/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay.dart lib/features/surah/presentation/pages/surah_list/widgets/ayah_result_tile.dart test/features/surah/presentation/pages/mushaf/auto_swap_helper_test.dart test/features/surah/presentation/cubit/mushaf/mushaf_cubit_clear_highlight_test.dart test/features/surah/presentation/cubit/mushaf/mushaf_cubit_auto_follow_test.dart test/features/surah/presentation/cubit/mushaf_image/mushaf_image_cubit_test.dart test/features/surah/presentation/cubit/mushaf_chrome_test.dart test/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay_test.dart test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart
 git commit -m "refactor(mushaf): split selection from playback, follow only while following, arrival args" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 `git add` on the two deleted paths stages their deletion.
@@ -458,7 +477,6 @@ Ledger items 13 and 17, plus the §1A caller table.
   - `_onJumpToPage`
   - `onPageChanged` / `_onScroll`
 - Modify: `lib/features/surah/presentation/pages/surah_list/widgets/surah_list_tile.dart:21-22`
-- Modify: `lib/features/surah/presentation/pages/surah_list/widgets/ayah_result_tile.dart:33-39`
 - Modify: `lib/features/bookmarks/presentation/pages/bookmarks_page.dart:152-155,202`
 - Modify: `test/features/surah/presentation/pages/mushaf/last_read_saver_test.dart`, `test/features/surah/data/repositories/last_read_repository_impl_test.dart`, `test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart`, `test/features/surah/presentation/pages/surah_list/surah_list_tile_test.dart`
 - Create: `test/features/surah/presentation/pages/mushaf/mushaf_args_test.dart`
@@ -481,7 +499,7 @@ Ledger items 13 and 17, plus the §1A caller table.
 | Caller | args |
 |---|---|
 | `surah_list_tile.dart` `_openMushaf` (also the `SurahListTile` in surah search results) | `MushafArgs(page: surah.pageNumber, openedSurah: surah.number)` |
-| `ayah_result_tile.dart` | `MushafArgs(page: result.page, focusAyah: …, openedSurah: result.surah, origin: MushafOrigin.jump)` |
+| `ayah_result_tile.dart` | already done in Task 5: `MushafArgs(page: result.page, focusAyah: …, openedSurah: result.surah, origin: MushafOrigin.jump)` |
 | bookmarks `_QuranBookmarkTile` | `MushafArgs.focus(ayah)` (item 13) |
 | bookmarks `_PageBookmarkTile` | `MushafArgs(page: page, origin: MushafOrigin.jump)` (no focus ayah) |
 | home `last_read_card.dart`, `core/widgets/last_quran_read.dart`, `start_reading_card.dart`, `juz_browse_list.dart`, `page_jumper_grid.dart`, search `_JumpTile` | unchanged bare `int` (normal) |
@@ -514,6 +532,7 @@ Ledger items 13 and 17, plus the §1A caller table.
     - Build the saver with `origin: widget.args.origin`.
     - `readCurrent` reads `s.selectedAyah ?? _playbackCubit.state.currentAyah`.
     - In `onPageChanged` / `_onScroll`, compute `final manual = _turns.isManual(page);`, call `_lastReadSaver.onManualTurn()` when manual, then `setPage(page, byUser: manual)`. The existing page-stream listener keeps calling `schedule()`.
+    - The in-place jump calls `rearm()` and never `onManualTurn()` (its echo is suppressed by the tracker).
     - Delete the post-frame restore that selected the last-read ayah.
     - `_onJumpToPage` calls `_lastReadSaver.rearm()`.
   - Callers per the table.
@@ -522,7 +541,7 @@ Ledger items 13 and 17, plus the §1A caller table.
 
 - [ ] **Step 5: Commit**
 ```bash
-git add lib/features/surah/domain/entities/last_read.dart lib/features/surah/data/models/last_read_hive_model.dart lib/features/surah/data/models/last_read_hive_model.g.dart lib/features/surah/data/repositories/last_read_repository_impl.dart lib/features/surah/presentation/pages/mushaf/last_read_saver.dart lib/features/surah/presentation/pages/mushaf/mushaf_page.dart lib/features/surah/presentation/pages/surah_list/widgets/surah_list_tile.dart lib/features/surah/presentation/pages/surah_list/widgets/ayah_result_tile.dart lib/features/bookmarks/presentation/pages/bookmarks_page.dart test/features/surah/presentation/pages/mushaf/last_read_saver_test.dart test/features/surah/data/repositories/last_read_repository_impl_test.dart test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart test/features/surah/presentation/pages/surah_list/surah_list_tile_test.dart test/features/surah/presentation/pages/mushaf/mushaf_args_test.dart
+git add lib/features/surah/domain/entities/last_read.dart lib/features/surah/data/models/last_read_hive_model.dart lib/features/surah/data/models/last_read_hive_model.g.dart lib/features/surah/data/repositories/last_read_repository_impl.dart lib/features/surah/presentation/pages/mushaf/last_read_saver.dart lib/features/surah/presentation/pages/mushaf/mushaf_page.dart lib/features/surah/presentation/pages/surah_list/widgets/surah_list_tile.dart lib/features/bookmarks/presentation/pages/bookmarks_page.dart test/features/surah/presentation/pages/mushaf/last_read_saver_test.dart test/features/surah/data/repositories/last_read_repository_impl_test.dart test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart test/features/surah/presentation/pages/surah_list/surah_list_tile_test.dart test/features/surah/presentation/pages/mushaf/mushaf_args_test.dart
 git commit -m "fix(mushaf): jumps and peeks no longer overwrite last read; bookmarks reopen focused" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
