@@ -21,6 +21,7 @@ import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.d
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/utils/page_description.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 /// Unified bookmarks: saved Quran ayahs and saved ahadith, in sections.
@@ -149,10 +150,8 @@ class _QuranBookmarkTile extends StatelessWidget {
     return SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       radius: 12,
-      onTap: () => context.push(
-        AppRouter.mushafPath,
-        extra: quran.getPageNumber(ayah.surah, ayah.ayah),
-      ),
+      onTap: () =>
+          context.push(AppRouter.mushafPath, extra: MushafArgs.focus(ayah)),
       child: Row(
         children: [
           HugeIcon(
@@ -199,7 +198,10 @@ class _PageBookmarkTile extends StatelessWidget {
     return SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       radius: 12,
-      onTap: () => context.push(AppRouter.mushafPath, extra: page),
+      onTap: () => context.push(
+        AppRouter.mushafPath,
+        extra: MushafArgs(page: page, origin: MushafOrigin.jump),
+      ),
       child: Row(
         children: [
           HugeIcon(

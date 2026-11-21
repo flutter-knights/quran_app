@@ -132,8 +132,9 @@ void main() {
     sl.registerSingleton<GetMushafPage>(GetMushafPage(_StubMushafRepo()));
   });
 
-  testWidgets('on dispose: saves (page, highlighted) then stops playback', (
-    tester,
+  Future<(_StubLastReadRepo, _FakePlayback)> disposeOn(
+    WidgetTester tester,
+    MushafArgs args,
   ) async {
     final mushaf = _FakeMushaf(
       const MushafState(
@@ -167,17 +168,36 @@ void main() {
               ),
             ),
           ],
-          child: const MushafPage(args: MushafArgs(page: 7)),
+          child: MushafPage(args: args),
         ),
       ),
     );
     await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
     await tester.pump();
+    return (repo, playback);
+  }
 
-    expect(
-      repo.saved,
-      const LastRead(page: 7, ayah: AyahIdentifier(surah: 2, ayah: 5)),
+  testWidgets('on dispose: saves (page, highlighted) then stops playback', (
+    tester,
+  ) async {
+    final (repo, playback) = await disposeOn(tester, const MushafArgs(page: 7));
+
+    final saved = repo.saved!;
+    expect(saved.page, 7);
+    expect(saved.ayah, const AyahIdentifier(surah: 2, ayah: 5));
+    expect(saved.updatedAt, isNotNull);
+    expect(playback.stopCalls, 1);
+  });
+
+  testWidgets('jump arrival: dispose does not overwrite last read', (
+    tester,
+  ) async {
+    final (repo, playback) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7, origin: MushafOrigin.jump),
     );
+
+    expect(repo.saved, isNull);
     expect(playback.stopCalls, 1);
   });
 }

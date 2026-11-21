@@ -13,5 +13,13 @@ class LastReadHiveModel extends HiveObject {
   @HiveField(2)
   int? ayah;
 
-  LastReadHiveModel({required this.page, this.surah, this.ayah});
+  @HiveField(3)
+  DateTime? updatedAt;
+
+  LastReadHiveModel({
+    required this.page,
+    this.surah,
+    this.ayah,
+    this.updatedAt,
+  });
 }

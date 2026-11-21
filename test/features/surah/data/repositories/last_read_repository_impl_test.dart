@@ -21,7 +21,8 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('last_read_test_');
     Hive.init(tempDir.path);
     box = await Hive.openBox<LastReadHiveModel>(
-        'last_read_test_${tempDir.path.hashCode}');
+      'last_read_test_${tempDir.path.hashCode}',
+    );
     final ds = LastReadLocalDataSource(box: box);
     repo = LastReadRepositoryImpl(local: ds);
   });
@@ -32,10 +33,7 @@ void main() {
   });
 
   test('save then get round-trips with ayah', () async {
-    const value = LastRead(
-      page: 42,
-      ayah: AyahIdentifier(surah: 2, ayah: 5),
-    );
+    const value = LastRead(page: 42, ayah: AyahIdentifier(surah: 2, ayah: 5));
     await repo.save(value);
     final got = await repo.get();
     expect(got, value);
@@ -46,6 +44,17 @@ void main() {
     await repo.save(value);
     final got = await repo.get();
     expect(got, value);
+  });
+
+  test('save then get round-trips updatedAt', () async {
+    final value = LastRead(page: 42, updatedAt: DateTime(2026, 11, 21, 9, 40));
+    await repo.save(value);
+    expect(await repo.get(), value);
+  });
+
+  test('old record without updatedAt reads null', () async {
+    await box.put('current', LastReadHiveModel(page: 3));
+    expect((await repo.get())!.updatedAt, isNull);
   });
 
   test('get returns null when nothing saved', () async {
