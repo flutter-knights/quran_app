@@ -31,78 +31,92 @@ class RunningHead extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = PendingS.of(context);
     final hairline = BorderSide(color: colors.accent);
-    return Container(
-      height: 64,
+    return Material(
       color: colors.background,
-      child: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      IconButton(
-                        key: const ValueKey('head-back'),
-                        tooltip: MaterialLocalizations.of(
-                          context,
-                        ).backButtonTooltip,
-                        onPressed: onBack,
-                        icon: HugeIcon(
-                          icon: backArrowIcon(context),
-                          color: colors.ink,
-                        ),
-                      ),
-                      Flexible(
-                        child: InkWell(
-                          key: const ValueKey('head-surah'),
-                          onTap: onOpenMenu,
-                          child: Text(
-                            surahName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TS.bold16.copyWith(color: colors.ink),
+      child: SizedBox(
+        height: 64,
+        child: Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        IconButton(
+                          key: const ValueKey('head-back'),
+                          tooltip: MaterialLocalizations.of(
+                            context,
+                          ).backButtonTooltip,
+                          onPressed: onBack,
+                          icon: HugeIcon(
+                            icon: backArrowIcon(context),
+                            color: colors.ink,
                           ),
                         ),
-                      ),
-                    ],
+                        Flexible(
+                          child: InkWell(
+                            key: const ValueKey('head-surah'),
+                            onTap: onOpenMenu,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 48),
+                              child: Center(
+                                widthFactor: 1,
+                                child: Text(
+                                  surahName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TS.bold16.copyWith(color: colors.ink),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                KhatamMedallion(
-                  label: page.toLocalized(context),
-                  colors: colors,
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.only(end: 16),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: InkWell(
-                        key: const ValueKey('head-juz'),
-                        onTap: onOpenMenu,
-                        child: Text(
-                          s.head_juzHizb(
-                            juz.toLocalized(context),
-                            hizb.toLocalized(context),
+                  KhatamMedallion(
+                    label: page.toLocalized(context),
+                    colors: colors,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(end: 16),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: InkWell(
+                          key: const ValueKey('head-juz'),
+                          onTap: onOpenMenu,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(minHeight: 48),
+                            child: Center(
+                              widthFactor: 1,
+                              child: Text(
+                                s.head_juzHizb(
+                                  juz.toLocalized(context),
+                                  hizb.toLocalized(context),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TS.medium14.copyWith(color: colors.ink2),
+                              ),
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TS.medium14.copyWith(color: colors.ink2),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              border: Border(top: hairline, bottom: hairline),
+            Container(
+              height: 4,
+              decoration: BoxDecoration(
+                border: Border(top: hairline, bottom: hairline),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

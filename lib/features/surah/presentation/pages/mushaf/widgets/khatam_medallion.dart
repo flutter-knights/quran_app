@@ -18,10 +18,9 @@ class KhatamMedallion extends StatelessWidget {
       textDirection: Directionality.of(context),
       textScaler: MediaQuery.textScalerOf(context),
     )..layout();
-    final side = (math.max(painter.width, painter.height) + 20).clamp(
-      36.0,
-      56.0,
-    );
+    final extent = math.max(painter.width, painter.height);
+    painter.dispose();
+    final side = (extent + 20).clamp(36.0, 56.0);
     return SizedBox.square(
       dimension: side,
       child: Stack(

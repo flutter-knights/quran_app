@@ -66,6 +66,37 @@ void main() {
     expect(opens, 2);
   });
 
+  testWidgets('the surah and the juz paint their ink on the paper surface', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host());
+    for (final key in ['head-surah', 'head-juz']) {
+      final material = tester.widget<Material>(
+        find
+            .ancestor(
+              of: find.byKey(ValueKey(key)),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      expect(material.color, MushafPaper.cream.colors.background);
+    }
+  });
+
+  for (final scale in [1.0, 2.0]) {
+    for (final key in ['head-surah', 'head-juz']) {
+      testWidgets('$key is a 48 px tap target at ${scale}x text', (
+        tester,
+      ) async {
+        await tester.pumpWidget(_host(scale: scale));
+        expect(
+          tester.getSize(find.byKey(ValueKey(key))).height,
+          greaterThanOrEqualTo(48),
+        );
+      });
+    }
+  }
+
   for (final scale in [1.0, 1.3, 2.0]) {
     testWidgets('is 64 px tall at ${scale}x text', (tester) async {
       await tester.pumpWidget(_host(scale: scale));
