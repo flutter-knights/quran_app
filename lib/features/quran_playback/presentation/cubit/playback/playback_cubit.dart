@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../settings/presentation/cubit/settings_cubit.dart';
-import '../../../../surah/domain/entities/surah_entity.dart';
 import '../../../domain/entities/ayah_identifier.dart';
 import '../../../domain/entities/reciter.dart';
 import '../../../domain/repositories/quran_playback_repo.dart';
@@ -318,19 +317,6 @@ class PlaybackCubit extends Cubit<PlaybackState> {
           emit(state.copyWith(error: failure.message, requestedAyah: next)),
       (_) {},
     );
-  }
-
-  Future<void> preloadFullSurah({
-    required SurahEntity surah,
-    required Reciter reciter,
-  }) async {
-    final ayahs = List.generate(
-      surah.numberOfAyahs,
-      (i) => AyahIdentifier(surah: surah.number, ayah: i + 1),
-    );
-    emit(state.copyWith(isLoading: true));
-    await repository.preloadAyahs(ayahs: ayahs, reciter: reciter);
-    emit(state.copyWith(isLoading: false));
   }
 
   int? getPageForCurrentAyah() {

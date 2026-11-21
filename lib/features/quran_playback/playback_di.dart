@@ -17,6 +17,7 @@ import 'domain/services/quran_page_service.dart';
 import 'presentation/audio/playback_audio_focus.dart';
 import 'presentation/audio/quran_audio_handler.dart';
 import 'presentation/cubit/playback/playback_cubit.dart';
+import 'presentation/cubit/surah_download/surah_download_cubit.dart';
 
 Future<void> initPlayback() async {
   final audioCacheBox = Hive.box<String>('ayahAudioCache');
@@ -55,6 +56,8 @@ Future<void> initPlayback() async {
       settingsCubit: sl<SettingsCubit>(),
     ),
   );
+
+  sl.registerLazySingleton(() => SurahDownloadCubit(repository: sl()));
 
   final focus = await connectAudioFocus(
     session: () => AudioSession.instance,
