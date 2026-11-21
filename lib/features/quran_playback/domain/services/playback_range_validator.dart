@@ -1,4 +1,5 @@
 import 'package:quran/quran.dart' as quran;
+import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 
 /// Pure validation for the from→to playback range and repeat counters.
 /// Rules (per the Phase 2 spec):
@@ -19,7 +20,11 @@ class PlaybackRangeValidator {
     return value;
   }
 
-  static int clampTo({required int surah, required int from, required int value}) {
+  static int clampTo({
+    required int surah,
+    required int from,
+    required int value,
+  }) {
     final last = quran.getVerseCount(surah);
     final lo = from.clamp(1, last);
     if (value < lo) return lo;
@@ -36,19 +41,7 @@ class PlaybackRangeValidator {
   /// Parses user text (Western or Arabic-Indic digits). Returns null for
   /// blank/non-numeric so the caller can revert to the last valid value.
   static int? parseCounter(String raw) {
-    final normalized = raw.split('').map((ch) {
-      final code = ch.codeUnitAt(0);
-      // Arabic-Indic ٠..٩ = U+0660..U+0669 → ASCII 0..9
-      if (code >= 0x0660 && code <= 0x0669) {
-        return String.fromCharCode(code - 0x0660 + 0x30);
-      }
-      // Extended Arabic-Indic (Farsi/Urdu) ۰..۹ = U+06F0..U+06F9 → ASCII 0..9
-      if (code >= 0x06F0 && code <= 0x06F9) {
-        return String.fromCharCode(code - 0x06F0 + 0x30);
-      }
-      return ch;
-    }).join();
-    if (normalized.isEmpty) return null;
-    return int.tryParse(normalized);
+    final n = toAsciiDigits(raw);
+    return n.isEmpty ? null : int.tryParse(n);
   }
 }

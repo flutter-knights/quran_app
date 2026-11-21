@@ -1,8 +1,8 @@
 import 'package:quran/quran.dart' as quran;
 import 'quran_page_service.dart';
 
-/// Metadata for a single Mushaf page: which surah, juz, hizb, and rub
-/// (quarter within the hizb) it begins in.
+/// Metadata for a single Mushaf page: the surah it begins in, and the juz,
+/// hizb and rub (quarter within the hizb) reached at its last ayah.
 class PageMeta {
   const PageMeta({
     required this.surah,
@@ -36,8 +36,9 @@ class QuranMetaServiceImpl implements QuranMetaService {
   PageMeta getPageMeta(int page) {
     final first = pageService.getFirstAyahOfPage(page);
     final surahNum = first?.surah ?? 1;
-    final ayahNum = first?.ayah ?? 1;
-    final abs = _absolute(surahNum, ayahNum);
+    final (lastSurah, lastAyah) =
+        _lastAyahOfPage(page) ?? (surahNum, first?.ayah ?? 1);
+    final abs = _absolute(lastSurah, lastAyah);
 
     // Binary search for the last quarter boundary that is <= abs position.
     var lo = 0;
@@ -55,10 +56,17 @@ class QuranMetaServiceImpl implements QuranMetaService {
 
     return PageMeta(
       surah: surahNum,
-      juz: quran.getJuzNumber(surahNum, ayahNum),
+      juz: quran.getJuzNumber(lastSurah, lastAyah),
       hizb: (q ~/ 4) + 1,
       rub: (q % 4) + 1,
     );
+  }
+
+  static (int, int)? _lastAyahOfPage(int page) {
+    for (final e in quran.getPageData(page).cast<Map>().reversed) {
+      if (e['end'] > 0) return (e['surah'] as int, e['end'] as int);
+    }
+    return null;
   }
 
   static int _absolute(int surah, int ayah) {
