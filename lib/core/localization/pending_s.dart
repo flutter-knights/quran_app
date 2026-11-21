@@ -216,6 +216,23 @@ class PendingS {
       : 'Now reciting: $surah $ayah, page $page';
   String get mushaf_returnToReciting =>
       _ar ? 'العودة إلى الآية المتلوّة' : 'Back to the recited ayah';
+  String player_untilSurahEnd(String reciter) =>
+      _ar ? '$reciter، حتى نهاية السورة' : '$reciter, to the end of the surah';
+  String player_untilPageEnd(String reciter) =>
+      _ar ? '$reciter، حتى نهاية الصفحة' : '$reciter, to the end of the page';
+  String get player_previous => _ar ? 'السابقة' : 'Previous';
+  String get player_resume => _ar ? 'متابعة' : 'Resume';
+  String player_repeat(String value) =>
+      _ar ? 'التكرار: $value' : 'Repeat: $value';
+  String get player_repeatOnce => _ar ? 'مرة واحدة' : 'once';
+  String get player_repeatForever => _ar ? 'بلا توقف' : 'endless';
+  String player_repeatCounts(String ayah, String passage) =>
+      _ar ? 'الآية ×$ayah، المقطع ×$passage' : 'ayah ×$ayah, passage ×$passage';
+  String get player_optionsTitle =>
+      _ar ? 'خيارات التلاوة' : 'Recitation options';
+  String get mushaf_audioErrorHint => _ar
+      ? 'تحقق من الاتصال بالإنترنت، ثم أعِد المحاولة'
+      : 'Check your internet connection, then try again';
   String get playback_repeatEachAyah =>
       _ar ? 'تكرار كل آية' : 'Repeat each ayah';
   String get playback_repeatPassage =>

@@ -441,6 +441,28 @@
     "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" }, "page": { "type": "String" } }
   },
   "mushaf_returnToReciting": "Back to the recited ayah",
+  "player_untilSurahEnd": "{reciter}, to the end of the surah",
+  "@player_untilSurahEnd": {
+    "placeholders": { "reciter": { "type": "String" } }
+  },
+  "player_untilPageEnd": "{reciter}, to the end of the page",
+  "@player_untilPageEnd": {
+    "placeholders": { "reciter": { "type": "String" } }
+  },
+  "player_previous": "Previous",
+  "player_resume": "Resume",
+  "player_repeat": "Repeat: {value}",
+  "@player_repeat": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "player_repeatOnce": "once",
+  "player_repeatForever": "endless",
+  "player_repeatCounts": "ayah ×{ayah}, passage ×{passage}",
+  "@player_repeatCounts": {
+    "placeholders": { "ayah": { "type": "String" }, "passage": { "type": "String" } }
+  },
+  "player_optionsTitle": "Recitation options",
+  "mushaf_audioErrorHint": "Check your internet connection, then try again",
   "playback_repeatEachAyah": "Repeat each ayah",
   "playback_repeatPassage": "Repeat the passage",
   "playback_crossSurahRange": "From {from} to {to}",

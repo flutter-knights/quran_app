@@ -425,6 +425,28 @@
     "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" }, "page": { "type": "String" } }
   },
   "mushaf_returnToReciting": "العودة إلى الآية المتلوّة",
+  "player_untilSurahEnd": "{reciter}، حتى نهاية السورة",
+  "@player_untilSurahEnd": {
+    "placeholders": { "reciter": { "type": "String" } }
+  },
+  "player_untilPageEnd": "{reciter}، حتى نهاية الصفحة",
+  "@player_untilPageEnd": {
+    "placeholders": { "reciter": { "type": "String" } }
+  },
+  "player_previous": "السابقة",
+  "player_resume": "متابعة",
+  "player_repeat": "التكرار: {value}",
+  "@player_repeat": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "player_repeatOnce": "مرة واحدة",
+  "player_repeatForever": "بلا توقف",
+  "player_repeatCounts": "الآية ×{ayah}، المقطع ×{passage}",
+  "@player_repeatCounts": {
+    "placeholders": { "ayah": { "type": "String" }, "passage": { "type": "String" } }
+  },
+  "player_optionsTitle": "خيارات التلاوة",
+  "mushaf_audioErrorHint": "تحقق من الاتصال بالإنترنت، ثم أعِد المحاولة",
   "playback_repeatEachAyah": "تكرار كل آية",
   "playback_repeatPassage": "تكرار المقطع",
   "playback_crossSurahRange": "من {from} إلى {to}",

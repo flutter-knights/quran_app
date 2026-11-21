@@ -11,9 +11,14 @@ import 'package:quran_app/features/quran_playback/presentation/cubit/surah_downl
 import 'package:quran_app/features/quran_playback/presentation/cubit/surah_download/surah_download_state.dart';
 
 class SurahDownloadButton extends StatelessWidget {
-  const SurahDownloadButton({super.key, required this.surah});
+  const SurahDownloadButton({
+    super.key,
+    required this.surah,
+    this.labelled = false,
+  });
 
   final int surah;
+  final bool labelled;
 
   @override
   Widget build(BuildContext context) =>
@@ -41,6 +46,12 @@ class SurahDownloadButton extends StatelessWidget {
   ) {
     final scheme = context.colorScheme;
     final pending = PendingS.of(context);
+    final percent = switch (status) {
+      SurahDownloading(:final progress) => (progress * 100).round().toLocalized(
+        context,
+      ),
+      _ => '',
+    };
     final (child, tooltip, onTap) = switch (status) {
       SurahNotDownloaded() => (
         Icon(Icons.download_for_offline_outlined, color: scheme.secondary),
@@ -49,9 +60,7 @@ class SurahDownloadButton extends StatelessWidget {
       ),
       SurahDownloading(:final progress) => (
         Semantics(
-          label: pending.surahDownload_progress(
-            (progress * 100).round().toLocalized(context),
-          ),
+          label: pending.surahDownload_progress(percent),
           child: SizedBox(
             width: 22,
             height: 22,
@@ -72,6 +81,17 @@ class SurahDownloadButton extends StatelessWidget {
         () => cubit.download(reciter, surah),
       ),
     };
+    if (labelled) {
+      return OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
+        icon: child,
+        label: Text(switch (status) {
+          SurahDownloading() => pending.surahDownload_progress(percent),
+          _ => tooltip,
+        }, style: TS.medium14),
+        onPressed: onTap,
+      );
+    }
     return IconButton(
       constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
       tooltip: tooltip,

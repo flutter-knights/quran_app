@@ -8,16 +8,14 @@ import '../../../../../../core/helper functions/locale_helpers.dart';
 import '../../../../../../core/localization/pending_s.dart';
 import '../../../../../../generated/l10n.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
-import '../../../../../quran_playback/domain/entities/reciter.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
 import '../../../../../quran_playback/presentation/cubit/surah_download/surah_download_cubit.dart';
-import '../../../../../quran_playback/presentation/widgets/playback_repeat_options.dart';
+import '../../../../../quran_playback/presentation/widgets/playback_options_sheet.dart';
 import '../../../../../settings/presentation/cubit/settings_cubit.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 
-const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 const _playerClearance = 76.0;
 
 /// Compact frosted-glass mini-player that floats over the Mushaf page without
@@ -67,17 +65,8 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
     super.dispose();
   }
 
-  void _openReciterSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (_) => BlocProvider.value(
-        value: context.read<PlaybackCubit>(),
-        child: const _ReciterSheet(),
-      ),
-    );
-  }
+  void _openReciterSheet(BuildContext context) =>
+      PlaybackOptionsSheet.show(context);
 
   void _openOptionsSheet(BuildContext context) {
     // If the options sheet is opened before playback has started (user tapped
@@ -95,15 +84,9 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
         );
       }
     }
-    final mushaf = context.read<MushafCubit>();
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (_) => BlocProvider.value(
-        value: context.read<PlaybackCubit>(),
-        child: _OptionsSheet(onNewPlay: mushaf.resumeFollow),
-      ),
+    PlaybackOptionsSheet.show(
+      context,
+      onNewPlay: context.read<MushafCubit>().resumeFollow,
     );
   }
 
@@ -482,154 +465,6 @@ class _InfoColumn extends StatelessWidget {
           },
         ),
       ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Reciter sheet — opened by tapping the info column
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ReciterSheet extends StatelessWidget {
-  const _ReciterSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(S.of(context).reciter_label, style: TS.medium14),
-            const SizedBox(height: 12),
-            _ReciterGrid(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Options sheet — speed & repeat/range (tune icon)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _OptionsSheet extends StatelessWidget {
-  const _OptionsSheet({required this.onNewPlay});
-  final VoidCallback onNewPlay;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(S.of(context).playback_speed, style: TS.medium12),
-            const SizedBox(height: 6),
-            _SpeedGrid(),
-            const SizedBox(height: 16),
-            PlaybackRepeatOptions(onNewPlay: onNewPlay),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Reciter grid
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ReciterGrid extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<PlaybackCubit, PlaybackState>(
-      buildWhen: (a, b) => a.reciter != b.reciter,
-      builder: (context, state) {
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final r in Reciter.values)
-              _Chip(
-                label: r.arabicName,
-                selected: state.reciter == r,
-                onTap: () => context.read<PlaybackCubit>().setReciter(r),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Speed grid
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _SpeedGrid extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<PlaybackCubit, PlaybackState>(
-      buildWhen: (a, b) => a.speed != b.speed,
-      builder: (context, state) {
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final s in _speeds)
-              _Chip(
-                label: '${s}x',
-                selected: state.speed == s,
-                onTap: () => context.read<PlaybackCubit>().setSpeed(s),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared chip
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _Chip extends StatelessWidget {
-  const _Chip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected ? scheme.primary : scheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TS.regular14.copyWith(
-            color: selected ? scheme.onPrimary : scheme.onSurface,
-          ),
-        ),
-      ),
     );
   }
 }

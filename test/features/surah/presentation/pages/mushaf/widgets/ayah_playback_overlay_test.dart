@@ -872,7 +872,9 @@ void main() {
     await _pump(tester, m, p);
     await tester.tap(find.byIcon(Icons.tune));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('1.5x'));
+    await tester.ensureVisible(find.text('1.5×'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('1.5×'));
     await tester.pumpAndSettle();
     expect(p.speedSet, 1.5);
   });
@@ -889,6 +891,8 @@ void main() {
     );
     await _pump(tester, m, p);
     await tester.tap(find.byIcon(Icons.tune));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('range-from')));
     await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(

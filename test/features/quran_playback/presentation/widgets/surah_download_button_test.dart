@@ -44,28 +44,31 @@ class _FakeDownloads extends Cubit<SurahDownloadState>
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
 
-Future<void> _pump(WidgetTester tester, _FakeDownloads downloads) =>
-    tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('ar'),
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
+Future<void> _pump(
+  WidgetTester tester,
+  _FakeDownloads downloads, {
+  bool labelled = false,
+}) => tester.pumpWidget(
+  MaterialApp(
+    locale: const Locale('ar'),
+    localizationsDelegates: const [
+      S.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+    ],
+    supportedLocales: S.delegate.supportedLocales,
+    home: Scaffold(
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider<PlaybackCubit>.value(value: _FakePlayback()),
+          BlocProvider<SurahDownloadCubit>.value(value: downloads),
         ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: Scaffold(
-          body: MultiBlocProvider(
-            providers: [
-              BlocProvider<PlaybackCubit>.value(value: _FakePlayback()),
-              BlocProvider<SurahDownloadCubit>.value(value: downloads),
-            ],
-            child: const SurahDownloadButton(surah: 2),
-          ),
-        ),
+        child: SurahDownloadButton(surah: 2, labelled: labelled),
       ),
-    );
+    ),
+  ),
+);
 
 void main() {
   testWidgets('not downloaded: the button starts the download for the '
@@ -115,5 +118,45 @@ void main() {
   ) async {
     await _pump(tester, _FakeDownloads({'alafasy:2': const SurahDownloaded()}));
     expect(find.byTooltip('تنزيل السورة'), findsOneWidget);
+  });
+
+  group('labelled', () {
+    testWidgets('not downloaded: a download chip', (tester) async {
+      final downloads = _FakeDownloads();
+      await _pump(tester, downloads, labelled: true);
+      expect(
+        tester.getSize(find.byType(OutlinedButton)).height,
+        greaterThanOrEqualTo(48),
+      );
+      await tester.tap(find.text('تنزيل السورة'));
+      expect(downloads.downloads, [(Reciter.husary, 2)]);
+    });
+
+    testWidgets('downloading: the percent, cancelling on tap', (tester) async {
+      final downloads = _FakeDownloads({
+        'husary:2': const SurahDownloading(.4),
+      });
+      await _pump(tester, downloads, labelled: true);
+      await tester.tap(find.text('جارٍ التنزيل ٤٠٪'));
+      expect(downloads.cancels, [(Reciter.husary, 2)]);
+    });
+
+    testWidgets('downloaded: the saved label', (tester) async {
+      await _pump(
+        tester,
+        _FakeDownloads({'husary:2': const SurahDownloaded()}),
+        labelled: true,
+      );
+      expect(find.text('محفوظة للاستماع دون إنترنت'), findsOneWidget);
+    });
+
+    testWidgets('failed: the failure label, retrying on tap', (tester) async {
+      final downloads = _FakeDownloads({
+        'husary:2': const SurahDownloadFailed(),
+      });
+      await _pump(tester, downloads, labelled: true);
+      await tester.tap(find.text('تعذّر التنزيل، أعِد المحاولة'));
+      expect(downloads.downloads, [(Reciter.husary, 2)]);
+    });
   });
 }
