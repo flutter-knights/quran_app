@@ -30,10 +30,6 @@ class _FakeDownloads extends Cubit<SurahDownloadState>
       emit(SurahDownloadState(statuses: statuses));
 
   @override
-  SurahDownloadStatus statusOf(Reciter reciter, int surah) =>
-      state.statuses[reciter.downloadKey(surah)] ?? const SurahNotDownloaded();
-
-  @override
   void download(Reciter reciter, int surah) => downloads.add((reciter, surah));
 
   @override
@@ -106,24 +102,10 @@ void main() {
     expect(downloads.deletes, [(Reciter.husary, 2)]);
   });
 
-  testWidgets('failed: retries on tap and the failure shows a SnackBar', (
-    tester,
-  ) async {
-    final downloads = _FakeDownloads();
+  testWidgets('failed: retries on tap', (tester) async {
+    final downloads = _FakeDownloads({'husary:2': const SurahDownloadFailed()});
     await _pump(tester, downloads);
-    downloads.push({'husary:2': const SurahDownloadFailed()});
-    await tester.pump();
-    final snackText = find.descendant(
-      of: find.byType(SnackBar),
-      matching: find.text('تعذّر التنزيل، أعِد المحاولة'),
-    );
-    expect(snackText, findsOneWidget);
-    downloads.push({
-      'husary:2': const SurahDownloadFailed(),
-      'husary:3': const SurahDownloaded(),
-    });
-    await tester.pump();
-    expect(snackText, findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
     await tester.tap(find.byTooltip('تعذّر التنزيل، أعِد المحاولة'));
     expect(downloads.downloads, [(Reciter.husary, 2)]);
   });

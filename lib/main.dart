@@ -18,6 +18,7 @@ import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cu
 import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/surah_download/surah_download_cubit.dart';
+import 'package:quran_app/features/quran_playback/presentation/widgets/surah_download_listener.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -87,7 +88,11 @@ class _AppLoaderState extends State<AppLoader> {
         BlocProvider(create: (_) => sl<LastReadCubit>()),
         BlocProvider(create: (_) => sl<PlaybackCubit>()),
         BlocProvider(create: (_) => sl<DownloadBookCubit>()),
-        BlocProvider(create: (_) => sl<SurahDownloadCubit>()),
+        BlocProvider(
+          create: (_) =>
+              sl<SurahDownloadCubit>()
+                ..refresh(sl<PlaybackCubit>().state.reciter),
+        ),
         BlocProvider(create: (_) => sl<AlertsSyncCubit>()),
       ],
       child: const QuranApp(),
@@ -120,10 +125,11 @@ class _QuranAppState extends State<QuranApp> {
         ? AppRouter.homePath
         : AppRouter.splashPath;
     _router = AppRouter.createRouter(initialLocation: initialLocation);
+    final playback = context.read<PlaybackCubit>();
     _notificationSub = listenNowPlaying(
       AudioService.notificationClicked,
       _router,
-      () => sl<PlaybackCubit>().state.skipOrigin,
+      () => playback.state.nowPlaying,
     );
   }
 
@@ -151,6 +157,7 @@ class _QuranAppState extends State<QuranApp> {
             GlobalCupertinoLocalizations.delegate,
           ],
           routerConfig: _router,
+          builder: (_, child) => SurahDownloadListener(child: child!),
         );
       },
     );

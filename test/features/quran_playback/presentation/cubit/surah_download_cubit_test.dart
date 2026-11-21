@@ -19,6 +19,12 @@ void main() {
   SurahDownloadState withStatus(String key, SurahDownloadStatus status) =>
       SurahDownloadState(statuses: {key: status});
 
+  SurahDownloadStatus? statusOf(
+    SurahDownloadCubit cubit,
+    Reciter reciter,
+    int surah,
+  ) => cubit.state.statuses[reciter.downloadKey(surah)];
+
   setUpAll(() => registerFallbackValue(Reciter.alafasy));
 
   setUp(() {
@@ -102,24 +108,41 @@ void main() {
     expect(controller.hasListener, isTrue);
     await cubit.cancel(Reciter.husary, 2);
     expect(controller.hasListener, isFalse);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahNotDownloaded());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahNotDownloaded());
     await cubit.close();
   });
 
-  test('statusOf falls back to the stored record', () async {
+  test('refresh fills every surah of the reciter from the records', () async {
     when(
       () => repo.isSurahDownloaded(surah: 2, reciter: Reciter.husary),
     ).thenReturn(true);
     final cubit = build();
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloaded());
     expect(cubit.state.statuses, isEmpty);
+    cubit.refresh(Reciter.husary);
+    expect(cubit.state.statuses, hasLength(114));
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloaded());
+    expect(statusOf(cubit, Reciter.husary, 3), const SurahNotDownloaded());
+    expect(statusOf(cubit, Reciter.alafasy, 2), isNull);
+    await cubit.close();
+  });
+
+  test('refresh keeps a running or failed download', () async {
+    final cubit = build()..download(Reciter.husary, 2);
+    controller.add(const Right(.5));
+    await Future<void>.delayed(Duration.zero);
+    cubit.refresh(Reciter.husary);
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloading(.5));
+    controller.add(const Left(UnknownFailure('x')));
+    await Future<void>.delayed(Duration.zero);
+    cubit.refresh(Reciter.husary);
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloadFailed());
     await cubit.close();
   });
 
   test('statuses are per reciter', () async {
     final cubit = build()..download(Reciter.husary, 2);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloading(0));
-    expect(cubit.statusOf(Reciter.alafasy, 2), const SurahNotDownloaded());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloading(0));
+    expect(statusOf(cubit, Reciter.alafasy, 2), isNull);
     await cubit.close();
   });
 
@@ -139,10 +162,10 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     await cubit.delete(Reciter.husary, 2);
     expect(controller.hasListener, isFalse);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahNotDownloaded());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahNotDownloaded());
     controller.add(const Right(.6));
     await Future<void>.delayed(Duration.zero);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahNotDownloaded());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahNotDownloaded());
     await cubit.close();
   });
 
@@ -169,12 +192,12 @@ void main() {
     final cubit = build()..download(Reciter.husary, 2);
     controller.add(const Left(UnknownFailure('x')));
     await Future<void>.delayed(Duration.zero);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloadFailed());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloadFailed());
     when(
       () => repo.downloadSurah(surah: 2, reciter: Reciter.husary),
     ).thenAnswer((_) => StreamController<Either<Failure, double>>().stream);
     cubit.download(Reciter.husary, 2);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloading(0));
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloading(0));
     verify(
       () => repo.downloadSurah(surah: 2, reciter: Reciter.husary),
     ).called(2);
@@ -189,12 +212,12 @@ void main() {
       ).thenAnswer((_) async => const Left(UnknownFailure('x')));
       final cubit = build()..download(Reciter.husary, 2);
       await cubit.delete(Reciter.husary, 2);
-      expect(cubit.statusOf(Reciter.husary, 2), const SurahNotDownloaded());
+      expect(statusOf(cubit, Reciter.husary, 2), const SurahNotDownloaded());
       when(
         () => repo.downloadSurah(surah: 2, reciter: Reciter.husary),
       ).thenAnswer((_) => StreamController<Either<Failure, double>>().stream);
       cubit.download(Reciter.husary, 2);
-      expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloading(0));
+      expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloading(0));
       await cubit.close();
     },
   );
@@ -206,10 +229,9 @@ void main() {
     when(
       () => repo.deleteSurahDownload(surah: 2, reciter: Reciter.husary),
     ).thenAnswer((_) async => const Left(UnknownFailure('x')));
-    final cubit = build();
+    final cubit = build()..refresh(Reciter.husary);
     await cubit.delete(Reciter.husary, 2);
-    expect(cubit.state.statuses, isEmpty);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloaded());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloaded());
     await cubit.close();
   });
 
@@ -217,10 +239,9 @@ void main() {
     when(
       () => repo.isSurahDownloaded(surah: 2, reciter: Reciter.husary),
     ).thenReturn(true);
-    final cubit = build();
+    final cubit = build()..refresh(Reciter.husary);
     await cubit.cancel(Reciter.husary, 2);
-    expect(cubit.state.statuses, isEmpty);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloaded());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloaded());
     await cubit.close();
   });
 
@@ -229,7 +250,7 @@ void main() {
     controller.add(const Left(UnknownFailure('x')));
     await Future<void>.delayed(Duration.zero);
     await cubit.cancel(Reciter.husary, 2);
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloadFailed());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahDownloadFailed());
     await cubit.close();
   });
 
@@ -244,7 +265,7 @@ void main() {
     verifyNever(() => repo.downloadSurah(surah: 2, reciter: Reciter.husary));
     deletion.complete(const Right(null));
     await pending;
-    expect(cubit.statusOf(Reciter.husary, 2), const SurahNotDownloaded());
+    expect(statusOf(cubit, Reciter.husary, 2), const SurahNotDownloaded());
     cubit.download(Reciter.husary, 2);
     verify(
       () => repo.downloadSurah(surah: 2, reciter: Reciter.husary),

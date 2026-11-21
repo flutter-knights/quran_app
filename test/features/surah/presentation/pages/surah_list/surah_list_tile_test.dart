@@ -39,10 +39,6 @@ class _FakeDownloads extends Cubit<SurahDownloadState>
   final List<(Reciter, int)> downloads;
 
   @override
-  SurahDownloadStatus statusOf(Reciter reciter, int surah) =>
-      const SurahNotDownloaded();
-
-  @override
   void download(Reciter reciter, int surah) => downloads.add((reciter, surah));
 
   @override

@@ -21,30 +21,13 @@ class SurahDownloadButton extends StatelessWidget {
         selector: (state) => state.reciter,
         builder: (context, reciter) {
           final key = reciter.downloadKey(surah);
-          return BlocListener<SurahDownloadCubit, SurahDownloadState>(
-            listenWhen: (a, b) =>
-                a.statuses[key] != b.statuses[key] &&
-                b.statuses[key] is SurahDownloadFailed,
-            listener: (context, _) =>
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      PendingS.of(context).surahDownload_failed,
-                      style: TS.regular14,
-                    ),
-                  ),
-                ),
-            child: BlocBuilder<SurahDownloadCubit, SurahDownloadState>(
-              buildWhen: (a, b) => a.statuses[key] != b.statuses[key],
-              builder: (context, _) {
-                final cubit = context.read<SurahDownloadCubit>();
-                return _button(
-                  context,
-                  cubit,
-                  reciter,
-                  cubit.statusOf(reciter, surah),
-                );
-              },
+          return BlocBuilder<SurahDownloadCubit, SurahDownloadState>(
+            buildWhen: (a, b) => a.statuses[key] != b.statuses[key],
+            builder: (context, state) => _button(
+              context,
+              context.read<SurahDownloadCubit>(),
+              reciter,
+              state.statuses[key] ?? const SurahNotDownloaded(),
             ),
           );
         },
@@ -102,11 +85,13 @@ class SurahDownloadButton extends StatelessWidget {
     SurahDownloadCubit cubit,
     Reciter reciter,
   ) {
-    final pending = PendingS.of(context);
     return showDialog(
       context: context,
       builder: (dialog) => AlertDialog(
-        content: Text(pending.surahDownload_saved, style: TS.regular14),
+        content: Text(
+          PendingS.of(dialog).surahDownload_saved,
+          style: TS.regular14,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialog).pop(),
@@ -117,7 +102,7 @@ class SurahDownloadButton extends StatelessWidget {
               Navigator.of(dialog).pop();
               cubit.delete(reciter, surah);
             },
-            child: Text(pending.surahDownload_delete),
+            child: Text(PendingS.of(dialog).surahDownload_delete),
           ),
         ],
       ),

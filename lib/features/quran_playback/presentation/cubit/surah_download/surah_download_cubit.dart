@@ -17,12 +17,20 @@ class SurahDownloadCubit extends Cubit<SurahDownloadState> {
       <String, StreamSubscription<Either<Failure, double>>>{};
   final _deleting = <String>{};
 
-  SurahDownloadStatus statusOf(Reciter reciter, int surah) {
-    final status = state.statuses[reciter.downloadKey(surah)];
-    if (status != null) return status;
-    return repository.isSurahDownloaded(surah: surah, reciter: reciter)
-        ? const SurahDownloaded()
-        : const SurahNotDownloaded();
+  void refresh(Reciter reciter) {
+    final statuses = {...state.statuses};
+    for (var surah = 1; surah <= 114; surah++) {
+      final key = reciter.downloadKey(surah);
+      final current = statuses[key];
+      if (current is SurahDownloading || current is SurahDownloadFailed) {
+        continue;
+      }
+      statuses[key] =
+          repository.isSurahDownloaded(surah: surah, reciter: reciter)
+          ? const SurahDownloaded()
+          : const SurahNotDownloaded();
+    }
+    if (!isClosed) emit(SurahDownloadState(statuses: statuses));
   }
 
   void download(Reciter reciter, int surah) {
