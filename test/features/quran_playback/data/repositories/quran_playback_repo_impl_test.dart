@@ -194,12 +194,23 @@ void main() {
     test(
       'downloadSurah 112 fetches the basmala and four ayat, then marks it',
       () async {
-        final events = await download(112);
+        var reachedTotalBeforeMark = false;
+        final events = <Either<Failure, double>>[];
+        when(() => local.markSurahDownloaded(any())).thenAnswer((inv) async {
+          reachedTotalBeforeMark = events.contains(
+            const Right<Failure, double>(1.0),
+          );
+          records[inv.positionalArguments[0] as String] = true;
+        });
+        await repo
+            .downloadSurah(surah: 112, reciter: reciter)
+            .forEach(events.add);
 
         final values = events.map((e) => e.getOrElse(() => -1)).toList();
         expect(values.last, 1.0);
         expect(values, orderedEquals([...values]..sort()));
         expect(events.every((e) => e.isRight()), isTrue);
+        expect(reachedTotalBeforeMark, isFalse);
         final urls = verify(
           () => remote.downloadAudio(captureAny(), any()),
         ).captured;
@@ -287,15 +298,19 @@ void main() {
         await pumpEventQueue();
       }
 
+      final events = <Either<Failure, double>>[];
       final sub = repo
           .downloadSurah(surah: 112, reciter: reciter)
-          .listen((_) {});
+          .listen(events.add);
       await pumpEventQueue();
       await finish(urlOf(1, 1), const AyahIdentifier(surah: 1, ayah: 1));
       await sub.cancel();
+      final countAtCancel = events.length;
       await finish(urlOf(112, 1), const AyahIdentifier(surah: 112, ayah: 1));
       await finish(urlOf(112, 2), const AyahIdentifier(surah: 112, ayah: 2));
       verify(() => remote.downloadAudio(any(), any())).called(3);
+      expect(events, hasLength(countAtCancel));
+      verifyNever(() => local.markSurahDownloaded(any()));
 
       clearInteractions(remote);
       when(
@@ -308,6 +323,60 @@ void main() {
       ).captured;
       expect(urls, unorderedEquals([urlOf(112, 3), urlOf(112, 4)]));
     });
+
+    test('cancelling with the final ayah in flight leaves no record', () async {
+      for (final a in [1, 2, 3]) {
+        seed(AyahIdentifier(surah: 112, ayah: a));
+      }
+      seed(const AyahIdentifier(surah: 1, ayah: 1));
+      final gate = Completer<void>();
+      when(() => remote.downloadAudio(any(), any())).thenAnswer((inv) async {
+        await gate.future;
+        return writeFile(inv.positionalArguments[1] as String);
+      });
+
+      final events = <Either<Failure, double>>[];
+      var closed = false;
+      final sub = repo
+          .downloadSurah(surah: 112, reciter: reciter)
+          .listen(events.add, onDone: () => closed = true);
+      await pumpEventQueue();
+      final countAtCancel = events.length;
+      await sub.cancel();
+      gate.complete();
+      await pumpEventQueue();
+
+      expect(events, hasLength(countAtCancel));
+      expect(closed, isFalse);
+      verifyNever(() => local.markSurahDownloaded(any()));
+      expect(repo.isSurahDownloaded(surah: 112, reciter: reciter), isFalse);
+    });
+
+    test('a failing record write ends the stream with Left', () async {
+      when(() => local.markSurahDownloaded(any())).thenThrow(Exception('hive'));
+
+      final events = await download(112);
+
+      expect(events.last.isLeft(), isTrue);
+    });
+
+    test(
+      'a failing record write with everything cached ends with Left',
+      () async {
+        for (final a in [1, 2, 3, 4]) {
+          seed(AyahIdentifier(surah: 112, ayah: a));
+        }
+        seed(const AyahIdentifier(surah: 1, ayah: 1));
+        when(
+          () => local.markSurahDownloaded(any()),
+        ).thenThrow(Exception('hive'));
+
+        final events = await download(112);
+
+        expect(events, hasLength(1));
+        expect(events.single.isLeft(), isTrue);
+      },
+    );
 
     test('a preload goes ahead of a queued surah download', () async {
       final completers = <String, Completer<String>>{};

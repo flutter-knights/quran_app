@@ -273,8 +273,12 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
       }
 
       Future<void> finish() async {
-        await local.markSurahDownloaded(batch);
-        emit(const Right(1.0));
+        try {
+          if (!cancelled) await local.markSurahDownloaded(batch);
+          emit(const Right(1.0));
+        } catch (e) {
+          emit(Left(UnknownFailure(e.toString())));
+        }
         await controller.close();
       }
 
