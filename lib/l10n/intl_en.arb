@@ -462,5 +462,19 @@
   "surahDownload_progress": "Downloading {percent}%",
   "@surahDownload_progress": {
     "placeholders": { "percent": { "type": "String" } }
-  }
+  },
+  "head_juzHizb": "Juzʼ {juz}, hizb {hizb}",
+  "@head_juzHizb": {
+    "placeholders": { "juz": { "type": "String" }, "hizb": { "type": "String" } }
+  },
+  "foot_listen": "Listen",
+  "foot_menu": "Menu",
+  "foot_previousPage": "Previous page",
+  "foot_nextPage": "Next page",
+  "notice_returnToPage": "Back to page {page}",
+  "@notice_returnToPage": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "notice_tapHint": "Tap any ayah to see its meaning and actions",
+  "notice_gotIt": "Got it"
 }

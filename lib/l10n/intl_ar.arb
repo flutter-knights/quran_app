@@ -446,5 +446,19 @@
   "surahDownload_progress": "جارٍ التنزيل {percent}٪",
   "@surahDownload_progress": {
     "placeholders": { "percent": { "type": "String" } }
-  }
+  },
+  "head_juzHizb": "الجزء {juz}، الحزب {hizb}",
+  "@head_juzHizb": {
+    "placeholders": { "juz": { "type": "String" }, "hizb": { "type": "String" } }
+  },
+  "foot_listen": "استماع",
+  "foot_menu": "القائمة",
+  "foot_previousPage": "الصفحة السابقة",
+  "foot_nextPage": "الصفحة التالية",
+  "notice_returnToPage": "العودة إلى صفحة {page}",
+  "@notice_returnToPage": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "notice_tapHint": "اضغط على أي آية لترى معناها وأزرارها",
+  "notice_gotIt": "فهمت"
 }

@@ -239,6 +239,19 @@ class PendingS {
   String surahDownload_progress(String percent) =>
       _ar ? 'جارٍ التنزيل $percent٪' : 'Downloading $percent%';
 
+  String head_juzHizb(String juz, String hizb) =>
+      _ar ? 'الجزء $juz، الحزب $hizb' : 'Juzʼ $juz, hizb $hizb';
+  String get foot_listen => _ar ? 'استماع' : 'Listen';
+  String get foot_menu => _ar ? 'القائمة' : 'Menu';
+  String get foot_previousPage => _ar ? 'الصفحة السابقة' : 'Previous page';
+  String get foot_nextPage => _ar ? 'الصفحة التالية' : 'Next page';
+  String notice_returnToPage(String page) =>
+      _ar ? 'العودة إلى صفحة $page' : 'Back to page $page';
+  String get notice_tapHint => _ar
+      ? 'اضغط على أي آية لترى معناها وأزرارها'
+      : 'Tap any ayah to see its meaning and actions';
+  String get notice_gotIt => _ar ? 'فهمت' : 'Got it';
+
   String alerts_minutes(num count) {
     final n = count.toInt();
     if (!_ar) return n == 1 ? '1 minute' : '$n minutes';
