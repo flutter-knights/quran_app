@@ -451,5 +451,6 @@
   "@playback_mediaTitle": {
     "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
   },
-  "playback_mediaAlbum": "The Holy Quran"
+  "playback_mediaAlbum": "The Holy Quran",
+  "playback_channelName": "Quran recitation"
 }

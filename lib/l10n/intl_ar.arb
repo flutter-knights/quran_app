@@ -435,5 +435,6 @@
   "@playback_mediaTitle": {
     "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
   },
-  "playback_mediaAlbum": "القرآن الكريم"
+  "playback_mediaAlbum": "القرآن الكريم",
+  "playback_channelName": "تلاوة القرآن"
 }

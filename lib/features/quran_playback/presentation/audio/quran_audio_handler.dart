@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../cubit/playback/playback_cubit.dart';
@@ -89,4 +90,18 @@ class QuranAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> onTaskRemoved() async => _cubit?.stop();
+}
+
+Future<QuranAudioHandler?> connectMediaSession({
+  required Future<QuranAudioHandler> Function() init,
+  required PlaybackCubit cubit,
+}) async {
+  try {
+    final handler = await init();
+    handler.attach(cubit);
+    return handler;
+  } catch (e) {
+    debugPrint('media session unavailable: $e');
+    return null;
+  }
 }

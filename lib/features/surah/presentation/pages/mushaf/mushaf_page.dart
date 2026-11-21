@@ -162,8 +162,6 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _lastReadSaver.dispose();
     _pageSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    _playbackCubit.stop();
-
     super.dispose();
   }
 

@@ -225,6 +225,7 @@ class PendingS {
   String playback_mediaTitle(String surah, String ayah) =>
       _ar ? '$surah، الآية $ayah' : '$surah, ayah $ayah';
   String get playback_mediaAlbum => _ar ? 'القرآن الكريم' : 'The Holy Quran';
+  String get playback_channelName => _ar ? 'تلاوة القرآن' : 'Quran recitation';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

@@ -1,8 +1,10 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/quran_playback/domain/services/aya_sequence_service.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -13,6 +15,7 @@ import 'domain/repositories/quran_playback_repo.dart';
 import 'domain/services/quran_meta_service.dart';
 import 'domain/services/quran_page_service.dart';
 import 'presentation/audio/playback_audio_focus.dart';
+import 'presentation/audio/quran_audio_handler.dart';
 import 'presentation/cubit/playback/playback_cubit.dart';
 
 Future<void> initPlayback() async {
@@ -54,4 +57,23 @@ Future<void> initPlayback() async {
     cubit: sl<PlaybackCubit>(),
   );
   if (focus != null) sl.registerSingleton(focus);
+
+  String langCode() =>
+      sl<SettingsCubit>().state.settingsModel.isArabic ? 'ar' : 'en';
+  await connectMediaSession(
+    init: () => AudioService.init(
+      builder: () =>
+          QuranAudioHandler(player: sl<AudioPlayer>(), langCode: langCode),
+      config: AudioServiceConfig(
+        androidNotificationChannelId: 'com.example.quran_app.playback',
+        androidNotificationChannelName: PendingS.forLanguage(
+          langCode(),
+        ).playback_channelName,
+        androidNotificationIcon: 'drawable/ic_stat_alfurqan',
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: true,
+      ),
+    ),
+    cubit: sl<PlaybackCubit>(),
+  );
 }

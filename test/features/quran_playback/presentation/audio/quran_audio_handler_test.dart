@@ -190,4 +190,28 @@ void main() {
     await pumpEventQueue();
     expect(handler.mediaItem.value!.duration, const Duration(seconds: 9));
   });
+
+  test(
+    'connectMediaSession attaches the cubit to the started handler',
+    () async {
+      final started = await connectMediaSession(
+        init: () async => handler,
+        cubit: cubit,
+      );
+      expect(started, same(handler));
+      cubit.push(
+        const PlaybackState(requestedAyah: ayah25, reciter: Reciter.husary),
+      );
+      await pumpEventQueue();
+      expect(handler.mediaItem.value!.id, 'husary:2:5');
+    },
+  );
+
+  test('connectMediaSession survives a service that will not start', () async {
+    final started = await connectMediaSession(
+      init: () async => throw Exception('no service'),
+      cubit: cubit,
+    );
+    expect(started, isNull);
+  });
 }

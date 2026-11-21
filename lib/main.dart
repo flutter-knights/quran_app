@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quran_app/config/hive_config.dart';
 import 'package:quran_app/config/hydrated_bloc_config.dart';
 import 'package:quran_app/config/router/app_router.dart';
+import 'package:quran_app/config/router/now_playing_route.dart';
 import 'package:quran_app/config/theme/app_palette.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
@@ -98,6 +102,7 @@ class QuranApp extends StatefulWidget {
 
 class _QuranAppState extends State<QuranApp> {
   late final GoRouter _router;
+  StreamSubscription<bool>? _notificationSub;
 
   @override
   void initState() {
@@ -113,6 +118,17 @@ class _QuranAppState extends State<QuranApp> {
         ? AppRouter.homePath
         : AppRouter.splashPath;
     _router = AppRouter.createRouter(initialLocation: initialLocation);
+    _notificationSub = AudioService.notificationClicked
+        .where((clicked) => clicked)
+        .listen(
+          (_) => openNowPlaying(_router, sl<PlaybackCubit>().state.skipOrigin),
+        );
+  }
+
+  @override
+  void dispose() {
+    _notificationSub?.cancel();
+    super.dispose();
   }
 
   @override

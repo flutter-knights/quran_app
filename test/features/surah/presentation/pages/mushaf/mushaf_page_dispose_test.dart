@@ -51,6 +51,8 @@ class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
 class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   _FakeMushaf(super.initial);
   AyahIdentifier? selected;
+  @override
+  int? playingPage;
   void push(MushafState s) => emit(s);
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -193,17 +195,29 @@ void main() {
     return (repo, playback);
   }
 
-  testWidgets('on dispose: saves (page, selected) then stops playback', (
-    tester,
-  ) async {
-    final (repo, playback) = await disposeOn(tester, const MushafArgs(page: 7));
+  testWidgets(
+    'on dispose: saves (page, selected) and the recitation keeps playing',
+    (tester) async {
+      final (repo, playback) = await disposeOn(
+        tester,
+        const MushafArgs(page: 7),
+        playbackState: const PlaybackState(
+          currentAyah: AyahIdentifier(surah: 2, ayah: 5),
+          isPlaying: true,
+        ),
+      );
 
-    final saved = repo.saved!;
-    expect(saved.page, 7);
-    expect(saved.ayah, const AyahIdentifier(surah: 2, ayah: 5));
-    expect(saved.updatedAt, isNotNull);
-    expect(playback.stopCalls, 1);
-  });
+      final saved = repo.saved!;
+      expect(saved.page, 7);
+      expect(saved.ayah, const AyahIdentifier(surah: 2, ayah: 5));
+      expect(saved.updatedAt, isNotNull);
+      expect(playback.stopCalls, 0);
+      expect(
+        playback.state.currentAyah,
+        const AyahIdentifier(surah: 2, ayah: 5),
+      );
+    },
+  );
 
   testWidgets('jump arrival: dispose does not overwrite last read', (
     tester,
@@ -214,7 +228,7 @@ void main() {
     );
 
     expect(repo.saved, isNull);
-    expect(playback.stopCalls, 1);
+    expect(playback.stopCalls, 0);
   });
 
   testWidgets('jump arrival: a manual page swipe lifts the guard', (
