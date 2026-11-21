@@ -472,13 +472,13 @@ Ledger items 4 and 5 (state and rule), plus §1A in the cubit and router. The re
   - **`MushafPage`:** the renames listed under Files. The follow listener and `auto_swap_helper.dart` stay as they are until Task 5b.
   - **Fakes:**
     - Both `_FakeMushaf` classes (overlay test, dispose test) gain `@override dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);`.
-    - Both delete their `void setPage(int p)` override (`ayah_playback_overlay_test.dart:23`, `mushaf_page_dispose_test.dart:55`): it no longer matches `setPage(int, {required bool byUser})`, and `noSuchMethod` covers it.
+    - Both re-sign their `void setPage(int p)` override (`ayah_playback_overlay_test.dart:23`, `mushaf_page_dispose_test.dart:55`) as `@override void setPage(int p, {required bool byUser}) {}`: the old signature no longer compiles, and a no-op keeps today's behaviour where `noSuchMethod` would throw.
     - Rename `clearHighlight` → `clearSelection` and `toggleHighlight` → `toggleSelection` in both fakes, and `clearHighlighted:` → `clearSelected:` in the overlay fake (lines 17 and 30). The dispose fake's `highlightedAyah:` (and its `highlighted` field) become `selectedAyah:` / `selected`.
     - The dispose test uses `MushafPage(args: const MushafArgs(page: 7))` and `MushafState(currentPage: 7, selectedAyah: 2:5)`, and its expectation stays (page 7, ayah 2:5, one stop).
     - In the overlay test `highlightedAyah:` becomes `selectedAyah:`. Task 7 rewrites its behaviour.
   - Rules: in `routing-and-navigation.md:24`, say that `MushafArgs` carries `origin` (`normal` | `jump`) and that `_mushafArgsFrom` maps a bare `int` to `normal`.
 
-- [ ] **Step 4: Run** `flutter test test/features/surah test/config`, then analyze and the full suite. Expected: PASS. Then run `grep -rnE "highlightedAyah\b|toggleHighlight|clearHighlight\b|clearHighlighted\b" lib test`. Expected matches, all of which stay until S3: `AyahHighlightPainter`'s own `highlightedAyah` / `prevHighlightedAyah` fields and constructor parameters, and its call site argument in `mushaf_page_view.dart:146`. `clearHighlightedCenterY` on `MushafState` does not match this pattern and stays. Anything else is a missed rename.
+- [ ] **Step 4: Run** `flutter test test/features/surah test/config`, then analyze and the full suite. Expected: PASS. Then run `grep -rnE "highlightedAyah\b|toggleHighlight|clearHighlight\b|clearHighlighted\b" lib test`. Expected matches, all of which stay until S3: `AyahHighlightPainter`'s own `highlightedAyah` field and constructor parameter, and its call-site argument in `mushaf_page_view.dart:146` (the search is case-sensitive, so `prevHighlightedAyah` and `_shownHighlightedAyah` do not match). `clearHighlightedCenterY` on `MushafState` does not match this pattern and stays. Anything else is a missed rename.
 
 - [ ] **Step 5: Commit**
 ```bash
