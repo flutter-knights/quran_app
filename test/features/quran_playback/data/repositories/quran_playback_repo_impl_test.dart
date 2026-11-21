@@ -477,6 +477,28 @@ void main() {
       expect(repo.isSurahDownloaded(surah: 2, reciter: reciter), isFalse);
     });
 
+    test('a cache entry from an old app container resolves to the file '
+        'under the current directory and is refreshed', () async {
+      const a = AyahIdentifier(surah: 3, ayah: 1);
+      seed(a);
+      cache[urlOf(3, 1)] = '/old/container/Documents/alafasy/3/1.mp3';
+
+      expect(repo.isAyahCached(ayah: a, reciter: reciter), isTrue);
+      await pumpEventQueue();
+      expect(cache[urlOf(3, 1)], pathOf(a));
+
+      cache[urlOf(3, 1)] = '/old/container/Documents/alafasy/3/1.mp3';
+      final result = await repo.prepareAyahAudio(ayah: a, reciter: reciter);
+      expect(result, Right<Failure, String>(pathOf(a)));
+      verifyNever(() => remote.downloadAudio(any(), any()));
+    });
+
+    test('a stale entry with no file anywhere is not cached', () {
+      const a = AyahIdentifier(surah: 3, ayah: 1);
+      cache[urlOf(3, 1)] = '/old/container/Documents/alafasy/3/1.mp3';
+      expect(repo.isAyahCached(ayah: a, reciter: reciter), isFalse);
+    });
+
     test('isAyahCached needs both the cache entry and the file', () {
       const a = AyahIdentifier(surah: 3, ayah: 1);
       cache[urlOf(3, 1)] = pathOf(a);

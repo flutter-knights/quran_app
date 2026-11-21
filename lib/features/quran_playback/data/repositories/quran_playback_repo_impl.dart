@@ -59,10 +59,8 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
 
     try {
       // 1️⃣ Already cached
-      final cachedPath = local.getCachedLocalPath(url);
-      if (cachedPath != null && File(cachedPath).existsSync()) {
-        return Right(cachedPath);
-      }
+      final cachedPath = _cachedPath(url, ayah, reciter);
+      if (cachedPath != null) return Right(cachedPath);
 
       // 2️⃣ Download already running
       if (_inFlightDownloads.containsKey(url)) {
@@ -70,8 +68,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
         return Right(path);
       }
 
-      final filePath =
-          '${dir.path}/${reciter.folderName}/${ayah.surah}/${ayah.ayah}.mp3';
+      final filePath = _ayahFilePath(ayah, reciter);
 
       final file = File(filePath);
       final future = () async {
@@ -196,7 +193,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
         await prepareAyahAudio(ayah: ayah, reciter: reciter);
       });
 
-      _runNextDownload();
+      unawaited(_runNextDownload());
     }
   }
 
@@ -214,19 +211,29 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
       unawaited(
         task().whenComplete(() {
           _activeDownloads--;
-          _runNextDownload();
+          unawaited(_runNextDownload());
         }),
       );
     }
   }
 
   @override
-  bool isAyahCached({required AyahIdentifier ayah, required Reciter reciter}) {
-    final path = local.getCachedLocalPath(
-      reciter.getAyahUrl(ayah.surah, ayah.ayah),
-    );
-    return path != null && File(path).existsSync();
+  bool isAyahCached({required AyahIdentifier ayah, required Reciter reciter}) =>
+      _cachedPath(reciter.getAyahUrl(ayah.surah, ayah.ayah), ayah, reciter) !=
+      null;
+
+  String? _cachedPath(String url, AyahIdentifier ayah, Reciter reciter) {
+    final stored = local.getCachedLocalPath(url);
+    if (stored == null) return null;
+    if (File(stored).existsSync()) return stored;
+    final rebased = _ayahFilePath(ayah, reciter);
+    if (!File(rebased).existsSync()) return null;
+    unawaited(local.cacheAudioMetadata(url, rebased));
+    return rebased;
   }
+
+  String _ayahFilePath(AyahIdentifier ayah, Reciter reciter) =>
+      '${dir.path}/${reciter.folderName}/${ayah.surah}/${ayah.ayah}.mp3';
 
   @override
   bool isSurahDownloaded({required int surah, required Reciter reciter}) =>
@@ -277,13 +284,13 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
           if (!cancelled) await local.markSurahDownloaded(batch);
           emit(const Right(1.0));
         } catch (e) {
-          emit(Left(UnknownFailure(e.toString())));
+          emit(Left(Failure.fromException(e)));
         }
         await controller.close();
       }
 
       if (missing.isEmpty) {
-        finish();
+        unawaited(finish());
         return;
       }
       if (done > 0) emit(Right(done / total));
@@ -307,7 +314,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
           },
         ));
       }
-      _runNextDownload();
+      unawaited(_runNextDownload());
     };
     return controller.stream;
   }
@@ -322,7 +329,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
         final url = reciter.getAyahUrl(surah, a);
         final path =
             local.getCachedLocalPath(url) ??
-            '${dir.path}/${reciter.folderName}/$surah/$a.mp3';
+            _ayahFilePath(AyahIdentifier(surah: surah, ayah: a), reciter);
         final file = File(path);
         if (file.existsSync()) await file.delete();
         await local.removeCachedPath(url);
@@ -330,7 +337,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
       await local.clearSurahDownloaded(reciter.downloadKey(surah));
       return const Right(null);
     } catch (e) {
-      return left(UnknownFailure(e.toString()));
+      return left(Failure.fromException(e));
     }
   }
 
