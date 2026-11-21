@@ -23,29 +23,30 @@ void main() {
 
   setUp(() {
     cubit = _MockPlaybackCubit();
-    when(() => cubit.state).thenReturn(
-      const PlaybackState(eachAyahRepeat: 3, rangeRepeat: 1),
-    );
+    when(
+      () => cubit.state,
+    ).thenReturn(const PlaybackState(eachAyahRepeat: 3, rangeRepeat: 1));
   });
 
   Widget host() => MaterialApp(
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: Scaffold(
-          body: BlocProvider<PlaybackCubit>.value(
-            value: cubit,
-            child: const PlaybackRepeatOptions(),
-          ),
-        ),
-      );
+    localizationsDelegates: const [
+      S.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: S.delegate.supportedLocales,
+    home: Scaffold(
+      body: BlocProvider<PlaybackCubit>.value(
+        value: cubit,
+        child: const PlaybackRepeatOptions(),
+      ),
+    ),
+  );
 
-  testWidgets('renders the four counters and the infinite toggle',
-      (tester) async {
+  testWidgets('renders the four counters and the infinite toggle', (
+    tester,
+  ) async {
     await tester.pumpWidget(host());
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('range-from')), findsOneWidget);
@@ -55,8 +56,9 @@ void main() {
     expect(find.byKey(const ValueKey('repeat-infinite')), findsOneWidget);
   });
 
-  testWidgets('plus on each-ayah repeat calls setEachAyahRepeat(clamped)',
-      (tester) async {
+  testWidgets('plus on each-ayah repeat calls setEachAyahRepeat(clamped)', (
+    tester,
+  ) async {
     when(() => cubit.setEachAyahRepeat(any())).thenReturn(null);
     await tester.pumpWidget(host());
     await tester.pumpAndSettle();
@@ -70,22 +72,23 @@ void main() {
   });
 
   testWidgets(
-      'tapping infinite toggle calls setInfiniteRepeat(true, range) when off',
-      (tester) async {
-    // State already has infiniteRepeat: false (default)
-    when(() => cubit.setInfiniteRepeat(any(), any())).thenReturn(null);
-    await tester.pumpWidget(host());
-    await tester.pumpAndSettle();
+    'tapping infinite toggle calls setInfiniteRepeat(true, range) when off',
+    (tester) async {
+      // State already has infiniteRepeat: false (default)
+      when(() => cubit.setInfiniteRepeat(any(), any())).thenReturn(null);
+      await tester.pumpWidget(host());
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('repeat-infinite')));
-    await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('repeat-infinite')));
+      await tester.pump();
 
-    verify(() => cubit.setInfiniteRepeat(true, RepeatTarget.range)).called(1);
-  });
+      verify(() => cubit.setInfiniteRepeat(true, RepeatTarget.range)).called(1);
+    },
+  );
 
-  testWidgets(
-      'non-numeric dialog input does not call setRangeRepeat',
-      (tester) async {
+  testWidgets('non-numeric dialog input does not call setRangeRepeat', (
+    tester,
+  ) async {
     when(() => cubit.setRangeRepeat(any())).thenReturn(null);
     await tester.pumpWidget(host());
     await tester.pumpAndSettle();

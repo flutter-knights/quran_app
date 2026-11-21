@@ -20,14 +20,26 @@ void main() {
       expect(PlaybackRangeValidator.clampTo(surah: 2, from: 50, value: 10), 50);
     });
     test('to above verse count clamps to last ayah', () {
-      expect(PlaybackRangeValidator.clampTo(surah: 2, from: 50, value: 999), 286);
+      expect(
+        PlaybackRangeValidator.clampTo(surah: 2, from: 50, value: 999),
+        286,
+      );
     });
     test('valid to passes through', () {
-      expect(PlaybackRangeValidator.clampTo(surah: 2, from: 50, value: 100), 100);
+      expect(
+        PlaybackRangeValidator.clampTo(surah: 2, from: 50, value: 100),
+        100,
+      );
     });
-    test('out-of-range from (300) is capped at last (286), result clamps to 286', () {
-      expect(PlaybackRangeValidator.clampTo(surah: 2, from: 300, value: 200), 286);
-    });
+    test(
+      'out-of-range from (300) is capped at last (286), result clamps to 286',
+      () {
+        expect(
+          PlaybackRangeValidator.clampTo(surah: 2, from: 300, value: 200),
+          286,
+        );
+      },
+    );
   });
 
   group('clampRepeat (rule 5)', () {
