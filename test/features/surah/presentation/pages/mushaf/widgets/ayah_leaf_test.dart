@@ -1,5 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'dart:ui' show SemanticsFlags, Tristate;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -78,11 +81,19 @@ void main() {
 
   testWidgets('ayah leaf labels are distinct', (tester) async {
     await tester.pumpWidget(_host(cubit, ayah, calls));
-    final labels = {'استماع من هنا', 'حفظ الآية', 'مشاركة'};
-    for (final label in labels) {
-      expect(find.text(label), findsOneWidget);
-    }
-    expect(labels.length, 3);
+    final labels = [
+      for (final key in ['leaf-listen', 'leaf-save', 'leaf-share'])
+        tester
+            .widget<Text>(
+              find.descendant(
+                of: find.byKey(ValueKey(key)),
+                matching: find.byType(Text),
+              ),
+            )
+            .data,
+    ];
+    expect(labels, ['استماع من هنا', 'حفظ الآية', 'مشاركة']);
+    expect(labels.toSet().length, 3);
   });
 
   testWidgets('title names the surah and ayah in Arabic-Indic digits', (
@@ -160,6 +171,59 @@ void main() {
       ),
     );
     expect(text, '${quran.getVerse(112, 1)} — سورة الإخلاص، الآية ١');
+  });
+
+  group('share', () {
+    const channel = MethodChannel('dev.fluttercommunity.plus/share');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+
+    tearDown(() => messenger.setMockMethodCallHandler(channel, null));
+
+    testWidgets('hands the quoted ayah to the share sheet', (tester) async {
+      Object? arguments;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        arguments = call.arguments;
+        return 'dev.fluttercommunity.plus/share/success';
+      });
+      await tester.pumpWidget(_host(cubit, ayah, calls));
+      await tester.tap(find.byKey(const ValueKey('leaf-share')));
+      await tester.pumpAndSettle();
+      expect((arguments as Map)['text'], contains(quran.getVerse(3, 7)));
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('a failing share sheet shows the fallback message', (
+      tester,
+    ) async {
+      messenger.setMockMethodCallHandler(
+        channel,
+        (call) async => throw PlatformException(code: 'unavailable'),
+      );
+      await tester.pumpWidget(_host(cubit, ayah, calls));
+      await tester.tap(find.byKey(const ValueKey('leaf-share')));
+      await tester.pumpAndSettle();
+      expect(find.text('تعذّر فتح نافذة المشاركة'), findsOneWidget);
+    });
+  });
+
+  testWidgets('the save action announces whether the ayah is saved', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    SemanticsFlags saveFlags() => tester
+        .getSemantics(find.byKey(const ValueKey('leaf-save')))
+        .getSemanticsData()
+        .flagsCollection;
+
+    await tester.pumpWidget(_host(cubit, ayah, calls));
+    expect(saveFlags().isButton, isTrue);
+    expect(saveFlags().isToggled, Tristate.isFalse);
+    when(() => cubit.state).thenReturn(BookmarkState(bookmarks: {ayah}));
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(_host(cubit, ayah, calls));
+    expect(saveFlags().isToggled, Tristate.isTrue);
+    handle.dispose();
   });
 
   testWidgets('fits at 2x text', (tester) async {

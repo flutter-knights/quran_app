@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:quran/quran.dart' as quran;
+import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
@@ -39,6 +40,7 @@ class AyahLeaf extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = PendingS.of(context);
+    final scheme = context.colorScheme;
     final strings = S.of(context);
     final name = surahDisplayName(context, ayah.surah);
     final title = _isBanner
@@ -151,8 +153,8 @@ class AyahLeaf extends StatelessWidget {
                           key: const ValueKey('leaf-listen'),
                           icon: HugeIcons.strokeRoundedPlay,
                           label: s.leaf_listenFromHere,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                          fill: Theme.of(context).colorScheme.primary,
+                          color: scheme.onPrimary,
+                          fill: scheme.primary,
                           onTap: onListenFromHere,
                         ),
                       ),
@@ -167,6 +169,7 @@ class AyahLeaf extends StatelessWidget {
                                 : HugeIcons.strokeRoundedBookmark02,
                             label: s.leaf_saveAyah,
                             color: colors.ink,
+                            toggled: saved,
                             onTap: () =>
                                 context.read<BookmarkCubit>().toggle(ayah),
                           ),
@@ -214,37 +217,44 @@ class _Action extends StatelessWidget {
     required this.color,
     required this.onTap,
     this.fill,
+    this.toggled,
   });
 
   final List<List<dynamic>> icon;
   final String label;
   final Color color;
   final Color? fill;
+  final bool? toggled;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: fill ?? Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 56),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 4,
-              children: [
-                HugeIcon(icon: icon, color: color, size: 22),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TS.semi14.copyWith(color: color),
-                ),
-              ],
+    return Semantics(
+      button: true,
+      toggled: toggled,
+      container: true,
+      child: Material(
+        color: fill ?? Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 56),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 4,
+                children: [
+                  HugeIcon(icon: icon, color: color, size: 22),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: TS.semi14.copyWith(color: color),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
