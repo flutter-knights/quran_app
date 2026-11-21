@@ -86,6 +86,7 @@ void main() {
       ),
     ).thenAnswer((_) async {});
     when(() => repo.setSpeed(any())).thenAnswer((_) async {});
+    when(() => repo.stop()).thenAnswer((_) async {});
   });
 
   PlaybackCubit build() => PlaybackCubit(
@@ -139,9 +140,8 @@ void main() {
     },
     act: (c) async {
       // Fire A; do not await — completerA never completes so awaiting would hang
-      // ignore: unawaited_futures
-      c.playSelected(const AyahIdentifier(surah: 2, ayah: 1));
-      // Fire B and await — this completes, sets _inFlightAyah to B's ayah
+      unawaited(c.playSelected(const AyahIdentifier(surah: 2, ayah: 1)));
+      // Fire B and await — it completes and supersedes A's play generation
       await c.playSelected(const AyahIdentifier(surah: 2, ayah: 2));
     },
     verify: (_) {
@@ -191,24 +191,22 @@ void main() {
     ).thenAnswer((_) async => const Left(NetworkFailure('offline')));
   }
 
-  test('playSelected emits requestedAyah and isLoading synchronously', () {
-    when(
-      () => repo.prepareAyahAudio(
-        ayah: any(named: 'ayah'),
-        reciter: any(named: 'reciter'),
-      ),
-    ).thenAnswer((_) => Completer<Either<Failure, String>>().future);
-    final c = build();
-    final states = <PlaybackState>[];
-    final sub = c.stream.listen(states.add);
-    c.playSelected(ayah25);
-    return Future<void>.delayed(Duration.zero).then((_) async {
-      expect(states.first.requestedAyah, ayah25);
-      expect(states.first.isLoading, isTrue);
-      await sub.cancel();
+  test(
+    'playSelected emits requestedAyah and isLoading synchronously',
+    () async {
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) => Completer<Either<Failure, String>>().future);
+      final c = build();
+      unawaited(c.playSelected(ayah25));
+      expect(c.state.requestedAyah, ayah25);
+      expect(c.state.isLoading, isTrue);
       await c.close();
-    });
-  });
+    },
+  );
 
   test('first play fails offline', () async {
     stubPrepareFails();
@@ -219,6 +217,146 @@ void main() {
     expect(c.state.error, isNotNull);
     expect(c.state.isLoading, isFalse);
     verifyNever(() => repo.notifyAyahChanged(any()));
+    await c.close();
+  });
+
+  group('a failed replacing play', () {
+    late StreamController<AyahIdentifier> ayahs;
+    late StreamController<void> done;
+    late List<PlaybackState> states;
+
+    setUp(() {
+      ayahs = StreamController.broadcast();
+      done = StreamController.broadcast();
+      states = [];
+      when(() => repo.currentAyahStream).thenAnswer((_) => ayahs.stream);
+      when(() => repo.onAudioCompleted).thenAnswer((_) => done.stream);
+      when(() => repo.pause()).thenAnswer((_) async {});
+      when(() => repo.resume()).thenAnswer((_) async {});
+      when(() => repo.notifyAyahChanged(any())).thenAnswer(
+        (i) => ayahs.add(i.positionalArguments.first as AyahIdentifier),
+      );
+      when(
+        () => repo.playPreparedAudio(any()),
+      ).thenAnswer((_) async => const Right(null));
+      when(
+        () => seq.getNextAyahs(
+          current: any(named: 'current'),
+          count: any(named: 'count'),
+          endSurah: any(named: 'endSurah'),
+          endAyah: any(named: 'endAyah'),
+        ),
+      ).thenReturn([]);
+      when(
+        () => seq.getNextAyah(
+          current: any(named: 'current'),
+          endSurah: any(named: 'endSurah'),
+          endAyah: any(named: 'endAyah'),
+        ),
+      ).thenReturn(ayah26);
+      var calls = 0;
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer(
+        (i) async => i.namedArguments[#ayah] == ayah26 && ++calls == 1
+            ? const Left(NetworkFailure('offline'))
+            : const Right('/p.mp3'),
+      );
+    });
+
+    tearDown(() async {
+      await ayahs.close();
+      await done.close();
+    });
+
+    Future<PlaybackCubit> failedReplace() async {
+      final c = build();
+      c.stream.listen(states.add);
+      await c.playSelected(ayah25);
+      await Future<void>.delayed(Duration.zero);
+      await c.playSelected(ayah26);
+      return c;
+    }
+
+    bool playingWithError(PlaybackState s) => s.isPlaying && s.error != null;
+
+    test('stops the old audio and keeps the error', () async {
+      final c = await failedReplace();
+      verify(() => repo.stop()).called(1);
+      expect(c.state.error, isNotNull);
+      expect(c.state.isPlaying, isFalse);
+      expect(c.state.requestedAyah, ayah26);
+      await c.close();
+    });
+
+    test('a later success never plays beside the error', () async {
+      final c = await failedReplace();
+      done.add(null);
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(c.state.isPlaying, isTrue);
+      expect(c.state.error, isNull);
+      expect(states.where(playingWithError), isEmpty);
+      await c.close();
+    });
+
+    test('resume retries the requested ayah instead of playing', () async {
+      final c = await failedReplace();
+      await c.pause();
+      await c.resume();
+      verify(() => repo.notifyAyahChanged(ayah26)).called(1);
+      expect(c.state.error, isNull);
+      expect(states.where(playingWithError), isEmpty);
+      await c.close();
+    });
+
+    test('restartCurrent retries the requested ayah', () async {
+      final c = await failedReplace();
+      await c.restartCurrent();
+      verify(() => repo.notifyAyahChanged(ayah26)).called(1);
+      expect(c.state.error, isNull);
+      expect(states.where(playingWithError), isEmpty);
+      await c.close();
+    });
+
+    test('skipNext steps from the requested ayah', () async {
+      final c = await failedReplace();
+      const ayah27 = AyahIdentifier(surah: 2, ayah: 7);
+      when(() => seq.getNextAyah(current: ayah26)).thenReturn(ayah27);
+      await c.skipNext();
+      verify(() => repo.notifyAyahChanged(ayah27)).called(1);
+      await c.close();
+    });
+
+    test('skipPrevious steps from the requested ayah', () async {
+      final c = await failedReplace();
+      when(() => seq.getPreviousAyah(current: ayah26)).thenReturn(ayah25);
+      await c.skipPrevious();
+      verify(() => repo.notifyAyahChanged(ayah25)).called(2);
+      await c.close();
+    });
+  });
+
+  test('a playSelected during stop keeps its requestedAyah', () async {
+    final stopping = Completer<void>();
+    when(() => repo.stop()).thenAnswer((_) => stopping.future);
+    when(
+      () => repo.prepareAyahAudio(
+        ayah: any(named: 'ayah'),
+        reciter: any(named: 'reciter'),
+      ),
+    ).thenAnswer((_) => Completer<Either<Failure, String>>().future);
+    final c = build();
+    final stop = c.stop();
+    unawaited(c.playSelected(ayah25));
+    stopping.complete();
+    await stop;
+    expect(c.state.requestedAyah, ayah25);
+    expect(c.state.isAutoPlaying, isTrue);
+    expect(c.state.isLoading, isTrue);
     await c.close();
   });
 
@@ -433,6 +571,7 @@ void main() {
     final sub = c.stream.map((s) => s.error).listen(errors.add);
     await c.skipNext();
     await c.skipNext();
+    await Future<void>.delayed(Duration.zero);
     await sub.cancel();
     final shown = [
       for (var i = 0; i < errors.length; i++)

@@ -108,6 +108,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
           isPlaying: true,
           isPaused: false,
           isLoading: false,
+          clearError: true,
         ),
       );
       _preloadNextAyahs(ayah);
@@ -176,10 +177,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     emit(state.copyWith(requestedAyah: ayah));
 
     // Prepare the basmala when starting any surah other than Al-Fatiha (1) or
-    // At-Tawbah (9), so the canonical opening verse plays before ayah 1. The
-    // reciter is captured once at the top of the call; a mid-flight
-    // `setReciter` cancels this run via `stop()` → a new `_playGeneration`, so
-    // the two prepare calls always use the same reciter.
+    // At-Tawbah (9), so the canonical opening verse plays before ayah 1.
     String? basmalaPath;
     if (ayah.ayah == 1 && ayah.surah != 1 && ayah.surah != 9) {
       final basmalaResult = await repository.prepareAyahAudio(
@@ -197,8 +195,12 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
     if (stale()) return;
 
-    void fail(String message) {
+    Future<void> fail(String message) async {
       if (stale()) return;
+      if (state.currentAyah != null) {
+        await repository.stop();
+        if (stale()) return;
+      }
       emit(
         state.copyWith(
           isPlaying: false,
@@ -235,11 +237,11 @@ class PlaybackCubit extends Cubit<PlaybackState> {
             repository.notifyAyahChanged(ayah);
           },
         );
-        played.fold((failure) => fail(failure.message), (_) {});
+        await played.fold((failure) => fail(failure.message), (_) async {});
       } else {
         repository.notifyAyahChanged(ayah);
         final played = await repository.playPreparedAudio(path);
-        played.fold((failure) => fail(failure.message), (_) {});
+        await played.fold((failure) => fail(failure.message), (_) async {});
       }
     });
   }
@@ -315,7 +317,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> skipNext() async {
-    final current = state.currentAyah;
+    final current = state.requestedAyah ?? state.currentAyah;
     if (current == null) return;
     final next = ayahSequenceService.getNextAyah(current: current);
     if (next == null) return;
@@ -324,7 +326,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> skipPrevious() async {
-    final current = state.currentAyah;
+    final current = state.requestedAyah ?? state.currentAyah;
     if (current == null) return;
     final prev = ayahSequenceService.getPreviousAyah(current: current);
     if (prev == null) return;
@@ -334,6 +336,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   Future<void> restartCurrent() async {
     if (state.currentAyah == null) return;
+    if (state.error != null) return retry();
     await repository.seek(Duration.zero);
     await repository.resume();
     emit(state.copyWith(isPlaying: true, isPaused: false));
@@ -388,9 +391,9 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> stop() async {
-    _playGeneration++;
+    final generation = ++_playGeneration;
     await repository.stop();
-    if (isClosed) return;
+    if (isClosed || generation != _playGeneration) return;
     emit(
       state.copyWith(
         isPlaying: false,
@@ -411,6 +414,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> resume() async {
+    if (state.error != null) return retry();
     emit(state.copyWith(isPlaying: true, isPaused: false));
     await repository.resume();
   }
