@@ -20,6 +20,10 @@ class MushafCubit extends Cubit<MushafState> {
        super(MushafState.initial(args)) {
     _notifier.addListener(_onPlayingAyahChanged);
     _onPlayingAyahChanged();
+    final playing = playingPage;
+    if (playing != null && playing != state.currentPage) {
+      emit(state.copyWith(followPlayback: false));
+    }
     _loadPageAyahs(args.page);
   }
 
@@ -37,19 +41,33 @@ class MushafCubit extends Cubit<MushafState> {
   }
 
   void setPage(int page, {required bool byUser}) {
+    if (byUser) {
+      _turnByUser(page);
+      return;
+    }
+    emit(state.copyWith(currentPage: page, pageAyahs: const []));
+    _loadPageAyahs(page);
+  }
+
+  void jumpTo(int page) {
+    final origin = state.jumpFrom ?? state.currentPage;
+    _turnByUser(page, origin: page == origin ? null : origin);
+  }
+
+  void _turnByUser(int page, {int? origin}) {
     emit(
-      byUser
-          ? state.copyWith(
-              currentPage: page,
-              pageAyahs: const [],
-              clearSelected: true,
-              followPlayback: followAfterManualTurn(
-                followPlayback: state.followPlayback,
-                newPage: page,
-                playingPage: playingPage,
-              ),
-            )
-          : state.copyWith(currentPage: page, pageAyahs: const []),
+      state.copyWith(
+        currentPage: page,
+        pageAyahs: const [],
+        clearSelected: true,
+        jumpFrom: origin,
+        clearJumpFrom: origin == null,
+        followPlayback: followAfterManualTurn(
+          followPlayback: state.followPlayback,
+          newPage: page,
+          playingPage: playingPage,
+        ),
+      ),
     );
     _loadPageAyahs(page);
   }
@@ -69,6 +87,10 @@ class MushafCubit extends Cubit<MushafState> {
     } else {
       emit(state.copyWith(selectedAyah: ayah));
     }
+  }
+
+  void select(AyahIdentifier ayah) {
+    if (state.selectedAyah != ayah) emit(state.copyWith(selectedAyah: ayah));
   }
 
   void clearSelection() {

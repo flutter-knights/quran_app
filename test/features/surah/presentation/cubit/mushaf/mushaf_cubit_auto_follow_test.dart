@@ -39,6 +39,20 @@ MushafCubit _cubit(_FakeNotifier n, {int page = 1, int playingPage = 1}) =>
       getMushafPage: GetMushafPage(_StubMushafRepo()),
     );
 
+MushafCubit _tracked({
+  int page = 1,
+  AyahIdentifier? playing,
+  int playingPage = 1,
+}) {
+  final cubit = _cubit(
+    _FakeNotifier()..value = playing,
+    page: page,
+    playingPage: playingPage,
+  );
+  addTearDown(cubit.close);
+  return cubit;
+}
+
 void main() {
   const a = AyahIdentifier(surah: 2, ayah: 1);
   const b = AyahIdentifier(surah: 2, ayah: 2);
@@ -137,5 +151,59 @@ void main() {
       expect(cubit.state.followPlayback, isFalse);
       cubit.close();
     });
+  });
+
+  group('in-place jumps', () {
+    test('jumpTo records where the reader came from and clears selection', () {
+      final m = _tracked(page: 50)..toggleSelection(a);
+      m.jumpTo(582);
+      expect(
+        (m.state.currentPage, m.state.jumpFrom, m.state.selectedAyah),
+        (582, 50, null),
+      );
+    });
+
+    test('a second jump keeps the first origin', () {
+      final m = _tracked(page: 50)
+        ..jumpTo(582)
+        ..jumpTo(300);
+      expect(m.state.jumpFrom, 50);
+    });
+
+    test('jumping back to the origin clears jumpFrom', () {
+      final m = _tracked(page: 50)
+        ..jumpTo(582)
+        ..jumpTo(50);
+      expect(m.state.jumpFrom, isNull);
+    });
+
+    test('a manual turn clears jumpFrom, a follow turn keeps it', () {
+      final m = _tracked(page: 50)
+        ..jumpTo(582)
+        ..setPage(583, byUser: false);
+      expect(m.state.jumpFrom, 50);
+      m.setPage(584, byUser: true);
+      expect(m.state.jumpFrom, isNull);
+    });
+  });
+
+  test('select never deselects', () {
+    final m = _tracked(page: 2)
+      ..select(c)
+      ..select(c);
+    expect(m.state.selectedAyah, c);
+  });
+
+  test(
+    'arriving while the playing ayah is on another page stops following',
+    () {
+      final m = _tracked(page: 52, playing: a, playingPage: 51);
+      expect(m.state.followPlayback, isFalse);
+    },
+  );
+
+  test('arriving on the playing page keeps following', () {
+    final m = _tracked(page: 51, playing: a, playingPage: 51);
+    expect(m.state.followPlayback, isTrue);
   });
 }

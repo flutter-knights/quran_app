@@ -12,6 +12,7 @@ class MushafState extends Equatable {
   final bool followPlayback;
   final int? openedSurah;
   final List<AyahBoundEntity> pageAyahs;
+  final int? jumpFrom;
 
   /// Normalized vertical center (0..1) of the highlighted ayah within the
   /// page. Used to decide whether the playback overlay floats at the top or
@@ -34,6 +35,7 @@ class MushafState extends Equatable {
     this.followPlayback = true,
     this.openedSurah,
     this.pageAyahs = const [],
+    this.jumpFrom,
     this.highlightedAyahCenterY,
     this.isOverlayPinned = false,
     this.chromeVisible = false,
@@ -64,12 +66,14 @@ class MushafState extends Equatable {
     AyahIdentifier? playingAyah,
     bool? followPlayback,
     List<AyahBoundEntity>? pageAyahs,
+    int? jumpFrom,
     double? highlightedAyahCenterY,
     bool? isOverlayPinned,
     bool? chromeVisible,
     bool clearSelected = false,
     bool clearPlaying = false,
     bool clearHighlightedCenterY = false,
+    bool clearJumpFrom = false,
   }) {
     return MushafState(
       currentPage: currentPage ?? this.currentPage,
@@ -78,6 +82,7 @@ class MushafState extends Equatable {
       followPlayback: followPlayback ?? this.followPlayback,
       openedSurah: openedSurah,
       pageAyahs: pageAyahs ?? this.pageAyahs,
+      jumpFrom: clearJumpFrom ? null : (jumpFrom ?? this.jumpFrom),
       highlightedAyahCenterY: clearSelected || clearHighlightedCenterY
           ? null
           : (highlightedAyahCenterY ?? this.highlightedAyahCenterY),
@@ -94,6 +99,7 @@ class MushafState extends Equatable {
     followPlayback,
     openedSurah,
     pageAyahs,
+    jumpFrom,
     highlightedAyahCenterY,
     isOverlayPinned,
     chromeVisible,
