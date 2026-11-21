@@ -470,6 +470,18 @@ void main() {
       },
     );
 
+    test('delete removes the file when the cached path is stale', () async {
+      await download(112);
+      cache[urlOf(112, 2)] = '${dir.path}/moved/112/2.mp3';
+
+      await repo.deleteSurahDownload(surah: 112, reciter: reciter);
+
+      expect(
+        File(pathOf(const AyahIdentifier(surah: 112, ayah: 2))).existsSync(),
+        isFalse,
+      );
+    });
+
     test('isSurahDownloaded reads the record', () {
       records['husary:2'] = true;
 

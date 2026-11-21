@@ -327,11 +327,14 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
     try {
       for (var a = surah == 1 ? 2 : 1; a <= quran.getVerseCount(surah); a++) {
         final url = reciter.getAyahUrl(surah, a);
-        final path =
-            local.getCachedLocalPath(url) ??
-            _ayahFilePath(AyahIdentifier(surah: surah, ayah: a), reciter);
-        final file = File(path);
-        if (file.existsSync()) await file.delete();
+        final paths = {
+          ?local.getCachedLocalPath(url),
+          _ayahFilePath(AyahIdentifier(surah: surah, ayah: a), reciter),
+        };
+        for (final path in paths) {
+          final file = File(path);
+          if (file.existsSync()) await file.delete();
+        }
         await local.removeCachedPath(url);
       }
       await local.clearSurahDownloaded(reciter.downloadKey(surah));
