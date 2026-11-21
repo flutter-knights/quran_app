@@ -105,10 +105,12 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
   }
 
   void updateTapAction(LeafTapAction action) {
+    if (state.settingsModel.tapAction == action) return;
     emit(SettingsState(state.settingsModel.copyWith(tapAction: action)));
   }
 
   void updateKeepScreenOn(bool value) {
+    if (state.settingsModel.keepScreenOn == value) return;
     emit(SettingsState(state.settingsModel.copyWith(keepScreenOn: value)));
   }
 

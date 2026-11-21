@@ -44,17 +44,36 @@ void main() {
     expect(emitted, hasLength(1));
   });
 
-  test('updateKeepScreenOn stores the switch', () {
-    final c = SettingsCubit();
-    c.updateKeepScreenOn(false);
-    expect(c.state.settingsModel.keepScreenOn, isFalse);
-  });
+  test(
+    'updateKeepScreenOn stores the switch and skips an unchanged value',
+    () async {
+      final c = SettingsCubit();
+      final emitted = [];
+      final sub = c.stream.listen(emitted.add);
+      c.updateKeepScreenOn(true);
+      c.updateKeepScreenOn(false);
+      c.updateKeepScreenOn(false);
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
+      expect(c.state.settingsModel.keepScreenOn, isFalse);
+      expect(emitted, hasLength(1));
+    },
+  );
 
-  test('updateTapAction stores the choice', () {
-    final c = SettingsCubit();
-    c.updateTapAction(LeafTapAction.options);
-    expect(c.state.settingsModel.tapAction, LeafTapAction.options);
-  });
+  test(
+    'updateTapAction stores the choice and skips an unchanged value',
+    () async {
+      final c = SettingsCubit();
+      final emitted = [];
+      final sub = c.stream.listen(emitted.add);
+      c.updateTapAction(LeafTapAction.options);
+      c.updateTapAction(LeafTapAction.options);
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
+      expect(c.state.settingsModel.tapAction, LeafTapAction.options);
+      expect(emitted, hasLength(1));
+    },
+  );
 
   test('markDownloadHintSeen sets the flag once', () async {
     final c = SettingsCubit();
