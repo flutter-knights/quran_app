@@ -35,6 +35,8 @@ class AyahResultTile extends StatelessWidget {
         extra: MushafArgs(
           page: result.page,
           focusAyah: AyahIdentifier(surah: result.surah, ayah: result.ayah),
+          openedSurah: result.surah,
+          origin: MushafOrigin.jump,
         ),
       ),
       child: Container(

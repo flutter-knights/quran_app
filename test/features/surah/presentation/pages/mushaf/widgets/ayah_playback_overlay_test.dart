@@ -13,21 +13,23 @@ import 'package:quran_app/generated/l10n.dart';
 class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   _FakeMushaf(super.initial);
   @override
-  void clearHighlight() {
-    emit(state.copyWith(clearHighlighted: true));
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+  @override
+  void clearSelection() {
+    emit(state.copyWith(clearSelected: true));
   }
 
   @override
-  void toggleHighlight(_) {}
+  void toggleSelection(_) {}
   @override
-  void setPage(int p) {}
+  void setPage(int p, {required bool byUser}) {}
   @override
   void setHighlightBounds(double centerY) {}
   @override
   void pinOverlay() {}
   @override
   void unpinOverlay() {
-    emit(state.copyWith(isOverlayPinned: false, clearHighlighted: true));
+    emit(state.copyWith(isOverlayPinned: false, clearSelected: true));
   }
 
   @override
@@ -127,7 +129,7 @@ Widget _wrap({required _FakeMushaf m, required _FakePlayback p}) {
 }
 
 void main() {
-  testWidgets('hidden when highlightedAyah is null', (tester) async {
+  testWidgets('hidden when selectedAyah is null', (tester) async {
     final m = _FakeMushaf(const MushafState(currentPage: 1));
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
@@ -145,7 +147,7 @@ void main() {
 
   testWidgets('shows label + play button when highlighted', (tester) async {
     final m = _FakeMushaf(
-      const MushafState(currentPage: 1, highlightedAyah: _target),
+      const MushafState(currentPage: 1, selectedAyah: _target),
     );
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
@@ -158,7 +160,7 @@ void main() {
     tester,
   ) async {
     final m = _FakeMushaf(
-      const MushafState(currentPage: 1, highlightedAyah: _target),
+      const MushafState(currentPage: 1, selectedAyah: _target),
     );
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
@@ -174,7 +176,7 @@ void main() {
     tester,
   ) async {
     final m = _FakeMushaf(
-      const MushafState(currentPage: 1, highlightedAyah: _target),
+      const MushafState(currentPage: 1, selectedAyah: _target),
     );
     final p = _FakePlayback(
       const PlaybackState(
@@ -193,7 +195,7 @@ void main() {
 
   testWidgets('shows pause icon while playing', (tester) async {
     final m = _FakeMushaf(
-      const MushafState(currentPage: 1, highlightedAyah: _target),
+      const MushafState(currentPage: 1, selectedAyah: _target),
     );
     final p = _FakePlayback(
       const PlaybackState(currentAyah: _target, isPlaying: true),
@@ -207,7 +209,7 @@ void main() {
     tester,
   ) async {
     final m = _FakeMushaf(
-      const MushafState(currentPage: 1, highlightedAyah: _target),
+      const MushafState(currentPage: 1, selectedAyah: _target),
     );
     final p = _FakePlayback(
       const PlaybackState(currentAyah: _target, isPlaying: true),
@@ -216,7 +218,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.expand_more));
     await tester.pumpAndSettle();
-    expect(m.state.highlightedAyah, isNull);
+    expect(m.state.selectedAyah, isNull);
     expect(p.stopped, isFalse);
   });
 
@@ -224,7 +226,7 @@ void main() {
     final m1 = _FakeMushaf(
       const MushafState(
         currentPage: 1,
-        highlightedAyah: AyahIdentifier(surah: 1, ayah: 1),
+        selectedAyah: AyahIdentifier(surah: 1, ayah: 1),
       ),
     );
     final p1 = _FakePlayback(const PlaybackState());
@@ -239,7 +241,7 @@ void main() {
     tester,
   ) async {
     final m = _FakeMushaf(
-      const MushafState(currentPage: 1, highlightedAyah: _target),
+      const MushafState(currentPage: 1, selectedAyah: _target),
     );
     final p = _FakePlayback(const PlaybackState(isLoading: true));
     await tester.pumpWidget(_wrap(m: m, p: p));
@@ -253,7 +255,7 @@ void main() {
     tester,
   ) async {
     final m = _FakeMushaf(
-      const MushafState(currentPage: 1, highlightedAyah: _target),
+      const MushafState(currentPage: 1, selectedAyah: _target),
     );
     final p = _FakePlayback(const PlaybackState());
     await tester.pumpWidget(_wrap(m: m, p: p));
@@ -296,7 +298,7 @@ void main() {
 
   testWidgets('options sheet speed chip calls setSpeed', (tester) async {
     final m = _FakeMushaf(
-      const MushafState(currentPage: 1, highlightedAyah: _target),
+      const MushafState(currentPage: 1, selectedAyah: _target),
     );
     final p = _FakePlayback(const PlaybackState(speed: 1.0));
     await tester.pumpWidget(_wrap(m: m, p: p));

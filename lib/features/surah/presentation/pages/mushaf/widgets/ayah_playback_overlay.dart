@@ -44,7 +44,7 @@ class AyahPlaybackOverlay extends StatelessWidget {
     // defaulting to Al-Fatiha (surah 1).
     final playback = context.read<PlaybackCubit>().state;
     if (playback.rangeStart == null && playback.currentAyah == null) {
-      final highlighted = context.read<MushafCubit>().state.highlightedAyah;
+      final highlighted = context.read<MushafCubit>().state.selectedAyah;
       if (highlighted != null) {
         final surah = highlighted.surah;
         final startAyah = highlighted.ayah == 0 ? 1 : highlighted.ayah;
@@ -69,12 +69,12 @@ class AyahPlaybackOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<MushafCubit, MushafState>(
       buildWhen: (a, b) =>
-          a.highlightedAyah != b.highlightedAyah ||
+          a.selectedAyah != b.selectedAyah ||
           a.isOverlayPinned != b.isOverlayPinned,
       builder: (stableCtx, mushafState) {
         // stableCtx only rebuilds on ayah-selection / pin changes — safe to
         // capture in sheet callbacks without risking a deactivated-context crash.
-        final highlightTarget = mushafState.highlightedAyah;
+        final highlightTarget = mushafState.selectedAyah;
         final isPinned = mushafState.isOverlayPinned;
         final visible = highlightTarget != null || isPinned;
 

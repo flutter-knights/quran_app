@@ -164,15 +164,8 @@ abstract class AppRouter {
           builder: (context, state) {
             final args = _mushafArgsFrom(state.extra);
             return BlocProvider(
-              create: (_) {
-                final cubit = sl<MushafCubit>(param1: args.page);
-                final focus = args.focusAyah;
-                if (focus != null && focus.ayah > 0) {
-                  cubit.toggleHighlight(focus);
-                }
-                return cubit;
-              },
-              child: MushafPage(initialPage: args.page),
+              create: (_) => sl<MushafCubit>(param1: args),
+              child: MushafPage(args: args),
             );
           },
         ),
@@ -183,15 +176,8 @@ abstract class AppRouter {
           builder: (context, state) {
             final args = _mushafArgsFrom(state.extra);
             return BlocProvider(
-              create: (_) {
-                final cubit = sl<MushafCubit>(param1: args.page);
-                final focus = args.focusAyah;
-                if (focus != null && focus.ayah > 0) {
-                  cubit.toggleHighlight(focus);
-                }
-                return cubit;
-              },
-              child: MushafPage(initialPage: args.page),
+              create: (_) => sl<MushafCubit>(param1: args),
+              child: MushafPage(args: args),
             );
           },
         ),

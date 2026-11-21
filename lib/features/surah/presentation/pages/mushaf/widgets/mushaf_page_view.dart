@@ -117,14 +117,14 @@ class _MushafPageViewState extends State<MushafPageView>
                   if (entity != null)
                     BlocBuilder<MushafCubit, MushafState>(
                       buildWhen: (a, b) =>
-                          a.highlightedAyah != b.highlightedAyah ||
+                          a.selectedAyah != b.selectedAyah ||
                           a.playingAyah != b.playingAyah,
                       builder: (context, state) {
-                        if (state.highlightedAyah != _shownHighlightedAyah ||
+                        if (state.selectedAyah != _shownHighlightedAyah ||
                             state.playingAyah != _shownPlayingAyah) {
                           _prevHighlightedAyah = _shownHighlightedAyah;
                           _prevPlayingAyah = _shownPlayingAyah;
-                          _shownHighlightedAyah = state.highlightedAyah;
+                          _shownHighlightedAyah = state.selectedAyah;
                           _shownPlayingAyah = state.playingAyah;
                           if (_shownHighlightedAyah != null ||
                               _shownPlayingAyah != null ||
@@ -312,7 +312,7 @@ class _MushafPageViewState extends State<MushafPageView>
     }
     final hit = _hitTest(local, c, ayahs);
     if (hit != null) {
-      cubit.toggleHighlight(
+      cubit.toggleSelection(
         hit,
       ); // opens the playback overlay via existing plumbing
     } else {

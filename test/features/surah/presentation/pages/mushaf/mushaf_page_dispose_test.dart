@@ -25,16 +25,21 @@ import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
   _FakeSettings()
-      : super(SettingsState(SettingsModel(
-          palette: ColorPalette.neutralLight,
-          isFormat12Hours: false,
-          isArabic: true,
-        )));
+    : super(
+        SettingsState(
+          SettingsModel(
+            palette: ColorPalette.neutralLight,
+            isFormat12Hours: false,
+            isArabic: true,
+          ),
+        ),
+      );
 
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -42,17 +47,19 @@ class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
 
 class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   _FakeMushaf(super.initial);
-  AyahIdentifier? highlighted;
+  AyahIdentifier? selected;
   @override
-  void clearHighlight() {}
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
   @override
-  void toggleHighlight(AyahIdentifier a) {
-    highlighted = a;
-    emit(state.copyWith(highlightedAyah: a));
+  void clearSelection() {}
+  @override
+  void toggleSelection(AyahIdentifier a) {
+    selected = a;
+    emit(state.copyWith(selectedAyah: a));
   }
 
   @override
-  void setPage(int p) {}
+  void setPage(int p, {required bool byUser}) {}
   @override
   void setHighlightBounds(double centerY) {}
   @override
@@ -64,7 +71,8 @@ class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   @override
   void setChrome(bool visible) {}
   @override
-  ValueNotifier<AyahIdentifier?> get debugNotifier => throw UnimplementedError();
+  ValueNotifier<AyahIdentifier?> get debugNotifier =>
+      throw UnimplementedError();
 }
 
 class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
@@ -118,52 +126,58 @@ void main() {
     sl.registerSingleton<QuranPageService>(_StubPageService());
     if (sl.isRegistered<QuranMetaService>()) sl.unregister<QuranMetaService>();
     sl.registerSingleton<QuranMetaService>(
-        QuranMetaServiceImpl(pageService: sl<QuranPageService>()));
+      QuranMetaServiceImpl(pageService: sl<QuranPageService>()),
+    );
     if (sl.isRegistered<GetMushafPage>()) sl.unregister<GetMushafPage>();
     sl.registerSingleton<GetMushafPage>(GetMushafPage(_StubMushafRepo()));
   });
 
-  testWidgets('on dispose: saves (page, highlighted) then stops playback',
-      (tester) async {
-    final mushaf = _FakeMushaf(const MushafState(
+  testWidgets('on dispose: saves (page, highlighted) then stops playback', (
+    tester,
+  ) async {
+    final mushaf = _FakeMushaf(
+      const MushafState(
         currentPage: 7,
-        highlightedAyah: AyahIdentifier(surah: 2, ayah: 5)));
+        selectedAyah: AyahIdentifier(surah: 2, ayah: 5),
+      ),
+    );
     final playback = _FakePlayback(const PlaybackState());
     final repo = _StubLastReadRepo();
 
-    await tester.pumpWidget(MaterialApp(
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider<SettingsCubit>.value(value: _FakeSettings()),
-          BlocProvider<MushafCubit>.value(value: mushaf),
-          BlocProvider<PlaybackCubit>.value(value: playback),
-          BlocProvider<LastReadCubit>.value(
-              value: LastReadCubit(repository: repo)),
-          BlocProvider<PageBookmarkCubit>(
-            create: (_) => PageBookmarkCubit(
-              getPageBookmarks: GetPageBookmarks(_StubPageBookmarkRepo()),
-              togglePageBookmark: TogglePageBookmark(_StubPageBookmarkRepo()),
-            ),
-          ),
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
         ],
-        child: const MushafPage(initialPage: 7),
+        supportedLocales: S.delegate.supportedLocales,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<SettingsCubit>.value(value: _FakeSettings()),
+            BlocProvider<MushafCubit>.value(value: mushaf),
+            BlocProvider<PlaybackCubit>.value(value: playback),
+            BlocProvider<LastReadCubit>.value(
+              value: LastReadCubit(repository: repo),
+            ),
+            BlocProvider<PageBookmarkCubit>(
+              create: (_) => PageBookmarkCubit(
+                getPageBookmarks: GetPageBookmarks(_StubPageBookmarkRepo()),
+                togglePageBookmark: TogglePageBookmark(_StubPageBookmarkRepo()),
+              ),
+            ),
+          ],
+          child: const MushafPage(args: MushafArgs(page: 7)),
+        ),
       ),
-    ));
+    );
     await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
     await tester.pump();
 
     expect(
-        repo.saved,
-        const LastRead(
-          page: 7,
-          ayah: AyahIdentifier(surah: 2, ayah: 5),
-        ));
+      repo.saved,
+      const LastRead(page: 7, ayah: AyahIdentifier(surah: 2, ayah: 5)),
+    );
     expect(playback.stopCalls, 1);
   });
 }

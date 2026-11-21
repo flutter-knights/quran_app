@@ -21,7 +21,7 @@ GoRouter, built once by `AppRouter.createRouter(initialLocation:)` in `lib/confi
 - Pass a primitive, an entity, an args object or a record in `extra`, never path or query params:
   - `state.extra as String` (ahadith: the book slug)
   - `state.extra as ({Hadith hadith, String bookSlug})` (hadith)
-  - mushaf takes a `MushafArgs` or a bare page `int`, normalised by `_mushafArgsFrom`; follow that pattern when a route accepts more than one shape, with a safe default.
+  - mushaf takes a `MushafArgs` (it carries `origin`: `normal` or `jump`) or a bare page `int`, normalised by `_mushafArgsFrom` (a bare `int` is `normal`); follow that pattern when a route accepts more than one shape, with a safe default.
 
 ## Where cubits are provided
 - **App-wide** cubits (`SettingsCubit`, bookmarks, last read, playback, downloads, `AlertsSyncCubit`) are provided once in `main.dart`'s `MultiBlocProvider`; read them anywhere with `context.read`.
