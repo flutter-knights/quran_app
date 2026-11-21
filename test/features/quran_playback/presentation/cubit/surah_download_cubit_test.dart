@@ -174,9 +174,81 @@ void main() {
       () => repo.downloadSurah(surah: 2, reciter: Reciter.husary),
     ).thenAnswer((_) => StreamController<Either<Failure, double>>().stream);
     cubit.download(Reciter.husary, 2);
+    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloading(0));
     verify(
       () => repo.downloadSurah(surah: 2, reciter: Reciter.husary),
     ).called(2);
+    await cubit.close();
+  });
+
+  test(
+    'a failed delete while downloading does not strand downloading',
+    () async {
+      when(
+        () => repo.deleteSurahDownload(surah: 2, reciter: Reciter.husary),
+      ).thenAnswer((_) async => const Left(UnknownFailure('x')));
+      final cubit = build()..download(Reciter.husary, 2);
+      await cubit.delete(Reciter.husary, 2);
+      expect(cubit.statusOf(Reciter.husary, 2), const SurahNotDownloaded());
+      when(
+        () => repo.downloadSurah(surah: 2, reciter: Reciter.husary),
+      ).thenAnswer((_) => StreamController<Either<Failure, double>>().stream);
+      cubit.download(Reciter.husary, 2);
+      expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloading(0));
+      await cubit.close();
+    },
+  );
+
+  test('a failed delete with nothing downloading leaves the status', () async {
+    when(
+      () => repo.isSurahDownloaded(surah: 2, reciter: Reciter.husary),
+    ).thenReturn(true);
+    when(
+      () => repo.deleteSurahDownload(surah: 2, reciter: Reciter.husary),
+    ).thenAnswer((_) async => const Left(UnknownFailure('x')));
+    final cubit = build();
+    await cubit.delete(Reciter.husary, 2);
+    expect(cubit.state.statuses, isEmpty);
+    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloaded());
+    await cubit.close();
+  });
+
+  test('cancel leaves a downloaded surah alone', () async {
+    when(
+      () => repo.isSurahDownloaded(surah: 2, reciter: Reciter.husary),
+    ).thenReturn(true);
+    final cubit = build();
+    await cubit.cancel(Reciter.husary, 2);
+    expect(cubit.state.statuses, isEmpty);
+    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloaded());
+    await cubit.close();
+  });
+
+  test('cancel leaves a failed surah alone', () async {
+    final cubit = build()..download(Reciter.husary, 2);
+    controller.add(const Left(UnknownFailure('x')));
+    await Future<void>.delayed(Duration.zero);
+    await cubit.cancel(Reciter.husary, 2);
+    expect(cubit.statusOf(Reciter.husary, 2), const SurahDownloadFailed());
+    await cubit.close();
+  });
+
+  test('download is ignored while the same surah is being deleted', () async {
+    final deletion = Completer<Either<Failure, void>>();
+    when(
+      () => repo.deleteSurahDownload(surah: 2, reciter: Reciter.husary),
+    ).thenAnswer((_) => deletion.future);
+    final cubit = build();
+    final pending = cubit.delete(Reciter.husary, 2);
+    cubit.download(Reciter.husary, 2);
+    verifyNever(() => repo.downloadSurah(surah: 2, reciter: Reciter.husary));
+    deletion.complete(const Right(null));
+    await pending;
+    expect(cubit.statusOf(Reciter.husary, 2), const SurahNotDownloaded());
+    cubit.download(Reciter.husary, 2);
+    verify(
+      () => repo.downloadSurah(surah: 2, reciter: Reciter.husary),
+    ).called(1);
     await cubit.close();
   });
 }

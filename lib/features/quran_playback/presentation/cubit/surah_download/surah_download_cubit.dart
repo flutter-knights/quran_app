@@ -15,6 +15,7 @@ class SurahDownloadCubit extends Cubit<SurahDownloadState> {
   final QuranPlaybackRepo repository;
   final _subscriptions =
       <String, StreamSubscription<Either<Failure, double>>>{};
+  final _deleting = <String>{};
 
   SurahDownloadStatus statusOf(Reciter reciter, int surah) {
     final status = state.statuses[reciter.downloadKey(surah)];
@@ -26,7 +27,9 @@ class SurahDownloadCubit extends Cubit<SurahDownloadState> {
 
   void download(Reciter reciter, int surah) {
     final key = reciter.downloadKey(surah);
-    if (state.statuses[key] is SurahDownloading) return;
+    if (state.statuses[key] is SurahDownloading || _deleting.contains(key)) {
+      return;
+    }
     _set(key, const SurahDownloading(0));
     _subscriptions[key] = repository
         .downloadSurah(surah: surah, reciter: reciter)
@@ -45,18 +48,28 @@ class SurahDownloadCubit extends Cubit<SurahDownloadState> {
 
   Future<void> cancel(Reciter reciter, int surah) async {
     final key = reciter.downloadKey(surah);
-    await _subscriptions.remove(key)?.cancel();
+    final subscription = _subscriptions.remove(key);
+    if (subscription == null) return;
+    await subscription.cancel();
     _set(key, const SurahNotDownloaded());
   }
 
   Future<void> delete(Reciter reciter, int surah) async {
     final key = reciter.downloadKey(surah);
-    await _subscriptions.remove(key)?.cancel();
-    final result = await repository.deleteSurahDownload(
-      surah: surah,
-      reciter: reciter,
-    );
-    result.fold((_) {}, (_) => _set(key, const SurahNotDownloaded()));
+    _deleting.add(key);
+    try {
+      final subscription = _subscriptions.remove(key);
+      await subscription?.cancel();
+      final result = await repository.deleteSurahDownload(
+        surah: surah,
+        reciter: reciter,
+      );
+      result.fold((_) {
+        if (subscription != null) _set(key, const SurahNotDownloaded());
+      }, (_) => _set(key, const SurahNotDownloaded()));
+    } finally {
+      _deleting.remove(key);
+    }
   }
 
   void _drop(String key) {
