@@ -4,8 +4,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
+import 'package:quran_app/features/quran_playback/presentation/cubit/surah_download/surah_download_cubit.dart';
+import 'package:quran_app/features/quran_playback/presentation/cubit/surah_download/surah_download_state.dart';
+import 'package:quran_app/features/settings/data/models/settings_model.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay.dart';
@@ -129,12 +134,47 @@ class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
 
+class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
+  _FakeSettings({bool downloadHintSeen = false})
+    : super(
+        SettingsState(
+          SettingsModel(
+            isFormat12Hours: false,
+            isArabic: true,
+            downloadHintSeen: downloadHintSeen,
+          ),
+        ),
+      );
+  int markCalls = 0;
+  @override
+  void markDownloadHintSeen() {
+    markCalls++;
+    emit(SettingsState(state.settingsModel.copyWith(downloadHintSeen: true)));
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
+class _FakeDownloads extends Cubit<SurahDownloadState>
+    implements SurahDownloadCubit {
+  _FakeDownloads() : super(const SurahDownloadState());
+  final downloads = <(Reciter, int)>[];
+  @override
+  void download(Reciter reciter, int surah) => downloads.add((reciter, surah));
+
+  @override
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
 const _target = AyahIdentifier(surah: 2, ayah: 5);
 
 Widget _wrap({
   required _FakeMushaf m,
   required _FakePlayback p,
   Locale locale = const Locale('en'),
+  SettingsCubit? settings,
+  SurahDownloadCubit? downloads,
 }) {
   return MaterialApp(
     localizationsDelegates: const [
@@ -150,6 +190,10 @@ Widget _wrap({
         providers: [
           BlocProvider<MushafCubit>.value(value: m),
           BlocProvider<PlaybackCubit>.value(value: p),
+          BlocProvider<SettingsCubit>.value(value: settings ?? _FakeSettings()),
+          BlocProvider<SurahDownloadCubit>.value(
+            value: downloads ?? _FakeDownloads(),
+          ),
         ],
         child: const Stack(children: [AyahPlaybackOverlay()]),
       ),
@@ -855,5 +899,79 @@ void main() {
     await tester.pump();
     expect(p.lastRangeStart, const AyahIdentifier(surah: 2, ayah: 6));
     expect(m.resumed, isTrue);
+  });
+
+  group('download hint', () {
+    const hintText = 'يمكنك تنزيل السورة لتستمع دون إنترنت';
+    const playing = PlaybackState(
+      currentAyah: _target,
+      reciter: Reciter.husary,
+      isPlaying: true,
+    );
+    final fromNetwork = playing.copyWith(playedFromNetwork: true);
+
+    Future<void> pumpHint(
+      WidgetTester tester,
+      _FakePlayback p, {
+      SettingsCubit? settings,
+      SurahDownloadCubit? downloads,
+    }) async {
+      await tester.pumpWidget(
+        _wrap(
+          m: _FakeMushaf(const MushafState(currentPage: 1)),
+          p: p,
+          locale: const Locale('ar'),
+          settings: settings,
+          downloads: downloads,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+      'the first network ayah shows the hint once and marks it seen',
+      (tester) async {
+        final settings = _FakeSettings();
+        final p = _FakePlayback(playing);
+        await pumpHint(tester, p, settings: settings);
+        p.push(fromNetwork);
+        await tester.pumpAndSettle();
+        expect(find.text(hintText), findsOneWidget);
+        expect(settings.markCalls, 1);
+      },
+    );
+
+    testWidgets('its action downloads the playing surah', (tester) async {
+      final downloads = _FakeDownloads();
+      final p = _FakePlayback(playing);
+      await pumpHint(tester, p, downloads: downloads);
+      p.push(fromNetwork);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('تنزيل السورة'));
+      await tester.pump();
+      expect(downloads.downloads, [(Reciter.husary, 2)]);
+    });
+
+    testWidgets('a seen hint never shows again', (tester) async {
+      final settings = _FakeSettings(downloadHintSeen: true);
+      final p = _FakePlayback(playing);
+      await pumpHint(tester, p, settings: settings);
+      p.push(fromNetwork);
+      await tester.pumpAndSettle();
+      expect(find.text(hintText), findsNothing);
+      expect(settings.markCalls, 0);
+    });
+
+    testWidgets('an audio error replaces the hint', (tester) async {
+      final p = _FakePlayback(playing);
+      await pumpHint(tester, p);
+      p.push(fromNetwork);
+      await tester.pumpAndSettle();
+      expect(find.text(hintText), findsOneWidget);
+      p.push(fromNetwork.copyWith(requestedAyah: _target, error: 'x'));
+      await tester.pumpAndSettle();
+      expect(find.text(hintText), findsNothing);
+      expect(find.text('إعادة المحاولة'), findsOneWidget);
+    });
   });
 }

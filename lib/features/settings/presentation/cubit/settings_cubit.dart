@@ -93,6 +93,11 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
     );
   }
 
+  void markDownloadHintSeen() {
+    if (state.settingsModel.downloadHintSeen) return;
+    emit(SettingsState(state.settingsModel.copyWith(downloadHintSeen: true)));
+  }
+
   void updateShowSplashOnLaunch(bool value) {
     emit(
       SettingsState(state.settingsModel.copyWith(showSplashOnLaunch: value)),

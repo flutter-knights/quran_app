@@ -454,6 +454,7 @@
   "playback_mediaAlbum": "The Holy Quran",
   "playback_channelName": "Quran recitation",
   "surahDownload_download": "Download surah",
+  "surahDownload_hint": "You can download the surah to listen offline",
   "surahDownload_cancel": "Cancel download",
   "surahDownload_saved": "Saved for offline listening",
   "surahDownload_delete": "Delete download",

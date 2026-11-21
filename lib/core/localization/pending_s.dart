@@ -227,6 +227,9 @@ class PendingS {
   String get playback_mediaAlbum => _ar ? 'القرآن الكريم' : 'The Holy Quran';
   String get playback_channelName => _ar ? 'تلاوة القرآن' : 'Quran recitation';
   String get surahDownload_download => _ar ? 'تنزيل السورة' : 'Download surah';
+  String get surahDownload_hint => _ar
+      ? 'يمكنك تنزيل السورة لتستمع دون إنترنت'
+      : 'You can download the surah to listen offline';
   String get surahDownload_cancel => _ar ? 'إلغاء التنزيل' : 'Cancel download';
   String get surahDownload_saved =>
       _ar ? 'محفوظة للاستماع دون إنترنت' : 'Saved for offline listening';

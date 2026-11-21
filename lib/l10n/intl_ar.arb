@@ -438,6 +438,7 @@
   "playback_mediaAlbum": "القرآن الكريم",
   "playback_channelName": "تلاوة القرآن",
   "surahDownload_download": "تنزيل السورة",
+  "surahDownload_hint": "يمكنك تنزيل السورة لتستمع دون إنترنت",
   "surahDownload_cancel": "إلغاء التنزيل",
   "surahDownload_saved": "محفوظة للاستماع دون إنترنت",
   "surahDownload_delete": "حذف التنزيل",

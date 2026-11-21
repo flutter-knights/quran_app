@@ -42,6 +42,7 @@ class PlaybackState extends Equatable {
   /// in this pass, and which range pass we're on.
   final int currentAyahPlayCount;
   final int currentRangePass;
+  final bool playedFromNetwork;
 
   const PlaybackState({
     this.currentAyah,
@@ -62,6 +63,7 @@ class PlaybackState extends Equatable {
     this.infiniteTarget = RepeatTarget.range,
     this.currentAyahPlayCount = 1,
     this.currentRangePass = 1,
+    this.playedFromNetwork = false,
   });
 
   AyahIdentifier? get skipOrigin => requestedAyah ?? currentAyah;
@@ -102,6 +104,7 @@ class PlaybackState extends Equatable {
     infiniteTarget,
     currentAyahPlayCount,
     currentRangePass,
+    playedFromNetwork,
   ];
 
   PlaybackState copyWith({
@@ -124,6 +127,7 @@ class PlaybackState extends Equatable {
     RepeatTarget? infiniteTarget,
     int? currentAyahPlayCount,
     int? currentRangePass,
+    bool? playedFromNetwork,
     bool clearRange = false,
     bool clearRequested = false,
     bool clearError = false,
@@ -149,6 +153,7 @@ class PlaybackState extends Equatable {
       infiniteTarget: infiniteTarget ?? this.infiniteTarget,
       currentAyahPlayCount: currentAyahPlayCount ?? this.currentAyahPlayCount,
       currentRangePass: currentRangePass ?? this.currentRangePass,
+      playedFromNetwork: playedFromNetwork ?? this.playedFromNetwork,
     );
   }
 }

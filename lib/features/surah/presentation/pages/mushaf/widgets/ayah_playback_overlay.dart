@@ -11,7 +11,9 @@ import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../../quran_playback/domain/entities/reciter.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
+import '../../../../../quran_playback/presentation/cubit/surah_download/surah_download_cubit.dart';
 import '../../../../../quran_playback/presentation/widgets/playback_repeat_options.dart';
+import '../../../../../settings/presentation/cubit/settings_cubit.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 
@@ -137,6 +139,11 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
                     listenWhen: (a, b) => !a.followPlayback && b.followPlayback,
                     listener: (_, _) => _removeSnack(),
                   ),
+                  BlocListener<PlaybackCubit, PlaybackState>(
+                    listenWhen: (a, b) =>
+                        !a.playedFromNetwork && b.playedFromNetwork,
+                    listener: _showDownloadHint,
+                  ),
                 ],
                 child: IgnorePointer(
                   ignoring: !visible,
@@ -224,6 +231,23 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
       pending.mushaf_retry,
       context.read<PlaybackCubit>().retry,
       persist: true,
+    );
+  }
+
+  void _showDownloadHint(BuildContext context, PlaybackState state) {
+    final settings = context.read<SettingsCubit>();
+    if (settings.state.settingsModel.downloadHintSeen) return;
+    settings.markDownloadHintSeen();
+    final pending = PendingS.current;
+    _showSnack(
+      context,
+      pending.surahDownload_hint,
+      pending.surahDownload_download,
+      () => context.read<SurahDownloadCubit>().download(
+        state.reciter,
+        state.skipOrigin!.surah,
+      ),
+      persist: false,
     );
   }
 

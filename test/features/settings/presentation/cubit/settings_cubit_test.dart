@@ -31,6 +31,18 @@ void main() {
     expect(c.state.settingsModel.pageBrightness, 0.7);
   });
 
+  test('markDownloadHintSeen sets the flag once', () async {
+    final c = SettingsCubit();
+    final emitted = [];
+    final sub = c.stream.listen(emitted.add);
+    c.markDownloadHintSeen();
+    c.markDownloadHintSeen();
+    await Future<void>.delayed(Duration.zero);
+    await sub.cancel();
+    expect(c.state.settingsModel.downloadHintSeen, isTrue);
+    expect(emitted, hasLength(1));
+  });
+
   test('updateReadingMode switches mode', () {
     final c = SettingsCubit();
     c.updateReadingMode(MushafReadingMode.scroll);

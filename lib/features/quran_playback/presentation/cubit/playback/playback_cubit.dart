@@ -191,6 +191,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       basmalaPath = basmalaResult.fold((_) => null, (p) => p);
     }
 
+    final cached = repository.isAyahCached(ayah: ayah, reciter: state.reciter);
     final result = await repository.prepareAyahAudio(
       ayah: ayah,
       reciter: state.reciter,
@@ -229,6 +230,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         );
         return;
       }
+      emit(state.copyWith(playedFromNetwork: !cached));
       if (basmalaPath != null) {
         // During basmala: set the target as currentAyah so the overlay
         // shows pause/playing, but raise `isPlayingBasmala` so the page

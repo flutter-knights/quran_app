@@ -87,6 +87,12 @@ void main() {
     ).thenAnswer((_) async {});
     when(() => repo.setSpeed(any())).thenAnswer((_) async {});
     when(() => repo.stop()).thenAnswer((_) async {});
+    when(
+      () => repo.isAyahCached(
+        ayah: any(named: 'ayah'),
+        reciter: any(named: 'reciter'),
+      ),
+    ).thenReturn(true);
   });
 
   PlaybackCubit build() => PlaybackCubit(
@@ -174,6 +180,35 @@ void main() {
   );
 
   const ayah26 = AyahIdentifier(surah: 2, ayah: 6);
+
+  for (final cached in [false, true]) {
+    test(
+      'an ayah ${cached ? 'read from the cache' : 'fetched from the network'} '
+      'sets playedFromNetwork to ${!cached}',
+      () async {
+        when(
+          () => repo.isAyahCached(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          ),
+        ).thenReturn(cached);
+        when(
+          () => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          ),
+        ).thenAnswer((_) async => const Right('/p.mp3'));
+        when(
+          () => repo.playPreparedAudio(any()),
+        ).thenAnswer((_) async => const Right(null));
+        when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+        final c = build();
+        await c.playSelected(ayah25);
+        expect(c.state.playedFromNetwork, !cached);
+        await c.close();
+      },
+    );
+  }
 
   void stubPlay() {
     when(
