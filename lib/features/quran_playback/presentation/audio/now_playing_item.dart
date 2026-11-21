@@ -5,8 +5,12 @@ import '../../../../core/helper functions/numeral_helpers.dart';
 import '../../../../core/localization/pending_s.dart';
 import '../cubit/playback/playback_state.dart';
 
-MediaItem? nowPlayingItem(PlaybackState state, {required String langCode}) {
-  final ayah = state.skipOrigin;
+MediaItem? nowPlayingItem(
+  PlaybackState state, {
+  required String langCode,
+  Uri? artUri,
+}) {
+  final ayah = state.nowPlaying;
   if (ayah == null) return null;
   final strings = PendingS.forLanguage(langCode);
   final surahName = langCode == 'ar'
@@ -20,5 +24,6 @@ MediaItem? nowPlayingItem(PlaybackState state, {required String langCode}) {
     ),
     artist: state.reciter.arabicName,
     album: strings.playback_mediaAlbum,
+    artUri: artUri,
   );
 }

@@ -68,6 +68,8 @@ class PlaybackState extends Equatable {
 
   AyahIdentifier? get skipOrigin => requestedAyah ?? currentAyah;
 
+  AyahIdentifier? get nowPlaying => currentAyah ?? requestedAyah;
+
   bool get canSkipNext {
     final at = skipOrigin;
     if (at == null) return false;

@@ -21,6 +21,16 @@ void main() {
     expect(item.artUri, isNull);
   });
 
+  test('the given art rides on the item', () {
+    final art = Uri.file('/data/media_art.png');
+    final item = nowPlayingItem(
+      const PlaybackState(currentAyah: AyahIdentifier(surah: 3, ayah: 4)),
+      langCode: 'ar',
+      artUri: art,
+    )!;
+    expect(item.artUri, art);
+  });
+
   test('English item uses the English surah name and Latin digits', () {
     final item = nowPlayingItem(
       const PlaybackState(currentAyah: AyahIdentifier(surah: 3, ayah: 4)),
@@ -30,7 +40,7 @@ void main() {
     expect(item.album, 'The Holy Quran');
   });
 
-  test('requestedAyah wins over currentAyah; idle gives null', () {
+  test('the audible ayah wins over a requested one; idle gives null', () {
     expect(
       nowPlayingItem(
         const PlaybackState(
@@ -39,7 +49,7 @@ void main() {
         ),
         langCode: 'ar',
       )!.id,
-      'alafasy:3:5',
+      'alafasy:3:4',
     );
     expect(nowPlayingItem(const PlaybackState(), langCode: 'ar'), isNull);
   });
