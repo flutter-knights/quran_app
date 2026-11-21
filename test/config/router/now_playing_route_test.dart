@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -80,5 +82,47 @@ void main() {
     await tester.pumpAndSettle();
     expect(router.state.matchedLocation, '/');
     expect(mushafBuilds, 0);
+  });
+
+  group('listenNowPlaying', () {
+    late StreamController<bool> clicks;
+    late StreamSubscription<bool> sub;
+    AyahIdentifier? current;
+
+    Future<void> start(WidgetTester tester) async {
+      await pumpRouter(tester);
+      clicks = StreamController<bool>();
+      sub = listenNowPlaying(clicks.stream, router, () => current);
+      addTearDown(sub.cancel);
+      addTearDown(clicks.close);
+    }
+
+    testWidgets('a false click does nothing', (tester) async {
+      current = playing;
+      await start(tester);
+      clicks.add(false);
+      await tester.pumpAndSettle();
+      expect(mushafBuilds, 0);
+    });
+
+    testWidgets('a true click opens the page playing at that moment', (
+      tester,
+    ) async {
+      current = null;
+      await start(tester);
+      current = playing;
+      clicks.add(true);
+      await tester.pumpAndSettle();
+      expect((extra as MushafArgs).page, 50);
+    });
+
+    testWidgets('after cancel a click does nothing', (tester) async {
+      current = playing;
+      await start(tester);
+      unawaited(sub.cancel());
+      clicks.add(true);
+      await tester.pumpAndSettle();
+      expect(mushafBuilds, 0);
+    });
   });
 }

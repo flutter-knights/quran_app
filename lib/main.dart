@@ -102,7 +102,7 @@ class QuranApp extends StatefulWidget {
 
 class _QuranAppState extends State<QuranApp> {
   late final GoRouter _router;
-  StreamSubscription<bool>? _notificationSub;
+  late final StreamSubscription<bool> _notificationSub;
 
   @override
   void initState() {
@@ -118,16 +118,16 @@ class _QuranAppState extends State<QuranApp> {
         ? AppRouter.homePath
         : AppRouter.splashPath;
     _router = AppRouter.createRouter(initialLocation: initialLocation);
-    _notificationSub = AudioService.notificationClicked
-        .where((clicked) => clicked)
-        .listen(
-          (_) => openNowPlaying(_router, sl<PlaybackCubit>().state.skipOrigin),
-        );
+    _notificationSub = listenNowPlaying(
+      AudioService.notificationClicked,
+      _router,
+      () => sl<PlaybackCubit>().state.skipOrigin,
+    );
   }
 
   @override
   void dispose() {
-    _notificationSub?.cancel();
+    _notificationSub.cancel();
     super.dispose();
   }
 

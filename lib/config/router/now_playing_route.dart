@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
@@ -14,3 +16,11 @@ void openNowPlaying(GoRouter router, AyahIdentifier? playing) {
   if (readerOpen) return;
   router.push(AppRouter.mushafPath, extra: MushafArgs.nowPlaying(playing));
 }
+
+StreamSubscription<bool> listenNowPlaying(
+  Stream<bool> clicks,
+  GoRouter router,
+  AyahIdentifier? Function() playing,
+) => clicks
+    .where((clicked) => clicked)
+    .listen((_) => openNowPlaying(router, playing()));
