@@ -37,7 +37,9 @@ PlaybackScope playbackScope(AyahIdentifier? start, AyahIdentifier? end) {
   if (start.surah == end.surah && end.ayah == quran.getVerseCount(end.surah)) {
     return PlaybackScope.surahEnd;
   }
-  final last = quran.getPageData(quran.getPageNumber(end.surah, end.ayah)).last;
+  final last = quran
+      .getPageData(quran.getPageNumber(end.surah, end.ayah))
+      .lastWhere((e) => (e['end'] as int) > 0);
   return last['surah'] == end.surah && last['end'] == end.ayah
       ? PlaybackScope.pageEnd
       : PlaybackScope.none;

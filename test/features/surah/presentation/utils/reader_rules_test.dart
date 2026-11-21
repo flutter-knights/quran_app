@@ -50,6 +50,11 @@ void main() {
       expect(playbackScope(id(2, 6), id(2, 16)), PlaybackScope.pageEnd);
     });
 
+    test('a page ending in a surah banner still ends on its last ayah', () {
+      expect(playbackScope(id(2, 286), id(3, 200)), PlaybackScope.pageEnd);
+      expect(playbackScope(id(3, 190), id(3, 200)), PlaybackScope.surahEnd);
+    });
+
     test('a range ending mid-page is none', () {
       expect(playbackScope(id(2, 5), id(2, 20)), PlaybackScope.none);
       expect(playbackScope(null, null), PlaybackScope.none);

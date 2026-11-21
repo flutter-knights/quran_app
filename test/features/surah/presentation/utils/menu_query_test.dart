@@ -6,7 +6,7 @@ import 'package:quran_app/features/surah/presentation/utils/menu_query.dart';
 
 void main() {
   test('blank and unknown queries resolve to none', () {
-    for (final q in ['', '   ', 'xyz']) {
+    for (final q in ['', '   ', 'xyz', 'ـ', 'َ', 'ـَـ']) {
       expect(resolveMenuQuery(q), const MenuQueryNone(), reason: q);
     }
   });
@@ -22,7 +22,7 @@ void main() {
   });
 
   test('numbers outside 1 to 604 are out of range', () {
-    for (final q in ['0', '605', '٦٠٥']) {
+    for (final q in ['0', '605', '٦٠٥', '-3', '99999999999999999999']) {
       expect(resolveMenuQuery(q), const MenuQueryOutOfRange(), reason: q);
     }
   });

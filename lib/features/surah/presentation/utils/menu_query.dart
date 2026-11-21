@@ -37,12 +37,17 @@ final class MenuQueryTarget extends MenuQuery {
   List<Object?> get props => [page, surah, juz];
 }
 
+final _numeric = RegExp(r'^[+-]?\d+$');
+
 MenuQuery resolveMenuQuery(String raw) {
   final q = raw.trim();
   if (q.isEmpty) return const MenuQueryNone();
-  final page = int.tryParse(toAsciiDigits(q));
-  if (page != null) {
-    if (page < 1 || page > 604) return const MenuQueryOutOfRange();
+  final digits = toAsciiDigits(q);
+  if (_numeric.hasMatch(digits)) {
+    final page = int.tryParse(digits);
+    if (page == null || page < 1 || page > 604) {
+      return const MenuQueryOutOfRange();
+    }
     final first = quran
         .getPageData(page)
         .firstWhere((e) => e['start'] != 0 || e['end'] != 0);
@@ -50,6 +55,7 @@ MenuQuery resolveMenuQuery(String raw) {
   }
   final arabic = normalizeArabic(q);
   final latin = q.toLowerCase();
+  if (arabic.isEmpty) return const MenuQueryNone();
   for (var s = 1; s <= 114; s++) {
     if (normalizeArabic(quran.getSurahNameArabic(s)).contains(arabic) ||
         quran.getSurahName(s).toLowerCase().contains(latin)) {
