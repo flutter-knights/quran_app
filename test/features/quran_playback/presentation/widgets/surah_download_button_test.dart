@@ -113,7 +113,17 @@ void main() {
     await _pump(tester, downloads);
     downloads.push({'husary:2': const SurahDownloadFailed()});
     await tester.pump();
-    expect(find.text('تعذّر التنزيل، أعِد المحاولة'), findsOneWidget);
+    final snackText = find.descendant(
+      of: find.byType(SnackBar),
+      matching: find.text('تعذّر التنزيل، أعِد المحاولة'),
+    );
+    expect(snackText, findsOneWidget);
+    downloads.push({
+      'husary:2': const SurahDownloadFailed(),
+      'husary:3': const SurahDownloaded(),
+    });
+    await tester.pump();
+    expect(snackText, findsOneWidget);
     await tester.tap(find.byTooltip('تعذّر التنزيل، أعِد المحاولة'));
     expect(downloads.downloads, [(Reciter.husary, 2)]);
   });

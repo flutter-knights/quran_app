@@ -34,14 +34,16 @@ class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
 
 class _FakeDownloads extends Cubit<SurahDownloadState>
     implements SurahDownloadCubit {
-  _FakeDownloads() : super(const SurahDownloadState());
+  _FakeDownloads(this.downloads) : super(const SurahDownloadState());
+
+  final List<(Reciter, int)> downloads;
 
   @override
   SurahDownloadStatus statusOf(Reciter reciter, int surah) =>
       const SurahNotDownloaded();
 
   @override
-  void download(Reciter reciter, int surah) {}
+  void download(Reciter reciter, int surah) => downloads.add((reciter, surah));
 
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -60,8 +62,9 @@ final _surah = SurahEntity(
 Future<Object?> _tap(
   WidgetTester tester,
   _FakePlayback playback,
-  Finder target,
-) async {
+  Finder target, [
+  List<(Reciter, int)>? downloads,
+]) async {
   Object? extra;
   final router = GoRouter(
     routes: [
@@ -70,7 +73,9 @@ Future<Object?> _tap(
         builder: (_, _) => MultiBlocProvider(
           providers: [
             BlocProvider<PlaybackCubit>.value(value: playback),
-            BlocProvider<SurahDownloadCubit>.value(value: _FakeDownloads()),
+            BlocProvider<SurahDownloadCubit>.value(
+              value: _FakeDownloads(downloads ?? []),
+            ),
           ],
           child: Scaffold(body: SurahListTile(surah: _surah)),
         ),
@@ -132,11 +137,15 @@ void main() {
   testWidgets('the tile carries the download button for its surah', (
     tester,
   ) async {
-    await _tap(
+    final downloads = <(Reciter, int)>[];
+    final extra = await _tap(
       tester,
       _FakePlayback(),
       find.byIcon(Icons.download_for_offline_outlined),
+      downloads,
     );
+    expect(extra, isNull);
+    expect(downloads, [(Reciter.husary, 2)]);
     expect(
       tester
           .widget<SurahDownloadButton>(find.byType(SurahDownloadButton))

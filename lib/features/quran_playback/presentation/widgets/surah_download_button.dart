@@ -103,7 +103,7 @@ class SurahDownloadButton extends StatelessWidget {
     Reciter reciter,
   ) {
     final pending = PendingS.of(context);
-    return showDialog<void>(
+    return showDialog(
       context: context,
       builder: (dialog) => AlertDialog(
         content: Text(pending.surahDownload_saved, style: TS.regular14),
