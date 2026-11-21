@@ -210,6 +210,35 @@ void main() {
     );
   }
 
+  test(
+    'stop clears playedFromNetwork so the next stream can raise it',
+    () async {
+      when(
+        () => repo.isAyahCached(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenReturn(false);
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) async => const Right('/p.mp3'));
+      when(
+        () => repo.playPreparedAudio(any()),
+      ).thenAnswer((_) async => const Right(null));
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      when(() => repo.stop()).thenAnswer((_) async {});
+      final c = build();
+      await c.playSelected(ayah25);
+      expect(c.state.playedFromNetwork, isTrue);
+      await c.stop();
+      expect(c.state.playedFromNetwork, isFalse);
+      await c.close();
+    },
+  );
+
   void stubPlay() {
     when(
       () => repo.playPreparedAudio(any()),

@@ -929,7 +929,7 @@ void main() {
     }
 
     testWidgets(
-      'the first network ayah shows the hint once and marks it seen',
+      'the first network ayah shows the hint and marks it seen once it closes',
       (tester) async {
         final settings = _FakeSettings();
         final p = _FakePlayback(playing);
@@ -937,11 +937,11 @@ void main() {
         p.push(fromNetwork);
         await tester.pumpAndSettle();
         expect(find.text(hintText), findsOneWidget);
-        expect(settings.markCalls, 1);
-        ScaffoldMessenger.of(
-          tester.element(find.byType(Scaffold).first),
-        ).removeCurrentSnackBar();
+        expect(settings.markCalls, 0);
+        await tester.pump(const Duration(seconds: 10));
         await tester.pumpAndSettle();
+        expect(find.text(hintText), findsNothing);
+        expect(settings.markCalls, 1);
         p.push(playing);
         await tester.pumpAndSettle();
         p.push(fromNetwork);
@@ -950,6 +950,32 @@ void main() {
         expect(settings.markCalls, 1);
       },
     );
+
+    testWidgets('a hint replaced before it closes stays unseen and returns', (
+      tester,
+    ) async {
+      final settings = _FakeSettings();
+      final p = _FakePlayback(playing);
+      await pumpHint(tester, p, settings: settings);
+      p.push(fromNetwork);
+      await tester.pumpAndSettle();
+      p.push(fromNetwork.copyWith(requestedAyah: _target, error: 'x'));
+      await tester.pumpAndSettle();
+      expect(find.text(hintText), findsNothing);
+      expect(settings.markCalls, 0);
+      p.push(playing);
+      await tester.pumpAndSettle();
+      p.push(fromNetwork);
+      await tester.pumpAndSettle();
+      expect(find.text(hintText), findsOneWidget);
+    });
+
+    testWidgets('opening the reader mid-stream still shows the hint', (
+      tester,
+    ) async {
+      await pumpHint(tester, _FakePlayback(fromNetwork));
+      expect(find.text(hintText), findsOneWidget);
+    });
 
     testWidgets('its action downloads the playing surah', (tester) async {
       final downloads = _FakeDownloads();

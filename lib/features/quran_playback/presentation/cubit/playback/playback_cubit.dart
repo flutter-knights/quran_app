@@ -140,6 +140,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         isLoading: true,
         requestedAyah: ayah,
         clearError: true,
+        playedFromNetwork: false,
       ),
     );
     await _playAyah(ayah);
@@ -168,6 +169,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         currentRangePass: 1,
         requestedAyah: normStart,
         clearError: true,
+        playedFromNetwork: false,
       ),
     );
     await _playAyah(normStart);
@@ -443,6 +445,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         clearCurrentAyah: true,
         clearRequested: true,
         clearError: true,
+        playedFromNetwork: false,
       ),
     );
   }

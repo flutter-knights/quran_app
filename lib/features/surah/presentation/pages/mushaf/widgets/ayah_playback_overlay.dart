@@ -45,6 +45,18 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final playback = context.read<PlaybackCubit>().state;
+      if (playback.playedFromNetwork && playback.skipOrigin != null) {
+        _showDownloadHint(context, playback);
+      }
+    });
+  }
+
+  @override
   void dispose() {
     final messenger = _messenger;
     if (_snack != null && messenger != null) {
@@ -185,7 +197,7 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
     );
   }
 
-  void _showSnack(
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> _showSnack(
     BuildContext context,
     String text,
     String label,
@@ -211,6 +223,7 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
     controller.closed.whenComplete(() {
       if (_snack == controller) _snack = null;
     });
+    return controller;
   }
 
   void _removeSnack() {
@@ -237,17 +250,22 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
   void _showDownloadHint(BuildContext context, PlaybackState state) {
     final settings = context.read<SettingsCubit>();
     if (settings.state.settingsModel.downloadHintSeen) return;
-    settings.markDownloadHintSeen();
     final downloads = context.read<SurahDownloadCubit>();
     final surah = state.skipOrigin!.surah;
     final pending = PendingS.current;
-    _showSnack(
+    final controller = _showSnack(
       context,
       pending.surahDownload_hint,
       pending.surahDownload_download,
       () => downloads.download(state.reciter, surah),
       persist: false,
     );
+    controller.closed.then((reason) {
+      if (reason != SnackBarClosedReason.hide &&
+          reason != SnackBarClosedReason.remove) {
+        settings.markDownloadHintSeen();
+      }
+    });
   }
 
   void _showNowReciting(BuildContext context, MushafState state) {
