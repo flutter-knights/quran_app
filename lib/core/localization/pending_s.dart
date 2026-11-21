@@ -226,6 +226,15 @@ class PendingS {
       _ar ? '$surah، الآية $ayah' : '$surah, ayah $ayah';
   String get playback_mediaAlbum => _ar ? 'القرآن الكريم' : 'The Holy Quran';
   String get playback_channelName => _ar ? 'تلاوة القرآن' : 'Quran recitation';
+  String get surahDownload_download => _ar ? 'تنزيل السورة' : 'Download surah';
+  String get surahDownload_cancel => _ar ? 'إلغاء التنزيل' : 'Cancel download';
+  String get surahDownload_saved =>
+      _ar ? 'محفوظة للاستماع دون إنترنت' : 'Saved for offline listening';
+  String get surahDownload_delete => _ar ? 'حذف التنزيل' : 'Delete download';
+  String get surahDownload_failed =>
+      _ar ? 'تعذّر التنزيل، أعِد المحاولة' : 'Download failed, try again';
+  String surahDownload_progress(String percent) =>
+      _ar ? 'جارٍ التنزيل $percent٪' : 'Downloading $percent%';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

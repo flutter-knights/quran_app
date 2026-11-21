@@ -7,6 +7,10 @@ import 'package:quran_app/generated/l10n.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
+import 'package:quran_app/features/quran_playback/presentation/cubit/surah_download/surah_download_cubit.dart';
+import 'package:quran_app/features/quran_playback/presentation/cubit/surah_download/surah_download_state.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
+import 'package:quran_app/features/quran_playback/presentation/widgets/surah_download_button.dart';
 import 'package:quran_app/features/surah/domain/entities/surah_entity.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/surah_list/widgets/surah_list_tile.dart';
@@ -23,6 +27,21 @@ class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
     rangeStart = start;
     rangeEnd = end;
   }
+
+  @override
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
+class _FakeDownloads extends Cubit<SurahDownloadState>
+    implements SurahDownloadCubit {
+  _FakeDownloads() : super(const SurahDownloadState());
+
+  @override
+  SurahDownloadStatus statusOf(Reciter reciter, int surah) =>
+      const SurahNotDownloaded();
+
+  @override
+  void download(Reciter reciter, int surah) {}
 
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -48,8 +67,11 @@ Future<Object?> _tap(
     routes: [
       GoRoute(
         path: '/',
-        builder: (_, _) => BlocProvider<PlaybackCubit>.value(
-          value: playback,
+        builder: (_, _) => MultiBlocProvider(
+          providers: [
+            BlocProvider<PlaybackCubit>.value(value: playback),
+            BlocProvider<SurahDownloadCubit>.value(value: _FakeDownloads()),
+          ],
           child: Scaffold(body: SurahListTile(surah: _surah)),
         ),
       ),
@@ -105,5 +127,21 @@ void main() {
   ) async {
     final extra = await _tap(tester, _FakePlayback(), find.text('البقرة'));
     expectOpenedSurah(extra);
+  });
+
+  testWidgets('the tile carries the download button for its surah', (
+    tester,
+  ) async {
+    await _tap(
+      tester,
+      _FakePlayback(),
+      find.byIcon(Icons.download_for_offline_outlined),
+    );
+    expect(
+      tester
+          .widget<SurahDownloadButton>(find.byType(SurahDownloadButton))
+          .surah,
+      2,
+    );
   });
 }

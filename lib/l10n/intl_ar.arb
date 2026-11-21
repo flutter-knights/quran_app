@@ -436,5 +436,14 @@
     "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
   },
   "playback_mediaAlbum": "القرآن الكريم",
-  "playback_channelName": "تلاوة القرآن"
+  "playback_channelName": "تلاوة القرآن",
+  "surahDownload_download": "تنزيل السورة",
+  "surahDownload_cancel": "إلغاء التنزيل",
+  "surahDownload_saved": "محفوظة للاستماع دون إنترنت",
+  "surahDownload_delete": "حذف التنزيل",
+  "surahDownload_failed": "تعذّر التنزيل، أعِد المحاولة",
+  "surahDownload_progress": "جارٍ التنزيل {percent}٪",
+  "@surahDownload_progress": {
+    "placeholders": { "percent": { "type": "String" } }
+  }
 }

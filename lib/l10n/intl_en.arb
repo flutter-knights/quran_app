@@ -452,5 +452,14 @@
     "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
   },
   "playback_mediaAlbum": "The Holy Quran",
-  "playback_channelName": "Quran recitation"
+  "playback_channelName": "Quran recitation",
+  "surahDownload_download": "Download surah",
+  "surahDownload_cancel": "Cancel download",
+  "surahDownload_saved": "Saved for offline listening",
+  "surahDownload_delete": "Delete download",
+  "surahDownload_failed": "Download failed, try again",
+  "surahDownload_progress": "Downloading {percent}%",
+  "@surahDownload_progress": {
+    "placeholders": { "percent": { "type": "String" } }
+  }
 }
