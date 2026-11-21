@@ -14,7 +14,7 @@ import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
 
-import '../../mushaf/mushaf_args.dart';
+import '../../../utils/mushaf_args.dart';
 import 'ayah_result_tile.dart';
 import 'surah_list_tile.dart';
 

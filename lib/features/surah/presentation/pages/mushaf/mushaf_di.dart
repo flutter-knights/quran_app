@@ -6,7 +6,7 @@ import '../../../domain/repositories/mushaf_repo.dart';
 import '../../../domain/usecases/get_mushaf_page.dart';
 import '../../cubit/mushaf/mushaf_cubit.dart';
 import '../../utils/current_ayah_notifier.dart';
-import 'mushaf_args.dart';
+import '../../utils/mushaf_args.dart';
 
 void initMushaf() {
   sl.registerLazySingleton<CurrentAyahNotifier>(

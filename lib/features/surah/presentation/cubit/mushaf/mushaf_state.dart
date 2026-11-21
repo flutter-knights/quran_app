@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../domain/entities/ayah_bound_entity.dart';
-import '../../pages/mushaf/mushaf_args.dart';
+import '../../utils/mushaf_args.dart';
 import '../../utils/page_bounds.dart';
 
 class MushafState extends Equatable {

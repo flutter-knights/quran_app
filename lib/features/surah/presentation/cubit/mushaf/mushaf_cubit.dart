@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
 import '../../../domain/usecases/get_mushaf_page.dart';
-import '../../pages/mushaf/mushaf_args.dart';
+import '../../utils/mushaf_args.dart';
 import '../../utils/follow_playback.dart';
 import 'mushaf_state.dart';
 
@@ -33,10 +33,7 @@ class MushafCubit extends Cubit<MushafState> {
   int? get playingPage {
     final playing = state.playingAyah;
     if (playing == null) return null;
-    return _pageService.getPageForAyah(
-      playing.surah,
-      playing.ayah == 0 ? 1 : playing.ayah,
-    );
+    return _pageService.getPageForAyah(playing.surah, playing.realAyah);
   }
 
   void setPage(int page, {required bool byUser}) {

@@ -8,12 +8,10 @@ import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifie
 import 'package:quran_app/features/quran_playback/domain/services/playback_range_validator.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
-import 'package:quran_app/features/quran_playback/presentation/utils/surah_display_name.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 /// Expanded playback panel: from→to range + per-ayah / per-range repeat counts
-/// + an infinite toggle per repeat counter. Every counter is +/- steppable and
-/// tap-to-type.
+/// + an infinite toggle. Every counter is +/- steppable and tap-to-type.
 class PlaybackRepeatOptions extends StatelessWidget {
   const PlaybackRepeatOptions({super.key, this.onNewPlay});
 
@@ -230,7 +228,7 @@ class _Counter extends StatelessWidget {
               onTap: () => _typeValue(context),
               child: Column(
                 children: [
-                  Text('$value', style: TS.medium16),
+                  Text(value.toLocalized(context), style: TS.medium16),
                   Text(label, style: TS.medium12),
                 ],
               ),

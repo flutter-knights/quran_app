@@ -10,8 +10,9 @@ int? resolveRunningSurah({
   final real = ayahs.where((b) => b.ayah.ayah > 0).toList();
   if (real.isEmpty) return null;
   bool onPage(AyahIdentifier a) {
-    final ayah = a.ayah == 0 ? 1 : a.ayah;
-    return real.any((b) => b.ayah.surah == a.surah && b.ayah.ayah == ayah);
+    return real.any(
+      (b) => b.ayah.surah == a.surah && b.ayah.ayah == a.realAyah,
+    );
   }
 
   if (selected != null && onPage(selected)) return selected.surah;

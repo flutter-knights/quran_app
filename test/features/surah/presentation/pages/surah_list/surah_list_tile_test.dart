@@ -8,7 +8,7 @@ import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifie
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
 import 'package:quran_app/features/surah/domain/entities/surah_entity.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/surah_list/widgets/surah_list_tile.dart';
 
 class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {

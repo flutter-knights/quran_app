@@ -208,8 +208,9 @@ class PendingS {
       _ar ? 'تعذّر تحميل الصفحة' : 'Couldn\'t load the page';
   String get mushaf_playFromSurahStart =>
       _ar ? 'استماع من بداية السورة' : 'Listen from the start of the surah';
-  String mushaf_audioError(String ayah) =>
-      _ar ? 'تعذّر تشغيل الآية $ayah' : 'Couldn\'t play ayah $ayah';
+  String mushaf_audioError(String surah, String ayah) => _ar
+      ? 'تعذّر تشغيل الآية $ayah من سورة $surah'
+      : 'Couldn\'t play ayah $ayah of $surah';
   String mushaf_nowReciting(String surah, String ayah, String page) => _ar
       ? 'يُتلى الآن: $surah $ayah، صفحة $page'
       : 'Now reciting: $surah $ayah, page $page';

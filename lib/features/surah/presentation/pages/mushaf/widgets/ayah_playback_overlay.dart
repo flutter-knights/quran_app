@@ -11,7 +11,6 @@ import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../../quran_playback/domain/entities/reciter.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
-import '../../../../../quran_playback/presentation/utils/surah_display_name.dart';
 import '../../../../../quran_playback/presentation/widgets/playback_repeat_options.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
@@ -35,7 +34,24 @@ class AyahPlaybackOverlay extends StatefulWidget {
 
 class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _snack;
-  var _snackVisible = false;
+  ScaffoldMessengerState? _messenger;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _messenger = ScaffoldMessenger.maybeOf(context);
+  }
+
+  @override
+  void dispose() {
+    final messenger = _messenger;
+    if (_snack != null && messenger != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (messenger.mounted) messenger.removeCurrentSnackBar();
+      });
+    }
+    super.dispose();
+  }
 
   void _openReciterSheet(BuildContext context) {
     showModalBottomSheet<void>(
@@ -59,9 +75,8 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
       final highlighted = context.read<MushafCubit>().state.selectedAyah;
       if (highlighted != null) {
         final surah = highlighted.surah;
-        final startAyah = highlighted.ayah == 0 ? 1 : highlighted.ayah;
         context.read<PlaybackCubit>().setRange(
-          start: AyahIdentifier(surah: surah, ayah: startAyah),
+          start: AyahIdentifier(surah: surah, ayah: highlighted.realAyah),
           end: AyahIdentifier(surah: surah, ayah: q.getVerseCount(surah)),
         );
       }
@@ -109,7 +124,7 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
                         ((a.requestedAyah ?? a.currentAyah) != null &&
                             (b.requestedAyah ?? b.currentAyah) == null) ||
                         (a.error != null && b.error == null),
-                    listener: (_, _) => _hideSnack(),
+                    listener: (_, _) => _removeSnack(),
                   ),
                   BlocListener<MushafCubit, MushafState>(
                     listenWhen: (a, b) =>
@@ -120,7 +135,7 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
                   ),
                   BlocListener<MushafCubit, MushafState>(
                     listenWhen: (a, b) => !a.followPlayback && b.followPlayback,
-                    listener: (_, _) => _hideSnack(),
+                    listener: (_, _) => _removeSnack(),
                   ),
                 ],
                 child: IgnorePointer(
@@ -167,35 +182,34 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
     BuildContext context,
     String text,
     String label,
-    VoidCallback onPressed,
-  ) {
-    _hideSnack();
+    VoidCallback onPressed, {
+    required bool persist,
+  }) {
+    _removeSnack();
     final controller = ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(text),
+        content: Text(text, style: TS.regular14),
         behavior: SnackBarBehavior.floating,
-        persist: false,
-        margin: EdgeInsets.fromLTRB(
+        persist: persist,
+        margin: EdgeInsetsDirectional.fromSTEB(
           16,
           0,
           16,
           _playerClearance + MediaQuery.of(context).padding.bottom,
         ),
-        onVisible: () => _snackVisible = true,
         action: SnackBarAction(label: label, onPressed: onPressed),
       ),
     );
     _snack = controller;
     controller.closed.whenComplete(() {
-      if (_snack == controller) {
-        _snack = null;
-        _snackVisible = false;
-      }
+      if (_snack == controller) _snack = null;
     });
   }
 
-  void _hideSnack() {
-    if (_snackVisible) _snack?.close();
+  void _removeSnack() {
+    if (_snack == null) return;
+    _snack = null;
+    _messenger?.removeCurrentSnackBar();
   }
 
   void _showAudioError(BuildContext context, PlaybackState state) {
@@ -203,9 +217,13 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
     final pending = PendingS.current;
     _showSnack(
       context,
-      pending.mushaf_audioError(ayah.ayah.toLocalized(context)),
+      pending.mushaf_audioError(
+        surahDisplayName(context, ayah.surah),
+        ayah.realAyah.toLocalized(context),
+      ),
       pending.mushaf_retry,
       context.read<PlaybackCubit>().retry,
+      persist: true,
     );
   }
 
@@ -217,11 +235,14 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
       context,
       pending.mushaf_nowReciting(
         surahDisplayName(context, ayah.surah),
-        ayah.ayah.toLocalized(context),
+        ayah.realAyah.toLocalized(context),
         mushaf.playingPage!.toLocalized(context),
       ),
       pending.mushaf_returnToReciting,
-      mushaf.resumeFollow,
+      () {
+        if (!mushaf.isClosed) mushaf.resumeFollow();
+      },
+      persist: false,
     );
   }
 }
@@ -278,7 +299,7 @@ class _MiniPlayer extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // ── Dismiss / stop ─────────────────────────────────────
+                  // ── Dismiss ────────────────────────────────────────────
                   _Btn(
                     icon: active ? Icons.stop : Icons.expand_more,
                     tooltip: active
@@ -388,7 +409,7 @@ class _InfoColumn extends StatelessWidget {
                 .of(context)
                 .ayah_label(
                   surahDisplayName(context, target.surah),
-                  (target.ayah == 0 ? 1 : target.ayah).toLocalized(context),
+                  target.realAyah.toLocalized(context),
                 ),
             textAlign: TextAlign.center,
             style: TS.semi12.copyWith(color: Colors.white),
@@ -405,9 +426,11 @@ class _InfoColumn extends StatelessWidget {
             final repeatTxt = p.infiniteRepeat
                 ? ' · ↻∞'
                 : (p.eachAyahRepeat > 1
-                      ? ' · ↻${p.currentAyahPlayCount}/${p.eachAyahRepeat}'
+                      ? ' · ↻${p.currentAyahPlayCount.toLocalized(context)}/${p.eachAyahRepeat.toLocalized(context)}'
                       : '');
-            final speedTxt = p.speed != 1.0 ? ' · ${p.speed}x' : '';
+            final speedTxt = p.speed != 1.0
+                ? ' · ${p.speed.toLocalized(context)}x'
+                : '';
             return Text(
               '${p.reciter.arabicName}$speedTxt$repeatTxt',
               textAlign: TextAlign.center,
@@ -638,7 +661,7 @@ class _PlayPauseBtn extends StatelessWidget {
               final cubit = context.read<PlaybackCubit>();
               if (isPlaying) {
                 cubit.pause();
-              } else if (isResumable) {
+              } else if (isResumable || cubit.state.error != null) {
                 cubit.resume();
               } else {
                 final t = target!;

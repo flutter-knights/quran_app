@@ -432,9 +432,9 @@
   "mushaf_retry": "Try again",
   "mushaf_pageLoadFailed": "Couldn't load the page",
   "mushaf_playFromSurahStart": "Listen from the start of the surah",
-  "mushaf_audioError": "Couldn't play ayah {ayah}",
+  "mushaf_audioError": "Couldn't play ayah {ayah} of {surah}",
   "@mushaf_audioError": {
-    "placeholders": { "ayah": { "type": "String" } }
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
   },
   "mushaf_nowReciting": "Now reciting: {surah} {ayah}, page {page}",
   "@mushaf_nowReciting": {

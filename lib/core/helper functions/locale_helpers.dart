@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran/quran.dart' as quran;
 
 extension LocalizationExtension on Object {
   /// The universal "Arabic Numbers" converter for any object (int, String, etc.)
@@ -23,3 +24,7 @@ extension ContextLocaleExtension on BuildContext {
   /// Shortcut to get the language code string
   String get langCode => Localizations.localeOf(this).languageCode;
 }
+
+String surahDisplayName(BuildContext context, int surah) => context.isArabic
+    ? quran.getSurahNameArabic(surah)
+    : quran.getSurahName(surah);

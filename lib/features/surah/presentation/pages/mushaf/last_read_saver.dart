@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import '../../../domain/entities/last_read.dart';
-import 'mushaf_args.dart';
+import '../../utils/mushaf_args.dart';
 
-/// Debounced + immediate persistence of the reading position, guarded after a
-/// jump arrival. Pure timing
+/// Debounced + immediate persistence of the reading position. Pure timing
 /// logic, decoupled from the widget so it is unit-testable. The page widget
 /// owns a [LastReadSaver] and supplies [readCurrent] + [persist].
 class LastReadSaver {
@@ -64,6 +63,12 @@ class LastReadSaver {
     if (_timer?.isActive ?? false) flush();
     _guarded = true;
     _startDwell();
+  }
+
+  void pause() => _dwellTimer?.cancel();
+
+  void resume() {
+    if (_guarded) _startDwell();
   }
 
   void dispose() {

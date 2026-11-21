@@ -10,7 +10,7 @@ import 'package:quran_app/features/surah/domain/repositories/mushaf_repo.dart';
 import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 
 class _FakeNotifier extends ValueNotifier<AyahIdentifier?> {
   _FakeNotifier() : super(null);

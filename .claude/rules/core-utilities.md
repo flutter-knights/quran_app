@@ -13,6 +13,7 @@ Check here before writing a helper. Keep these pure: no widgets, no feature impo
 - **`String.toIndicNumerals(localeCode)`** (`numeral_helpers.dart`) and **`Object.toLocalized(context)`** (`locale_helpers.dart`): ASCII → Arabic-Indic digits when the locale is Arabic. Use one of them for every number shown in Arabic; never hand-roll the digit map again.
 - **`toAsciiDigits(String)`** (`numeral_helpers.dart`): folds Arabic-Indic and Extended Arabic-Indic digits to ASCII before parsing user input.
 - **`context.isArabic`**, **`context.langCode`** (`locale_helpers.dart`).
+- **`surahDisplayName(context, surah)`** (`locale_helpers.dart`): the surah's Arabic or English name for the current locale.
 - **`context.palette`** (`config/theme/palette_context.dart`): the selected `ColorPalette` for `AppPaletteX` getters such as `primaryInk`; build-only, see `theming.md`.
 - **`DateTime.to24hTime()`**, **`DateTime.format12h(context)`**, **`String.parse24hTime()`**, `removeTimeZone()`, `gregorianDate()` (`time_helpers.dart`).
 - **`Duration.toDigitalClock()`** (`duration_helpers.dart`).

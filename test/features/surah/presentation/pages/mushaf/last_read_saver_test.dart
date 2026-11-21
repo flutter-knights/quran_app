@@ -2,7 +2,7 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/features/surah/domain/entities/last_read.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/last_read_saver.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 
 LastReadSaver _saver(
   List<LastRead> saved, {
@@ -157,6 +157,34 @@ void main() {
         expect(saved.single.updatedAt, stamp);
         async.elapse(const Duration(seconds: 40));
         expect(saved.length, 1);
+      });
+    });
+
+    test('a backgrounded peek is not a dwell: pause stops the clock', () {
+      fakeAsync((async) {
+        final saved = <LastRead>[];
+        final saver = _saver(saved, origin: MushafOrigin.jump);
+        saver.flush();
+        saver.pause();
+        async.elapse(const Duration(seconds: 25));
+        expect(saved, isEmpty);
+        saver.resume();
+        async.elapse(const Duration(seconds: 19));
+        expect(saved, isEmpty);
+        async.elapse(const Duration(seconds: 1));
+        expect(saved.length, 1);
+      });
+    });
+
+    test('resume does nothing once the guard is lifted', () {
+      fakeAsync((async) {
+        final saved = <LastRead>[];
+        final saver = _saver(saved, origin: MushafOrigin.jump);
+        saver.onManualTurn();
+        saver.pause();
+        saver.resume();
+        async.elapse(const Duration(seconds: 30));
+        expect(saved, isEmpty);
       });
     });
 

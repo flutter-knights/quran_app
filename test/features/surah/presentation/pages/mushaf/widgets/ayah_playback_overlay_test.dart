@@ -470,7 +470,7 @@ void main() {
     p.push(const PlaybackState(requestedAyah: _target, error: 'x'));
     await tester.pump();
     await tester.pumpAndSettle();
-    expect(find.text("Couldn't play ayah 5"), findsOneWidget);
+    expect(find.text("Couldn't play ayah 5 of $_name"), findsOneWidget);
     await tester.tap(find.text('Try again'));
     await tester.pump();
     expect(p.retried, isTrue);
@@ -625,6 +625,126 @@ void main() {
     m.push(m.state.copyWith(followPlayback: true));
     await tester.pumpAndSettle();
     expect(find.text('Bookmark saved'), findsOneWidget);
+  });
+
+  testWidgets('audio error SnackBar outlasts the usual timeout', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(const MushafState(currentPage: 1));
+    final p = _FakePlayback(const PlaybackState());
+    await _pump(tester, m, p);
+    p.push(const PlaybackState(requestedAyah: _target, error: 'x'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 30));
+    await tester.pumpAndSettle();
+    expect(find.text('Try again'), findsOneWidget);
+  });
+
+  testWidgets('play after an error retries instead of replaying a range', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(const MushafState(currentPage: 1));
+    final p = _FakePlayback(const PlaybackState());
+    await _pump(tester, m, p);
+    p.push(
+      const PlaybackState(
+        requestedAyah: _target,
+        rangeStart: _target,
+        rangeEnd: AyahIdentifier(surah: 3, ayah: 2),
+        error: 'x',
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.play_arrow));
+    await tester.pump();
+    expect(p.resumed, isTrue);
+    expect(p.lastRangeStart, isNull);
+  });
+
+  testWidgets('a hide request during the entrance animation still closes it', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, playingAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
+    await _pump(tester, m, p);
+    m.push(m.state.copyWith(followPlayback: false));
+    await tester.pump(const Duration(milliseconds: 50));
+    m.push(m.state.copyWith(followPlayback: true));
+    await tester.pumpAndSettle();
+    expect(find.text('Back to the recited ayah'), findsNothing);
+  });
+
+  testWidgets('leaving the screen takes its SnackBar with it', (tester) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, playingAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        locale: const Locale('en'),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => Scaffold(
+                    body: MultiBlocProvider(
+                      providers: [
+                        BlocProvider<MushafCubit>.value(value: m),
+                        BlocProvider<PlaybackCubit>.value(value: p),
+                      ],
+                      child: const Stack(children: [AyahPlaybackOverlay()]),
+                    ),
+                  ),
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    m.push(m.state.copyWith(followPlayback: false));
+    await tester.pumpAndSettle();
+    expect(find.text('Back to the recited ayah'), findsOneWidget);
+
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Back to the recited ayah'), findsNothing);
+    expect(find.text('open'), findsOneWidget);
+  });
+
+  testWidgets('the player subtitle uses Arabic-Indic digits in Arabic', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, selectedAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(
+        eachAyahRepeat: 3,
+        currentAyahPlayCount: 2,
+        speed: 1.5,
+      ),
+    );
+    await tester.pumpWidget(_wrap(m: m, p: p, locale: const Locale('ar')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('↻٢/٣'), findsOneWidget);
+    expect(find.textContaining('١.٥x'), findsOneWidget);
   });
 
   for (final locale in [const Locale('en'), const Locale('ar')]) {

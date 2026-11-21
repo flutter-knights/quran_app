@@ -4,6 +4,8 @@ class AyahIdentifier implements Comparable<AyahIdentifier> {
 
   const AyahIdentifier({required this.surah, required this.ayah});
 
+  int get realAyah => ayah == 0 ? 1 : ayah;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

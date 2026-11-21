@@ -416,9 +416,9 @@
   "mushaf_retry": "إعادة المحاولة",
   "mushaf_pageLoadFailed": "تعذّر تحميل الصفحة",
   "mushaf_playFromSurahStart": "استماع من بداية السورة",
-  "mushaf_audioError": "تعذّر تشغيل الآية {ayah}",
+  "mushaf_audioError": "تعذّر تشغيل الآية {ayah} من سورة {surah}",
   "@mushaf_audioError": {
-    "placeholders": { "ayah": { "type": "String" } }
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
   },
   "mushaf_nowReciting": "يُتلى الآن: {surah} {ayah}، صفحة {page}",
   "@mushaf_nowReciting": {
