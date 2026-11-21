@@ -8,29 +8,47 @@ void main() {
     expect(MushafPaper.values.length, 6);
   });
 
-  test('cream is the eye-tuned default day paper', () {
-    final c = MushafPaper.cream.colors;
-    expect(c.background, const Color(0xFFFBF4E3));
-    expect(c.ink, const Color(0xFF2A2419));
-    expect(c.accent, const Color(0xFF2E5244));
+  test('persisted paper names are unchanged', () {
+    expect(MushafPaper.values.map((p) => p.name), [
+      'cream',
+      'sepia',
+      'green',
+      'gray',
+      'night',
+      'slateNight',
+    ]);
   });
 
-  test('night uses an off-black background and warm ink (no halation)', () {
-    final c = MushafPaper.night.colors;
-    expect(c.background, const Color(0xFF14161A));
-    expect(c.ink, const Color(0xFFE8D9A8));
-  });
+  const expected = {
+    MushafPaper.cream: (0xFFFDF7E8, 0xFF1B1A17, 0xFF9A7B3C),
+    MushafPaper.sepia: (0xFFF3E6C9, 0xFF2B2116, 0xFF8A5A2B),
+    MushafPaper.green: (0xFFEEF3E8, 0xFF18231B, 0xFF2F6E55),
+    MushafPaper.gray: (0xFFFAFAF7, 0xFF161616, 0xFF1F5E7A),
+    MushafPaper.night: (0xFF141210, 0xFFECE3CF, 0xFFC9A45A),
+    MushafPaper.slateNight: (0xFF0F141A, 0xFFDCE5EC, 0xFF6E9CC4),
+  };
 
-  test('remaining themes use their tuned backgrounds', () {
-    expect(MushafPaper.sepia.colors.background, const Color(0xFFEDE0C4));
-    expect(MushafPaper.green.colors.background, const Color(0xFFE2EBE2));
-    expect(MushafPaper.gray.colors.background, const Color(0xFFE8E6E1));
-    expect(MushafPaper.slateNight.colors.background, const Color(0xFF10141A));
-  });
+  for (final entry in expected.entries) {
+    test('${entry.key.name} uses its printed-mushaf triple', () {
+      final c = entry.key.colors;
+      final (background, ink, accent) = entry.value;
+      expect(c.background, Color(background));
+      expect(c.ink, Color(ink));
+      expect(c.accent, Color(accent));
+    });
+  }
 
-  test('every theme exposes a non-empty Arabic label', () {
+  test('ink2 and leaf are blends of ink over the background', () {
     for (final p in MushafPaper.values) {
-      expect(p.label, isNotEmpty, reason: p.name);
+      final c = p.colors;
+      expect(
+        c.ink2,
+        Color.alphaBlend(c.ink.withValues(alpha: 0.78), c.background),
+      );
+      expect(
+        c.leaf,
+        Color.alphaBlend(c.ink.withValues(alpha: 0.06), c.background),
+      );
     }
   });
 }

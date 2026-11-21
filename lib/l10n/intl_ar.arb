@@ -405,5 +405,11 @@
   "alerts_enabledCount": "{count, plural, =0{متوقف لكل الصلوات} =1{مفعّل لصلاة واحدة} =2{مفعّل لصلاتين} few{مفعّل لـ{count} صلوات} other{مفعّل لـ{count} صلاة}}",
   "@alerts_enabledCount": {
     "placeholders": { "count": { "type": "num" } }
-  }
+  },
+  "mushaf_paper_cream": "كريمي",
+  "mushaf_paper_sepia": "سيبيا",
+  "mushaf_paper_green": "أخضر",
+  "mushaf_paper_gray": "أبيض",
+  "mushaf_paper_night": "ليلي",
+  "mushaf_paper_slateNight": "ليلي أزرق"
 }

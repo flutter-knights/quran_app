@@ -195,6 +195,12 @@ class PendingS {
   String get missed_fix => _ar ? 'إصلاح الآن' : 'Fix now';
   String home_untilSunrise(String time) =>
       _ar ? 'متبقي $time على الشروق' : '$time remaining until sunrise';
+  String get mushaf_paper_cream => _ar ? 'كريمي' : 'Cream';
+  String get mushaf_paper_sepia => _ar ? 'سيبيا' : 'Sepia';
+  String get mushaf_paper_green => _ar ? 'أخضر' : 'Green';
+  String get mushaf_paper_gray => _ar ? 'أبيض' : 'White';
+  String get mushaf_paper_night => _ar ? 'ليلي' : 'Night';
+  String get mushaf_paper_slateNight => _ar ? 'ليلي أزرق' : 'Blue night';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

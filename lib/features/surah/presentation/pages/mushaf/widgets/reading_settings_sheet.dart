@@ -5,6 +5,7 @@ import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:quran_app/features/surah/presentation/utils/enum_localization.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -62,21 +63,45 @@ class _ReadingSettingsSheetState extends State<ReadingSettingsSheet> {
                     children: MushafPaper.values.map((p) {
                       final selected = p == model.mushafPaper;
                       return Expanded(
-                        child: GestureDetector(
-                          key: ValueKey('reading-paper-${p.name}'),
-                          onTap: () => cubit.updateMushafPaper(p),
-                          child: Container(
-                            height: 54,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(
-                              color: p.colors.background,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: selected
-                                    ? scheme.primary
-                                    : scheme.onSurface.withValues(alpha: 0.12),
-                                width: selected ? 2 : 1,
-                              ),
+                        child: Semantics(
+                          button: true,
+                          selected: selected,
+                          label: p.localized(context),
+                          excludeSemantics: true,
+                          child: GestureDetector(
+                            key: ValueKey('reading-paper-${p.name}'),
+                            onTap: () => cubit.updateMushafPaper(p),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 54,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: p.colors.background,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: selected
+                                          ? scheme.primary
+                                          : scheme.onSurface.withValues(
+                                              alpha: 0.12,
+                                            ),
+                                      width: selected ? 2 : 1,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  p.localized(context),
+                                  style: TS.medium12.copyWith(
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
                           ),
                         ),
