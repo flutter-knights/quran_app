@@ -173,6 +173,22 @@ void main() {
     });
 
     test(
+      'byUser false after a manual turn keeps follow off and the selection',
+      () {
+        final n = _FakeNotifier()..value = a;
+        final c = _buildCubit(n);
+        c.setPage(5, byUser: true);
+        expect(c.state.followPlayback, isFalse);
+        c.toggleSelection(b);
+        c.setPage(7, byUser: false);
+        expect(c.state.currentPage, 7);
+        expect(c.state.selectedAyah, b);
+        expect(c.state.followPlayback, isFalse);
+        c.close();
+      },
+    );
+
+    test(
       'byUser true away from the playing page drops selection and follow',
       () {
         final n = _FakeNotifier()
@@ -210,6 +226,47 @@ void main() {
       c.setPage(6, byUser: true);
       await Future<void>.delayed(Duration.zero);
       expect(c.state.pageAyahs.first.ayah, _fromJson(6).ayahs.first.ayah);
+      c.close();
+    });
+
+    test('a failed load leaves pageAyahs empty', () async {
+      final repo = _StubMushafRepo();
+      repo.pending[5] = Completer()
+        ..complete(const Left(CacheFailure('no bounds')));
+      final c = _buildCubit(
+        _FakeNotifier(),
+        args: const MushafArgs(page: 5),
+        repo: repo,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(c.state.pageAyahs, isEmpty);
+      c.close();
+    });
+
+    test('a load finishing after close does not throw', () async {
+      final repo = _StubMushafRepo();
+      final completer = Completer<Either<Failure, MushafPageEntity>>();
+      repo.pending[5] = completer;
+      final c = _buildCubit(
+        _FakeNotifier(),
+        args: const MushafArgs(page: 5),
+        repo: repo,
+      );
+      await c.close();
+      completer.complete(Right(_fromJson(5)));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.isClosed, isTrue);
+    });
+
+    test('equal loads of the same page compare equal', () async {
+      final repo = _StubMushafRepo()..useJson = true;
+      final c = _buildCubit(
+        _FakeNotifier(),
+        args: const MushafArgs(page: 5),
+        repo: repo,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(c.state.pageAyahs, _fromJson(5).ayahs);
       c.close();
     });
 

@@ -1,4 +1,6 @@
-class NormalizedRect {
+import 'package:equatable/equatable.dart';
+
+class NormalizedRect extends Equatable {
   final double x;
   final double y;
   final double w;
@@ -10,4 +12,7 @@ class NormalizedRect {
     required this.w,
     required this.h,
   });
+
+  @override
+  List<Object?> get props => [x, y, w, h];
 }
