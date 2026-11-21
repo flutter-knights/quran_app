@@ -26,20 +26,24 @@
 ## Deliberate readings (the plan governs here)
 
 1. **just_audio's own interruption handling is switched off.** `AudioPlayer(handleInterruptions: false)` in `core/di/dependency_injection.dart`: left on, just_audio pauses the player behind `PlaybackCubit`'s back and auto-resumes after a transient interruption, which §4 forbids. `PlaybackAudioFocus` takes over, and every interruption *begin* (pause, duck, unknown) pauses: speech is not ducked.
-2. **The adhan asks for transient audio focus.** `AdhanPlaybackService` plays through a bare `MediaPlayer` without focus today, so `audio_session` would never see it. Task 1 adds an `AUDIOFOCUS_GAIN_TRANSIENT` request before `start()` and abandons it when the clip ends or stops.
+2. **The adhan asks for transient audio focus.** `AdhanPlaybackService` plays through a bare `MediaPlayer` without focus today, so `audio_session` would never see it. Task 1 adds an `AUDIOFOCUS_GAIN_TRANSIENT` request before `start()` and abandons it when the clip ends, stops, or fails to start.
 3. **Cancel is cancelling the subscription.** `downloadSurah` returns a stream whose `onCancel` drops that batch's queued ayat; there is no separate repository cancel method.
 4. **`SurahDownloadCubit` calls the repository directly**, as `PlaybackCubit` does in the same feature; no use cases are added.
-5. **The notification tap does nothing while a reader is already on top** (`mushafPath` or `mushafImagePath`): that reader already follows playback, and pushing a second reader would stack two.
+5. **The notification tap does nothing while a reader is anywhere on the stack** (`mushafPath` or `mushafImagePath`, on top or under a route pushed from it): that reader already follows playback, and pushing a second reader would stack two.
 6. **`initPlayback` becomes `Future<void>` and is awaited** in `initGetIt`. Today it is `void … async`, so its registrations land after `initGetIt` returns; the handler and audio session need it awaited.
 7. **The download hint SnackBar carries an action «تنزيل السورة»** that downloads the playing surah. §4 gives only the text; the owner asked that users know *how* to download.
-8. **Deleting a surah keeps 1:1** unless the surah is 1: the basmala file is shared by every surah's download.
+8. **Deleting a surah never deletes 1:1, not even for surah 1.** The basmala file is shared by every other surah's download, and `isSurahDownloaded` reads only the record, so deleting it would leave those surahs marked «محفوظة» while offline playback silently drops the basmala (`_playAyah` falls back to `basmalaPath = null`). Deleting surah 1 removes 1:2..1:7 and the record; a later download of surah 1 sees 1:1 as cached.
 9. **`SurahDownloadButton` lives in `quran_playback/presentation/widgets/`** (it reads `SurahDownloadCubit` and `PlaybackCubit`) and is listed in `feature-widgets.md` as the export `quran_playback` makes to `surah`.
-10. **`AudioService.init` failure does not block start-up.** It is caught and logged; playback then works without a notification.
+10. **A media stack that cannot start does not block start-up.** `AudioService.init` (`connectMediaSession`) and the audio session setup (`connectAudioFocus`: `AudioSession.instance` + `configure`) are each caught and logged with `debugPrint`; playback then works without a notification or without focus handling. `PlaybackAudioFocus` is registered only when the session came up.
+11. **No notification artwork (`artUri` is null on both platforms).** Spec §4 asks for `android.resource://<package>/mipmap/ic_launcher`, but `audio_service` 0.18.19 passes only `content://` straight to the platform and reads `file:` from disk; every other scheme goes through `cacheManager.getSingleFile`, an HTTP fetch that fails and prints «Error loading artUri» for every ayah (`audio_service.dart:1037-1093`, `_loadArtwork` 1242-1263). The notification carries the app's identity through its small icon (`androidNotificationIcon: 'drawable/ic_stat_alfurqan'`, the monochrome glyph the adhan service already uses). `nowPlayingItem` and `QuranAudioHandler` take no `artUri`.
+12. **Swiping the app away from recents stops the recitation** (`onTaskRemoved` → `cubit.stop()`), matching D5's «the app being killed».
+13. **An interruption that begins while an ayah is still loading pauses it as soon as it starts.** `PlaybackCubit.pause()` during loading would be overwritten when `_playAyah` emits `isPlaying: true`, so `PlaybackAudioFocus` keeps a pending flag and pauses on the next `isPlaying` true. An interruption ending never clears the flag (§4: never resumes); `stop` (no `skipOrigin`) does.
+14. **The download hint lives in `AyahPlaybackOverlay`, not `MushafPage`.** The overlay already owns the reader's SnackBars (floating, `_playerClearance` margin, `_removeSnack` on end and error clear), so the hint goes through its `_showSnack` and cannot be cut off by, or cover, the player.
 
 ## Review Focus
 
-1. **Start-up when the media service cannot start** (an OEM that refuses the foreground service, an old activity): the app must still reach home and play in-app. Task 4 tests `connectMediaSession` with an `init` that throws.
-2. **Tapping the notification while the reader is already open** must not stack a second reader; tapping it from home must open the playing page with the player, not an ayah leaf, and without overwriting last read. Task 4 tests both routes and `MushafState.initial(MushafArgs.nowPlaying(…))`.
+1. **Start-up when the media service cannot start** (an OEM that refuses the foreground service, an old activity): the app must still reach home and play in-app. Task 3 tests `connectAudioFocus` with a session factory that throws; Task 4 tests `connectMediaSession` with an `init` that throws.
+2. **Tapping the notification while a reader is anywhere on the stack** (on top, or under a route pushed from it) must not stack a second reader; tapping it from home must open the playing page with the player, not an ayah leaf, and without overwriting last read. Task 4 tests both routes and `MushafState.initial(MushafArgs.nowPlaying(…))`.
 3. **Starting a recitation while a surah download runs**: the next ayah's preload must not wait behind 280 queued download ayat. Task 5 tests that a preload jumps the queued batch.
 4. **Changing reciter during a download**: the running download stays tied to the reciter it started with, and the button for the new reciter shows that reciter's own status. Task 6 tests status isolation by `Reciter.downloadKey`.
 5. **Retry after a partial failure or a cancel** must download only the missing ayat and keep finished files. Task 5 tests cancel-then-resume and a failure with kept files.
@@ -81,7 +85,7 @@ Inside `<application>`, after the `.AdhanPlaybackService` service, add the `com.
 
 - [ ] **Step 4: Adhan transient focus (Deliberate reading 2)**
 
-In `AdhanPlaybackService`: a `private var focusRequest: AudioFocusRequest? = null`; `private fun requestFocus(attrs: AudioAttributes)` that on API ≥ 26 builds `AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT).setAudioAttributes(attrs).build()`, stores it and calls `requestAudioFocus(it)`, and below 26 calls the deprecated `requestAudioFocus(null, AudioManager.STREAM_ALARM, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)`; `private fun abandonFocus()` that mirrors it (`abandonAudioFocusRequest` / `abandonAudioFocus(null)`) and nulls the field. Call `requestFocus(attrs)` in `startMediaPlayer` right before `start()`; call `abandonFocus()` in the completion listener, in `handleStop`, and in `onDestroy`. Playback still starts if the request is refused.
+In `AdhanPlaybackService`: add imports `android.media.AudioFocusRequest` and `android.media.AudioManager`; `private val audioManager by lazy { getSystemService(AudioManager::class.java) }`; a `private var focusRequest: AudioFocusRequest? = null`; `private fun requestFocus(attrs: AudioAttributes, ringInSilent: Boolean)` that on API ≥ 26 builds `AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT).setAudioAttributes(attrs).build()`, stores it and calls `audioManager.requestAudioFocus(it)`, and below 26 (`minSdk = flutter.minSdkVersion`, so it can run) calls the deprecated `audioManager.requestAudioFocus(null, if (ringInSilent) AudioManager.STREAM_ALARM else AudioManager.STREAM_NOTIFICATION, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)`, the stream that matches `playbackUsage(ringInSilent)`; `private fun abandonFocus()` that mirrors it (`abandonAudioFocusRequest(it)` / `abandonAudioFocus(null)`) and nulls the field. Call `requestFocus(attrs, ringInSilent)` in `startMediaPlayer` right before `start()`; call `abandonFocus()` in the MediaPlayer setup `catch` (before `release()`), in the completion listener, in `handleStop`, and in `onDestroy`. Playback still starts if the request is refused. The device check for this step is in Task 3 Step 4, where recitation starts honouring focus.
 
 - [ ] **Step 5: iOS background mode**
 
@@ -120,12 +124,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Produces:
   - `AudioProcessingState mapProcessingState(ProcessingState state)`
-  - `MediaItem? nowPlayingItem(PlaybackState state, {required String langCode, Uri? artUri})`: `null` when `state.skipOrigin` is null; else `id: '${reciter.name}:${surah}:${ayah}'`, `title: PendingS.forLanguage(langCode).playback_mediaTitle(surahName, ayahDigits)` (surah name `quran.getSurahNameArabic` for `ar`, `quran.getSurahName` otherwise; ayah via `toIndicNumerals(langCode)`), `artist: reciter.arabicName`, `album: playback_mediaAlbum`, `artUri`.
-  - `class QuranAudioHandler extends BaseAudioHandler` with `QuranAudioHandler({required AudioPlayer player, required String Function() langCode, Uri? artUri})` and `void attach(PlaybackCubit cubit)`.
+  - `MediaItem? nowPlayingItem(PlaybackState state, {required String langCode})`: `null` when `state.skipOrigin` is null; else `id: '${reciter.name}:${surah}:${ayah}'`, `title: PendingS.forLanguage(langCode).playback_mediaTitle(surahName, ayahDigits)` (surah name `quran.getSurahNameArabic` for `ar`, `quran.getSurahName` otherwise; ayah via `toIndicNumerals(langCode)`), `artist: reciter.arabicName`, `album: playback_mediaAlbum`, no `artUri` (Deliberate reading 11).
+  - `class QuranAudioHandler extends BaseAudioHandler` with `QuranAudioHandler({required AudioPlayer player, required String Function() langCode})` and `void attach(PlaybackCubit cubit)`.
+  - **`PlaybackState` name clash:** `audio_service` exports its own `class PlaybackState` (`audio_service.dart:140`). Imports are fixed as follows. `now_playing_item.dart`: `import 'package:audio_service/audio_service.dart' show MediaItem;` plus the app's `playback_state.dart`. `quran_audio_handler.dart`: `import 'package:audio_service/audio_service.dart';` plus `playback_cubit.dart` (which imports but does not export `playback_state.dart`); it never imports the app's `playback_state.dart`, so `PlaybackState(...)` there is audio_service's, and the app state is only reached as `cubit.state` / `cubit.stream`. Every test that needs both (`now_playing_item_test.dart`, `quran_audio_handler_test.dart`, `playback_audio_focus_test.dart` if it imports `audio_service`): `import 'package:audio_service/audio_service.dart' hide PlaybackState;` and read audio_service's state only through `handler.playbackState.value`.
   - `Future<void> PlaybackCubit.seek(Duration position)` → `repository.seek(position)`.
   - Strings: `playback_mediaTitle(String surah, String ayah)` ar `'$surah، الآية $ayah'` / en `'$surah, ayah $ayah'`; `playback_mediaAlbum` ar `'القرآن الكريم'` / en `'The Holy Quran'`.
 
-Handler behaviour (B1 Task 3 shape, with these deltas): the constructor listens to `player.playbackEventStream` and broadcasts `playbackState` with controls `[skipToPrevious, playing ? pause : play, skipToNext, stop]`, `systemActions: {MediaAction.seek}`, `androidCompactActionIndices: [0, 1, 2]`, `processingState: mapProcessingState(player.processingState)`, `playing`, `updatePosition`, `bufferedPosition`, `speed`, `queueIndex`. It also listens to `player.durationStream` and re-adds `mediaItem.value?.copyWith(duration: d)`. `attach(cubit)` replaces any earlier subscription, listens to `cubit.stream` (and handles `cubit.state` once) and adds `nowPlayingItem(state, langCode: langCode(), artUri: artUri)` when its `id` differs from the current item's. Commands go to the attached cubit: `play` → `resume`, `pause` → `pause`, `stop` → `stop`, `skipToNext` → `skipNext`, `skipToPrevious` → `skipPrevious`, `seek` → `seek`; before `attach` they do nothing.
+Handler behaviour (B1 Task 3 shape, with these deltas): the constructor listens to `player.playbackEventStream` and broadcasts `playbackState` with controls `[skipToPrevious, playing ? pause : play, skipToNext, stop]`, `systemActions: {MediaAction.seek}`, `androidCompactActionIndices: [0, 1, 2]`, `processingState: mapProcessingState(player.processingState)`, `playing`, `updatePosition`, `bufferedPosition`, `speed`, `queueIndex`. It also listens to `player.durationStream` and, when `mediaItem.value` is non-null, re-adds `mediaItem.value!.copyWith(duration: d)`; with no item it does nothing. `attach(cubit)` replaces any earlier subscription, listens to `cubit.stream` (and handles `cubit.state` once) and computes `nowPlayingItem(state, langCode: langCode())`: a non-null item is added when its `id` differs from `mediaItem.value?.id`; a null item is added once as `mediaItem.add(null)` (only when `mediaItem.value` is non-null). Commands go to the attached cubit: `play` → `resume`, `pause` → `pause`, `stop` → `stop`, `skipToNext` → `skipNext`, `skipToPrevious` → `skipPrevious`, `seek` → `seek`, `onTaskRemoved` → `stop` (Deliberate reading 12); before `attach` they do nothing.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -133,18 +138,16 @@ Handler behaviour (B1 Task 3 shape, with these deltas): the constructor listens 
 
 `now_playing_item_test.dart`:
 ```dart
-test('Arabic item names the surah, ayah, reciter and album', () {
-  final art = Uri.parse('android.resource://com.example.quran_app/mipmap/ic_launcher');
+test('Arabic item names the surah, ayah, reciter and album, with no art', () {
   final item = nowPlayingItem(
     const PlaybackState(requestedAyah: AyahIdentifier(surah: 3, ayah: 4), reciter: Reciter.husary),
     langCode: 'ar',
-    artUri: art,
   )!;
   expect(item.id, 'husary:3:4');
   expect(item.title, 'آل عمران، الآية ٤');
   expect(item.artist, 'محمود خليل الحصري');
   expect(item.album, 'القرآن الكريم');
-  expect(item.artUri, art);
+  expect(item.artUri, isNull);
 });
 
 test('English item uses the English surah name and Latin digits', () {
@@ -154,7 +157,6 @@ test('English item uses the English surah name and Latin digits', () {
   )!;
   expect(item.title, '${quran.getSurahName(3)}, ayah 4');
   expect(item.album, 'The Holy Quran');
-  expect(item.artUri, isNull);
 });
 
 test('requestedAyah wins over currentAyah; idle gives null', () {
@@ -170,9 +172,10 @@ test('requestedAyah wins over currentAyah; idle gives null', () {
 ```
 
 `quran_audio_handler_test.dart`: a mocktail `_MockPlayer implements AudioPlayer` with `playbackEventStream` / `durationStream` from `StreamController`s and `playing` true, `processingState` ready, `position` / `bufferedPosition` zero, `speed` 1.0; a `_FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit` that records `resume`, `pause`, `stop`, `skipNext`, `skipPrevious`, `seek:<seconds>` and exposes `push(PlaybackState)`. Tests:
-- `OS commands route to the attached cubit`: `play, pause, skipToNext, skipToPrevious, seek(3 s), stop` → `['resume', 'pause', 'next', 'prev', 'seek:3', 'stop']`.
-- `commands before attach do nothing`: `play()` and `skipToNext()` complete without throwing.
+- `OS commands route to the attached cubit`: `play, pause, skipToNext, skipToPrevious, seek(3 s), stop, onTaskRemoved` → `['resume', 'pause', 'next', 'prev', 'seek:3', 'stop', 'stop']`.
+- `commands before attach do nothing`: `play()`, `skipToNext()` and `onTaskRemoved()` complete without throwing.
 - `a new ayah publishes its MediaItem`: `attach`, `push(PlaybackState(requestedAyah: 2:5, reciter: husary))`, `await pumpEventQueue()` → `handler.mediaItem.value!.id == 'husary:2:5'`; pushing the same ayah with `isPlaying` changed adds no new item (count `mediaItem` events).
+- `stopping clears the MediaItem once`: after an item is published, push `PlaybackState()` twice → `mediaItem.value` is null and exactly one null event was added; then `durations.add(Duration(seconds: 9))` → `mediaItem.value` stays null.
 - `a player event broadcasts the four controls`: add `PlaybackEvent()` → `playbackState.value.controls == [MediaControl.skipToPrevious, MediaControl.pause, MediaControl.skipToNext, MediaControl.stop]`, `playing` true, `processingState == AudioProcessingState.ready`, `androidCompactActionIndices == [0, 1, 2]`.
 - `duration reaches the current MediaItem`: after an item is published, `durations.add(Duration(seconds: 9))` → `mediaItem.value!.duration == Duration(seconds: 9)`.
 
@@ -210,10 +213,12 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Test: `test/features/quran_playback/presentation/audio/playback_audio_focus_test.dart`
 
 **Interfaces:**
-- Produces: `class PlaybackAudioFocus { PlaybackAudioFocus({required Stream<AudioInterruptionEvent> interruptions, required Stream<void> becomingNoisy, required PlaybackCubit cubit}); Future<void> dispose(); }`. Rule: an interruption with `begin: true` of any type, or a becoming-noisy event, calls `cubit.pause()` when `cubit.state.isPlaying`; an interruption with `begin: false` does nothing.
+- Produces: `class PlaybackAudioFocus { PlaybackAudioFocus({required Stream<AudioInterruptionEvent> interruptions, required Stream<void> becomingNoisy, required PlaybackCubit cubit}); Future<void> dispose(); }`. Rule: an interruption with `begin: true` of any type, or a becoming-noisy event, calls `cubit.pause()` when `cubit.state.isPlaying`; when instead `cubit.state.isLoading`, it sets a pending flag, and a `cubit.stream` listener calls `cubit.pause()` once on the next state with `isPlaying` true and clears the flag; a state with `skipOrigin == null` (stopped) clears it too. An interruption with `begin: false` does nothing, not even clear the flag (Deliberate reading 13). `dispose` cancels all three subscriptions.
+- Produces: `Future<PlaybackAudioFocus?> connectAudioFocus({required Future<AudioSession> Function() session, required PlaybackCubit cubit})` in the same file: awaits `session()`, `await s.configure(const AudioSessionConfiguration.speech())`, returns `PlaybackAudioFocus(interruptions: s.interruptionEventStream, becomingNoisy: s.becomingNoisyEventStream, cubit: cubit)`; on any throw, `debugPrint`s and returns `null` (Deliberate reading 10).
 - Produces: `Future<void> initPlayback()` (awaited by `initGetIt`; Deliberate reading 6).
+- Imports: this file and its test need only `audio_session` (no `PlaybackState` clash); if the test imports `audio_service` for anything, use `hide PlaybackState` (Task 2).
 
-- [ ] **Step 1: Write the failing tests** (fake `PlaybackCubit` as in Task 2 that counts `pause` and `resume`; `StreamController<AudioInterruptionEvent>` and `StreamController<void>`; `await pumpEventQueue()` after each add)
+- [ ] **Step 1: Write the failing tests** (fake `PlaybackCubit` as in Task 2 that counts `pause` and `resume` and exposes `push(PlaybackState)`; `StreamController<AudioInterruptionEvent>` and `StreamController<void>`; `await pumpEventQueue()` after each add)
 
 ```dart
 test('a call (pause interruption) pauses a playing recitation', …pause == 1);
@@ -223,6 +228,13 @@ test('the interruption ending never resumes', …begin pause then AudioInterrupt
 test('unplugging headphones pauses', …noisy.add(null) → pause == 1);
 test('nothing happens while already paused', …state isPlaying false, begin + noisy → pause == 0);
 test('dispose stops listening', …dispose then begin → pause == 0);
+test('an interruption during loading pauses once playback starts', …state isLoading true (requestedAyah 2:5), begin pause → pause == 0; push isPlaying true → pause == 1; push isPlaying true again → pause still 1);
+test('the interruption ending does not cancel the pending pause', …isLoading, begin, end (begin: false), push isPlaying true → pause == 1);
+test('a stop clears the pending pause', …isLoading, begin, push PlaybackState() then PlaybackState(currentAyah: 2:6, isPlaying: true) → pause == 0);
+test('connectAudioFocus survives a session that will not start', () async {
+  final focus = await connectAudioFocus(session: () async => throw Exception('no session'), cubit: _FakePlayback());
+  expect(focus, isNull);
+});
 ```
 
 - [ ] **Step 2: Run to see it fail**
@@ -232,12 +244,13 @@ Expected: FAIL (class missing).
 
 - [ ] **Step 3: Implement**
 
-`PlaybackAudioFocus` per the interface. In `dependency_injection.dart`, `sl.registerLazySingleton<AudioPlayer>(() => AudioPlayer(handleInterruptions: false))` and `await initPlayback();` (Deliberate reading 1, 6). At the end of `initPlayback`: `final session = await AudioSession.instance; await session.configure(const AudioSessionConfiguration.speech());` then `sl.registerSingleton(PlaybackAudioFocus(interruptions: session.interruptionEventStream, becomingNoisy: session.becomingNoisyEventStream, cubit: sl<PlaybackCubit>()))`.
+`PlaybackAudioFocus` and `connectAudioFocus` per the interface. In `dependency_injection.dart`, `sl.registerLazySingleton<AudioPlayer>(() => AudioPlayer(handleInterruptions: false))` and `await initPlayback();` (Deliberate reading 1, 6). At the end of `initPlayback`: `final focus = await connectAudioFocus(session: () => AudioSession.instance, cubit: sl<PlaybackCubit>()); if (focus != null) sl.registerSingleton(focus);`. Nothing else in `initPlayback` awaits a platform call unguarded.
 
-- [ ] **Step 4: Run to see it pass, then the feature and DI tests**
+- [ ] **Step 4: Run to see it pass, then the feature and DI tests, then the device**
 
 Run: `flutter test test/features/quran_playback test/features/qibla/qibla_di_test.dart test/features/notifications/notifications_di_test.dart`
 Expected: PASS.
+Device (emulator-5554, `flutter run -d emulator-5554`): play a surah; `adb -s emulator-5554 emu gsm call 123` pauses it, `adb -s emulator-5554 emu gsm cancel 123` leaves it paused; a test adhan from the alerts screen (Task 1 Step 4's focus request) pauses it and it stays paused after the adhan ends. Note results in the task report.
 
 - [ ] **Step 5: Commit**
 
@@ -267,7 +280,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces:
   - `Future<QuranAudioHandler?> connectMediaSession({required Future<QuranAudioHandler> Function() init, required PlaybackCubit cubit})`: awaits `init()`, calls `attach(cubit)`, returns the handler; on any throw, `debugPrint`s and returns `null` (Deliberate reading 10).
   - `factory MushafArgs.nowPlaying(AyahIdentifier ayah)`: `page: quran.getPageNumber(ayah.surah, ayah.realAyah)`, `openedSurah: ayah.surah`, `origin: MushafOrigin.jump`, no `focusAyah`.
-  - `void openNowPlaying(GoRouter router, AyahIdentifier? playing)`: returns when `playing` is null or `router.state.matchedLocation` is `AppRouter.mushafPath` or `AppRouter.mushafImagePath`; else `router.push(AppRouter.mushafPath, extra: MushafArgs.nowPlaying(playing))`.
+  - `void openNowPlaying(GoRouter router, AyahIdentifier? playing)`: returns when `playing` is null or when any entry of the stack is a reader, `router.routerDelegate.currentConfiguration.matches.any((m) => m.matchedLocation == AppRouter.mushafPath || m.matchedLocation == AppRouter.mushafImagePath)` (a pushed route's `ImperativeRouteMatch` carries the pushed location); else `router.push(AppRouter.mushafPath, extra: MushafArgs.nowPlaying(playing))`.
   - String `playback_channelName` ar `'تلاوة القرآن'` / en `'Quran recitation'`.
 
 - [ ] **Step 1: Write the failing tests**
@@ -295,13 +308,15 @@ test('nowPlaying on 3:4 opens page 50 as a jump with the player, not a leaf', ()
 });
 ```
 
-`now_playing_route_test.dart` (a `GoRouter` with `GoRoute(path: '/')` and `GoRoute(path: AppRouter.mushafPath)` whose builder records `state.extra` and counts builds, pumped in `MaterialApp.router`):
+`now_playing_route_test.dart` (a `GoRouter` with `GoRoute(path: '/')`, `GoRoute(path: AppRouter.mushafPath)` whose builder records `state.extra` and counts builds, and `GoRoute(path: AppRouter.bookmarksPath)`, pumped in `MaterialApp.router`):
 - `from home it opens the playing page`: `openNowPlaying(router, 3:4)`, `pumpAndSettle` → extra is `MushafArgs` with page 50, origin jump, `focusAyah` null.
 - `on the reader it does not stack a second one`: push mushaf first, then `openNowPlaying` → `router.routerDelegate.currentConfiguration.matches.length` unchanged.
+- `under a route pushed from the reader it does not stack a second one`: push mushaf, then push bookmarks, then `openNowPlaying` → matches length unchanged and the mushaf builder ran once.
 - `with nothing playing it stays put`: `openNowPlaying(router, null)` → `router.state.matchedLocation == '/'`.
 
 `mushaf_page_dispose_test.dart` (deliberate rewrite of tests that pin the old stop-on-leave):
-- Rename `'on dispose: saves (page, selected) then stops playback'` to `'on dispose: saves (page, selected) and the recitation keeps playing'`; pass `playbackState: const PlaybackState(currentAyah: AyahIdentifier(surah: 2, ayah: 5), isPlaying: true)`; replace `expect(playback.stopCalls, 1)` with `expect(playback.stopCalls, 0)` and `expect(playback.state.currentAyah, const AyahIdentifier(surah: 2, ayah: 5))`.
+- `_FakeMushaf` gains `@override int? playingPage;` (a settable field, default null). It forwards to `noSuchMethod` today, and `readCurrent` (`mushaf_page.dart:83-85`) reads `_mushafCubit.playingPage` whenever `currentAyah != null`, so without it the rewritten test throws `NoSuchMethodError` on dispose.
+- Rename `'on dispose: saves (page, selected) then stops playback'` to `'on dispose: saves (page, selected) and the recitation keeps playing'`; pass `playbackState: const PlaybackState(currentAyah: AyahIdentifier(surah: 2, ayah: 5), isPlaying: true)`; replace `expect(playback.stopCalls, 1)` with `expect(playback.stopCalls, 0)` and `expect(playback.state.currentAyah, const AyahIdentifier(surah: 2, ayah: 5))`. With `playingPage` null the saved ayah is still the selected 2:5.
 - In `'jump arrival: dispose does not overwrite last read'`, `expect(playback.stopCalls, 0)`.
 
 - [ ] **Step 2: Run to see them fail**
@@ -312,7 +327,7 @@ Expected: FAIL (missing symbols; dispose tests see one stop call).
 - [ ] **Step 3: Implement**
 
 - `connectMediaSession`, `MushafArgs.nowPlaying`, `openNowPlaying`, the channel string.
-- `initPlayback`, after the `PlaybackAudioFocus` registration: `await connectMediaSession(init: () => AudioService.init(builder: () => QuranAudioHandler(player: sl<AudioPlayer>(), langCode: () => sl<SettingsCubit>().state.settingsModel.isArabic ? 'ar' : 'en', artUri: Platform.isAndroid ? Uri.parse('android.resource://com.example.quran_app/mipmap/ic_launcher') : null), config: AudioServiceConfig(androidNotificationChannelId: 'com.example.quran_app.playback', androidNotificationChannelName: PendingS.forLanguage(sl<SettingsCubit>().state.settingsModel.isArabic ? 'ar' : 'en').playback_channelName, androidNotificationOngoing: true, androidStopForegroundOnPause: true)), cubit: sl<PlaybackCubit>());`
+- `initPlayback`, after the `connectAudioFocus` step: `await connectMediaSession(init: () => AudioService.init(builder: () => QuranAudioHandler(player: sl<AudioPlayer>(), langCode: () => sl<SettingsCubit>().state.settingsModel.isArabic ? 'ar' : 'en'), config: AudioServiceConfig(androidNotificationChannelId: 'com.example.quran_app.playback', androidNotificationChannelName: PendingS.forLanguage(sl<SettingsCubit>().state.settingsModel.isArabic ? 'ar' : 'en').playback_channelName, androidNotificationIcon: 'drawable/ic_stat_alfurqan', androidNotificationOngoing: true, androidStopForegroundOnPause: true)), cubit: sl<PlaybackCubit>());` (no `artUri`, Deliberate reading 11; `ic_stat_alfurqan` is the monochrome small icon in `res/drawable-*/` the adhan service uses, where the default `mipmap/ic_launcher` draws as a blank blob).
 - `main.dart` `_QuranAppState`: a `StreamSubscription<bool>?` set in `initState` to `AudioService.notificationClicked.where((c) => c).listen((_) => openNowPlaying(_router, sl<PlaybackCubit>().state.skipOrigin))`, cancelled in a new `dispose`.
 - `mushaf_page.dart`: delete `_playbackCubit.stop();` from `dispose` (D5). The field stays (used by `readCurrent` and `_onPlayPage`).
 
@@ -323,7 +338,7 @@ Expected: PASS (`app_router_test` unchanged: no new `GoRoute`).
 
 - [ ] **Step 5: Device check (emulator-5554)**
 
-`flutter run -d emulator-5554`; play a surah from the index, press Home: audio continues; the notification shows «البقرة، الآية …», the reciter and ⏮ ⏯ ⏭ ⏹; each works; tapping the notification opens the reader on the playing page with the player; ⏹ removes the notification. `adb -s emulator-5554 shell dumpsys media_session` lists the app's session. Note results in the task report.
+`flutter run -d emulator-5554`; play a surah from the index, press Home: audio continues; the notification shows «البقرة، الآية …», the reciter and ⏮ ⏯ ⏭ ⏹; the small icon in the status bar and the notification header is the app glyph, not a blank square; there is no large art and `adb logcat` shows no «Error loading artUri»; each control works; tapping the notification opens the reader on the playing page with the player; tapping it again while the reader is open (or with bookmarks pushed from the reader) stacks nothing; ⏹ removes the notification; swiping the app from recents stops the recitation and removes the notification. `adb -s emulator-5554 shell dumpsys media_session` lists the app's session. Note results in the task report.
 
 - [ ] **Step 6: Commit**
 
@@ -361,16 +376,24 @@ Behaviour:
 - On listen: if nothing is missing, `markSurahDownloaded`, emit `Right(1.0)`, close. Else enqueue one task per missing ayah, tagged with `reciter.downloadKey(surah)`, that runs `prepareAyahAudio`. After each success emit `Right(done / total)`; mark the record before the success that reaches `total`. When every task has settled with at least one failure, emit `Left(firstFailure)` and close, with no record; finished files stay.
 - `onCancel` removes that batch's queued tasks; in-flight ones finish and keep their files.
 - The queue becomes two: preload tasks (from `preloadAyahs`) and batch tasks (`({String batch, Future<void> Function() run})`). `_runNextDownload` takes a preload task first, keeping the 2-slot limit. Direct `prepareAyahAudio` calls from playback stay outside the queue, as today.
-- `deleteSurahDownload` deletes each ayah's file (the download's ayat minus `1:1` when `surah != 1`; Deliberate reading 8), calls `removeCachedPath(url)` for each, then `clearSurahDownloaded(key)`; exceptions map to `Failure` per `architecture.md`.
+- On listen, when some ayat are already cached (`cached > 0`) and some are missing, emit `Right(cached / total)` at once, before the first new success, so the ring starts where the surah stands.
+- `deleteSurahDownload` covers `1..getVerseCount(surah)` of that surah only, never `1:1` of another surah and never `1:1` itself (Deliberate reading 8: for surah 1 that is 1:2..1:7). For each ayah it deletes `File(local.getCachedLocalPath(url))` when the entry is non-null, else the computed `'${dir.path}/${reciter.folderName}/$surah/$ayah.mp3'` that `prepareAyahAudio` writes (only if it exists), then calls `removeCachedPath(url)`; then `clearSurahDownloaded(key)`. Exceptions map to `Failure` per `architecture.md`.
 
-- [ ] **Step 1: Write the failing tests** (extend the existing file: stub `local.markSurahDownloaded`, `removeCachedPath`, `clearSurahDownloaded` to `async {}` and `local.isSurahDownloaded` to `false` in `setUp`; `remote.downloadAudio` answers with its `savePath` argument unless a test says otherwise)
+- [ ] **Step 1: Write the failing tests**
+
+Harness (replaces the two stubs in today's `setUp`, `quran_playback_repo_impl_test.dart:34-35`, so every test runs on stateful fakes):
+- `final cache = <String, String>{}; final records = <String, bool>{};`
+- `local.getCachedLocalPath(any())` → `cache[inv.positionalArguments[0]]`; `local.cacheAudioMetadata(any(), any())` → writes `cache[url] = path`; `local.removeCachedPath(any())` → `cache.remove(url)`; `local.isSurahDownloaded(any())` → `records[key] ?? false`; `local.markSurahDownloaded(any())` → `records[key] = true`; `local.clearSurahDownloaded(any())` → `records.remove(key)`. All write stubs are `thenAnswer((inv) async { … })`.
+- Default `remote.downloadAudio(any(), any())` answer: `final p = inv.positionalArguments[1] as String; File(p)..createSync(recursive: true)..writeAsBytesSync([0]); return p;`. A test that needs failures or completers overrides it with its own `when`.
+- A helper `void seed(AyahIdentifier a)` writes the file at the computed path and its cache entry, for the "already cached" tests.
+- The two existing tests keep their own `downloadAudio` stubs and pass unchanged on the new defaults: the first writes and then deletes its partial file, the second answers from a completer; neither reads the cache before writing it.
 
 ```dart
 test('downloadSurah 112 fetches the basmala and four ayat, then marks it', …
   emissions all Right, last == 1.0, monotonic; remote called 5 times incl. Reciter.alafasy.getAyahUrl(1, 1);
   verify(() => local.markSurahDownloaded('alafasy:112')).called(1));
 test('surahs 1 and 9 fetch no extra basmala', …surah 9: verifyNever downloadAudio(getAyahUrl(1, 1), any()); surah 1: 7 calls);
-test('cached ayat are skipped and count as done', …112:1 and 1:1 cached with files on disk → 3 remote calls, last Right(1.0));
+test('cached ayat are skipped and count as done', …seed 112:1 and 1:1 → first event Right(2 / 5) before any remote call completes; 3 remote calls, last Right(1.0));
 test('everything cached marks at once', …emits [Right(1.0)] and marks);
 test('a failed ayah ends with Left, no record, finished files kept', …112:3 throws DioException → last event isLeft; verifyNever markSurahDownloaded; 112:1 file exists);
 test('cancel drops queued ayat and keeps finished files; a new download resumes', …
@@ -380,8 +403,12 @@ test('a preload goes ahead of a queued surah download', …
   both slots blocked by batch completers; preloadAyahs([2:255]); complete one slot →
   the next downloadAudio url is getAyahUrl(2, 255));
 test('deleteSurahDownload removes files, cache entries and the record but keeps 1:1', …
-  Right; 112:1..4 files gone, 1:1 file still there; removeCachedPath ×4; clearSurahDownloaded('alafasy:112'));
-test('isSurahDownloaded reads the record', …local.isSurahDownloaded('husary:2') true → repo true for (2, husary));
+  download 112 first; Right; 112:1..4 files gone and cache entries gone, 1:1 file and entry still there; records lacks 'alafasy:112');
+test('deleting surah 1 keeps 1:1 so other surahs keep their basmala', …
+  download 1 and 112; delete 1 → 1:2..1:7 gone, 1:1 file and entry kept; isSurahDownloaded(112) still true, isSurahDownloaded(1) false;
+  downloadSurah(1) again → 6 remote calls);
+test('delete uses the cached path when it differs from the computed one', …cache entry for 112:2 points at another file in dir → that file is deleted);
+test('isSurahDownloaded reads the record', …records['husary:2'] = true → repo true for (2, husary));
 test('isAyahCached needs both the cache entry and the file', …entry without file → false; with file → true);
 ```
 Also `test/features/quran_playback/domain/entities/` gains no file: `downloadKey` is pinned by the first test's `'alafasy:112'`.
@@ -418,6 +445,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Modify: `lib/main.dart` (`BlocProvider(create: (_) => sl<SurahDownloadCubit>())` in the `MultiBlocProvider`)
 - Modify: `lib/features/quran_playback/presentation/cubit/playback/playback_cubit.dart` (delete `preloadFullSurah` and its now-unused `SurahEntity` import; `Reciter` stays, `setReciter` uses it)
 - Modify: `.claude/rules/architecture.md` (app-wide cubit list gains `SurahDownloadCubit`)
+- Modify: `.claude/rules/routing-and-navigation.md` ("Where cubits are provided": `downloads` becomes `book and surah downloads (DownloadBookCubit, SurahDownloadCubit)`)
 - Test: `test/features/quran_playback/presentation/cubit/surah_download_cubit_test.dart`
 
 **Interfaces:**
@@ -425,9 +453,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces:
   - `sealed class SurahDownloadStatus extends Equatable` with `final class SurahNotDownloaded`, `SurahDownloading(double progress)`, `SurahDownloaded`, `SurahDownloadFailed`, all `const`.
   - `class SurahDownloadState extends Equatable { const SurahDownloadState({this.statuses = const {}}); final Map<String, SurahDownloadStatus> statuses; }`
-  - `SurahDownloadCubit({required QuranPlaybackRepo repository})` with `SurahDownloadStatus statusOf(Reciter reciter, int surah)` (map entry, else `SurahDownloaded` when `repository.isSurahDownloaded`, else `SurahNotDownloaded`), `void download(Reciter reciter, int surah)` (no-op while that key is downloading; emits `SurahDownloading(0)`, then one `SurahDownloading(p)` per `Right(p)`, `SurahDownloadFailed` on `Left`, `SurahDownloaded` on done without a failure), `Future<void> cancel(Reciter reciter, int surah)` (cancels that key's subscription, emits `SurahNotDownloaded`), `Future<void> delete(Reciter reciter, int surah)` (`Right` → `SurahNotDownloaded`; `Left` leaves the status). Subscriptions live in a `Map<String, StreamSubscription>`, all cancelled in `close()`. `isClosed` checks before emits inside listeners.
+  - `SurahDownloadCubit({required QuranPlaybackRepo repository})` with `SurahDownloadStatus statusOf(Reciter reciter, int surah)` (map entry, else `SurahDownloaded` when `repository.isSurahDownloaded`, else `SurahNotDownloaded`), `void download(Reciter reciter, int surah)` (no-op while that key is downloading; emits `SurahDownloading(0)`, then one `SurahDownloading(p)` per `Right(p)`, `SurahDownloadFailed` on `Left`, `SurahDownloaded` on done without a failure), `Future<void> cancel(Reciter reciter, int surah)` (cancels that key's subscription, emits `SurahNotDownloaded`), `Future<void> delete(Reciter reciter, int surah)` (first cancels that key's live subscription, if any, so queued ayat cannot re-create files or re-mark the record; then `Right` → `SurahNotDownloaded`; `Left` leaves the status). Subscriptions live in a `Map<String, StreamSubscription>`, all cancelled in `close()`. `isClosed` checks before emits inside listeners.
+  - **Every emit builds a new map**: `emit(SurahDownloadState(statuses: {...state.statuses, key: status}))`. Never mutate `state.statuses` in place: Equatable would see an equal state and `emit` would drop it, so `buildWhen` / `listenWhen` never fire.
+  - The subscription's map entry is removed on done, on the first `Left`, on `cancel` and on `delete`. The "no-op while downloading" guard reads `statuses[key] is SurahDownloading`, not the subscription map.
 
-- [ ] **Step 1: Write the failing tests** (`_MockRepo implements QuranPlaybackRepo`; `downloadSurah` answers from a `StreamController` per test)
+- [ ] **Step 1: Write the failing tests** (`_MockRepo implements QuranPlaybackRepo`; `downloadSurah` answers from a `StreamController` per test; `setUpAll(() => registerFallbackValue(Reciter.alafasy))`; `setUp` stubs `when(() => repo.isSurahDownloaded(surah: any(named: 'surah'), reciter: any(named: 'reciter'))).thenReturn(false)`, which the fallback test overrides with true, because an unstubbed mocktail `bool` returns null and throws)
 
 ```dart
 blocTest('download walks downloading → downloaded', …stream Right(.5), Right(1.0), close →
@@ -438,6 +468,8 @@ test('cancel stops listening and returns to not downloaded', …controller.hasLi
 test('statusOf falls back to the stored record', …repo.isSurahDownloaded(surah: 2, reciter: husary) true → SurahDownloaded(); no map entry);
 test('statuses are per reciter', …download(husary, 2) → statusOf(alafasy, 2) == SurahNotDownloaded());
 blocTest('delete returns to not downloaded', …Right(null) → SurahNotDownloaded(); verify deleteSurahDownload(surah: 2, reciter: husary));
+test('delete while downloading cancels the download first', …download(husary, 2), Right(.3), delete(husary, 2) → controller.hasListener false; statusOf == SurahNotDownloaded(); a later controller.add(Right(.6)) changes nothing);
+test('each emit carries a new statuses map', …after download, Right(.5): the two emitted states' statuses are not identical(…) and both reached the stream);
 test('close cancels live downloads', …close → controller.hasListener false);
 test('retry after failure downloads again', …failed then download → downloadSurah called twice);
 ```
@@ -447,7 +479,7 @@ test('retry after failure downloads again', …failed then download → download
 Run: `flutter test test/features/quran_playback/presentation/cubit/surah_download_cubit_test.dart`
 Expected: FAIL (cubit missing).
 
-- [ ] **Step 3: Implement** the state, the cubit, the DI and `main.dart` registration, delete `preloadFullSurah`, and update `architecture.md`'s app-wide list.
+- [ ] **Step 3: Implement** the state, the cubit, the DI and `main.dart` registration, delete `preloadFullSurah`, and update the app-wide lists in `architecture.md` and `routing-and-navigation.md`.
 
 - [ ] **Step 4: Run to see it pass**
 
@@ -457,7 +489,7 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add lib/features/quran_playback/presentation/cubit/surah_download lib/features/quran_playback/playback_di.dart lib/main.dart lib/features/quran_playback/presentation/cubit/playback/playback_cubit.dart .claude/rules/architecture.md test/features/quran_playback/presentation/cubit/surah_download_cubit_test.dart
+git add lib/features/quran_playback/presentation/cubit/surah_download lib/features/quran_playback/playback_di.dart lib/main.dart lib/features/quran_playback/presentation/cubit/playback/playback_cubit.dart .claude/rules/architecture.md .claude/rules/routing-and-navigation.md test/features/quran_playback/presentation/cubit/surah_download_cubit_test.dart
 git commit -m "feat(playback): app-wide SurahDownloadCubit per reciter and surah
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -490,14 +522,15 @@ UI: `BlocSelector<PlaybackCubit, PlaybackState, Reciter>` for the reciter, then 
 
 The determinate ring is download progress, not a content-loading state, so `loading-states.md` does not apply.
 
-- [ ] **Step 1: Write the failing tests** (`MaterialApp(locale: Locale('ar'), …S + Global delegates)`; `_FakeDownloads extends Cubit<SurahDownloadState> implements SurahDownloadCubit` whose `statusOf` reads `state.statuses` else `SurahNotDownloaded()` and records `download/cancel/delete` calls with `(reciter, surah)`; `_FakePlayback` with `PlaybackState(reciter: Reciter.husary)`)
+- [ ] **Step 1: Write the failing tests** (harness `MaterialApp(locale: const Locale('ar'), …S + Global delegates, home: Scaffold(body: MultiBlocProvider(…, child: const SurahDownloadButton(surah: 2))))`: the `Scaffold` gives the failure SnackBar a messenger; `_FakeDownloads extends Cubit<SurahDownloadState> implements SurahDownloadCubit` whose `statusOf` reads `state.statuses` else `SurahNotDownloaded()` and records `download/cancel/delete` calls with `(reciter, surah)`; `_FakePlayback` with `PlaybackState(reciter: Reciter.husary)`)
 
 ```dart
 testWidgets('not downloaded: «تنزيل السورة» starts the download for the current reciter', …
   find.byTooltip('تنزيل السورة'); tap → downloads == [(husary, 2)]);
 testWidgets('downloading: a 40% ring that cancels on tap', …
-  statuses {'husary:2': SurahDownloading(.4)} → CircularProgressIndicator.value == .4;
-  find.bySemanticsLabel('جارٍ التنزيل ٤٠٪'); tap tooltip 'إلغاء التنزيل' → cancels == [(husary, 2)]);
+  final handle = tester.ensureSemantics(); statuses {'husary:2': SurahDownloading(.4)} → CircularProgressIndicator.value == .4;
+  find.bySemanticsLabel(RegExp('جارٍ التنزيل ٤٠٪')) findsOneWidget (a RegExp, because the IconButton tooltip may merge into the same node's label);
+  tap tooltip 'إلغاء التنزيل' → cancels == [(husary, 2)]; handle.dispose());
 testWidgets('downloaded: «محفوظة» offers «حذف التنزيل»', …
   tap tooltip 'محفوظة للاستماع دون إنترنت' → dialog; tap 'حذف التنزيل' → deletes == [(husary, 2)]);
 testWidgets('failed: retry on tap, and the failure shows a SnackBar once', …
@@ -539,15 +572,15 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Modify: `lib/features/settings/presentation/cubit/settings_cubit.dart` (`void markDownloadHintSeen()`, no-op when already set, like `dismissNotificationHint`)
 - Modify: `lib/features/quran_playback/presentation/cubit/playback/playback_state.dart` (`final bool playedFromNetwork;` default `false`, `props`, `copyWith`)
 - Modify: `lib/features/quran_playback/presentation/cubit/playback/playback_cubit.dart` (`_playAyah`)
-- Modify: `lib/features/surah/presentation/pages/mushaf/mushaf_page.dart` (`MultiBlocListener`)
+- Modify: `lib/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay.dart` (one more `BlocListener` in its `MultiBlocListener`; Deliberate reading 14)
 - Modify: `lib/l10n/intl_ar.arb`, `lib/l10n/intl_en.arb`, `lib/core/localization/pending_s.dart`
-- Test: `test/features/settings/data/models/settings_model_test.dart`, `test/features/settings/presentation/cubit/settings_cubit_test.dart`, `test/features/quran_playback/presentation/cubit/playback_state_test.dart`, `test/features/quran_playback/playback_cubit_test.dart`, `test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart`
+- Test: `test/features/settings/data/models/settings_model_test.dart`, `test/features/settings/presentation/cubit/settings_cubit_test.dart`, `test/features/quran_playback/presentation/cubit/playback_state_test.dart`, `test/features/quran_playback/playback_cubit_test.dart`, `test/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay_test.dart`
 
 **Interfaces:**
 - Consumes: `QuranPlaybackRepo.isAyahCached` (Task 5), `SurahDownloadCubit.download` (Task 6), `surahDownload_download` (Task 7).
 - Produces: `Settings.downloadHintSeen`, `SettingsCubit.markDownloadHintSeen()`, `PlaybackState.playedFromNetwork`; string `surahDownload_hint` «يمكنك تنزيل السورة لتستمع دون إنترنت» / 'You can download the surah to listen offline'.
 
-Behaviour: `_playAyah` reads `repository.isAyahCached(ayah: ayah, reciter: state.reciter)` before `prepareAyahAudio(ayah)`, and on a successful prepare (after the stale check) emits `playedFromNetwork: !cached`. `MushafPage` adds a `BlocListener<PlaybackCubit, PlaybackState>` (`listenWhen: (a, b) => !a.playedFromNetwork && b.playedFromNetwork`) beside the existing `MushafCubit` listener; when `SettingsCubit`'s `downloadHintSeen` is false it calls `markDownloadHintSeen()` and shows a SnackBar `surahDownload_hint` (`TS.regular14`) with a `SnackBarAction(label: surahDownload_download)` that calls `context.read<SurahDownloadCubit>().download(playback.reciter, playback.skipOrigin!.surah)` (Deliberate reading 7). Strings via `PendingS.current` (listener).
+Behaviour: `_playAyah` reads `repository.isAyahCached(ayah: ayah, reciter: state.reciter)` before `prepareAyahAudio(ayah)`, and on a successful prepare (after the stale check) emits `playedFromNetwork: !cached`. `AyahPlaybackOverlay` adds a `BlocListener<PlaybackCubit, PlaybackState>` (`listenWhen: (a, b) => !a.playedFromNetwork && b.playedFromNetwork`) as the **last** entry of its `MultiBlocListener`, after the two `_removeSnack` listeners, so a remove fired by the same emission runs before it. Its listener returns when `context.read<SettingsCubit>().state.settingsModel.downloadHintSeen` is true; else it calls `markDownloadHintSeen()` and `_showSnack(context, pending.surahDownload_hint, pending.surahDownload_download, () => context.read<SurahDownloadCubit>().download(state.reciter, state.skipOrigin!.surah), persist: false)` (Deliberate reading 7). `_showSnack` already makes it floating with the `_playerClearance` bottom margin and `TS.regular14`, and tracks it in `_snack`, so: the hint never covers the player; a later audio error or now-reciting snack replaces it (they call `_showSnack`, which removes the current one first); the end-of-recitation `_removeSnack` takes it down with the player. The hint and the error cannot fire on the same emission (`playedFromNetwork` is set only on a successful prepare). Strings via `PendingS.current` (listener).
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -555,14 +588,15 @@ Behaviour: `_playAyah` reads `repository.isAyahCached(ayah: ayah, reciter: state
 - `settings_cubit_test.dart`: `'markDownloadHintSeen sets the flag once'` → true after the call; a second call emits nothing (`expectLater(c.stream, emitsDone)` after `close`, or count emissions).
 - `playback_state_test.dart`: `PlaybackState(playedFromNetwork: true) != PlaybackState()` and `copyWith(playedFromNetwork: true).playedFromNetwork`.
 - `playback_cubit_test.dart`: add `when(() => repo.isAyahCached(ayah: any(named: 'ayah'), reciter: any(named: 'reciter'))).thenReturn(true)` to `setUp` (existing tests otherwise get `null` for a `bool`); new tests `'an ayah fetched from the network marks playedFromNetwork'` (stub false for 2:5, `playSelected(2:5)` with prepare `Right` and play `Right` → `state.playedFromNetwork` true) and `'a cached ayah does not'` (→ false).
-- `mushaf_page_dispose_test.dart`: `_FakeSettings` takes `downloadHintSeen` and records `markDownloadHintSeen`; `_FakePlayback` gains `push(PlaybackState)`; the harness provides a `_FakeDownloads` `SurahDownloadCubit` that records `download`. Group `'download hint'`:
-  - `'the first network ayah shows the hint once and marks it seen'`: push `PlaybackState(currentAyah: 2:5, reciter: husary, playedFromNetwork: true)` → `find.text('يمكنك تنزيل السورة لتستمع دون إنترنت')` and `markCalls == 1`.
+- `ayah_playback_overlay_test.dart`: its `_wrap` already takes `locale` and puts the overlay in a `Scaffold`. Add a `_FakeSettings extends Cubit<SettingsState> implements SettingsCubit` (`SettingsModel(…, isArabic: true, downloadHintSeen: downloadHintSeen)`, counts `markDownloadHintSeen` and emits the flag) and a `_FakeDownloads extends Cubit<SurahDownloadState> implements SurahDownloadCubit` that records `download(reciter, surah)`; `_wrap` gains optional `SettingsCubit? settings` and `SurahDownloadCubit? downloads` and always provides them (defaults: unseen settings, empty downloads), so existing tests are unaffected. `_FakePlayback` already emits; reuse its push helper. Group `'download hint'`, each with `locale: const Locale('ar')` (the listener reads `PendingS.current`, which follows the locale S loaded):
+  - `'the first network ayah shows the hint once and marks it seen'`: push `PlaybackState(currentAyah: 2:5, reciter: husary, isPlaying: true)`, pump, then the same with `playedFromNetwork: true`, pump → `find.text('يمكنك تنزيل السورة لتستمع دون إنترنت')` findsOneWidget and `markCalls == 1`.
   - `'its action downloads the playing surah'`: tap `'تنزيل السورة'` in the SnackBar → downloads == [(husary, 2)].
-  - `'a seen hint never shows again'`: `downloadHintSeen: true` → no SnackBar text.
+  - `'a seen hint never shows again'`: `downloadHintSeen: true` → no hint text, `markCalls == 0`.
+  - `'an audio error replaces the hint'`: hint shown, then push `error: 'x'` → the retry snack shows and the hint text is gone.
 
 - [ ] **Step 2: Run to see them fail**
 
-Run: `flutter test test/features/settings test/features/quran_playback test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart`
+Run: `flutter test test/features/settings test/features/quran_playback test/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay_test.dart`
 Expected: FAIL (fields and listener missing).
 
 - [ ] **Step 3: Implement** per Behaviour, and the string in both ARBs and `PendingS`.
@@ -577,7 +611,7 @@ Expected: 0 errors, 0 warnings, ≤ 69 infos; all pass, 1 skipped.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add lib/features/settings/domain/entities/settings.dart lib/features/settings/data/models/settings_model.dart lib/features/settings/presentation/cubit/settings_cubit.dart lib/features/quran_playback/presentation/cubit/playback/playback_state.dart lib/features/quran_playback/presentation/cubit/playback/playback_cubit.dart lib/features/surah/presentation/pages/mushaf/mushaf_page.dart lib/l10n/intl_ar.arb lib/l10n/intl_en.arb lib/core/localization/pending_s.dart test/features/settings/data/models/settings_model_test.dart test/features/settings/presentation/cubit/settings_cubit_test.dart test/features/quran_playback/presentation/cubit/playback_state_test.dart test/features/quran_playback/playback_cubit_test.dart test/features/surah/presentation/pages/mushaf/mushaf_page_dispose_test.dart
+git add lib/features/settings/domain/entities/settings.dart lib/features/settings/data/models/settings_model.dart lib/features/settings/presentation/cubit/settings_cubit.dart lib/features/quran_playback/presentation/cubit/playback/playback_state.dart lib/features/quran_playback/presentation/cubit/playback/playback_cubit.dart lib/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay.dart lib/l10n/intl_ar.arb lib/l10n/intl_en.arb lib/core/localization/pending_s.dart test/features/settings/data/models/settings_model_test.dart test/features/settings/presentation/cubit/settings_cubit_test.dart test/features/quran_playback/presentation/cubit/playback_state_test.dart test/features/quran_playback/playback_cubit_test.dart test/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay_test.dart
 git commit -m "feat(mushaf): one-time hint that a surah can be downloaded for offline listening
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -588,5 +622,5 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ## Slice verification
 
 - `dart format` on every touched Dart file; `flutter analyze --no-fatal-infos` (≤ 69 infos, 0 warnings, 0 errors); `flutter test` (all pass, 1 skipped).
-- Emulator-5554: Task 4 Step 5 again, plus: download البقرة from the index (ring, cancel, resume, «محفوظة», delete); with the network off, a downloaded surah plays; an incoming call (`adb emu gsm call 123`) pauses recitation and it stays paused after `adb emu gsm cancel 123`; unplug-headset is covered by the unit test; a test adhan from the alerts screen pauses recitation. Record `adb shell dumpsys media_session` in the PR.
+- Emulator-5554: Task 3 Step 4 and Task 4 Step 5 again, plus: download البقرة from the index (ring, cancel, resume from where it stood, «محفوظة», delete); with the network off, a downloaded surah plays with its basmala, also after deleting الفاتحة; unplug-headset is covered by the unit test; the first streamed ayah in the reader shows the hint above the player, once. Record `adb shell dumpsys media_session` in the PR.
 - The slice PR (`gh pr create --base main`) follows the branch review (D2); the owner merges.
