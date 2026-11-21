@@ -20,8 +20,8 @@ class MushafCubit extends Cubit<MushafState> {
        super(MushafState.initial(args)) {
     _notifier.addListener(_onPlayingAyahChanged);
     _onPlayingAyahChanged();
-    final playing = playingPage;
-    if (playing != null && playing != state.currentPage) {
+    final page = playingPage;
+    if (page != null && page != state.currentPage) {
       emit(state.copyWith(followPlayback: false));
     }
     _loadPageAyahs(args.page);
@@ -50,6 +50,7 @@ class MushafCubit extends Cubit<MushafState> {
   }
 
   void jumpTo(int page) {
+    if (page == state.currentPage && state.jumpFrom == null) return;
     final origin = state.jumpFrom ?? state.currentPage;
     _turnByUser(page, origin: page == origin ? null : origin);
   }

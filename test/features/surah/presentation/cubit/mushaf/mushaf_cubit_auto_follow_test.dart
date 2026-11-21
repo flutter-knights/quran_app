@@ -163,6 +163,16 @@ void main() {
       );
     });
 
+    test('jumping to the page already showing changes nothing', () {
+      final m = _tracked(page: 50)..toggleSelection(a);
+      final states = <MushafState>[];
+      final sub = m.stream.listen(states.add);
+      addTearDown(sub.cancel);
+      m.jumpTo(50);
+      expect(states, isEmpty);
+      expect((m.state.jumpFrom, m.state.selectedAyah), (null, a));
+    });
+
     test('a second jump keeps the first origin', () {
       final m = _tracked(page: 50)
         ..jumpTo(582)
