@@ -25,6 +25,8 @@ enum Reciter {
 
   const Reciter(this.folderName, this.arabicName);
 
+  String downloadKey(int surah) => '$name:$surah';
+
   String getAyahUrl(int surah, int ayah) {
     const String baseUrl = "https://mirrors.quranicaudio.com/everyayah/";
     String s = surah.toString().padLeft(3, '0');

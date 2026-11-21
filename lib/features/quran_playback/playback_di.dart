@@ -20,6 +20,7 @@ import 'presentation/cubit/playback/playback_cubit.dart';
 
 Future<void> initPlayback() async {
   final audioCacheBox = Hive.box<String>('ayahAudioCache');
+  final downloadsBox = Hive.box<bool>('surahDownloads');
   final dir = await getApplicationDocumentsDirectory();
 
   sl.registerLazySingleton<QuranPlaybackRemoteDataSource>(
@@ -27,7 +28,10 @@ Future<void> initPlayback() async {
   );
 
   sl.registerLazySingleton<QuranPlaybackLocalDataSource>(
-    () => QuranPlaybackLocalDataSource(audioBox: audioCacheBox),
+    () => QuranPlaybackLocalDataSource(
+      audioBox: audioCacheBox,
+      downloadsBox: downloadsBox,
+    ),
   );
   sl.registerLazySingleton<QuranPlaybackRepo>(
     () => QuranPlaybackRepoImpl(
