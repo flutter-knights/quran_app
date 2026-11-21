@@ -11,7 +11,8 @@ import 'package:quran_app/features/quran_playback/presentation/cubit/playback/pl
 import 'package:quran_app/generated/l10n.dart';
 
 /// Expanded playback panel: from→to range + per-ayah / per-range repeat counts
-/// + an infinite toggle. Every counter is +/- steppable and tap-to-type.
+/// + an infinite toggle per repeat counter. Every counter is +/- steppable and
+/// tap-to-type.
 class PlaybackRepeatOptions extends StatelessWidget {
   const PlaybackRepeatOptions({super.key, this.onNewPlay});
 

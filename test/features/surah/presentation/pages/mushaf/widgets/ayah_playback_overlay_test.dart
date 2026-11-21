@@ -11,6 +11,8 @@ import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_playback_overlay.dart';
 import 'package:quran_app/generated/l10n.dart';
 
+import '../../../../../notifications/presentation/alerts_test_harness.dart';
+
 class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   _FakeMushaf(super.initial);
   void push(MushafState s) => emit(s);
@@ -170,6 +172,8 @@ Future<void> _pump(WidgetTester tester, _FakeMushaf m, _FakePlayback p) async {
 }
 
 void main() {
+  setUpAll(loadAppFonts);
+
   testWidgets('hidden when idle with nothing selected or pinned', (
     tester,
   ) async {
@@ -471,6 +475,118 @@ void main() {
     await tester.tap(find.text('Back to the recited ayah'));
     await tester.pump();
     expect(m.resumed, isTrue);
+  });
+
+  testWidgets('now-reciting SnackBar goes away when follow re-arms', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, playingAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
+    await _pump(tester, m, p);
+    m.push(m.state.copyWith(followPlayback: false));
+    await tester.pumpAndSettle();
+    expect(find.text('Back to the recited ayah'), findsOneWidget);
+
+    m.push(m.state.copyWith(followPlayback: true));
+    await tester.pumpAndSettle();
+    expect(find.text('Back to the recited ayah'), findsNothing);
+  });
+
+  testWidgets('now-reciting SnackBar goes away when the recitation ends', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, playingAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
+    await _pump(tester, m, p);
+    m.push(m.state.copyWith(followPlayback: false));
+    await tester.pumpAndSettle();
+    expect(find.text('Back to the recited ayah'), findsOneWidget);
+
+    p.push(const PlaybackState());
+    await tester.pumpAndSettle();
+    expect(find.text('Back to the recited ayah'), findsNothing);
+  });
+
+  testWidgets('audio error SnackBar goes away when the recitation ends', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(const MushafState(currentPage: 1));
+    final p = _FakePlayback(const PlaybackState());
+    await _pump(tester, m, p);
+    p.push(const PlaybackState(requestedAyah: _target, error: 'x'));
+    await tester.pumpAndSettle();
+    expect(find.text('Try again'), findsOneWidget);
+
+    p.push(const PlaybackState());
+    await tester.pumpAndSettle();
+    expect(find.text('Try again'), findsNothing);
+  });
+
+  for (final locale in [const Locale('en'), const Locale('ar')]) {
+    testWidgets('now-reciting SnackBar fits a 360 dp phone in $locale', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final m = _FakeMushaf(
+        const MushafState(currentPage: 1, playingAyah: _target),
+      );
+      final p = _FakePlayback(
+        const PlaybackState(currentAyah: _target, isPlaying: true),
+      );
+      await tester.pumpWidget(_wrap(m: m, p: p, locale: locale));
+      await tester.pumpAndSettle();
+      m.push(m.state.copyWith(followPlayback: false));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('swipe down keeps the player while a recitation is active', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, selectedAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
+    await _pump(tester, m, p);
+    await tester.fling(
+      find.text('Surah $_name, Ayah 5'),
+      const Offset(0, 200),
+      1000,
+    );
+    await tester.pumpAndSettle();
+    expect(m.state.selectedAyah, _target);
+    expect(tester.widget<AnimatedOpacity>(_opacity()).opacity, 1);
+  });
+
+  testWidgets('swipe down dismisses the player while idle', (tester) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, selectedAyah: _target),
+    );
+    final p = _FakePlayback(const PlaybackState());
+    await _pump(tester, m, p);
+    await tester.fling(
+      find.text('Surah $_name, Ayah 5'),
+      const Offset(0, 200),
+      1000,
+    );
+    await tester.pumpAndSettle();
+    expect(m.state.selectedAyah, isNull);
+    expect(tester.widget<AnimatedOpacity>(_opacity()).opacity, 0);
   });
 
   testWidgets('loading state shows a spinner instead of play icon', (

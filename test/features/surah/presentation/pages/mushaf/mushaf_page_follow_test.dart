@@ -28,6 +28,8 @@ import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.d
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/generated/l10n.dart';
 
+import '../../../../notifications/presentation/alerts_test_harness.dart';
+
 class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
   _FakeSettings()
     : super(
@@ -109,6 +111,8 @@ void main() {
   const a51 = AyahIdentifier(surah: 51, ayah: 1);
   const a51b = AyahIdentifier(surah: 51, ayah: 2);
 
+  setUpAll(loadAppFonts);
+
   setUp(() {
     if (sl.isRegistered<QuranPageService>()) sl.unregister<QuranPageService>();
     sl.registerSingleton<QuranPageService>(_SurahIsPageService());
@@ -133,7 +137,7 @@ void main() {
   });
 
   Future<void> pumpPage(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(800, 800);
+    tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(

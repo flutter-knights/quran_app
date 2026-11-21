@@ -94,12 +94,24 @@ class AyahPlaybackOverlay extends StatelessWidget {
                     listenWhen: (a, b) => b.error != null && a.error != b.error,
                     listener: _showAudioError,
                   ),
+                  BlocListener<PlaybackCubit, PlaybackState>(
+                    listenWhen: (a, b) =>
+                        (a.requestedAyah ?? a.currentAyah) != null &&
+                        (b.requestedAyah ?? b.currentAyah) == null,
+                    listener: (context, _) =>
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                  ),
                   BlocListener<MushafCubit, MushafState>(
                     listenWhen: (a, b) =>
                         a.followPlayback &&
                         !b.followPlayback &&
                         b.playingAyah != null,
                     listener: _showNowReciting,
+                  ),
+                  BlocListener<MushafCubit, MushafState>(
+                    listenWhen: (a, b) => !a.followPlayback && b.followPlayback,
+                    listener: (context, _) =>
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar(),
                   ),
                 ],
                 child: IgnorePointer(
@@ -239,7 +251,7 @@ class _MiniPlayer extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // ── Dismiss ────────────────────────────────────────────
+                  // ── Dismiss / stop ─────────────────────────────────────
                   _Btn(
                     icon: active ? Icons.stop : Icons.expand_more,
                     tooltip: active
