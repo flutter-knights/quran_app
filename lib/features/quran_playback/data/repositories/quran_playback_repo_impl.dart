@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:quran/quran.dart' as quran;
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/dio_error_handler.dart';
@@ -34,7 +35,9 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   // =======================
   final int _maxConcurrentDownloads = 2;
   int _activeDownloads = 0;
-  final Queue<Future<void> Function()> _downloadQueue = Queue();
+  final Queue<Future<void> Function()> _preloadQueue = Queue();
+  final Queue<({String batch, Future<void> Function() run})> _batchQueue =
+      Queue();
 
   /// Prevent duplicate downloads
   final Map<String, Future<String>> _inFlightDownloads = {};
@@ -56,10 +59,8 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
 
     try {
       // 1️⃣ Already cached
-      final cachedPath = local.getCachedLocalPath(url);
-      if (cachedPath != null && File(cachedPath).existsSync()) {
-        return Right(cachedPath);
-      }
+      final cachedPath = _cachedPath(url, ayah, reciter);
+      if (cachedPath != null) return Right(cachedPath);
 
       // 2️⃣ Download already running
       if (_inFlightDownloads.containsKey(url)) {
@@ -67,8 +68,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
         return Right(path);
       }
 
-      final filePath =
-          '${dir.path}/${reciter.folderName}/${ayah.surah}/${ayah.ayah}.mp3';
+      final filePath = _ayahFilePath(ayah, reciter);
 
       final file = File(filePath);
       final future = () async {
@@ -98,6 +98,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   Future<Either<Failure, void>> playPreparedAudio(String localPath) async {
     try {
       await player.setFilePath(localPath);
+      if (_held) return const Right(null);
       await player.play();
       return const Right(null);
     } catch (e) {
@@ -140,6 +141,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
         });
       }
 
+      if (_held) return const Right(null);
       await player.play();
       return const Right(null);
     } catch (e) {
@@ -148,6 +150,10 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   }
 
   StreamSubscription<int?>? _sequenceIndexSub;
+  var _held = false;
+
+  @override
+  void holdPlayback(bool hold) => _held = hold;
 
   @override
   Future<void> stop() async {
@@ -183,27 +189,158 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
         continue;
       }
 
-      _downloadQueue.add(() async {
+      _preloadQueue.add(() async {
         await prepareAyahAudio(ayah: ayah, reciter: reciter);
       });
 
-      _runNextDownload();
+      unawaited(_runNextDownload());
     }
   }
 
   Future<void> _runNextDownload() async {
-    if (_activeDownloads >= _maxConcurrentDownloads || _downloadQueue.isEmpty) {
-      return;
+    while (_activeDownloads < _maxConcurrentDownloads) {
+      final Future<void> Function() task;
+      if (_preloadQueue.isNotEmpty) {
+        task = _preloadQueue.removeFirst();
+      } else if (_batchQueue.isNotEmpty) {
+        task = _batchQueue.removeFirst().run;
+      } else {
+        return;
+      }
+      _activeDownloads++;
+      unawaited(
+        task().whenComplete(() {
+          _activeDownloads--;
+          unawaited(_runNextDownload());
+        }),
+      );
     }
+  }
 
-    final task = _downloadQueue.removeFirst();
-    _activeDownloads++;
+  @override
+  bool isAyahCached({required AyahIdentifier ayah, required Reciter reciter}) =>
+      _cachedPath(reciter.getAyahUrl(ayah.surah, ayah.ayah), ayah, reciter) !=
+      null;
 
+  String? _cachedPath(String url, AyahIdentifier ayah, Reciter reciter) {
+    final stored = local.getCachedLocalPath(url);
+    if (stored == null) return null;
+    if (File(stored).existsSync()) return stored;
+    final rebased = _ayahFilePath(ayah, reciter);
+    if (!File(rebased).existsSync()) return null;
+    unawaited(local.cacheAudioMetadata(url, rebased));
+    return rebased;
+  }
+
+  String _ayahFilePath(AyahIdentifier ayah, Reciter reciter) =>
+      '${dir.path}/${reciter.folderName}/${ayah.surah}/${ayah.ayah}.mp3';
+
+  @override
+  bool isSurahDownloaded({required int surah, required Reciter reciter}) =>
+      local.isSurahDownloaded(reciter.downloadKey(surah));
+
+  @override
+  Stream<Either<Failure, double>> downloadSurah({
+    required int surah,
+    required Reciter reciter,
+  }) {
+    final controller = StreamController<Either<Failure, double>>();
+    final batch = reciter.downloadKey(surah);
+    var cancelled = false;
+
+    controller.onCancel = () {
+      cancelled = true;
+      _batchQueue.removeWhere((t) => t.batch == batch);
+    };
+    controller.onListen = () {
+      final ayat = [
+        if (surah != 1 && surah != 9) const AyahIdentifier(surah: 1, ayah: 1),
+        for (var a = 1; a <= quran.getVerseCount(surah); a++)
+          AyahIdentifier(surah: surah, ayah: a),
+      ];
+      final missing = [
+        for (final a in ayat)
+          if (!isAyahCached(ayah: a, reciter: reciter)) a,
+      ];
+      final total = ayat.length;
+      var done = total - missing.length;
+      var settled = 0;
+      Failure? firstFailure;
+
+      void emit(Either<Failure, double> event) {
+        if (!cancelled) controller.add(event);
+      }
+
+      Future<void> settle() async {
+        if (++settled < missing.length) return;
+        if (firstFailure != null) {
+          emit(Left(firstFailure!));
+          await controller.close();
+        }
+      }
+
+      Future<void> finish() async {
+        try {
+          if (!cancelled) await local.markSurahDownloaded(batch);
+          emit(const Right(1.0));
+        } catch (e) {
+          emit(Left(Failure.fromException(e)));
+        }
+        await controller.close();
+      }
+
+      if (missing.isEmpty) {
+        unawaited(finish());
+        return;
+      }
+      if (done > 0) emit(Right(done / total));
+      for (final a in missing) {
+        _batchQueue.add((
+          batch: batch,
+          run: () async {
+            final result = await prepareAyahAudio(ayah: a, reciter: reciter);
+            await result.fold(
+              (failure) async {
+                firstFailure ??= failure;
+                await settle();
+              },
+              (_) async {
+                done++;
+                if (done == total) return finish();
+                emit(Right(done / total));
+                await settle();
+              },
+            );
+          },
+        ));
+      }
+      unawaited(_runNextDownload());
+    };
+    return controller.stream;
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteSurahDownload({
+    required int surah,
+    required Reciter reciter,
+  }) async {
     try {
-      await task();
-    } finally {
-      _activeDownloads--;
-      _runNextDownload();
+      for (var a = surah == 1 ? 2 : 1; a <= quran.getVerseCount(surah); a++) {
+        final url = reciter.getAyahUrl(surah, a);
+        final paths = {
+          ?local.getCachedLocalPath(url),
+          _ayahFilePath(AyahIdentifier(surah: surah, ayah: a), reciter),
+        };
+        for (final path in paths) {
+          final file = File(path);
+          if (file.existsSync()) await file.delete();
+        }
+        await local.removeCachedPath(url);
+      }
+      await local.clearSurahDownloaded(reciter.downloadKey(surah));
+      return const Right(null);
+    } catch (e) {
+      return left(Failure.fromException(e));
     }
   }
 

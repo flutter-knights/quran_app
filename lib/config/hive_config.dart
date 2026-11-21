@@ -11,6 +11,7 @@ Future<void> initHive() async {
   await Hive.openBox<PrayerTimesHiveModel>('prayerTimesCache');
 
   await Hive.openBox<String>('ayahAudioCache');
+  await Hive.openBox<bool>('surahDownloads');
   Hive.registerAdapter(LocationHiveModelAdapter());
   await Hive.openBox<LocationHiveModel>('userLocationCache');
   Hive.registerAdapter(HadithHiveModelAdapter());

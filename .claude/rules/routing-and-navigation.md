@@ -17,6 +17,9 @@ GoRouter, built once by `AppRouter.createRouter(initialLocation:)` in `lib/confi
 - The three entry routes keep their own `GoTransitions`: splash (`fade.withScale`), home (`slide.toTop.withFade`, 500 ms, the splash hand-off) and onboarding (`fade`, 450 ms). They share the `SplashBackdrop`.
 - `test/config/router/app_router_test.dart` pins this: four `GoTransitions` uses (the entry routes and `_fadePage`), every other `GoRoute` goes through `_fadePage`, and the helper is a 200 ms `easeInOut` fade.
 
+## Notification tap
+- `config/router/now_playing_route.dart` owns it: `listenNowPlaying` (wired once in `main.dart`) calls `openNowPlaying`. With no reader on the stack it pushes `AppRouter.mushafPath` with `MushafArgs.nowPlaying`; with one, it pops the routes above the reader and fires `nowPlayingResume`, which `MushafPage` answers with `MushafCubit.resumeFollow()`.
+
 ## Params via `state.extra`
 - Pass a primitive, an entity, an args object or a record in `extra`, never path or query params:
   - `state.extra as String` (ahadith: the book slug)
@@ -24,7 +27,7 @@ GoRouter, built once by `AppRouter.createRouter(initialLocation:)` in `lib/confi
   - mushaf takes a `MushafArgs` (it carries `origin`: `normal` or `jump`) or a bare page `int`, normalised by `_mushafArgsFrom` (a bare `int` is `normal`); follow that pattern when a route accepts more than one shape, with a safe default.
 
 ## Where cubits are provided
-- **App-wide** cubits (`SettingsCubit`, bookmarks, last read, playback, downloads, `AlertsSyncCubit`) are provided once in `main.dart`'s `MultiBlocProvider`; read them anywhere with `context.read`.
+- **App-wide** cubits (`SettingsCubit`, bookmarks, last read, playback, book and surah downloads (`DownloadBookCubit`, `SurahDownloadCubit`), `AlertsSyncCubit`) are provided once in `main.dart`'s `MultiBlocProvider`; read them anywhere with `context.read`.
 - **Route-scoped** cubits (factories) are created in the route's builder with `BlocProvider(create: (_) => sl<…>()..load())` or a `MultiBlocProvider` (`SurahCubit`, `SearchCubit`, `MushafCubit`). They close when the route pops.
 - A lazy-singleton cubit handed to a screen uses `BlocProvider.value(value: sl<…>())`, never `create`: `create` closes the shared instance when the route pops. Don't re-provide an app-wide cubit in a route or page at all; `main.dart` already provides it above the router.
 

@@ -8,6 +8,7 @@ import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
+import 'package:quran_app/features/quran_playback/presentation/widgets/surah_download_button.dart';
 import 'package:quran_app/features/surah/domain/entities/surah_entity.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -93,6 +94,8 @@ class SurahListTile extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 10),
+            SurahDownloadButton(surah: surah.number),
             const SizedBox(width: 10),
             Container(
               width: 30,

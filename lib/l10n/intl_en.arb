@@ -446,5 +446,21 @@
   "playback_crossSurahRange": "From {from} to {to}",
   "@playback_crossSurahRange": {
     "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
+  },
+  "playback_mediaTitle": "{surah}, ayah {ayah}",
+  "@playback_mediaTitle": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
+  },
+  "playback_mediaAlbum": "The Holy Quran",
+  "playback_channelName": "Quran recitation",
+  "surahDownload_download": "Download surah",
+  "surahDownload_hint": "You can download the surah to listen offline",
+  "surahDownload_cancel": "Cancel download",
+  "surahDownload_saved": "Saved for offline listening",
+  "surahDownload_delete": "Delete download",
+  "surahDownload_failed": "Download failed, try again",
+  "surahDownload_progress": "Downloading {percent}%",
+  "@surahDownload_progress": {
+    "placeholders": { "percent": { "type": "String" } }
   }
 }

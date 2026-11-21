@@ -28,6 +28,7 @@ class SettingsModel extends Settings {
     super.hasCompletedOnboarding,
     super.showSplashOnLaunch,
     super.notificationHintDismissed,
+    super.downloadHintSeen,
     super.calculationMethod,
     super.asrSchool,
   });
@@ -51,6 +52,7 @@ class SettingsModel extends Settings {
     bool? hasCompletedOnboarding,
     bool? showSplashOnLaunch,
     bool? notificationHintDismissed,
+    bool? downloadHintSeen,
     CalculationMethod? calculationMethod,
     AsrSchool? asrSchool,
   }) {
@@ -76,6 +78,7 @@ class SettingsModel extends Settings {
       showSplashOnLaunch: showSplashOnLaunch ?? this.showSplashOnLaunch,
       notificationHintDismissed:
           notificationHintDismissed ?? this.notificationHintDismissed,
+      downloadHintSeen: downloadHintSeen ?? this.downloadHintSeen,
       calculationMethod: calculationMethod ?? this.calculationMethod,
       asrSchool: asrSchool ?? this.asrSchool,
     );
@@ -116,6 +119,7 @@ class SettingsModel extends Settings {
       hasCompletedOnboarding: map['hasCompletedOnboarding'] ?? true,
       showSplashOnLaunch: map['showSplashOnLaunch'] ?? true,
       notificationHintDismissed: map['notificationHintDismissed'] ?? false,
+      downloadHintSeen: map['downloadHintSeen'] ?? false,
       calculationMethod: CalculationMethod.values.firstWhere(
         (m) => m.name == (map['calculationMethod'] as String?),
         orElse: () => CalculationMethod.auto,
@@ -162,6 +166,7 @@ class SettingsModel extends Settings {
       'hasCompletedOnboarding': hasCompletedOnboarding,
       'showSplashOnLaunch': showSplashOnLaunch,
       'notificationHintDismissed': notificationHintDismissed,
+      'downloadHintSeen': downloadHintSeen,
       'calculationMethod': calculationMethod.name,
       'asrSchool': asrSchool.name,
     };

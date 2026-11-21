@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../config/router/now_playing_route.dart';
 import '../../../../../core/constants/mushaf_reading_mode.dart';
 import '../../../../../core/helper functions/locale_helpers.dart';
 import '../../utils/mushaf_paper_colors.dart';
@@ -51,6 +52,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   late final LastReadSaver _lastReadSaver;
   final _turns = PageTurnTracker();
   StreamSubscription<int>? _pageSub;
+  late final StreamSubscription<void> _resumeSub;
 
   // Gap between pages in scroll mode (logical pixels).
   static const double _scrollPageGap = 4.0;
@@ -76,6 +78,9 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _mushafCubit = context.read<MushafCubit>();
     _playbackCubit = context.read<PlaybackCubit>();
     _lastReadCubit = context.read<LastReadCubit>();
+    _resumeSub = nowPlayingResume.stream.listen(
+      (_) => _mushafCubit.resumeFollow(),
+    );
 
     _lastReadSaver = LastReadSaver(
       readCurrent: () {
@@ -161,9 +166,8 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _lastReadSaver.flush();
     _lastReadSaver.dispose();
     _pageSub?.cancel();
+    _resumeSub.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    _playbackCubit.stop();
-
     super.dispose();
   }
 

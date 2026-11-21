@@ -22,4 +22,10 @@ class MushafArgs {
     openedSurah: ayah.surah,
     origin: MushafOrigin.jump,
   );
+
+  factory MushafArgs.nowPlaying(AyahIdentifier ayah) => MushafArgs(
+    page: quran.getPageNumber(ayah.surah, ayah.realAyah),
+    openedSurah: ayah.surah,
+    origin: MushafOrigin.jump,
+  );
 }

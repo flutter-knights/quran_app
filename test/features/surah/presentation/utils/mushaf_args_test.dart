@@ -21,4 +21,20 @@ void main() {
   test('the default origin is normal', () {
     expect(const MushafArgs(page: 3).origin, MushafOrigin.normal);
   });
+
+  test(
+    'nowPlaying on 3:4 opens page 50 as a jump with the player, not a leaf',
+    () {
+      final args = MushafArgs.nowPlaying(
+        const AyahIdentifier(surah: 3, ayah: 4),
+      );
+      expect(args.page, 50);
+      expect(args.openedSurah, 3);
+      expect(args.origin, MushafOrigin.jump);
+      expect(args.focusAyah, isNull);
+      final initial = MushafState.initial(args);
+      expect(initial.selectedAyah, isNull);
+      expect(initial.followPlayback, isTrue);
+    },
+  );
 }

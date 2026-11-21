@@ -15,6 +15,16 @@ abstract class QuranPlaybackRepo {
     required List<AyahIdentifier> ayahs,
     required Reciter reciter,
   });
+  Stream<Either<Failure, double>> downloadSurah({
+    required int surah,
+    required Reciter reciter,
+  });
+  bool isSurahDownloaded({required int surah, required Reciter reciter});
+  Future<Either<Failure, void>> deleteSurahDownload({
+    required int surah,
+    required Reciter reciter,
+  });
+  bool isAyahCached({required AyahIdentifier ayah, required Reciter reciter});
   Future<Either<Failure, void>> playPreparedAudio(String localPath);
 
   /// Plays the given local paths back-to-back as a single logical track so a
@@ -26,6 +36,7 @@ abstract class QuranPlaybackRepo {
     List<String> localPaths, {
     void Function()? onAdvanceToFinalTrack,
   });
+  void holdPlayback(bool hold);
   Future<void> pause();
   Future<void> resume();
   void notifyAyahChanged(AyahIdentifier ayah);

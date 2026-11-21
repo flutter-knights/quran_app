@@ -36,6 +36,7 @@ class Settings extends Equatable {
   /// Whether the user dismissed the Home "turn on notifications" hint. Once
   /// dismissed it stays hidden (no re-nag); the Settings banner remains.
   final bool notificationHintDismissed;
+  final bool downloadHintSeen;
 
   /// The prayer-times calculation method. Defaults to [CalculationMethod.auto]
   /// which resolves the method from the user's country at runtime.
@@ -82,6 +83,7 @@ class Settings extends Equatable {
     this.hasCompletedOnboarding = false,
     this.showSplashOnLaunch = true,
     this.notificationHintDismissed = false,
+    this.downloadHintSeen = false,
     this.calculationMethod = CalculationMethod.auto,
     this.asrSchool = AsrSchool.shafi,
   });
@@ -104,6 +106,7 @@ class Settings extends Equatable {
     bool? hasCompletedOnboarding,
     bool? showSplashOnLaunch,
     bool? notificationHintDismissed,
+    bool? downloadHintSeen,
     CalculationMethod? calculationMethod,
     AsrSchool? asrSchool,
   }) {
@@ -129,6 +132,7 @@ class Settings extends Equatable {
       showSplashOnLaunch: showSplashOnLaunch ?? this.showSplashOnLaunch,
       notificationHintDismissed:
           notificationHintDismissed ?? this.notificationHintDismissed,
+      downloadHintSeen: downloadHintSeen ?? this.downloadHintSeen,
       calculationMethod: calculationMethod ?? this.calculationMethod,
       asrSchool: asrSchool ?? this.asrSchool,
     );
@@ -153,6 +157,7 @@ class Settings extends Equatable {
     hasCompletedOnboarding,
     showSplashOnLaunch,
     notificationHintDismissed,
+    downloadHintSeen,
     calculationMethod,
     asrSchool,
   ];

@@ -87,6 +87,12 @@ void main() {
     ).thenAnswer((_) async {});
     when(() => repo.setSpeed(any())).thenAnswer((_) async {});
     when(() => repo.stop()).thenAnswer((_) async {});
+    when(
+      () => repo.isAyahCached(
+        ayah: any(named: 'ayah'),
+        reciter: any(named: 'reciter'),
+      ),
+    ).thenReturn(true);
   });
 
   PlaybackCubit build() => PlaybackCubit(
@@ -174,6 +180,64 @@ void main() {
   );
 
   const ayah26 = AyahIdentifier(surah: 2, ayah: 6);
+
+  for (final cached in [false, true]) {
+    test(
+      'an ayah ${cached ? 'read from the cache' : 'fetched from the network'} '
+      'sets playedFromNetwork to ${!cached}',
+      () async {
+        when(
+          () => repo.isAyahCached(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          ),
+        ).thenReturn(cached);
+        when(
+          () => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          ),
+        ).thenAnswer((_) async => const Right('/p.mp3'));
+        when(
+          () => repo.playPreparedAudio(any()),
+        ).thenAnswer((_) async => const Right(null));
+        when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+        final c = build();
+        await c.playSelected(ayah25);
+        expect(c.state.playedFromNetwork, !cached);
+        await c.close();
+      },
+    );
+  }
+
+  test(
+    'stop clears playedFromNetwork so the next stream can raise it',
+    () async {
+      when(
+        () => repo.isAyahCached(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenReturn(false);
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) async => const Right('/p.mp3'));
+      when(
+        () => repo.playPreparedAudio(any()),
+      ).thenAnswer((_) async => const Right(null));
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      when(() => repo.stop()).thenAnswer((_) async {});
+      final c = build();
+      await c.playSelected(ayah25);
+      expect(c.state.playedFromNetwork, isTrue);
+      await c.stop();
+      expect(c.state.playedFromNetwork, isFalse);
+      await c.close();
+    },
+  );
 
   void stubPlay() {
     when(
@@ -1305,4 +1369,179 @@ void main() {
       );
     },
   );
+
+  test('seek forwards to the repository', () async {
+    when(() => repo.seek(any())).thenAnswer((_) async {});
+    final c = build();
+    await c.seek(const Duration(seconds: 4));
+    verify(() => repo.seek(const Duration(seconds: 4))).called(1);
+    await c.close();
+  });
+
+  group('pause holds against in-flight loads', () {
+    const ayah26 = AyahIdentifier(surah: 2, ayah: 6);
+
+    test('pausing while the source loads holds the repository', () async {
+      final loading = Completer<Either<Failure, void>>();
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) async => const Right('/a.mp3'));
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      when(
+        () => repo.playPreparedAudio(any()),
+      ).thenAnswer((_) => loading.future);
+      when(() => repo.pause()).thenAnswer((_) async {});
+      final c = build();
+
+      unawaited(c.playSelected(ayah25));
+      await pumpEventQueue();
+      await c.pause();
+
+      verifyInOrder([
+        () => repo.notifyAyahChanged(ayah25),
+        () => repo.playPreparedAudio('/a.mp3'),
+        () => repo.holdPlayback(true),
+        () => repo.pause(),
+      ]);
+      expect(c.state.isPaused, isTrue);
+      expect(c.state.isPlaying, isFalse);
+      loading.complete(const Right(null));
+      await c.close();
+    });
+
+    test('an ayah fetched while paused still flags the network', () async {
+      final prepare = Completer<Either<Failure, String>>();
+      when(
+        () => repo.isAyahCached(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenReturn(false);
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) => prepare.future);
+      when(() => repo.pause()).thenAnswer((_) async {});
+      final c = build();
+
+      unawaited(c.playSelected(ayah25));
+      await pumpEventQueue();
+      await c.pause();
+      prepare.complete(const Right('/a.mp3'));
+      await pumpEventQueue();
+
+      expect(c.state.isPaused, isTrue);
+      expect(c.state.playedFromNetwork, isTrue);
+      await c.close();
+    });
+
+    test('pausing while the first ayah prepares keeps it unplayed', () async {
+      final prepare = Completer<Either<Failure, String>>();
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) => prepare.future);
+      when(() => repo.pause()).thenAnswer((_) async {});
+      final c = build();
+
+      unawaited(c.playSelected(ayah25));
+      await pumpEventQueue();
+      await c.pause();
+      prepare.complete(const Right('/a.mp3'));
+      await pumpEventQueue();
+
+      verifyNever(() => repo.notifyAyahChanged(any()));
+      verifyNever(() => repo.playPreparedAudio(any()));
+      expect(c.state.isPaused, isTrue);
+      expect(c.state.isPlaying, isFalse);
+      expect(c.state.isLoading, isFalse);
+      await c.close();
+    });
+
+    test('pausing between ayat stays paused until resume', () async {
+      final completed = StreamController<void>.broadcast();
+      final next = Completer<Either<Failure, String>>();
+      when(() => repo.onAudioCompleted).thenAnswer((_) => completed.stream);
+      when(
+        () => seq.getNextAyah(
+          current: any(named: 'current'),
+          endSurah: any(named: 'endSurah'),
+          endAyah: any(named: 'endAyah'),
+        ),
+      ).thenReturn(ayah26);
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) => next.future);
+      when(() => repo.pause()).thenAnswer((_) async {});
+      when(() => repo.resume()).thenAnswer((_) async {});
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      when(
+        () => repo.playPreparedAudio(any()),
+      ).thenAnswer((_) async => const Right(null));
+      final c = build()
+        ..emit(
+          const PlaybackState(
+            currentAyah: ayah25,
+            isPlaying: true,
+            isAutoPlaying: true,
+          ),
+        );
+
+      completed.add(null);
+      await pumpEventQueue();
+      await c.pause();
+      next.complete(const Right('/b.mp3'));
+      await pumpEventQueue();
+
+      verifyNever(() => repo.notifyAyahChanged(any()));
+      verifyNever(() => repo.playPreparedAudio(any()));
+      expect(c.state.isPaused, isTrue);
+      expect(c.state.isPlaying, isFalse);
+      expect(c.state.currentAyah, ayah26);
+
+      await c.resume();
+
+      verify(() => repo.holdPlayback(false)).called(greaterThan(0));
+      verify(() => repo.notifyAyahChanged(ayah26)).called(1);
+      verify(() => repo.playPreparedAudio('/b.mp3')).called(1);
+      verifyNever(() => repo.resume());
+      await c.close();
+      await completed.close();
+    });
+
+    test('a new play request lifts the hold', () async {
+      when(() => repo.pause()).thenAnswer((_) async {});
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) async => const Right('/a.mp3'));
+      when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+      when(
+        () => repo.playPreparedAudio(any()),
+      ).thenAnswer((_) async => const Right(null));
+      final c = build();
+
+      await c.pause();
+      await c.playSelected(ayah25);
+
+      verifyInOrder([
+        () => repo.holdPlayback(true),
+        () => repo.holdPlayback(false),
+        () => repo.playPreparedAudio('/a.mp3'),
+      ]);
+      await c.close();
+    });
+  });
 }

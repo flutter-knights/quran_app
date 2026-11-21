@@ -3,6 +3,13 @@ import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifie
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
 
 void main() {
+  test('playedFromNetwork defaults false, counts in equality, copies', () {
+    const s = PlaybackState();
+    expect(s.playedFromNetwork, isFalse);
+    expect(const PlaybackState(playedFromNetwork: true), isNot(s));
+    expect(s.copyWith(playedFromNetwork: true).playedFromNetwork, isTrue);
+  });
+
   group('PlaybackState repeat/range defaults', () {
     test('defaults: no range, repeats = 1, not infinite', () {
       const s = PlaybackState();

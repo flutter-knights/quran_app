@@ -6,6 +6,8 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
@@ -34,6 +36,8 @@ class AdhanPlaybackService : Service() {
     private var mediaPlayer: MediaPlayer? = null
     private var currentLabel: String? = null
     private var currentLocale: String = "en"
+    private var focusRequest: AudioFocusRequest? = null
+    private val audioManager by lazy { getSystemService(AudioManager::class.java) }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -106,10 +110,12 @@ class AdhanPlaybackService : Service() {
                 setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
                 afd.close()
                 prepare()
+                requestFocus(attrs, ringInSilent)
                 start()
                 Log.i(TAG, "MediaPlayer started clip=$clipName")
             } catch (e: Exception) {
                 Log.e(TAG, "MediaPlayer setup failed", e)
+                abandonFocus()
                 release()
                 mediaPlayer = null
                 return
@@ -118,6 +124,7 @@ class AdhanPlaybackService : Service() {
                 Log.i(TAG, "MediaPlayer onCompletion (released; notification kept, now dismissible)")
                 it.release()
                 mediaPlayer = null
+                abandonFocus()
                 // Detach from the foreground service so the notification can be
                 // swiped on every Android version; the swipe fires the delete
                 // intent → ACTION_STOP, which tears the service down.
@@ -134,6 +141,32 @@ class AdhanPlaybackService : Service() {
         }
     }
 
+    private fun requestFocus(attrs: AudioAttributes, ringInSilent: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                .setAudioAttributes(attrs)
+                .build()
+                .also { audioManager.requestAudioFocus(it) }
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager.requestAudioFocus(
+                null,
+                if (ringInSilent) AudioManager.STREAM_ALARM else AudioManager.STREAM_NOTIFICATION,
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
+            )
+        }
+    }
+
+    private fun abandonFocus() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            focusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager.abandonAudioFocus(null)
+        }
+        focusRequest = null
+    }
+
     private fun handleStop(reason: String) {
         Log.i(TAG, "dismissed reason=$reason label=$currentLabel")
         mediaPlayer?.let {
@@ -141,6 +174,7 @@ class AdhanPlaybackService : Service() {
             it.release()
         }
         mediaPlayer = null
+        abandonFocus()
         stopForeground(STOP_FOREGROUND_REMOVE)
         NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID)
         stopSelf()
@@ -153,6 +187,7 @@ class AdhanPlaybackService : Service() {
             it.release()
         }
         mediaPlayer = null
+        abandonFocus()
         super.onDestroy()
     }
 

@@ -29,6 +29,8 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   archive: ^4.7.1
+  audio_service: ^0.18.19
+  audio_session: ^0.2.4
   collection: ^1.19.1
   dartz: ^0.10.1
   dio: ^5.11.1

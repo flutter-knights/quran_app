@@ -29,7 +29,10 @@ void main() {
     });
 
     test('defaults to neutralDark when palette key absent', () {
-      final model = SettingsModel.fromMap({'isArabic': true, 'isFormat12Hours': true});
+      final model = SettingsModel.fromMap({
+        'isArabic': true,
+        'isFormat12Hours': true,
+      });
       expect(model.palette, ColorPalette.neutralDark);
     });
 
@@ -56,14 +59,28 @@ void main() {
       expect(restored.isArabic, original.isArabic);
     });
 
-    test('notificationHintDismissed: defaults false and round-trips via map', () {
+    test(
+      'notificationHintDismissed: defaults false and round-trips via map',
+      () {
+        const model = SettingsModel(isFormat12Hours: false, isArabic: true);
+        expect(model.notificationHintDismissed, isFalse);
+
+        final restored = SettingsModel.fromMap(
+          model.copyWith(notificationHintDismissed: true).toMap(),
+        );
+        expect(restored.notificationHintDismissed, isTrue);
+      },
+    );
+
+    test('downloadHintSeen: defaults false and round-trips via map', () {
       const model = SettingsModel(isFormat12Hours: false, isArabic: true);
-      expect(model.notificationHintDismissed, isFalse);
+      expect(model.downloadHintSeen, isFalse);
 
       final restored = SettingsModel.fromMap(
-        model.copyWith(notificationHintDismissed: true).toMap(),
+        model.copyWith(downloadHintSeen: true).toMap(),
       );
-      expect(restored.notificationHintDismissed, isTrue);
+      expect(restored.downloadHintSeen, isTrue);
+      expect(SettingsModel.fromMap({}).downloadHintSeen, isFalse);
     });
   });
 
@@ -89,22 +106,25 @@ void main() {
       expect(back.mushafPaper, MushafPaper.night);
     });
 
-    test('fromMap clamps out-of-range brightness and defaults unknown mode', () {
-      final m = SettingsModel.fromMap({
-        'isArabic': true,
-        'isFormat12Hours': false,
-        'pageBrightness': 5.0, // too high
-        'readingMode': 'bogus',
-      });
-      expect(m.pageBrightness, 1.0);
-      expect(m.readingMode, MushafReadingMode.page);
+    test(
+      'fromMap clamps out-of-range brightness and defaults unknown mode',
+      () {
+        final m = SettingsModel.fromMap({
+          'isArabic': true,
+          'isFormat12Hours': false,
+          'pageBrightness': 5.0, // too high
+          'readingMode': 'bogus',
+        });
+        expect(m.pageBrightness, 1.0);
+        expect(m.readingMode, MushafReadingMode.page);
 
-      final low = SettingsModel.fromMap({
-        'isArabic': true,
-        'isFormat12Hours': false,
-        'pageBrightness': 0.0,
-      });
-      expect(low.pageBrightness, 0.3);
-    });
+        final low = SettingsModel.fromMap({
+          'isArabic': true,
+          'isFormat12Hours': false,
+          'pageBrightness': 0.0,
+        });
+        expect(low.pageBrightness, 0.3);
+      },
+    );
   });
 }

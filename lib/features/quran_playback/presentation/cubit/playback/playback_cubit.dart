@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../settings/presentation/cubit/settings_cubit.dart';
-import '../../../../surah/domain/entities/surah_entity.dart';
 import '../../../domain/entities/ayah_identifier.dart';
 import '../../../domain/entities/reciter.dart';
 import '../../../domain/repositories/quran_playback_repo.dart';
@@ -88,6 +87,8 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   int? _endAyah;
 
   int _playGeneration = 0;
+  var _held = false;
+  AyahIdentifier? _heldAyah;
 
   PlaybackCubit({
     required this.ayahSequenceService,
@@ -129,6 +130,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     }
     _endSurah = null;
     _endAyah = null;
+    _release();
     emit(
       state.copyWith(
         clearRange: true,
@@ -138,6 +140,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         isLoading: true,
         requestedAyah: ayah,
         clearError: true,
+        playedFromNetwork: false,
       ),
     );
     await _playAyah(ayah);
@@ -155,6 +158,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         : start;
     _endSurah = end.surah;
     _endAyah = end.ayah;
+    _release();
     emit(
       state.copyWith(
         rangeStart: normStart,
@@ -165,6 +169,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         currentRangePass: 1,
         requestedAyah: normStart,
         clearError: true,
+        playedFromNetwork: false,
       ),
     );
     await _playAyah(normStart);
@@ -188,6 +193,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       basmalaPath = basmalaResult.fold((_) => null, (p) => p);
     }
 
+    final cached = repository.isAyahCached(ayah: ayah, reciter: state.reciter);
     final result = await repository.prepareAyahAudio(
       ayah: ayah,
       reciter: state.reciter,
@@ -214,6 +220,19 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     await result.fold((failure) async => fail(failure.message), (path) async {
       await repository.setSpeed(state.speed);
       if (stale()) return;
+      if (_held) {
+        _heldAyah = ayah;
+        emit(
+          state.copyWith(
+            currentAyah: ayah,
+            isPlaying: false,
+            isPaused: true,
+            isLoading: false,
+            playedFromNetwork: !cached,
+          ),
+        );
+        return;
+      }
       if (basmalaPath != null) {
         // During basmala: set the target as currentAyah so the overlay
         // shows pause/playing, but raise `isPlayingBasmala` so the page
@@ -227,6 +246,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
             isPaused: false,
             isLoading: false,
             isPlayingBasmala: true,
+            playedFromNetwork: !cached,
           ),
         );
         final played = await repository.playPreparedAudioSequence(
@@ -239,6 +259,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         );
         await played.fold((failure) => fail(failure.message), (_) async {});
       } else {
+        emit(state.copyWith(playedFromNetwork: !cached));
         repository.notifyAyahChanged(ayah);
         final played = await repository.playPreparedAudio(path);
         await played.fold((failure) => fail(failure.message), (_) async {});
@@ -304,19 +325,6 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     );
   }
 
-  Future<void> preloadFullSurah({
-    required SurahEntity surah,
-    required Reciter reciter,
-  }) async {
-    final ayahs = List.generate(
-      surah.numberOfAyahs,
-      (i) => AyahIdentifier(surah: surah.number, ayah: i + 1),
-    );
-    emit(state.copyWith(isLoading: true));
-    await repository.preloadAyahs(ayahs: ayahs, reciter: reciter);
-    emit(state.copyWith(isLoading: false));
-  }
-
   int? getPageForCurrentAyah() {
     final ayah = state.currentAyah;
     if (ayah == null) return null;
@@ -328,6 +336,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   Future<void> retry() async {
     final ayah = state.requestedAyah;
     if (ayah == null) return;
+    _release();
     emit(state.copyWith(clearError: true, isLoading: true));
     await _playAyah(ayah);
   }
@@ -342,6 +351,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       endAyah: state.rangeEnd?.ayah,
     );
     if (next == null) return;
+    _release();
     emit(state.copyWith(clearError: true));
     await _playAyah(next);
   }
@@ -352,6 +362,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     if (current == null) return;
     final prev = ayahSequenceService.getPreviousAyah(current: current);
     if (prev == null) return;
+    _release();
     emit(state.copyWith(clearError: true));
     await _playAyah(prev);
   }
@@ -359,10 +370,13 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   Future<void> restartCurrent() async {
     if (state.currentAyah == null) return;
     if (state.error != null) return retry();
+    _release();
     await repository.seek(Duration.zero);
     await repository.resume();
     emit(state.copyWith(isPlaying: true, isPaused: false));
   }
+
+  Future<void> seek(Duration position) => repository.seek(position);
 
   Future<void> setSpeed(double speed) async {
     emit(state.copyWith(speed: speed));
@@ -398,6 +412,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     final wasActive =
         state.currentAyah != null && (state.isPlaying || state.isPaused);
     final activeAyah = state.currentAyah;
+    if (wasActive) _release();
     emit(state.copyWith(reciter: reciter, clearError: wasActive));
     settingsCubit.updateDefaultReciter(reciter);
     if (wasActive && activeAyah != null) {
@@ -414,6 +429,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   Future<void> stop() async {
     final generation = ++_playGeneration;
+    _release();
     await repository.stop();
     if (isClosed || generation != _playGeneration) return;
     _endSurah = null;
@@ -429,19 +445,31 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         clearCurrentAyah: true,
         clearRequested: true,
         clearError: true,
+        playedFromNetwork: false,
       ),
     );
   }
 
   Future<void> pause() async {
+    _held = true;
+    repository.holdPlayback(true);
     emit(state.copyWith(isPlaying: false, isPaused: true));
     await repository.pause();
   }
 
   Future<void> resume() async {
     if (state.error != null) return retry();
+    final heldAyah = _heldAyah;
+    _release();
     emit(state.copyWith(isPlaying: true, isPaused: false));
+    if (heldAyah != null) return _playAyah(heldAyah);
     await repository.resume();
+  }
+
+  void _release() {
+    _held = false;
+    _heldAyah = null;
+    repository.holdPlayback(false);
   }
 
   @override

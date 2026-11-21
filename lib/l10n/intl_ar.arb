@@ -430,5 +430,21 @@
   "playback_crossSurahRange": "من {from} إلى {to}",
   "@playback_crossSurahRange": {
     "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
+  },
+  "playback_mediaTitle": "{surah}، الآية {ayah}",
+  "@playback_mediaTitle": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
+  },
+  "playback_mediaAlbum": "القرآن الكريم",
+  "playback_channelName": "تلاوة القرآن",
+  "surahDownload_download": "تنزيل السورة",
+  "surahDownload_hint": "يمكنك تنزيل السورة لتستمع دون إنترنت",
+  "surahDownload_cancel": "إلغاء التنزيل",
+  "surahDownload_saved": "محفوظة للاستماع دون إنترنت",
+  "surahDownload_delete": "حذف التنزيل",
+  "surahDownload_failed": "تعذّر التنزيل، أعِد المحاولة",
+  "surahDownload_progress": "جارٍ التنزيل {percent}٪",
+  "@surahDownload_progress": {
+    "placeholders": { "percent": { "type": "String" } }
   }
 }
