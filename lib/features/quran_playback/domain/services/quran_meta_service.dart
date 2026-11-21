@@ -63,8 +63,10 @@ class QuranMetaServiceImpl implements QuranMetaService {
   }
 
   static (int, int)? _lastAyahOfPage(int page) {
-    for (final e in quran.getPageData(page).cast<Map>().reversed) {
-      if (e['end'] > 0) return (e['surah'] as int, e['end'] as int);
+    for (final e
+        in quran.getPageData(page).cast<Map<String, dynamic>>().reversed) {
+      final end = e['end'] as int;
+      if (end > 0) return (e['surah'] as int, end);
     }
     return null;
   }

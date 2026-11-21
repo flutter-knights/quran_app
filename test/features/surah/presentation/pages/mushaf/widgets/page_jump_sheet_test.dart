@@ -5,10 +5,15 @@ import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/page_
 import 'package:quran_app/generated/l10n.dart';
 
 void main() {
-  Future<int?> openAndReturn(WidgetTester tester, String input) async {
+  Future<int?> openAndReturn(
+    WidgetTester tester,
+    String input, {
+    Locale? locale,
+  }) async {
     int? result;
     await tester.pumpWidget(
       MaterialApp(
+        locale: locale,
         localizationsDelegates: const [
           S.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -60,5 +65,34 @@ void main() {
 
   testWidgets('clamps below 1 to 1', (tester) async {
     expect(await openAndReturn(tester, '0'), 1);
+  });
+
+  testWidgets('shows the hint with Arabic-Indic digits in Arabic', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ar'),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => PageJumpSheet.show(context),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.decoration?.hintText, '١ – ٦٠٤');
   });
 }
