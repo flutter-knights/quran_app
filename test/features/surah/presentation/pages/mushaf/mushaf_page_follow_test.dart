@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:quran_app/config/router/now_playing_route.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/bookmarks/domain/repositories/page_bookmark_repository.dart';
@@ -203,6 +204,23 @@ void main() {
     expect(mushaf.state.followPlayback, isFalse);
     expect(mushaf.state.selectedAyah, isNull);
   });
+
+  testWidgets(
+    'the notification tap signal resumes follow on the playing page',
+    (tester) async {
+      await pumpPage(tester);
+      await tester.fling(find.byType(PageView), const Offset(300, 0), 2000);
+      await tester.pumpAndSettle();
+      expect(mushaf.state.followPlayback, isFalse);
+      expect(mushaf.state.currentPage, isNot(50));
+
+      nowPlayingResume.add(null);
+      await tester.pumpAndSettle();
+
+      expect(mushaf.state.followPlayback, isTrue);
+      expect(mushaf.state.currentPage, 50);
+    },
+  );
 
   testWidgets('a second playing change mid-animation keeps the selection', (
     tester,

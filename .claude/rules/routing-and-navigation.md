@@ -17,6 +17,9 @@ GoRouter, built once by `AppRouter.createRouter(initialLocation:)` in `lib/confi
 - The three entry routes keep their own `GoTransitions`: splash (`fade.withScale`), home (`slide.toTop.withFade`, 500 ms, the splash hand-off) and onboarding (`fade`, 450 ms). They share the `SplashBackdrop`.
 - `test/config/router/app_router_test.dart` pins this: four `GoTransitions` uses (the entry routes and `_fadePage`), every other `GoRoute` goes through `_fadePage`, and the helper is a 200 ms `easeInOut` fade.
 
+## Notification tap
+- `config/router/now_playing_route.dart` owns it: `listenNowPlaying` (wired once in `main.dart`) calls `openNowPlaying`. With no reader on the stack it pushes `AppRouter.mushafPath` with `MushafArgs.nowPlaying`; with one, it pops the routes above the reader and fires `nowPlayingResume`, which `MushafPage` answers with `MushafCubit.resumeFollow()`.
+
 ## Params via `state.extra`
 - Pass a primitive, an entity, an args object or a record in `extra`, never path or query params:
   - `state.extra as String` (ahadith: the book slug)

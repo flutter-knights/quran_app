@@ -13,10 +13,14 @@ void main() {
   late GoRouter router;
   Object? extra;
   var mushafBuilds = 0;
+  var resumes = 0;
 
   Future<void> pumpRouter(WidgetTester tester) async {
     extra = null;
     mushafBuilds = 0;
+    resumes = 0;
+    final resumeSub = nowPlayingResume.stream.listen((_) => resumes++);
+    addTearDown(resumeSub.cancel);
     router = GoRouter(
       routes: [
         GoRoute(path: '/', builder: (_, _) => const Text('home')),
@@ -49,32 +53,44 @@ void main() {
     expect(args.focusAyah, isNull);
   });
 
-  testWidgets('on the reader it does not stack a second one', (tester) async {
-    await pumpRouter(tester);
-    router.push(AppRouter.mushafPath);
-    await tester.pumpAndSettle();
-    final before = depth();
-    openNowPlaying(router, playing);
-    await tester.pumpAndSettle();
-    expect(depth(), before);
-    expect(mushafBuilds, 1);
-  });
-
   testWidgets(
-    'under a route pushed from the reader it does not stack a second one',
+    'on the reader it does not stack a second one and resumes follow',
     (tester) async {
       await pumpRouter(tester);
       router.push(AppRouter.mushafPath);
-      await tester.pumpAndSettle();
-      router.push(AppRouter.bookmarksPath);
       await tester.pumpAndSettle();
       final before = depth();
       openNowPlaying(router, playing);
       await tester.pumpAndSettle();
       expect(depth(), before);
-      expect(find.text('mushaf', skipOffstage: false), findsOneWidget);
+      expect(mushafBuilds, 1);
+      expect(resumes, 1);
     },
   );
+
+  testWidgets('over a route pushed from the reader it pops back to the '
+      'reader and resumes follow', (tester) async {
+    await pumpRouter(tester);
+    router.push(AppRouter.mushafPath);
+    await tester.pumpAndSettle();
+    final readerDepth = depth();
+    router.push(AppRouter.bookmarksPath);
+    await tester.pumpAndSettle();
+    expect(find.text('bookmarks'), findsOneWidget);
+    openNowPlaying(router, playing);
+    await tester.pumpAndSettle();
+    expect(depth(), readerDepth);
+    expect(find.text('bookmarks'), findsNothing);
+    expect(find.text('mushaf'), findsOneWidget);
+    expect(resumes, 1);
+  });
+
+  testWidgets('from home it does not signal a resume', (tester) async {
+    await pumpRouter(tester);
+    openNowPlaying(router, playing);
+    await tester.pumpAndSettle();
+    expect(resumes, 0);
+  });
 
   testWidgets('with nothing playing it stays put', (tester) async {
     await pumpRouter(tester);
