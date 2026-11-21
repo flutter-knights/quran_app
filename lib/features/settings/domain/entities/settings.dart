@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
@@ -37,6 +38,9 @@ class Settings extends Equatable {
   /// dismissed it stays hidden (no re-nag); the Settings banner remains.
   final bool notificationHintDismissed;
   final bool downloadHintSeen;
+  final LeafTapAction tapAction;
+  final bool hintSeen;
+  final bool keepScreenOn;
 
   /// The prayer-times calculation method. Defaults to [CalculationMethod.auto]
   /// which resolves the method from the user's country at runtime.
@@ -53,7 +57,7 @@ class Settings extends Equatable {
     PrayerName.isha: PrayerAlert(),
   };
 
-  static const double minPageBrightness = 0.3;
+  static const double minPageBrightness = 0.6;
 
   /// Clearer alias for the misnamed [isFormat12Hours] field: it is `true` when
   /// the user has the **24-hour** format enabled. Use this at call sites so the
@@ -84,6 +88,9 @@ class Settings extends Equatable {
     this.showSplashOnLaunch = true,
     this.notificationHintDismissed = false,
     this.downloadHintSeen = false,
+    this.tapAction = LeafTapAction.meaning,
+    this.hintSeen = false,
+    this.keepScreenOn = true,
     this.calculationMethod = CalculationMethod.auto,
     this.asrSchool = AsrSchool.shafi,
   });
@@ -107,6 +114,9 @@ class Settings extends Equatable {
     bool? showSplashOnLaunch,
     bool? notificationHintDismissed,
     bool? downloadHintSeen,
+    LeafTapAction? tapAction,
+    bool? hintSeen,
+    bool? keepScreenOn,
     CalculationMethod? calculationMethod,
     AsrSchool? asrSchool,
   }) {
@@ -133,6 +143,9 @@ class Settings extends Equatable {
       notificationHintDismissed:
           notificationHintDismissed ?? this.notificationHintDismissed,
       downloadHintSeen: downloadHintSeen ?? this.downloadHintSeen,
+      tapAction: tapAction ?? this.tapAction,
+      hintSeen: hintSeen ?? this.hintSeen,
+      keepScreenOn: keepScreenOn ?? this.keepScreenOn,
       calculationMethod: calculationMethod ?? this.calculationMethod,
       asrSchool: asrSchool ?? this.asrSchool,
     );
@@ -158,6 +171,9 @@ class Settings extends Equatable {
     showSplashOnLaunch,
     notificationHintDismissed,
     downloadHintSeen,
+    tapAction,
+    hintSeen,
+    keepScreenOn,
     calculationMethod,
     asrSchool,
   ];

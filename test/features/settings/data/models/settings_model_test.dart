@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
@@ -123,8 +124,53 @@ void main() {
           'isFormat12Hours': false,
           'pageBrightness': 0.0,
         });
-        expect(low.pageBrightness, 0.3);
+        expect(low.pageBrightness, 0.6);
       },
     );
+  });
+
+  group('reader settings', () {
+    test('missing keys fall back to meaning, hint unseen, screen kept on', () {
+      final m = SettingsModel.fromMap({
+        'isArabic': true,
+        'isFormat12Hours': false,
+      });
+      expect(m.tapAction, LeafTapAction.meaning);
+      expect(m.hintSeen, isFalse);
+      expect(m.keepScreenOn, isTrue);
+    });
+
+    test('a non-bool keepScreenOn falls back to on', () {
+      final m = SettingsModel.fromMap({
+        'isArabic': true,
+        'isFormat12Hours': false,
+        'keepScreenOn': 'yes',
+      });
+      expect(m.keepScreenOn, isTrue);
+    });
+
+    test('an unknown tapAction name falls back to meaning', () {
+      final m = SettingsModel.fromMap({
+        'isArabic': true,
+        'isFormat12Hours': false,
+        'tapAction': 'bogus',
+      });
+      expect(m.tapAction, LeafTapAction.meaning);
+    });
+
+    test('round-trips through toMap', () {
+      const m = SettingsModel(
+        isFormat12Hours: false,
+        isArabic: true,
+        tapAction: LeafTapAction.options,
+        hintSeen: true,
+        keepScreenOn: false,
+      );
+      final back = SettingsModel.fromMap(m.toMap());
+      expect(back.tapAction, LeafTapAction.options);
+      expect(back.hintSeen, isTrue);
+      expect(back.keepScreenOn, isFalse);
+      expect(m.toMap()['tapAction'], 'options');
+    });
   });
 }

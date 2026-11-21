@@ -4,6 +4,7 @@ import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
+import 'package:quran_app/features/settings/domain/entities/settings.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/enum_localization.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
@@ -113,7 +114,7 @@ class _ReadingSettingsSheetState extends State<ReadingSettingsSheet> {
                   Text(s.brightness, style: TS.medium12),
                   Slider(
                     key: const ValueKey('reading-brightness-slider'),
-                    min: 0.3,
+                    min: Settings.minPageBrightness,
                     max: 1.0,
                     value: model.pageBrightness,
                     onChangeStart: (_) => setState(() => _dragging = true),
