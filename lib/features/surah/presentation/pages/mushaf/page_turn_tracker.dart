@@ -1,9 +1,15 @@
 class PageTurnTracker {
   int? _target;
+  int _turn = 0;
 
-  void begin(int page) => _target = page;
+  int begin(int page) {
+    _target = page;
+    return ++_turn;
+  }
 
-  void end() => _target = null;
+  void end(int turn) {
+    if (turn == _turn) _target = null;
+  }
 
   bool isManual(int page) {
     if (_target == null) return true;

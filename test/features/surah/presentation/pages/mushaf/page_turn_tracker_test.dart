@@ -20,16 +20,29 @@ void main() {
   });
 
   test('an interrupted animation ends and the next page is manual', () {
-    final t = PageTurnTracker()
-      ..begin(51)
-      ..end();
+    final t = PageTurnTracker();
+    t.end(t.begin(51));
     expect(t.isManual(50), isTrue);
   });
 
   test('a jump to the current page does not swallow the next turn', () {
-    final t = PageTurnTracker()
-      ..begin(5)
-      ..end();
+    final t = PageTurnTracker();
+    t.end(t.begin(5));
     expect(t.isManual(6), isTrue);
+  });
+
+  test('a superseded turn ending does not clear the newer target', () {
+    final t = PageTurnTracker();
+    final first = t.begin(51);
+    t.begin(51);
+    t.end(first);
+    expect(t.isManual(51), isFalse);
+  });
+
+  test('the newest turn ending clears the target', () {
+    final t = PageTurnTracker();
+    t.begin(51);
+    t.end(t.begin(51));
+    expect(t.isManual(51), isTrue);
   });
 }
