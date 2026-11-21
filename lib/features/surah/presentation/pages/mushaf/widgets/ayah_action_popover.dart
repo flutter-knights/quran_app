@@ -6,10 +6,12 @@ import 'package:quran/quran.dart' as quran;
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus;
 
 import '../../../../../../config/theme/typography_styles.dart';
+import '../../../../../../core/localization/pending_s.dart';
 import '../../../../../../generated/l10n.dart';
 import '../../../../../bookmarks/presentation/cubit/bookmark_cubit.dart';
 import '../../../../../bookmarks/presentation/cubit/bookmark_state.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 
@@ -39,9 +41,11 @@ class AyahActionPopover {
     // overlay so the entry is not dependent on a potentially-gone context.
     final bookmarkCubit = context.read<BookmarkCubit>();
     final mushafCubit = context.read<MushafCubit>();
+    final playbackCubit = context.read<PlaybackCubit>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final overlay = Overlay.of(context);
     final s = S.of(context);
+    final playFromStart = PendingS.of(context).mushaf_playFromSurahStart;
     final startPage = mushafCubit.state.currentPage;
 
     late OverlayEntry entry;
@@ -64,7 +68,18 @@ class AyahActionPopover {
         placement: placement,
         bookmarkCubit: bookmarkCubit,
         scaffoldMessenger: scaffoldMessenger,
-        strings: _PopoverStrings(s),
+        strings: _PopoverStrings(s, playFromStart),
+        onPlayFromStart: () {
+          playbackCubit.playRange(
+            start: AyahIdentifier(surah: ayah.surah, ayah: 1),
+            end: AyahIdentifier(
+              surah: ayah.surah,
+              ayah: quran.getVerseCount(ayah.surah),
+            ),
+          );
+          mushafCubit.resumeFollow();
+          dismiss();
+        },
         onDismiss: dismiss,
       ),
     );
@@ -78,7 +93,7 @@ class AyahActionPopover {
 // ---------------------------------------------------------------------------
 
 class _PopoverStrings {
-  _PopoverStrings(S s)
+  _PopoverStrings(S s, this.playFromSurahStart)
     : tafsir = s.tafsir,
       translation = s.translation,
       bookmark = s.bookmark,
@@ -92,6 +107,7 @@ class _PopoverStrings {
   final String share;
   final String comingSoon;
   final String shareFailed;
+  final String playFromSurahStart;
 }
 
 // ---------------------------------------------------------------------------
@@ -110,6 +126,7 @@ class _AyahActionPopoverOverlay extends StatelessWidget {
     required this.bookmarkCubit,
     required this.scaffoldMessenger,
     required this.strings,
+    required this.onPlayFromStart,
     required this.onDismiss,
   });
 
@@ -119,6 +136,7 @@ class _AyahActionPopoverOverlay extends StatelessWidget {
   final BookmarkCubit bookmarkCubit;
   final ScaffoldMessengerState scaffoldMessenger;
   final _PopoverStrings strings;
+  final VoidCallback onPlayFromStart;
   final VoidCallback onDismiss;
 
   @override
@@ -131,6 +149,7 @@ class _AyahActionPopoverOverlay extends StatelessWidget {
         placement: placement,
         scaffoldMessenger: scaffoldMessenger,
         strings: strings,
+        onPlayFromStart: onPlayFromStart,
         onDismiss: onDismiss,
       ),
     );
@@ -144,6 +163,7 @@ class _AyahActionPopoverContent extends StatelessWidget {
     required this.placement,
     required this.scaffoldMessenger,
     required this.strings,
+    required this.onPlayFromStart,
     required this.onDismiss,
   });
 
@@ -152,6 +172,7 @@ class _AyahActionPopoverContent extends StatelessWidget {
   final PopoverPlacement placement;
   final ScaffoldMessengerState scaffoldMessenger;
   final _PopoverStrings strings;
+  final VoidCallback onPlayFromStart;
   final VoidCallback onDismiss;
 
   @override
@@ -200,44 +221,52 @@ class _AyahActionPopoverContent extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _ActionButton(
-                    icon: Icons.menu_book_outlined,
-                    label: strings.tafsir,
-                    onTap: () {
-                      // coming soon — keep popover open
-                      scaffoldMessenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            strings.comingSoon,
-                            style: TS.regular14,
-                          ),
+                children: ayah.ayah == 0
+                    ? [
+                        _ActionButton(
+                          icon: Icons.play_arrow,
+                          label: strings.playFromSurahStart,
+                          onTap: onPlayFromStart,
                         ),
-                      );
-                    },
-                  ),
-                  _ActionButton(
-                    icon: Icons.translate,
-                    label: strings.translation,
-                    onTap: () {
-                      // coming soon — keep popover open
-                      scaffoldMessenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            strings.comingSoon,
-                            style: TS.regular14,
-                          ),
+                      ]
+                    : [
+                        _ActionButton(
+                          icon: Icons.menu_book_outlined,
+                          label: strings.tafsir,
+                          onTap: () {
+                            // coming soon — keep popover open
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  strings.comingSoon,
+                                  style: TS.regular14,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-                  _BookmarkButton(ayah: ayah, label: strings.bookmark),
-                  _ActionButton(
-                    icon: Icons.share,
-                    label: strings.share,
-                    onTap: () => _onShare(context),
-                  ),
-                ],
+                        _ActionButton(
+                          icon: Icons.translate,
+                          label: strings.translation,
+                          onTap: () {
+                            // coming soon — keep popover open
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  strings.comingSoon,
+                                  style: TS.regular14,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        _BookmarkButton(ayah: ayah, label: strings.bookmark),
+                        _ActionButton(
+                          icon: Icons.share,
+                          label: strings.share,
+                          onTap: () => _onShare(context),
+                        ),
+                      ],
               ),
             ),
           ),

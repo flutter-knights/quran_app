@@ -5,6 +5,7 @@ import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cu
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_state.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../../config/theme/typography_styles.dart';
@@ -32,7 +33,7 @@ class MushafPageView extends StatefulWidget {
 
 class _MushafPageViewState extends State<MushafPageView>
     with SingleTickerProviderStateMixin {
-  late final Future<MushafPageEntity> _entityFuture;
+  late Future<MushafPageEntity> _entityFuture;
   late final AnimationController _controller;
 
   AyahIdentifier? _shownHighlightedAyah;
@@ -43,18 +44,22 @@ class _MushafPageViewState extends State<MushafPageView>
   @override
   void initState() {
     super.initState();
-    _entityFuture = sl<GetMushafPage>()(widget.pageNumber).then((e) {
-      return e.fold<MushafPageEntity>(
-        (f) => throw StateError('failed to load page ${widget.pageNumber}: $f'),
-        (right) => right,
-      );
-    });
+    _entityFuture = _load();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 180),
       value: 1.0,
     );
   }
+
+  Future<MushafPageEntity> _load() =>
+      sl<GetMushafPage>()(widget.pageNumber).then(
+        (e) => e.fold<MushafPageEntity>(
+          (f) =>
+              throw StateError('failed to load page ${widget.pageNumber}: $f'),
+          (right) => right,
+        ),
+      );
 
   @override
   void dispose() {
@@ -76,6 +81,33 @@ class _MushafPageViewState extends State<MushafPageView>
     return FutureBuilder<MushafPageEntity>(
       future: _entityFuture,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          final pendingS = PendingS.of(context);
+          return AspectRatio(
+            aspectRatio: 1 / 1.82,
+            child: ColoredBox(
+              color: paperColors.background,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 8,
+                  children: [
+                    Text(
+                      pendingS.mushaf_pageLoadFailed,
+                      style: TS.medium14.copyWith(color: paperColors.ink),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _entityFuture = _load();
+                      }),
+                      child: Text(pendingS.mushaf_retry, style: TS.medium14),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
         final entity = snapshot.data;
         return AspectRatio(
           aspectRatio: 1 / 1.82,

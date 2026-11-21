@@ -6,10 +6,8 @@ import '../../domain/usecases/toggle_bookmark.dart';
 import 'bookmark_state.dart';
 
 class BookmarkCubit extends Cubit<BookmarkState> {
-  BookmarkCubit({
-    required this.getBookmarks,
-    required this.toggleBookmark,
-  }) : super(const BookmarkState()) {
+  BookmarkCubit({required this.getBookmarks, required this.toggleBookmark})
+    : super(const BookmarkState()) {
     _load();
   }
 
@@ -26,20 +24,19 @@ class BookmarkCubit extends Cubit<BookmarkState> {
   }
 
   Future<void> toggle(AyahIdentifier ayah) async {
-    if (!state.loaded) return;
+    if (!state.loaded || ayah.ayah == 0) return;
     final result = await toggleBookmark(ayah);
     if (isClosed) return;
-    result.fold(
-      (failure) => emit(state.copyWith(error: failure.message)),
-      (nowBookmarked) {
-        final next = Set<AyahIdentifier>.from(state.bookmarks);
-        if (nowBookmarked) {
-          next.add(ayah);
-        } else {
-          next.remove(ayah);
-        }
-        emit(state.copyWith(bookmarks: next, error: null));
-      },
-    );
+    result.fold((failure) => emit(state.copyWith(error: failure.message)), (
+      nowBookmarked,
+    ) {
+      final next = Set<AyahIdentifier>.from(state.bookmarks);
+      if (nowBookmarked) {
+        next.add(ayah);
+      } else {
+        next.remove(ayah);
+      }
+      emit(state.copyWith(bookmarks: next, error: null));
+    });
   }
 }

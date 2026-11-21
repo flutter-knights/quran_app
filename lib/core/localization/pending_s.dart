@@ -204,6 +204,10 @@ class PendingS {
 
   String get mushaf_endRecitation => _ar ? 'إنهاء التلاوة' : 'End recitation';
   String get mushaf_retry => _ar ? 'إعادة المحاولة' : 'Try again';
+  String get mushaf_pageLoadFailed =>
+      _ar ? 'تعذّر تحميل الصفحة' : 'Couldn\'t load the page';
+  String get mushaf_playFromSurahStart =>
+      _ar ? 'استماع من بداية السورة' : 'Listen from the start of the surah';
   String mushaf_audioError(String ayah) =>
       _ar ? 'تعذّر تشغيل الآية $ayah' : 'Couldn\'t play ayah $ayah';
   String mushaf_nowReciting(String surah, String ayah, String page) => _ar
@@ -211,7 +215,8 @@ class PendingS {
       : 'Now reciting: $surah $ayah, page $page';
   String get mushaf_returnToReciting =>
       _ar ? 'العودة إلى الآية المتلوّة' : 'Back to the recited ayah';
-  String get playback_repeatEachAyah => _ar ? 'تكرار كل آية' : 'Repeat each ayah';
+  String get playback_repeatEachAyah =>
+      _ar ? 'تكرار كل آية' : 'Repeat each ayah';
   String get playback_repeatPassage =>
       _ar ? 'تكرار المقطع' : 'Repeat the passage';
   String playback_crossSurahRange(String from, String to) =>

@@ -414,6 +414,8 @@
   "mushaf_paper_slateNight": "ليلي أزرق",
   "mushaf_endRecitation": "إنهاء التلاوة",
   "mushaf_retry": "إعادة المحاولة",
+  "mushaf_pageLoadFailed": "تعذّر تحميل الصفحة",
+  "mushaf_playFromSurahStart": "استماع من بداية السورة",
   "mushaf_audioError": "تعذّر تشغيل الآية {ayah}",
   "@mushaf_audioError": {
     "placeholders": { "ayah": { "type": "String" } }

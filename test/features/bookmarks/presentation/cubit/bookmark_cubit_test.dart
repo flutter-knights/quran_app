@@ -10,6 +10,7 @@ import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.d
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 
 class _MockGet extends Mock implements GetBookmarks {}
+
 class _MockToggle extends Mock implements ToggleBookmark {}
 
 void main() {
@@ -42,19 +43,20 @@ void main() {
   blocTest<BookmarkCubit, BookmarkState>(
     'load failure emits error state',
     build: () {
-      when(() => get()).thenAnswer(
-          (_) async => const Left(CacheFailure('boom')));
+      when(
+        () => get(),
+      ).thenAnswer((_) async => const Left(CacheFailure('boom')));
       return BookmarkCubit(getBookmarks: get, toggleBookmark: toggle);
     },
-    expect: () => [
-      const BookmarkState(loaded: true, error: 'boom'),
-    ],
+    expect: () => [const BookmarkState(loaded: true, error: 'boom')],
   );
 
   blocTest<BookmarkCubit, BookmarkState>(
     'toggle adds ayah and updates state',
     setUp: () {
-      when(() => get()).thenAnswer((_) async => const Right(<AyahIdentifier>{}));
+      when(
+        () => get(),
+      ).thenAnswer((_) async => const Right(<AyahIdentifier>{}));
       when(() => toggle(any())).thenAnswer((_) async => const Right(true));
     },
     build: () => BookmarkCubit(getBookmarks: get, toggleBookmark: toggle),
@@ -88,9 +90,12 @@ void main() {
   blocTest<BookmarkCubit, BookmarkState>(
     'toggle failure sets error and leaves bookmarks unchanged',
     setUp: () {
-      when(() => get()).thenAnswer((_) async => const Right(<AyahIdentifier>{}));
-      when(() => toggle(any())).thenAnswer(
-          (_) async => const Left(CacheFailure('save failed')));
+      when(
+        () => get(),
+      ).thenAnswer((_) async => const Right(<AyahIdentifier>{}));
+      when(
+        () => toggle(any()),
+      ).thenAnswer((_) async => const Left(CacheFailure('save failed')));
     },
     build: () => BookmarkCubit(getBookmarks: get, toggleBookmark: toggle),
     act: (c) async {
@@ -101,5 +106,21 @@ void main() {
       const BookmarkState(loaded: true),
       const BookmarkState(loaded: true, error: 'save failed'),
     ],
+  );
+
+  blocTest<BookmarkCubit, BookmarkState>(
+    'toggle ignores ayah 0',
+    setUp: () {
+      when(
+        () => get(),
+      ).thenAnswer((_) async => const Right(<AyahIdentifier>{}));
+    },
+    build: () => BookmarkCubit(getBookmarks: get, toggleBookmark: toggle),
+    act: (c) async {
+      await Future<void>.delayed(Duration.zero);
+      await c.toggle(const AyahIdentifier(surah: 2, ayah: 0));
+    },
+    expect: () => [const BookmarkState(loaded: true)],
+    verify: (_) => verifyNever(() => toggle(any())),
   );
 }

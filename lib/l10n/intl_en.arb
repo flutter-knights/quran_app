@@ -430,6 +430,8 @@
   "mushaf_paper_slateNight": "Blue night",
   "mushaf_endRecitation": "End recitation",
   "mushaf_retry": "Try again",
+  "mushaf_pageLoadFailed": "Couldn't load the page",
+  "mushaf_playFromSurahStart": "Listen from the start of the surah",
   "mushaf_audioError": "Couldn't play ayah {ayah}",
   "@mushaf_audioError": {
     "placeholders": { "ayah": { "type": "String" } }
