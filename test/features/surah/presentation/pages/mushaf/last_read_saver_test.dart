@@ -87,6 +87,30 @@ void main() {
     });
   });
 
+  test('rearm flushes a pending debounce before guarding', () {
+    fakeAsync((async) {
+      final saved = <LastRead>[];
+      final saver = _saver(saved, origin: MushafOrigin.normal);
+      saver.schedule();
+      async.elapse(const Duration(milliseconds: 300));
+      saver.rearm();
+      expect(saved.length, 1);
+      expect(saver.guarded, isTrue);
+      async.elapse(const Duration(milliseconds: 600));
+      expect(saved.length, 1);
+    });
+  });
+
+  test('guarded reflects the origin and clears on a manual turn', () {
+    final jump = _saver([], origin: MushafOrigin.jump);
+    final normal = _saver([], origin: MushafOrigin.normal);
+    expect(jump.guarded, isTrue);
+    expect(normal.guarded, isFalse);
+    jump.onManualTurn();
+    expect(jump.guarded, isFalse);
+    jump.dispose();
+  });
+
   group('jump arrival', () {
     test('dispose-path flush does not write', () {
       fakeAsync((async) {

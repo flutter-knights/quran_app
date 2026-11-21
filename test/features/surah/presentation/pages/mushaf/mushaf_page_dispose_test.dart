@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_meta_service.dart';
@@ -37,6 +38,7 @@ class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
             palette: ColorPalette.neutralLight,
             isFormat12Hours: false,
             isArabic: true,
+            readingMode: MushafReadingMode.page,
           ),
         ),
       );
@@ -134,12 +136,17 @@ void main() {
 
   Future<(_StubLastReadRepo, _FakePlayback)> disposeOn(
     WidgetTester tester,
-    MushafArgs args,
-  ) async {
+    MushafArgs args, {
+    Future<void> Function()? act,
+  }) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final mushaf = _FakeMushaf(
       const MushafState(
         currentPage: 7,
         selectedAyah: AyahIdentifier(surah: 2, ayah: 5),
+        chromeVisible: true,
       ),
     );
     final playback = _FakePlayback(const PlaybackState());
@@ -172,12 +179,13 @@ void main() {
         ),
       ),
     );
+    await act?.call();
     await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
     await tester.pump();
     return (repo, playback);
   }
 
-  testWidgets('on dispose: saves (page, highlighted) then stops playback', (
+  testWidgets('on dispose: saves (page, selected) then stops playback', (
     tester,
   ) async {
     final (repo, playback) = await disposeOn(tester, const MushafArgs(page: 7));
@@ -199,5 +207,39 @@ void main() {
 
     expect(repo.saved, isNull);
     expect(playback.stopCalls, 1);
+  });
+
+  testWidgets('jump arrival: a manual page swipe lifts the guard', (
+    tester,
+  ) async {
+    final (repo, _) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7, origin: MushafOrigin.jump),
+      act: () async {
+        await tester.pumpAndSettle();
+        await tester.drag(find.byType(PageView), const Offset(-400, 0));
+        await tester.pumpAndSettle();
+      },
+    );
+
+    expect(repo.saved, isNotNull);
+  });
+
+  testWidgets('in-place jump: dispose does not overwrite last read', (
+    tester,
+  ) async {
+    final (repo, _) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7),
+      act: () async {
+        await tester.tap(find.byKey(const ValueKey('mushaf-top-page')));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), '300');
+        await tester.tap(find.byKey(const ValueKey('page-jump-go')));
+        await tester.pumpAndSettle();
+      },
+    );
+
+    expect(repo.saved, isNull);
   });
 }
