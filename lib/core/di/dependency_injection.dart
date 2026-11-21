@@ -17,7 +17,9 @@ import '../../features/surah/presentation/pages/surah_list/surah_list_di.dart';
 final sl = GetIt.instance;
 
 Future<void> initGetIt() async {
-  sl.registerLazySingleton<AudioPlayer>(() => AudioPlayer());
+  sl.registerLazySingleton<AudioPlayer>(
+    () => AudioPlayer(handleInterruptions: false),
+  );
   sl.registerLazySingleton<Dio>(() => Dio());
   sl.registerSingleton<SettingsCubit>(SettingsCubit());
   initHome();
@@ -28,7 +30,7 @@ Future<void> initGetIt() async {
   initMushaf();
   initAhadith();
   initAhadithSearch();
-  initPlayback();
+  await initPlayback();
   initBookmarks();
   initLastRead();
 }

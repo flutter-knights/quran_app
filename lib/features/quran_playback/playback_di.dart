@@ -1,3 +1,4 @@
+import 'package:audio_session/audio_session.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,9 +12,10 @@ import 'data/repositories/quran_playback_repo_impl.dart';
 import 'domain/repositories/quran_playback_repo.dart';
 import 'domain/services/quran_meta_service.dart';
 import 'domain/services/quran_page_service.dart';
+import 'presentation/audio/playback_audio_focus.dart';
 import 'presentation/cubit/playback/playback_cubit.dart';
 
-void initPlayback() async {
+Future<void> initPlayback() async {
   final audioCacheBox = Hive.box<String>('ayahAudioCache');
   final dir = await getApplicationDocumentsDirectory();
 
@@ -46,4 +48,10 @@ void initPlayback() async {
       settingsCubit: sl<SettingsCubit>(),
     ),
   );
+
+  final focus = await connectAudioFocus(
+    session: () => AudioSession.instance,
+    cubit: sl<PlaybackCubit>(),
+  );
+  if (focus != null) sl.registerSingleton(focus);
 }
