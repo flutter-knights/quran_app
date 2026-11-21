@@ -54,16 +54,23 @@ MenuQuery resolveMenuQuery(String raw) {
     return _target(page, first['surah'] as int);
   }
   final arabic = normalizeArabic(q);
-  final latin = q.toLowerCase();
   if (arabic.isEmpty) return const MenuQueryNone();
+  final bare = _bare(q);
+  final latin = _latin(q);
   for (var s = 1; s <= 114; s++) {
-    if (normalizeArabic(quran.getSurahNameArabic(s)).contains(arabic) ||
-        quran.getSurahName(s).toLowerCase().contains(latin)) {
+    final name = quran.getSurahNameArabic(s);
+    if (normalizeArabic(name).contains(arabic) ||
+        (bare.isNotEmpty && _bare(name).contains(bare)) ||
+        (latin.isNotEmpty && _latin(quran.getSurahName(s)).contains(latin))) {
       return _target(quran.getPageNumber(s, 1), s);
     }
   }
   return const MenuQueryNone();
 }
+
+String _bare(String s) => normalizeArabic(s.trim().replaceFirst('ال', ''));
+
+String _latin(String s) => s.toLowerCase().replaceAll(RegExp('[^a-z0-9]'), '');
 
 MenuQueryTarget _target(int page, int surah) {
   final last = quran.getPageData(page).lastWhere((e) => (e['end'] as int) > 0);

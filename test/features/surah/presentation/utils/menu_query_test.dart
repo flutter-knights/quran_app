@@ -38,6 +38,23 @@ void main() {
     expect((resolveMenuQuery('kahf') as MenuQueryTarget).surah, 18);
   });
 
+  test('bare surah names without the article resolve', () {
+    const expected = {'انعام': 6, 'اسراء': 17, 'إخلاص': 112, 'كهف': 18};
+    for (final e in expected.entries) {
+      expect(
+        (resolveMenuQuery(e.key) as MenuQueryTarget).surah,
+        e.value,
+        reason: e.key,
+      );
+    }
+  });
+
+  test('Latin names ignore case, punctuation and spacing', () {
+    for (final q in ['Al-Kahf', 'al kahf', 'ALKAHF']) {
+      expect((resolveMenuQuery(q) as MenuQueryTarget).surah, 18, reason: q);
+    }
+  });
+
   test('the juz matches the running head on mid-page juz starts', () {
     final meta = QuranMetaServiceImpl(pageService: QuranPageServiceImpl());
     for (final p in [62, 121, 201, 502]) {
