@@ -28,6 +28,7 @@ import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_browse_bar.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
@@ -138,18 +139,21 @@ void main() {
     WidgetTester tester,
     MushafArgs args, {
     Future<void> Function()? act,
+    MushafState? mushafState,
+    PlaybackState playbackState = const PlaybackState(),
   }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final mushaf = _FakeMushaf(
-      const MushafState(
-        currentPage: 7,
-        selectedAyah: AyahIdentifier(surah: 2, ayah: 5),
-        chromeVisible: true,
-      ),
+      mushafState ??
+          const MushafState(
+            currentPage: 7,
+            selectedAyah: AyahIdentifier(surah: 2, ayah: 5),
+            chromeVisible: true,
+          ),
     );
-    final playback = _FakePlayback(const PlaybackState());
+    final playback = _FakePlayback(playbackState);
     final repo = _StubLastReadRepo();
 
     await tester.pumpWidget(
@@ -241,5 +245,44 @@ void main() {
     );
 
     expect(repo.saved, isNull);
+  });
+
+  group('browse bar', () {
+    double browseBarOpacity(WidgetTester tester) => tester
+        .widget<AnimatedOpacity>(
+          find.ancestor(
+            of: find.byType(MushafBrowseBar),
+            matching: find.byType(AnimatedOpacity),
+          ),
+        )
+        .opacity;
+
+    testWidgets('hides while a recitation is active', (tester) async {
+      await disposeOn(
+        tester,
+        const MushafArgs(page: 7),
+        mushafState: const MushafState(currentPage: 7, chromeVisible: true),
+        playbackState: const PlaybackState(
+          requestedAyah: AyahIdentifier(surah: 2, ayah: 5),
+          isLoading: true,
+        ),
+        act: () async {
+          await tester.pump();
+          expect(browseBarOpacity(tester), 0);
+        },
+      );
+    });
+
+    testWidgets('shows when nothing is playing', (tester) async {
+      await disposeOn(
+        tester,
+        const MushafArgs(page: 7),
+        mushafState: const MushafState(currentPage: 7, chromeVisible: true),
+        act: () async {
+          await tester.pumpAndSettle();
+          expect(browseBarOpacity(tester), 1);
+        },
+      );
+    });
   });
 }

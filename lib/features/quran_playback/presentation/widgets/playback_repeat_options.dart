@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/helper functions/locale_helpers.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/playback_range_validator.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -11,11 +13,14 @@ import 'package:quran_app/generated/l10n.dart';
 /// Expanded playback panel: from→to range + per-ayah / per-range repeat counts
 /// + an infinite toggle. Every counter is +/- steppable and tap-to-type.
 class PlaybackRepeatOptions extends StatelessWidget {
-  const PlaybackRepeatOptions({super.key});
+  const PlaybackRepeatOptions({super.key, this.onNewPlay});
+
+  final VoidCallback? onNewPlay;
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final pending = PendingS.of(context);
     return BlocBuilder<PlaybackCubit, PlaybackState>(
       buildWhen: (a, b) =>
           a.rangeStart != b.rangeStart ||
@@ -29,85 +34,123 @@ class PlaybackRepeatOptions extends StatelessWidget {
         final surah = st.rangeStart?.surah ?? st.currentAyah?.surah ?? 1;
         final from = st.rangeStart?.ayah ?? st.currentAyah?.ayah ?? 1;
         final to = st.rangeEnd?.ayah ?? quran.getVerseCount(surah);
+        final start = st.rangeStart;
+        final end = st.rangeEnd;
+        final crossSurah =
+            start != null && end != null && start.surah != end.surah;
+        String endLabel(AyahIdentifier a) =>
+            '${context.isArabic ? quran.getSurahNameArabic(a.surah) : quran.getSurahName(a.surah)} ${a.ayah.toLocalized(context)}';
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(s.range, style: TS.medium12),
             const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: _Counter(
-                    keyValue: 'range-from',
-                    label: s.fromAyah,
-                    value: from,
-                    onChanged: (v) {
-                      final nf = PlaybackRangeValidator.clampFrom(
-                        surah: surah,
-                        value: v,
-                      );
-                      final nt = PlaybackRangeValidator.clampTo(
-                        surah: surah,
-                        from: nf,
-                        value: to,
-                      );
-                      cubit.playRange(
-                        start: AyahIdentifier(surah: surah, ayah: nf),
-                        end: AyahIdentifier(surah: surah, ayah: nt),
-                      );
-                    },
-                  ),
+            if (crossSurah)
+              Text(
+                pending.playback_crossSurahRange(
+                  endLabel(start),
+                  endLabel(end),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _Counter(
-                    keyValue: 'range-to',
-                    label: s.toAyah,
-                    value: to,
-                    onChanged: (v) {
-                      final nt = PlaybackRangeValidator.clampTo(
-                        surah: surah,
-                        from: from,
-                        value: v,
-                      );
-                      cubit.setRangeEnd(AyahIdentifier(surah: surah, ayah: nt));
-                    },
+                style: TS.medium14,
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: _Counter(
+                      keyValue: 'range-from',
+                      label: s.fromAyah,
+                      value: from,
+                      onChanged: (v) {
+                        final nf = PlaybackRangeValidator.clampFrom(
+                          surah: surah,
+                          value: v,
+                        );
+                        final nt = PlaybackRangeValidator.clampTo(
+                          surah: surah,
+                          from: nf,
+                          value: to,
+                        );
+                        cubit.playRange(
+                          start: AyahIdentifier(surah: surah, ayah: nf),
+                          end: AyahIdentifier(surah: surah, ayah: nt),
+                        );
+                        onNewPlay?.call();
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _Counter(
+                      keyValue: 'range-to',
+                      label: s.toAyah,
+                      value: to,
+                      onChanged: (v) {
+                        final nt = PlaybackRangeValidator.clampTo(
+                          surah: surah,
+                          from: from,
+                          value: v,
+                        );
+                        cubit.setRangeEnd(
+                          AyahIdentifier(surah: surah, ayah: nt),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 16),
             Text(s.repeat, style: TS.medium12),
             const SizedBox(height: 6),
             Row(
+              spacing: 10,
               children: [
                 Expanded(
                   child: _Counter(
                     keyValue: 'repeat-each',
-                    label: s.eachAyah,
+                    label: pending.playback_repeatEachAyah,
                     value: st.eachAyahRepeat,
                     onChanged: (v) => cubit.setEachAyahRepeat(
                       PlaybackRangeValidator.clampRepeat(v),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                _InfiniteToggle(
+                  keyValue: 'repeat-infinite-each',
+                  on:
+                      st.infiniteRepeat &&
+                      st.infiniteTarget == RepeatTarget.eachAyah,
+                  onTap: () => cubit.setInfiniteRepeat(
+                    !(st.infiniteRepeat &&
+                        st.infiniteTarget == RepeatTarget.eachAyah),
+                    RepeatTarget.eachAyah,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              spacing: 10,
+              children: [
                 Expanded(
                   child: _Counter(
                     keyValue: 'repeat-range',
-                    label: s.wholeRange,
+                    label: pending.playback_repeatPassage,
                     value: st.rangeRepeat,
                     onChanged: (v) => cubit.setRangeRepeat(
                       PlaybackRangeValidator.clampRepeat(v),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
                 _InfiniteToggle(
-                  on: st.infiniteRepeat,
+                  keyValue: 'repeat-infinite-range',
+                  on:
+                      st.infiniteRepeat &&
+                      st.infiniteTarget == RepeatTarget.range,
                   onTap: () => cubit.setInfiniteRepeat(
-                    !st.infiniteRepeat,
+                    !(st.infiniteRepeat &&
+                        st.infiniteTarget == RepeatTarget.range),
                     RepeatTarget.range,
                   ),
                 ),
@@ -203,7 +246,12 @@ class _Counter extends StatelessWidget {
 }
 
 class _InfiniteToggle extends StatelessWidget {
-  const _InfiniteToggle({required this.on, required this.onTap});
+  const _InfiniteToggle({
+    required this.keyValue,
+    required this.on,
+    required this.onTap,
+  });
+  final String keyValue;
   final bool on;
   final VoidCallback onTap;
 
@@ -211,7 +259,7 @@ class _InfiniteToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
-      key: const ValueKey('repeat-infinite'),
+      key: ValueKey(keyValue),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

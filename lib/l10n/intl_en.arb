@@ -427,5 +427,22 @@
   "mushaf_paper_green": "Green",
   "mushaf_paper_gray": "White",
   "mushaf_paper_night": "Night",
-  "mushaf_paper_slateNight": "Blue night"
+  "mushaf_paper_slateNight": "Blue night",
+  "mushaf_endRecitation": "End recitation",
+  "mushaf_retry": "Try again",
+  "mushaf_audioError": "Couldn't play ayah {ayah}",
+  "@mushaf_audioError": {
+    "placeholders": { "ayah": { "type": "String" } }
+  },
+  "mushaf_nowReciting": "Now reciting: {surah} {ayah}, page {page}",
+  "@mushaf_nowReciting": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" }, "page": { "type": "String" } }
+  },
+  "mushaf_returnToReciting": "Back to the recited ayah",
+  "playback_repeatEachAyah": "Repeat each ayah",
+  "playback_repeatPassage": "Repeat the passage",
+  "playback_crossSurahRange": "From {from} to {to}",
+  "@playback_crossSurahRange": {
+    "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
+  }
 }

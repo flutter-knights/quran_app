@@ -411,5 +411,22 @@
   "mushaf_paper_green": "أخضر",
   "mushaf_paper_gray": "أبيض",
   "mushaf_paper_night": "ليلي",
-  "mushaf_paper_slateNight": "ليلي أزرق"
+  "mushaf_paper_slateNight": "ليلي أزرق",
+  "mushaf_endRecitation": "إنهاء التلاوة",
+  "mushaf_retry": "إعادة المحاولة",
+  "mushaf_audioError": "تعذّر تشغيل الآية {ayah}",
+  "@mushaf_audioError": {
+    "placeholders": { "ayah": { "type": "String" } }
+  },
+  "mushaf_nowReciting": "يُتلى الآن: {surah} {ayah}، صفحة {page}",
+  "@mushaf_nowReciting": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" }, "page": { "type": "String" } }
+  },
+  "mushaf_returnToReciting": "العودة إلى الآية المتلوّة",
+  "playback_repeatEachAyah": "تكرار كل آية",
+  "playback_repeatPassage": "تكرار المقطع",
+  "playback_crossSurahRange": "من {from} إلى {to}",
+  "@playback_crossSurahRange": {
+    "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
+  }
 }

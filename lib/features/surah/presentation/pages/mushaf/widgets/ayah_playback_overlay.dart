@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as q;
 
 import '../../../../../../config/theme/typography_styles.dart';
+import '../../../../../../core/helper functions/locale_helpers.dart';
+import '../../../../../../core/localization/pending_s.dart';
 import '../../../../../../generated/l10n.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../../quran_playback/domain/entities/reciter.dart';
@@ -54,13 +56,14 @@ class AyahPlaybackOverlay extends StatelessWidget {
         );
       }
     }
+    final mushaf = context.read<MushafCubit>();
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
       builder: (_) => BlocProvider.value(
         value: context.read<PlaybackCubit>(),
-        child: const _OptionsSheet(),
+        child: _OptionsSheet(onNewPlay: mushaf.resumeFollow),
       ),
     );
   }
@@ -74,43 +77,113 @@ class AyahPlaybackOverlay extends StatelessWidget {
       builder: (stableCtx, mushafState) {
         // stableCtx only rebuilds on ayah-selection / pin changes — safe to
         // capture in sheet callbacks without risking a deactivated-context crash.
-        final highlightTarget = mushafState.selectedAyah;
+        final selected = mushafState.selectedAyah;
         final isPinned = mushafState.isOverlayPinned;
-        final visible = highlightTarget != null || isPinned;
 
-        return Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: IgnorePointer(
-            ignoring: !visible,
-            child: AnimatedSlide(
-              offset: visible ? Offset.zero : const Offset(0, 1),
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOutCubic,
-              child: AnimatedOpacity(
-                opacity: visible ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: BlocBuilder<PlaybackCubit, PlaybackState>(
-                  buildWhen: (a, b) => a.currentAyah != b.currentAyah,
-                  builder: (_, playbackState) {
-                    final effectiveTarget =
-                        highlightTarget ?? playbackState.currentAyah;
-                    return _MiniPlayer(
-                      target: effectiveTarget,
-                      onTapInfo: () => _openReciterSheet(stableCtx),
-                      onTapTune: () => _openOptionsSheet(stableCtx),
-                      onDismiss: () =>
-                          stableCtx.read<MushafCubit>().unpinOverlay(),
-                    );
-                  },
+        return BlocSelector<PlaybackCubit, PlaybackState, bool>(
+          selector: (p) => (p.requestedAyah ?? p.currentAyah) != null,
+          builder: (_, active) {
+            final visible = selected != null || isPinned || active;
+            return Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: MultiBlocListener(
+                listeners: [
+                  BlocListener<PlaybackCubit, PlaybackState>(
+                    listenWhen: (a, b) => b.error != null && a.error != b.error,
+                    listener: _showAudioError,
+                  ),
+                  BlocListener<MushafCubit, MushafState>(
+                    listenWhen: (a, b) =>
+                        a.followPlayback &&
+                        !b.followPlayback &&
+                        b.playingAyah != null,
+                    listener: _showNowReciting,
+                  ),
+                ],
+                child: IgnorePointer(
+                  ignoring: !visible,
+                  child: AnimatedSlide(
+                    offset: visible ? Offset.zero : const Offset(0, 1),
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeOutCubic,
+                    child: AnimatedOpacity(
+                      opacity: visible ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: BlocBuilder<PlaybackCubit, PlaybackState>(
+                        buildWhen: (a, b) =>
+                            a.currentAyah != b.currentAyah ||
+                            a.requestedAyah != b.requestedAyah,
+                        builder: (_, playbackState) => _MiniPlayer(
+                          target:
+                              selected ??
+                              playbackState.requestedAyah ??
+                              playbackState.currentAyah,
+                          active: active,
+                          onTapInfo: () => _openReciterSheet(stableCtx),
+                          onTapTune: () => _openOptionsSheet(stableCtx),
+                          onDismiss: () =>
+                              stableCtx.read<MushafCubit>().unpinOverlay(),
+                          onEnd: () {
+                            stableCtx.read<PlaybackCubit>().stop();
+                            stableCtx.read<MushafCubit>().unpinOverlay();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
+  }
+
+  void _showAudioError(BuildContext context, PlaybackState state) {
+    final ayah = (state.requestedAyah ?? state.currentAyah)!;
+    final pending = PendingS.current;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            pending.mushaf_audioError(ayah.ayah.toLocalized(context)),
+          ),
+          action: SnackBarAction(
+            label: pending.mushaf_retry,
+            onPressed: context.read<PlaybackCubit>().retry,
+          ),
+        ),
+      );
+  }
+
+  void _showNowReciting(BuildContext context, MushafState state) {
+    final mushaf = context.read<MushafCubit>();
+    final ayah = state.playingAyah!;
+    final pending = PendingS.current;
+    final surah = context.isArabic
+        ? q.getSurahNameArabic(ayah.surah)
+        : q.getSurahName(ayah.surah);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            pending.mushaf_nowReciting(
+              surah,
+              ayah.ayah.toLocalized(context),
+              mushaf.playingPage!.toLocalized(context),
+            ),
+          ),
+          action: SnackBarAction(
+            label: pending.mushaf_returnToReciting,
+            onPressed: mushaf.resumeFollow,
+          ),
+        ),
+      );
   }
 }
 
@@ -121,22 +194,19 @@ class AyahPlaybackOverlay extends StatelessWidget {
 class _MiniPlayer extends StatelessWidget {
   const _MiniPlayer({
     required this.target,
+    required this.active,
     required this.onTapInfo,
     required this.onTapTune,
     required this.onDismiss,
+    required this.onEnd,
   });
 
   final AyahIdentifier? target;
+  final bool active;
   final VoidCallback onTapInfo;
   final VoidCallback onTapTune;
   final VoidCallback onDismiss;
-
-  bool get _isFirst =>
-      target != null && target!.surah == 1 && target!.ayah == 1;
-  bool get _isLast =>
-      target != null &&
-      target!.surah == 114 &&
-      target!.ayah == q.getVerseCount(114);
+  final VoidCallback onEnd;
 
   bool _currentMatchesTarget(AyahIdentifier? current, AyahIdentifier? t) {
     if (current == null || t == null) return false;
@@ -153,7 +223,7 @@ class _MiniPlayer extends StatelessWidget {
     final s = S.of(context);
     return GestureDetector(
       onVerticalDragEnd: (details) {
-        if ((details.primaryVelocity ?? 0) > 300) onDismiss();
+        if (!active && (details.primaryVelocity ?? 0) > 300) onDismiss();
       },
       child: Padding(
         padding: EdgeInsets.fromLTRB(10, 0, 10, 10 + bottomPad),
@@ -171,9 +241,11 @@ class _MiniPlayer extends StatelessWidget {
                 children: [
                   // ── Dismiss ────────────────────────────────────────────
                   _Btn(
-                    icon: Icons.expand_more,
-                    tooltip: s.playback_close,
-                    onTap: onDismiss,
+                    icon: active ? Icons.stop : Icons.expand_more,
+                    tooltip: active
+                        ? PendingS.of(context).mushaf_endRecitation
+                        : s.playback_close,
+                    onTap: active ? onEnd : onDismiss,
                   ),
                   const SizedBox(width: 4),
 
@@ -193,7 +265,10 @@ class _MiniPlayer extends StatelessWidget {
                         a.isPlaying != b.isPlaying ||
                         a.isPaused != b.isPaused ||
                         a.isLoading != b.isLoading ||
-                        a.currentAyah != b.currentAyah,
+                        a.currentAyah != b.currentAyah ||
+                        a.rangeStart != b.rangeStart ||
+                        a.rangeEnd != b.rangeEnd ||
+                        a.requestedAyah != b.requestedAyah,
                     builder: (context, p) {
                       final matchesTarget = _currentMatchesTarget(
                         p.currentAyah,
@@ -207,11 +282,14 @@ class _MiniPlayer extends StatelessWidget {
                           _Btn(
                             icon: Icons.skip_previous,
                             tooltip: s.playback_previous,
-                            onTap: _isFirst
-                                ? null
-                                : () => context
-                                      .read<PlaybackCubit>()
-                                      .skipPrevious(),
+                            onTap: p.canSkipPrevious
+                                ? () {
+                                    context
+                                        .read<PlaybackCubit>()
+                                        .skipPrevious();
+                                    context.read<MushafCubit>().resumeFollow();
+                                  }
+                                : null,
                           ),
                           _PlayPauseBtn(
                             target: target,
@@ -222,10 +300,12 @@ class _MiniPlayer extends StatelessWidget {
                           _Btn(
                             icon: Icons.skip_next,
                             tooltip: s.playback_next,
-                            onTap: _isLast
-                                ? null
-                                : () =>
-                                      context.read<PlaybackCubit>().skipNext(),
+                            onTap: p.canSkipNext
+                                ? () {
+                                    context.read<PlaybackCubit>().skipNext();
+                                    context.read<MushafCubit>().resumeFollow();
+                                  }
+                                : null,
                           ),
                         ],
                       );
@@ -259,13 +339,20 @@ class _InfoColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
+    final target = this.target;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (target != null)
           Text(
-            s.ayah_label(target!.surah.toString(), target!.ayah.toString()),
+            S
+                .of(context)
+                .ayah_label(
+                  context.isArabic
+                      ? q.getSurahNameArabic(target.surah)
+                      : q.getSurahName(target.surah),
+                  (target.ayah == 0 ? 1 : target.ayah).toLocalized(context),
+                ),
             textAlign: TextAlign.center,
             style: TS.semi12.copyWith(color: Colors.white),
             overflow: TextOverflow.ellipsis,
@@ -330,7 +417,8 @@ class _ReciterSheet extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _OptionsSheet extends StatelessWidget {
-  const _OptionsSheet();
+  const _OptionsSheet({required this.onNewPlay});
+  final VoidCallback onNewPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -346,7 +434,7 @@ class _OptionsSheet extends StatelessWidget {
             const SizedBox(height: 6),
             _SpeedGrid(),
             const SizedBox(height: 16),
-            const PlaybackRepeatOptions(),
+            PlaybackRepeatOptions(onNewPlay: onNewPlay),
           ],
         ),
       ),
@@ -527,6 +615,7 @@ class _PlayPauseBtn extends StatelessWidget {
                     ayah: q.getVerseCount(t.surah),
                   ),
                 );
+                context.read<MushafCubit>().resumeFollow();
               }
             },
       child: Container(

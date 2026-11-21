@@ -202,6 +202,21 @@ class PendingS {
   String get mushaf_paper_night => _ar ? 'ليلي' : 'Night';
   String get mushaf_paper_slateNight => _ar ? 'ليلي أزرق' : 'Blue night';
 
+  String get mushaf_endRecitation => _ar ? 'إنهاء التلاوة' : 'End recitation';
+  String get mushaf_retry => _ar ? 'إعادة المحاولة' : 'Try again';
+  String mushaf_audioError(String ayah) =>
+      _ar ? 'تعذّر تشغيل الآية $ayah' : 'Couldn\'t play ayah $ayah';
+  String mushaf_nowReciting(String surah, String ayah, String page) => _ar
+      ? 'يُتلى الآن: $surah $ayah، صفحة $page'
+      : 'Now reciting: $surah $ayah, page $page';
+  String get mushaf_returnToReciting =>
+      _ar ? 'العودة إلى الآية المتلوّة' : 'Back to the recited ayah';
+  String get playback_repeatEachAyah => _ar ? 'تكرار كل آية' : 'Repeat each ayah';
+  String get playback_repeatPassage =>
+      _ar ? 'تكرار المقطع' : 'Repeat the passage';
+  String playback_crossSurahRange(String from, String to) =>
+      _ar ? 'من $from إلى $to' : 'From $from to $to';
+
   String alerts_minutes(num count) {
     final n = count.toInt();
     if (!_ar) return n == 1 ? '1 minute' : '$n minutes';
