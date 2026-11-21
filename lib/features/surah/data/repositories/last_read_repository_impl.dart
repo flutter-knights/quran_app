@@ -13,14 +13,15 @@ class LastReadRepositoryImpl implements LastReadRepository {
     final ayah = (m.surah != null && m.ayah != null)
         ? AyahIdentifier(surah: m.surah!, ayah: m.ayah!)
         : null;
-    return LastRead(page: m.page, ayah: ayah);
+    return LastRead(page: m.page, ayah: ayah, updatedAt: m.updatedAt);
   }
 
   LastReadHiveModel _to(LastRead v) => LastReadHiveModel(
-        page: v.page.clamp(1, 604),
-        surah: v.ayah?.surah,
-        ayah: v.ayah?.ayah,
-      );
+    page: v.page.clamp(1, 604),
+    surah: v.ayah?.surah,
+    ayah: v.ayah?.ayah,
+    updatedAt: v.updatedAt,
+  );
 
   @override
   Future<void> save(LastRead value) => local.save(_to(value));

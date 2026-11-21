@@ -9,6 +9,7 @@ import 'package:quran_app/core/widgets/prettier_tap.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/surah/domain/entities/surah_entity.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class SurahListTile extends StatelessWidget {
@@ -18,8 +19,10 @@ class SurahListTile extends StatelessWidget {
 
   String _ayahLabel(int count) => count > 10 ? "آية" : "آيات";
 
-  void _openMushaf(BuildContext context) =>
-      context.push(AppRouter.mushafPath, extra: surah.pageNumber);
+  void _openMushaf(BuildContext context) => context.push(
+    AppRouter.mushafPath,
+    extra: MushafArgs(page: surah.pageNumber, openedSurah: surah.number),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +62,12 @@ class SurahListTile extends StatelessWidget {
                 tooltip: S.of(context).play_surah,
                 icon: const Icon(Icons.play_circle_outline),
                 onPressed: () {
-                  context.read<PlaybackCubit>().playFromAyah(
-                    AyahIdentifier(surah: surah.number, ayah: 1),
+                  context.read<PlaybackCubit>().playRange(
+                    start: AyahIdentifier(surah: surah.number, ayah: 1),
+                    end: AyahIdentifier(
+                      surah: surah.number,
+                      ayah: surah.numberOfAyahs,
+                    ),
                   );
                   _openMushaf(context);
                 },

@@ -22,7 +22,7 @@ import 'package:quran_app/features/splash/pages/splash_page.dart';
 import 'package:quran_app/features/search/presentation/cubit/search_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/pages/surah_list/surah_list_page.dart';
 
@@ -164,15 +164,8 @@ abstract class AppRouter {
           builder: (context, state) {
             final args = _mushafArgsFrom(state.extra);
             return BlocProvider(
-              create: (_) {
-                final cubit = sl<MushafCubit>(param1: args.page);
-                final focus = args.focusAyah;
-                if (focus != null && focus.ayah > 0) {
-                  cubit.toggleHighlight(focus);
-                }
-                return cubit;
-              },
-              child: MushafPage(initialPage: args.page),
+              create: (_) => sl<MushafCubit>(param1: args),
+              child: MushafPage(args: args),
             );
           },
         ),
@@ -183,15 +176,8 @@ abstract class AppRouter {
           builder: (context, state) {
             final args = _mushafArgsFrom(state.extra);
             return BlocProvider(
-              create: (_) {
-                final cubit = sl<MushafCubit>(param1: args.page);
-                final focus = args.focusAyah;
-                if (focus != null && focus.ayah > 0) {
-                  cubit.toggleHighlight(focus);
-                }
-                return cubit;
-              },
-              child: MushafPage(initialPage: args.page),
+              create: (_) => sl<MushafCubit>(param1: args),
+              child: MushafPage(args: args),
             );
           },
         ),

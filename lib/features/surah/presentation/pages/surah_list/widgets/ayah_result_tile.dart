@@ -8,7 +8,7 @@ import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/search/domain/entities/search_result.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_args.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class AyahResultTile extends StatelessWidget {
@@ -35,6 +35,8 @@ class AyahResultTile extends StatelessWidget {
         extra: MushafArgs(
           page: result.page,
           focusAyah: AyahIdentifier(surah: result.surah, ayah: result.ayah),
+          openedSurah: result.surah,
+          origin: MushafOrigin.jump,
         ),
       ),
       child: Container(

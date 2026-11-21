@@ -405,5 +405,30 @@
   "alerts_enabledCount": "{count, plural, =0{متوقف لكل الصلوات} =1{مفعّل لصلاة واحدة} =2{مفعّل لصلاتين} few{مفعّل لـ{count} صلوات} other{مفعّل لـ{count} صلاة}}",
   "@alerts_enabledCount": {
     "placeholders": { "count": { "type": "num" } }
+  },
+  "mushaf_paper_cream": "كريمي",
+  "mushaf_paper_sepia": "سيبيا",
+  "mushaf_paper_green": "أخضر",
+  "mushaf_paper_gray": "أبيض",
+  "mushaf_paper_night": "ليلي",
+  "mushaf_paper_slateNight": "ليلي أزرق",
+  "mushaf_endRecitation": "إنهاء التلاوة",
+  "mushaf_retry": "إعادة المحاولة",
+  "mushaf_pageLoadFailed": "تعذّر تحميل الصفحة",
+  "mushaf_playFromSurahStart": "استماع من بداية السورة",
+  "mushaf_audioError": "تعذّر تشغيل الآية {ayah} من سورة {surah}",
+  "@mushaf_audioError": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
+  },
+  "mushaf_nowReciting": "يُتلى الآن: {surah} {ayah}، صفحة {page}",
+  "@mushaf_nowReciting": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" }, "page": { "type": "String" } }
+  },
+  "mushaf_returnToReciting": "العودة إلى الآية المتلوّة",
+  "playback_repeatEachAyah": "تكرار كل آية",
+  "playback_repeatPassage": "تكرار المقطع",
+  "playback_crossSurahRange": "من {from} إلى {to}",
+  "@playback_crossSurahRange": {
+    "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
   }
 }

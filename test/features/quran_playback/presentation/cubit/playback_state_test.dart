@@ -49,4 +49,94 @@ void main() {
       expect(n.rangeEnd, isNull);
     });
   });
+
+  group('PlaybackState skip bounds', () {
+    const a = AyahIdentifier(surah: 2, ayah: 5);
+    const b = AyahIdentifier(surah: 2, ayah: 6);
+    const c = AyahIdentifier(surah: 2, ayah: 7);
+
+    void expectSkips(
+      PlaybackState s, {
+      required bool next,
+      required bool prev,
+    }) {
+      expect(s.canSkipNext, next);
+      expect(s.canSkipPrevious, prev);
+    }
+
+    test('idle can skip neither way', () {
+      expectSkips(const PlaybackState(), next: false, prev: false);
+    });
+
+    test('first ayah with no range cannot skip back', () {
+      expectSkips(
+        const PlaybackState(currentAyah: AyahIdentifier(surah: 1, ayah: 1)),
+        next: true,
+        prev: false,
+      );
+    });
+
+    test('last ayah with no range cannot skip forward', () {
+      expectSkips(
+        const PlaybackState(currentAyah: AyahIdentifier(surah: 114, ayah: 6)),
+        next: false,
+        prev: true,
+      );
+    });
+
+    test('range start cannot skip back', () {
+      expectSkips(
+        const PlaybackState(currentAyah: a, rangeStart: a, rangeEnd: c),
+        next: true,
+        prev: false,
+      );
+    });
+
+    test('range end cannot skip forward', () {
+      expectSkips(
+        const PlaybackState(currentAyah: c, rangeStart: a, rangeEnd: c),
+        next: false,
+        prev: true,
+      );
+    });
+
+    test('inside the range skips both ways', () {
+      expectSkips(
+        const PlaybackState(currentAyah: b, rangeStart: a, rangeEnd: c),
+        next: true,
+        prev: true,
+      );
+    });
+
+    test('a pending request is the skip origin, not the old ayah', () {
+      expectSkips(
+        const PlaybackState(
+          currentAyah: b,
+          requestedAyah: a,
+          rangeStart: a,
+          rangeEnd: c,
+        ),
+        next: true,
+        prev: false,
+      );
+      expectSkips(
+        const PlaybackState(
+          currentAyah: b,
+          requestedAyah: c,
+          rangeStart: a,
+          rangeEnd: c,
+        ),
+        next: false,
+        prev: true,
+      );
+    });
+
+    test('a failed first play can still skip both ways', () {
+      expectSkips(
+        const PlaybackState(requestedAyah: a, error: 'x'),
+        next: true,
+        prev: true,
+      );
+    });
+  });
 }

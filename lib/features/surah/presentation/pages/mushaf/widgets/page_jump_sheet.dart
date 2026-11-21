@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
+import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 /// Modal sheet to jump to a Mushaf page. Resolves with the chosen page (1–604)
@@ -32,7 +34,7 @@ class _PageJumpSheetState extends State<PageJumpSheet> {
 
   void _submit() {
     final raw = _controller.text.trim();
-    final n = int.tryParse(raw);
+    final n = int.tryParse(toAsciiDigits(raw));
     if (n == null) {
       Navigator.of(context).pop();
       return;
@@ -62,9 +64,12 @@ class _PageJumpSheetState extends State<PageJumpSheet> {
               controller: _controller,
               autofocus: true,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp('[0-9٠-٩۰-۹]')),
+              ],
               decoration: InputDecoration(
-                hintText: '1 – 604',
+                hintText:
+                    '${1.toLocalized(context)} – ${604.toLocalized(context)}',
                 border: const OutlineInputBorder(),
               ),
               onSubmitted: (_) => _submit(),

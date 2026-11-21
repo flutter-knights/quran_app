@@ -14,6 +14,7 @@ import 'package:quran_app/generated/l10n.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
 
+import '../../../utils/mushaf_args.dart';
 import 'ayah_result_tile.dart';
 import 'surah_list_tile.dart';
 
@@ -144,7 +145,10 @@ class _JumpTile extends StatelessWidget {
         ? S.of(context).go_to_page(suggestion.number.toLocalized(context))
         : S.of(context).go_to_juz(suggestion.number.toLocalized(context));
     return PrettierTap(
-      onTap: () => context.push(AppRouter.mushafPath, extra: suggestion.page),
+      onTap: () => context.push(
+        AppRouter.mushafPath,
+        extra: MushafArgs(page: suggestion.page, origin: MushafOrigin.jump),
+      ),
       child: Container(
         padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 14, 12),
         decoration: BoxDecoration(

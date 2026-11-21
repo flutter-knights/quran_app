@@ -26,4 +26,29 @@ void main() {
     );
     expect(prev, isNull);
   });
+
+  test('next stops past the range end', () {
+    final next = svc.getNextAyah(
+      current: const AyahIdentifier(surah: 2, ayah: 8),
+      endSurah: 2,
+      endAyah: 7,
+    );
+    expect(next, isNull);
+  });
+
+  test('next crosses surahs inside a cross-surah range', () {
+    final next = svc.getNextAyah(
+      current: const AyahIdentifier(surah: 4, ayah: 176),
+      endSurah: 5,
+      endAyah: 2,
+    );
+    expect(next, const AyahIdentifier(surah: 5, ayah: 1));
+  });
+
+  test('next at the end of the mushaf', () {
+    final next = svc.getNextAyah(
+      current: const AyahIdentifier(surah: 114, ayah: 6),
+    );
+    expect(next, isNull);
+  });
 }

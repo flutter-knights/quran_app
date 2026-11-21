@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,61 +10,133 @@ import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.da
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reading_settings_sheet.dart';
 import 'package:quran_app/generated/l10n.dart';
 
+import '../../../../../notifications/presentation/alerts_test_harness.dart'
+    show loadAppFonts;
+
 class _MemStorage implements Storage {
   final _m = <String, dynamic>{};
-  @override dynamic read(String key) => _m[key];
-  @override Future<void> write(String key, dynamic value) async => _m[key] = value;
-  @override Future<void> delete(String key) async => _m.remove(key);
-  @override Future<void> clear() async => _m.clear();
-  @override Future<void> close() async {}
+  @override
+  dynamic read(String key) => _m[key];
+  @override
+  Future<void> write(String key, dynamic value) async => _m[key] = value;
+  @override
+  Future<void> delete(String key) async => _m.remove(key);
+  @override
+  Future<void> clear() async => _m.clear();
+  @override
+  Future<void> close() async {}
 }
 
 void main() {
   setUpAll(() => HydratedBloc.storage = _MemStorage());
 
-  testWidgets('tapping the night swatch updates the paper setting',
-      (tester) async {
+  Future<void> pumpSheet(
+    WidgetTester tester,
+    SettingsCubit cubit,
+    String locale,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: Locale(locale),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        home: BlocProvider.value(
+          value: cubit,
+          child: const Scaffold(body: ReadingSettingsSheet()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('paper swatches are named', (tester) async {
     final cubit = SettingsCubit();
     addTearDown(cubit.close);
-    await tester.pumpWidget(MaterialApp(
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
-      home: BlocProvider.value(
-        value: cubit,
-        child: const Scaffold(body: ReadingSettingsSheet()),
-      ),
-    ));
-    await tester.pumpAndSettle();
+    await pumpSheet(tester, cubit, 'ar');
+    for (final name in [
+      'كريمي',
+      'سيبيا',
+      'أخضر',
+      'أبيض',
+      'ليلي',
+      'ليلي أزرق',
+    ]) {
+      expect(find.text(name), findsOneWidget, reason: name);
+    }
+
+    await pumpSheet(tester, cubit, 'en');
+    expect(find.text('White'), findsOneWidget);
+  });
+
+  testWidgets('the selected swatch is announced as selected', (tester) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await pumpSheet(tester, cubit, 'en');
+    final handle = tester.ensureSemantics();
+    try {
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Cream')),
+        isSemantics(isButton: true, isSelected: true, hasTapAction: true),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Sepia')),
+        isNot(isSemantics(isSelected: true)),
+      );
+    } finally {
+      handle.dispose();
+    }
+  });
+
+  for (final locale in ['en', 'ar']) {
+    testWidgets(
+      'swatch captions are not truncated on a 360dp phone ($locale)',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 780);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final cubit = SettingsCubit();
+        addTearDown(cubit.close);
+        await loadAppFonts();
+        await pumpSheet(tester, cubit, locale);
+
+        for (final p in MushafPaper.values) {
+          final caption = find.descendant(
+            of: find.byKey(ValueKey('reading-paper-${p.name}')),
+            matching: find.byType(Text),
+          );
+          expect(
+            tester.renderObject<RenderParagraph>(caption).didExceedMaxLines,
+            isFalse,
+            reason: '${p.name} ($locale)',
+          );
+        }
+      },
+    );
+  }
+
+  testWidgets('tapping the night swatch updates the paper setting', (
+    tester,
+  ) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await pumpSheet(tester, cubit, 'en');
 
     await tester.tap(find.byKey(const ValueKey('reading-paper-night')));
     await tester.pump();
     expect(cubit.state.settingsModel.mushafPaper, MushafPaper.night);
   });
 
-  testWidgets('tapping the Scroll segment updates the reading mode',
-      (tester) async {
+  testWidgets('tapping the Scroll segment updates the reading mode', (
+    tester,
+  ) async {
     final cubit = SettingsCubit();
     addTearDown(cubit.close);
-    await tester.pumpWidget(MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
-      home: BlocProvider.value(
-        value: cubit,
-        child: const Scaffold(body: ReadingSettingsSheet()),
-      ),
-    ));
-    await tester.pumpAndSettle();
+    await pumpSheet(tester, cubit, 'en');
 
     expect(cubit.state.settingsModel.readingMode, MushafReadingMode.page);
     await tester.tap(find.text('Scroll'));
@@ -71,30 +144,19 @@ void main() {
     expect(cubit.state.settingsModel.readingMode, MushafReadingMode.scroll);
   });
 
-  testWidgets('dragging brightness fades the sheet body, restores on end',
-      (tester) async {
+  testWidgets('dragging brightness fades the sheet body, restores on end', (
+    tester,
+  ) async {
     final cubit = SettingsCubit();
     addTearDown(cubit.close);
-    await tester.pumpWidget(MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
-      home: BlocProvider.value(
-        value: cubit,
-        child: const Scaffold(body: ReadingSettingsSheet()),
-      ),
-    ));
-    await tester.pumpAndSettle();
+    await pumpSheet(tester, cubit, 'en');
 
     AnimatedOpacity body() => tester.widget<AnimatedOpacity>(
-        find.byKey(const ValueKey('reading-sheet-body')));
+      find.byKey(const ValueKey('reading-sheet-body')),
+    );
     final slider = tester.widget<Slider>(
-        find.byKey(const ValueKey('reading-brightness-slider')));
+      find.byKey(const ValueKey('reading-brightness-slider')),
+    );
 
     expect(body().opacity, 1.0);
 

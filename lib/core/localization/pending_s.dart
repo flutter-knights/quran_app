@@ -195,6 +195,33 @@ class PendingS {
   String get missed_fix => _ar ? 'إصلاح الآن' : 'Fix now';
   String home_untilSunrise(String time) =>
       _ar ? 'متبقي $time على الشروق' : '$time remaining until sunrise';
+  String get mushaf_paper_cream => _ar ? 'كريمي' : 'Cream';
+  String get mushaf_paper_sepia => _ar ? 'سيبيا' : 'Sepia';
+  String get mushaf_paper_green => _ar ? 'أخضر' : 'Green';
+  String get mushaf_paper_gray => _ar ? 'أبيض' : 'White';
+  String get mushaf_paper_night => _ar ? 'ليلي' : 'Night';
+  String get mushaf_paper_slateNight => _ar ? 'ليلي أزرق' : 'Blue night';
+
+  String get mushaf_endRecitation => _ar ? 'إنهاء التلاوة' : 'End recitation';
+  String get mushaf_retry => _ar ? 'إعادة المحاولة' : 'Try again';
+  String get mushaf_pageLoadFailed =>
+      _ar ? 'تعذّر تحميل الصفحة' : 'Couldn\'t load the page';
+  String get mushaf_playFromSurahStart =>
+      _ar ? 'استماع من بداية السورة' : 'Listen from the start of the surah';
+  String mushaf_audioError(String surah, String ayah) => _ar
+      ? 'تعذّر تشغيل الآية $ayah من سورة $surah'
+      : 'Couldn\'t play ayah $ayah of $surah';
+  String mushaf_nowReciting(String surah, String ayah, String page) => _ar
+      ? 'يُتلى الآن: $surah $ayah، صفحة $page'
+      : 'Now reciting: $surah $ayah, page $page';
+  String get mushaf_returnToReciting =>
+      _ar ? 'العودة إلى الآية المتلوّة' : 'Back to the recited ayah';
+  String get playback_repeatEachAyah =>
+      _ar ? 'تكرار كل آية' : 'Repeat each ayah';
+  String get playback_repeatPassage =>
+      _ar ? 'تكرار المقطع' : 'Repeat the passage';
+  String playback_crossSurahRange(String from, String to) =>
+      _ar ? 'من $from إلى $to' : 'From $from to $to';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

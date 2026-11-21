@@ -20,19 +20,22 @@ class LastReadHiveModelAdapter extends TypeAdapter<LastReadHiveModel> {
       page: (fields[0] as num).toInt(),
       surah: (fields[1] as num?)?.toInt(),
       ayah: (fields[2] as num?)?.toInt(),
+      updatedAt: fields[3] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, LastReadHiveModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.page)
       ..writeByte(1)
       ..write(obj.surah)
       ..writeByte(2)
-      ..write(obj.ayah);
+      ..write(obj.ayah)
+      ..writeByte(3)
+      ..write(obj.updatedAt);
   }
 
   @override

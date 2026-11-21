@@ -6,6 +6,7 @@ import '../../../domain/repositories/mushaf_repo.dart';
 import '../../../domain/usecases/get_mushaf_page.dart';
 import '../../cubit/mushaf/mushaf_cubit.dart';
 import '../../utils/current_ayah_notifier.dart';
+import '../../utils/mushaf_args.dart';
 
 void initMushaf() {
   sl.registerLazySingleton<CurrentAyahNotifier>(
@@ -18,10 +19,12 @@ void initMushaf() {
     () => MushafRepositoryImpl(dataSource: sl()),
   );
   sl.registerLazySingleton(() => GetMushafPage(sl()));
-  sl.registerFactoryParam<MushafCubit, int, void>(
-    (initialPage, _) => MushafCubit(
-      initialPage: initialPage,
+  sl.registerFactoryParam<MushafCubit, MushafArgs, void>(
+    (args, _) => MushafCubit(
+      args: args,
       currentAyahNotifier: sl<CurrentAyahNotifier>(),
+      pageService: sl(),
+      getMushafPage: sl(),
     ),
   );
 }

@@ -5,6 +5,7 @@ import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cu
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_state.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../../config/theme/typography_styles.dart';
@@ -32,7 +33,7 @@ class MushafPageView extends StatefulWidget {
 
 class _MushafPageViewState extends State<MushafPageView>
     with SingleTickerProviderStateMixin {
-  late final Future<MushafPageEntity> _entityFuture;
+  late Future<MushafPageEntity> _entityFuture;
   late final AnimationController _controller;
 
   AyahIdentifier? _shownHighlightedAyah;
@@ -43,17 +44,29 @@ class _MushafPageViewState extends State<MushafPageView>
   @override
   void initState() {
     super.initState();
-    _entityFuture = sl<GetMushafPage>()(widget.pageNumber).then((e) {
-      return e.fold<MushafPageEntity>(
-        (f) => throw StateError('failed to load page ${widget.pageNumber}: $f'),
-        (right) => right,
-      );
-    });
+    _entityFuture = _load();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 180),
       value: 1.0,
     );
+  }
+
+  Future<MushafPageEntity> _load() =>
+      sl<GetMushafPage>()(widget.pageNumber).then(
+        (e) => e.fold<MushafPageEntity>(
+          (f) =>
+              throw StateError('failed to load page ${widget.pageNumber}: $f'),
+          (right) => right,
+        ),
+      );
+
+  void _retry() {
+    final cubit = context.read<MushafCubit>();
+    if (widget.pageNumber == cubit.state.currentPage) cubit.reloadPageAyahs();
+    setState(() {
+      _entityFuture = _load();
+    });
   }
 
   @override
@@ -76,6 +89,32 @@ class _MushafPageViewState extends State<MushafPageView>
     return FutureBuilder<MushafPageEntity>(
       future: _entityFuture,
       builder: (context, snapshot) {
+        if (snapshot.hasError &&
+            snapshot.connectionState == ConnectionState.done) {
+          final pendingS = PendingS.of(context);
+          return AspectRatio(
+            aspectRatio: 1 / 1.82,
+            child: ColoredBox(
+              color: paperColors.background,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 8,
+                  children: [
+                    Text(
+                      pendingS.mushaf_pageLoadFailed,
+                      style: TS.medium14.copyWith(color: paperColors.ink),
+                    ),
+                    TextButton(
+                      onPressed: _retry,
+                      child: Text(pendingS.mushaf_retry, style: TS.medium14),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
         final entity = snapshot.data;
         return AspectRatio(
           aspectRatio: 1 / 1.82,
@@ -117,14 +156,14 @@ class _MushafPageViewState extends State<MushafPageView>
                   if (entity != null)
                     BlocBuilder<MushafCubit, MushafState>(
                       buildWhen: (a, b) =>
-                          a.highlightedAyah != b.highlightedAyah ||
+                          a.selectedAyah != b.selectedAyah ||
                           a.playingAyah != b.playingAyah,
                       builder: (context, state) {
-                        if (state.highlightedAyah != _shownHighlightedAyah ||
+                        if (state.selectedAyah != _shownHighlightedAyah ||
                             state.playingAyah != _shownPlayingAyah) {
                           _prevHighlightedAyah = _shownHighlightedAyah;
                           _prevPlayingAyah = _shownPlayingAyah;
-                          _shownHighlightedAyah = state.highlightedAyah;
+                          _shownHighlightedAyah = state.selectedAyah;
                           _shownPlayingAyah = state.playingAyah;
                           if (_shownHighlightedAyah != null ||
                               _shownPlayingAyah != null ||
@@ -312,7 +351,7 @@ class _MushafPageViewState extends State<MushafPageView>
     }
     final hit = _hitTest(local, c, ayahs);
     if (hit != null) {
-      cubit.toggleHighlight(
+      cubit.toggleSelection(
         hit,
       ); // opens the playback overlay via existing plumbing
     } else {

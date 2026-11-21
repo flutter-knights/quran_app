@@ -70,4 +70,56 @@ void main() {
       );
     }
   });
+
+  test('juz start pages follow the Madinah print', () {
+    const starts = [
+      [2, 142, 22],
+      [2, 253, 42],
+      [3, 93, 62],
+      [4, 24, 82],
+      [4, 148, 102],
+      [5, 82, 121],
+      [6, 111, 142],
+      [7, 88, 162],
+      [8, 41, 182],
+      [9, 93, 201],
+      [11, 6, 222],
+      [12, 53, 242],
+      [15, 1, 262],
+      [17, 1, 282],
+      [18, 75, 302],
+      [21, 1, 322],
+      [23, 1, 342],
+      [25, 21, 362],
+      [27, 56, 382],
+      [29, 46, 402],
+      [33, 31, 422],
+      [36, 28, 442],
+      [39, 32, 462],
+      [41, 47, 482],
+      [46, 1, 502],
+      [51, 31, 522],
+      [58, 1, 542],
+      [67, 1, 562],
+      [78, 1, 582],
+    ];
+    for (var i = 0; i < starts.length; i++) {
+      final juz = i + 2;
+      final surah = starts[i][0];
+      final ayah = starts[i][1];
+      final page = starts[i][2];
+      expect(quran.getPageNumber(surah, ayah), page);
+      expect(svc.getPageMeta(page).juz, juz, reason: 'juz of page $page');
+      expect(
+        svc.getPageMeta(page).hizb,
+        2 * juz - 1,
+        reason: 'hizb of page $page',
+      );
+      expect(
+        svc.getPageMeta(page - 1).juz,
+        juz - 1,
+        reason: 'juz of page ${page - 1}',
+      );
+    }
+  });
 }

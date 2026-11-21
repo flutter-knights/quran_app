@@ -13,3 +13,17 @@ extension NumeralExtension on String {
     return out;
   }
 }
+
+String toAsciiDigits(String input) {
+  final out = StringBuffer();
+  for (final code in input.codeUnits) {
+    if (code >= 0x0660 && code <= 0x0669) {
+      out.writeCharCode(code - 0x0660 + 0x30);
+    } else if (code >= 0x06F0 && code <= 0x06F9) {
+      out.writeCharCode(code - 0x06F0 + 0x30);
+    } else {
+      out.writeCharCode(code);
+    }
+  }
+  return out.toString();
+}

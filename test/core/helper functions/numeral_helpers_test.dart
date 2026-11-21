@@ -22,4 +22,22 @@ void main() {
       expect('Fajr 4:15 AM'.toIndicNumerals('ar'), 'Fajr ٤:١٥ AM');
     });
   });
+
+  group('toAsciiDigits', () {
+    test('folds Arabic-Indic digits', () {
+      expect(toAsciiDigits('٤٢'), '42');
+    });
+
+    test('folds Extended Arabic-Indic digits', () {
+      expect(toAsciiDigits('۶۰۴'), '604');
+    });
+
+    test('folds mixed digits', () {
+      expect(toAsciiDigits('1٢3'), '123');
+    });
+
+    test('leaves other characters alone', () {
+      expect(toAsciiDigits('abc'), 'abc');
+    });
+  });
 }

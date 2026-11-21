@@ -421,5 +421,30 @@
   "alerts_enabledCount": "{count, plural, =0{Off for all prayers} =1{On for 1 prayer} other{On for {count} prayers}}",
   "@alerts_enabledCount": {
     "placeholders": { "count": { "type": "num" } }
+  },
+  "mushaf_paper_cream": "Cream",
+  "mushaf_paper_sepia": "Sepia",
+  "mushaf_paper_green": "Green",
+  "mushaf_paper_gray": "White",
+  "mushaf_paper_night": "Night",
+  "mushaf_paper_slateNight": "Blue night",
+  "mushaf_endRecitation": "End recitation",
+  "mushaf_retry": "Try again",
+  "mushaf_pageLoadFailed": "Couldn't load the page",
+  "mushaf_playFromSurahStart": "Listen from the start of the surah",
+  "mushaf_audioError": "Couldn't play ayah {ayah} of {surah}",
+  "@mushaf_audioError": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
+  },
+  "mushaf_nowReciting": "Now reciting: {surah} {ayah}, page {page}",
+  "@mushaf_nowReciting": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" }, "page": { "type": "String" } }
+  },
+  "mushaf_returnToReciting": "Back to the recited ayah",
+  "playback_repeatEachAyah": "Repeat each ayah",
+  "playback_repeatPassage": "Repeat the passage",
+  "playback_crossSurahRange": "From {from} to {to}",
+  "@playback_crossSurahRange": {
+    "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
   }
 }

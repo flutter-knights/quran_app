@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_meta_service.dart';
@@ -25,16 +26,23 @@ import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_browse_bar.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
-  _FakeSettings()
-      : super(SettingsState(SettingsModel(
-          palette: ColorPalette.neutralLight,
-          isFormat12Hours: false,
-          isArabic: true,
-        )));
+  _FakeSettings({MushafReadingMode mode = MushafReadingMode.page})
+    : super(
+        SettingsState(
+          SettingsModel(
+            palette: ColorPalette.neutralLight,
+            isFormat12Hours: false,
+            isArabic: true,
+            readingMode: mode,
+          ),
+        ),
+      );
 
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -42,21 +50,23 @@ class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
 
 class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   _FakeMushaf(super.initial);
-  AyahIdentifier? highlighted;
+  AyahIdentifier? selected;
+  void push(MushafState s) => emit(s);
   @override
-  void clearHighlight() {}
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
   @override
-  void toggleHighlight(AyahIdentifier a) {
-    highlighted = a;
-    emit(state.copyWith(highlightedAyah: a));
+  void clearSelection() {}
+  @override
+  void toggleSelection(AyahIdentifier a) {
+    selected = a;
+    emit(state.copyWith(selectedAyah: a));
   }
 
   @override
-  void setPage(int p) {}
+  void setPage(int p, {required bool byUser}) =>
+      emit(state.copyWith(currentPage: p));
   @override
   void setHighlightBounds(double centerY) {}
-  @override
-  void pinOverlay() {}
   @override
   void unpinOverlay() {}
   @override
@@ -64,7 +74,8 @@ class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   @override
   void setChrome(bool visible) {}
   @override
-  ValueNotifier<AyahIdentifier?> get debugNotifier => throw UnimplementedError();
+  ValueNotifier<AyahIdentifier?> get debugNotifier =>
+      throw UnimplementedError();
 }
 
 class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
@@ -81,9 +92,11 @@ class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
 }
 
 class _StubLastReadRepo implements LastReadRepository {
+  _StubLastReadRepo([this.stored]);
+  final LastRead? stored;
   LastRead? saved;
   @override
-  Future<LastRead?> get() async => null;
+  Future<LastRead?> get() async => stored;
   @override
   Future<void> save(LastRead value) async => saved = value;
   @override
@@ -118,52 +131,217 @@ void main() {
     sl.registerSingleton<QuranPageService>(_StubPageService());
     if (sl.isRegistered<QuranMetaService>()) sl.unregister<QuranMetaService>();
     sl.registerSingleton<QuranMetaService>(
-        QuranMetaServiceImpl(pageService: sl<QuranPageService>()));
+      QuranMetaServiceImpl(pageService: sl<QuranPageService>()),
+    );
     if (sl.isRegistered<GetMushafPage>()) sl.unregister<GetMushafPage>();
     sl.registerSingleton<GetMushafPage>(GetMushafPage(_StubMushafRepo()));
   });
 
-  testWidgets('on dispose: saves (page, highlighted) then stops playback',
-      (tester) async {
-    final mushaf = _FakeMushaf(const MushafState(
-        currentPage: 7,
-        highlightedAyah: AyahIdentifier(surah: 2, ayah: 5)));
-    final playback = _FakePlayback(const PlaybackState());
-    final repo = _StubLastReadRepo();
-
-    await tester.pumpWidget(MaterialApp(
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider<SettingsCubit>.value(value: _FakeSettings()),
-          BlocProvider<MushafCubit>.value(value: mushaf),
-          BlocProvider<PlaybackCubit>.value(value: playback),
-          BlocProvider<LastReadCubit>.value(
-              value: LastReadCubit(repository: repo)),
-          BlocProvider<PageBookmarkCubit>(
-            create: (_) => PageBookmarkCubit(
-              getPageBookmarks: GetPageBookmarks(_StubPageBookmarkRepo()),
-              togglePageBookmark: TogglePageBookmark(_StubPageBookmarkRepo()),
-            ),
+  Future<(_StubLastReadRepo, _FakePlayback)> disposeOn(
+    WidgetTester tester,
+    MushafArgs args, {
+    Future<void> Function(_FakeMushaf mushaf)? act,
+    MushafState? mushafState,
+    PlaybackState playbackState = const PlaybackState(),
+    LastRead? stored,
+    MushafReadingMode mode = MushafReadingMode.page,
+  }) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final mushaf = _FakeMushaf(
+      mushafState ??
+          const MushafState(
+            currentPage: 7,
+            selectedAyah: AyahIdentifier(surah: 2, ayah: 5),
+            chromeVisible: true,
           ),
+    );
+    final playback = _FakePlayback(playbackState);
+    final repo = _StubLastReadRepo(stored);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
         ],
-        child: const MushafPage(initialPage: 7),
+        supportedLocales: S.delegate.supportedLocales,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<SettingsCubit>.value(value: _FakeSettings(mode: mode)),
+            BlocProvider<MushafCubit>.value(value: mushaf),
+            BlocProvider<PlaybackCubit>.value(value: playback),
+            BlocProvider<LastReadCubit>.value(
+              value: LastReadCubit(repository: repo),
+            ),
+            BlocProvider<PageBookmarkCubit>(
+              create: (_) => PageBookmarkCubit(
+                getPageBookmarks: GetPageBookmarks(_StubPageBookmarkRepo()),
+                togglePageBookmark: TogglePageBookmark(_StubPageBookmarkRepo()),
+              ),
+            ),
+          ],
+          child: MushafPage(args: args),
+        ),
       ),
-    ));
+    );
+    await act?.call(mushaf);
     await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
     await tester.pump();
+    return (repo, playback);
+  }
 
-    expect(
-        repo.saved,
-        const LastRead(
-          page: 7,
-          ayah: AyahIdentifier(surah: 2, ayah: 5),
-        ));
+  testWidgets('on dispose: saves (page, selected) then stops playback', (
+    tester,
+  ) async {
+    final (repo, playback) = await disposeOn(tester, const MushafArgs(page: 7));
+
+    final saved = repo.saved!;
+    expect(saved.page, 7);
+    expect(saved.ayah, const AyahIdentifier(surah: 2, ayah: 5));
+    expect(saved.updatedAt, isNotNull);
     expect(playback.stopCalls, 1);
+  });
+
+  testWidgets('jump arrival: dispose does not overwrite last read', (
+    tester,
+  ) async {
+    final (repo, playback) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7, origin: MushafOrigin.jump),
+    );
+
+    expect(repo.saved, isNull);
+    expect(playback.stopCalls, 1);
+  });
+
+  testWidgets('jump arrival: a manual page swipe lifts the guard', (
+    tester,
+  ) async {
+    final (repo, _) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7, origin: MushafOrigin.jump),
+      act: (_) async {
+        await tester.pumpAndSettle();
+        await tester.drag(find.byType(PageView), const Offset(-400, 0));
+        await tester.pumpAndSettle();
+      },
+    );
+
+    expect(repo.saved, isNotNull);
+  });
+
+  testWidgets('in-place jump: dispose does not overwrite last read', (
+    tester,
+  ) async {
+    final (repo, _) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7),
+      act: (_) async {
+        await tester.tap(find.byKey(const ValueKey('mushaf-top-page')));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), '300');
+        await tester.tap(find.byKey(const ValueKey('page-jump-go')));
+        await tester.pumpAndSettle();
+      },
+    );
+
+    expect(repo.saved, isNull);
+  });
+
+  testWidgets('a normal arrival on the last-read page keeps its ayah', (
+    tester,
+  ) async {
+    const stored = LastRead(page: 7, ayah: AyahIdentifier(surah: 3, ayah: 5));
+    final (repo, _) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7),
+      mushafState: const MushafState(currentPage: 7, chromeVisible: true),
+      stored: stored,
+      act: (_) => tester.pumpAndSettle(),
+    );
+
+    expect(repo.saved!.page, 7);
+    expect(repo.saved!.ayah, stored.ayah);
+  });
+
+  testWidgets('a stored ayah from another page is not carried over', (
+    tester,
+  ) async {
+    final (repo, _) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7),
+      mushafState: const MushafState(currentPage: 7, chromeVisible: true),
+      stored: const LastRead(page: 50, ayah: AyahIdentifier(surah: 3, ayah: 5)),
+      act: (_) => tester.pumpAndSettle(),
+    );
+
+    expect(repo.saved!.page, 7);
+    expect(repo.saved!.ayah, isNull);
+  });
+
+  testWidgets('an in-place jump saves the pre-jump page, not the target', (
+    tester,
+  ) async {
+    final (repo, _) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7),
+      mushafState: const MushafState(currentPage: 7, chromeVisible: true),
+      mode: MushafReadingMode.scroll,
+      act: (mushaf) async {
+        await tester.pumpAndSettle();
+        mushaf.push(mushaf.state.copyWith(currentPage: 9));
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.tap(find.byKey(const ValueKey('mushaf-top-page')));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), '300');
+        await tester.tap(find.byKey(const ValueKey('page-jump-go')));
+        await tester.pumpAndSettle();
+        expect(mushaf.state.currentPage, 300);
+      },
+    );
+
+    expect(repo.saved!.page, 9);
+  });
+
+  group('browse bar', () {
+    double browseBarOpacity(WidgetTester tester) => tester
+        .widget<AnimatedOpacity>(
+          find.ancestor(
+            of: find.byType(MushafBrowseBar),
+            matching: find.byType(AnimatedOpacity),
+          ),
+        )
+        .opacity;
+
+    testWidgets('hides while a recitation is active', (tester) async {
+      await disposeOn(
+        tester,
+        const MushafArgs(page: 7),
+        mushafState: const MushafState(currentPage: 7, chromeVisible: true),
+        playbackState: const PlaybackState(
+          requestedAyah: AyahIdentifier(surah: 2, ayah: 5),
+          isLoading: true,
+        ),
+        act: (_) async {
+          await tester.pump();
+          expect(browseBarOpacity(tester), 0);
+        },
+      );
+    });
+
+    testWidgets('shows when nothing is playing', (tester) async {
+      await disposeOn(
+        tester,
+        const MushafArgs(page: 7),
+        mushafState: const MushafState(currentPage: 7, chromeVisible: true),
+        act: (_) async {
+          await tester.pumpAndSettle();
+          expect(browseBarOpacity(tester), 1);
+        },
+      );
+    });
   });
 }

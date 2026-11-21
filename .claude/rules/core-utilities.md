@@ -11,7 +11,9 @@ Check here before writing a helper. Keep these pure: no widgets, no feature impo
 - **`normalizeArabic(String)`** (`arabic_normalizer.dart`): strips diacritics and folds letter variants for Quran search; apply it to both the query and the index. Pure Dart, safe in domain.
 - **`AhadithHelpers`**: `cleanArabicQuery` (hadith search's own normalizer, kept separate on purpose), `sortHadiths`, `isArabic(text)`.
 - **`String.toIndicNumerals(localeCode)`** (`numeral_helpers.dart`) and **`Object.toLocalized(context)`** (`locale_helpers.dart`): ASCII → Arabic-Indic digits when the locale is Arabic. Use one of them for every number shown in Arabic; never hand-roll the digit map again.
+- **`toAsciiDigits(String)`** (`numeral_helpers.dart`): folds Arabic-Indic and Extended Arabic-Indic digits to ASCII before parsing user input.
 - **`context.isArabic`**, **`context.langCode`** (`locale_helpers.dart`).
+- **`surahDisplayName(context, surah)`** (`locale_helpers.dart`): the surah's Arabic or English name for the current locale.
 - **`context.palette`** (`config/theme/palette_context.dart`): the selected `ColorPalette` for `AppPaletteX` getters such as `primaryInk`; build-only, see `theming.md`.
 - **`DateTime.to24hTime()`**, **`DateTime.format12h(context)`**, **`String.parse24hTime()`**, `removeTimeZone()`, `gregorianDate()` (`time_helpers.dart`).
 - **`Duration.toDigitalClock()`** (`duration_helpers.dart`).
