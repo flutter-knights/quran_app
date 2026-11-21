@@ -222,6 +222,9 @@ class PendingS {
       _ar ? 'تكرار المقطع' : 'Repeat the passage';
   String playback_crossSurahRange(String from, String to) =>
       _ar ? 'من $from إلى $to' : 'From $from to $to';
+  String playback_mediaTitle(String surah, String ayah) =>
+      _ar ? '$surah، الآية $ayah' : '$surah, ayah $ayah';
+  String get playback_mediaAlbum => _ar ? 'القرآن الكريم' : 'The Holy Quran';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

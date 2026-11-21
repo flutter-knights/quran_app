@@ -446,5 +446,10 @@
   "playback_crossSurahRange": "From {from} to {to}",
   "@playback_crossSurahRange": {
     "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
-  }
+  },
+  "playback_mediaTitle": "{surah}, ayah {ayah}",
+  "@playback_mediaTitle": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
+  },
+  "playback_mediaAlbum": "The Holy Quran"
 }

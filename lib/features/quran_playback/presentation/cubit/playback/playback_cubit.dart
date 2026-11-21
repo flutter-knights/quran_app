@@ -364,6 +364,8 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     emit(state.copyWith(isPlaying: true, isPaused: false));
   }
 
+  Future<void> seek(Duration position) => repository.seek(position);
+
   Future<void> setSpeed(double speed) async {
     emit(state.copyWith(speed: speed));
     await repository.setSpeed(speed);

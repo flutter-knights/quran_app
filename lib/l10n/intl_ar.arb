@@ -430,5 +430,10 @@
   "playback_crossSurahRange": "من {from} إلى {to}",
   "@playback_crossSurahRange": {
     "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
-  }
+  },
+  "playback_mediaTitle": "{surah}، الآية {ayah}",
+  "@playback_mediaTitle": {
+    "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" } }
+  },
+  "playback_mediaAlbum": "القرآن الكريم"
 }

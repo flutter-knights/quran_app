@@ -1305,4 +1305,12 @@ void main() {
       );
     },
   );
+
+  test('seek forwards to the repository', () async {
+    when(() => repo.seek(any())).thenAnswer((_) async {});
+    final c = build();
+    await c.seek(const Duration(seconds: 4));
+    verify(() => repo.seek(const Duration(seconds: 4))).called(1);
+    await c.close();
+  });
 }
