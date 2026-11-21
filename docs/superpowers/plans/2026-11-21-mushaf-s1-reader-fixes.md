@@ -14,8 +14,9 @@
 
 - Work on `feature/mushaf-leaf-ribbon`. Never switch branches, never touch `main`, never push, never rebase, never amend.
 - Commits: stage explicit paths only (never `git add -A` or `git add .`). Use a conventional message (`feat|fix|refactor|test(scope): …`) that ends with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
-- Write no comments and no doc comments in new or changed code, and do not delete comments the user wrote. Add no redundant type annotations (`final x = …`, closure parameters untyped). Write lean code.
-- New strings: add each one to both `lib/l10n/intl_ar.arb` and `lib/l10n/intl_en.arb` (a `"@key": {"placeholders": {"x": {"type": "String"}}}` block for each placeholder, as `home_untilSunrise` has), and mirror it in `lib/core/localization/pending_s.dart` in exactly one of these two shapes: `String get key => _ar ? '…' : '…';` or `String key(String a, String b) => _ar ? '… $a …' : '… $a …';`. Use only single quotes and only `String` parameters, and format numbers before passing them in. Read strings with `PendingS.of(context)` in `build` and `PendingS.current` in callbacks. `test/core/localization/pending_s_test.dart` must stay green.
+- Write no comments and no doc comments in new or changed code. Add no redundant type annotations (`final x = …`, closure parameters untyped). Write lean code.
+- Comments the user wrote stay, with two exceptions. A comment inside lines a task replaces goes with those lines (for example the per-range comments in `parseCounter`'s body and the `// ✅ FIX` in `prepareAyahAudio`). A surviving comment that a task makes false (for example the `_onPlayPage` comment at `mushaf_page.dart:244-245`, or the `unpinOverlay` doc comment that names `highlightedAyah`) gets the smallest correction that makes it true, and the task report names it.
+- New strings: add each one to both `lib/l10n/intl_ar.arb` and `lib/l10n/intl_en.arb` (a `"@key": {"placeholders": {"x": {"type": "String"}}}` block for each placeholder, as `home_untilSunrise` has), and mirror it in `lib/core/localization/pending_s.dart` in exactly one of these two shapes: `String get key => _ar ? '…' : '…';` or `String key(String a, String b) => _ar ? '… $a …' : '… $a …';`. Use only single quotes and only `String` parameters, and format numbers before passing them in. A method's `String key(String a, …)` signature must stay on one line after `dart format` (the `=>` body may wrap): `pending_s_test` counts methods with `RegExp(r'String \w+\(String')`, so keep at most three short parameters and pass preformatted text instead of many parts. Read strings with `PendingS.of(context)` in `build` and `PendingS.current` in callbacks. `test/core/localization/pending_s_test.dart` must stay green.
 - Never edit `lib/generated/`. Never run `intl_utils:generate`. Never run `test/tools/generate_mushaf_assets_test.dart` with `GENERATE_MUSHAF_ASSETS=true`. Never modify `assets/mushaf/**`.
 - Arabic numbers use Arabic-Indic digits through `toLocalized(context)` or `toIndicNumerals(localeCode)`.
 - Colours come only from `context.colorScheme` or `MushafPaperX`. Hex literals go only in `mushaf_paper_colors.dart`. Text styles come only from `TS.*`, and `test/config/theme/typography_ratchet_test.dart` must not rise.
@@ -29,7 +30,10 @@
 2. **A next-ayah preload failure surfaces on advance, not at preload time.** It reaches `error` when the engine advances to that ayah and the retried download fails, so `requestedAyah` names the right ayah. A preload-time emit would name the ayah that is still playing.
 3. **The ayah-0 long-press popover has one banner action**, «استماع من بداية السورة». «استماع الصفحة كاملة» stays on the browse bar's ▶ until S3 builds the banner leaf.
 4. **The player title shows a selected banner (ayah 0) as ayah 1**, since playback starts there. It never reads «الآية ٠».
-5. **Skips are new plays.** ⏮ and ⏭ clear `error`, just as `playSelected`, `playRange` and `retry` do.
+5. **Skips are new plays.** ⏮ and ⏭ clear `error`, just as `playSelected`, `playRange` and `retry` do, and they re-arm follow (item 5: "any new play").
+6. **A surah opened from search opens as the surah list does.** Spec §1A puts "Search results" under `jump`. The search page tile (`_JumpTile`) and the ayah results follow that. The surah rows in search results are the same `SurahListTile` widget as the surah list, and opening a surah means reading it from its start, not peeking, so they stay `normal` with `openedSurah`.
+7. **`jumpFrom` waits for S3.** Spec §3.7 lists it in the S1 `MushafState`, but its only consumer is the S3 notice chip, so S1 adds no field that nothing reads. S1's in-place jump only re-arms the last-read guard.
+8. **Follow re-arms only on a play the reader starts.** These call `MushafCubit.resumeFollow()`: the overlay play button, ⏮/⏭, the browse bar's page play, the banner «استماع من بداية السورة» and the range-from edit in the options sheet. A null → non-null playing ayah also re-arms it inside the cubit. Auto-advance, repeats, the range-to edit and a reciter change (which replays the same ayah) do not.
 
 ## Three kinds of page turn
 
@@ -43,15 +47,15 @@
 ## Review Focus
 
 1. **A follow turn interrupted by a drag.** If the reader grabs the page mid-animation, the next manual swipe must count as manual. Task 1 pins this with `PageTurnTracker` tests: `end()` after an interrupted `begin()`, and a jump to the current page.
-2. **The basmala as the playing ayah.** `CurrentAyahNotifier` reports `(s, 0)`, and `quran.getPageNumber(s, 0)` matches phantom page-data entries (4:0 resolves to p.76 while the banner is on p.77). Every page lookup of a playing ayah maps ayah 0 to ayah 1. Task 5 adds a `playingPage` test for (4,0) → 77.
-3. **Fast swipes and the bounds load.** A late `GetMushafPage` result for page N must not overwrite the bounds of page N+1. Task 5 adds a completer-ordered race test.
+2. **Ayah 0 (the banner) in page lookups.** `CurrentAyahNotifier` reports `(s, 0)`, banner taps select `(s, 0)`, and old bookmarks may hold `(s, 0)`. `quran.getPageNumber(s, 0)` matches phantom page-data entries (4:0 resolves to p.76 while the banner is on p.77). Every page lookup or presence check of an ayah maps ayah 0 to ayah 1: `playingPage`, `MushafArgs.focus` and `resolveRunningSurah`. Task 5a adds a `playingPage` test for (4,0) → 77, Task 6 a `MushafArgs.focus(4:0)` test and Task 1 a selected-banner test.
+3. **Fast swipes and the bounds load.** A late `GetMushafPage` result for page N must not overwrite the bounds of page N+1, and `setPage` clears the old bounds at once. Task 5a adds a completer-ordered race test.
 4. **Coming back online.** After an offline failure, a retry must download again and must not play a truncated file. Task 3 pins this with repository tests: the in-flight entry is cleared and the partial file is deleted.
 5. **Pause during a recitation with no selection.** The overlay must stay up while paused or errored (`requestedAyah` non-null), and the stop button must be the only way to hide it. Task 7 adds paused and errored visibility tests.
 
 ## Out of slice
 
 - Item 16 (sajda map) is deferred by the spec and gets no task.
-- Items 18–19 belong to S4. Everything in spec §3–§6 belongs to S2–S5. Any `jumpFrom` field and the notice chip are S3. S1's in-place jump only re-arms the last-read guard.
+- Items 18–19 belong to S4. Everything in spec §3–§6 belongs to S2–S5. The `jumpFrom` field and the notice chip are S3 (Deliberate reading 7).
 - `MushafPage.dispose` still calls `_playbackCubit.stop()`, and `mushaf_page_dispose_test` still asserts one stop call. Spec §4 (S2) changes both.
 
 ---
