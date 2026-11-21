@@ -262,6 +262,7 @@ void main() {
     await _pump(tester, m, p);
     await tester.tap(find.byIcon(Icons.play_arrow));
     await tester.pumpAndSettle();
+    // playRange should have been called with start = target and end = last ayah of surah 2
     expect(p.lastRangeStart, _target);
     expect(p.lastRangeEnd, const AyahIdentifier(surah: 2, ayah: 286));
     expect(m.resumed, isTrue);
@@ -284,7 +285,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.play_arrow));
     await tester.pumpAndSettle();
     expect(p.resumed, isTrue);
-    expect(p.lastPlay, isNull);
+    expect(p.lastPlay, isNull); // no restart
   });
 
   testWidgets('shows pause icon while playing', (tester) async {
@@ -352,6 +353,7 @@ void main() {
     await _pump(tester, m, p);
     await tester.tap(find.byIcon(Icons.expand_more));
     await tester.pumpAndSettle();
+    // After unpinning, isOverlayPinned becomes false
     expect(m.state.isOverlayPinned, isFalse);
   });
 
@@ -363,6 +365,7 @@ void main() {
     );
     final p = _FakePlayback(const PlaybackState(currentAyah: _target));
     await _pump(tester, m, p);
+    // Label should show the currentAyah from playback since no highlight
     expect(find.text('Surah $_name, Ayah 5'), findsOneWidget);
   });
 
@@ -431,6 +434,23 @@ void main() {
     await tester.tap(find.byIcon(Icons.skip_next));
     await tester.pump();
     expect(p.skippedNext, isTrue);
+    expect(m.resumed, isTrue);
+  });
+
+  testWidgets('skip previous re-arms follow', (tester) async {
+    final m = _FakeMushaf(const MushafState(currentPage: 1));
+    final p = _FakePlayback(
+      const PlaybackState(
+        currentAyah: AyahIdentifier(surah: 2, ayah: 7),
+        rangeStart: _target,
+        rangeEnd: AyahIdentifier(surah: 2, ayah: 10),
+        isPlaying: true,
+      ),
+    );
+    await _pump(tester, m, p);
+    await tester.tap(find.byIcon(Icons.skip_previous));
+    await tester.pump();
+    expect(p.skippedPrevious, isTrue);
     expect(m.resumed, isTrue);
   });
 
@@ -530,6 +550,85 @@ void main() {
     expect(find.text('Try again'), findsNothing);
   });
 
+  testWidgets('audio error SnackBar goes away when a skip clears the error', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(const MushafState(currentPage: 1));
+    final p = _FakePlayback(const PlaybackState());
+    await _pump(tester, m, p);
+    p.push(const PlaybackState(requestedAyah: _target, error: 'x'));
+    await tester.pumpAndSettle();
+    expect(find.text('Try again'), findsOneWidget);
+
+    p.push(
+      const PlaybackState(
+        currentAyah: AyahIdentifier(surah: 2, ayah: 6),
+        isPlaying: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Try again'), findsNothing);
+  });
+
+  testWidgets('now-reciting SnackBar leaves the stop button reachable', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, playingAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
+    await _pump(tester, m, p);
+    m.push(m.state.copyWith(followPlayback: false));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsOneWidget);
+
+    await tester.tap(find.byTooltip('End recitation'));
+    await tester.pump();
+    expect(p.stopped, isTrue);
+  });
+
+  testWidgets('now-reciting SnackBar times out', (tester) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, playingAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(currentAyah: _target, isPlaying: true),
+    );
+    await _pump(tester, m, p);
+    m.push(m.state.copyWith(followPlayback: false));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('hiding the player SnackBar leaves an unrelated one alone', (
+    tester,
+  ) async {
+    final m = _FakeMushaf(const MushafState(currentPage: 1));
+    final p = _FakePlayback(const PlaybackState());
+    await _pump(tester, m, p);
+    ScaffoldMessenger.of(
+      tester.element(find.byType(AyahPlaybackOverlay)),
+    ).showSnackBar(
+      const SnackBar(content: Text('Bookmark saved'), persist: true),
+    );
+    await tester.pumpAndSettle();
+
+    p.push(const PlaybackState(currentAyah: _target, isPlaying: true));
+    await tester.pumpAndSettle();
+    p.push(const PlaybackState());
+    await tester.pumpAndSettle();
+    m.push(m.state.copyWith(followPlayback: false));
+    m.push(m.state.copyWith(followPlayback: true));
+    await tester.pumpAndSettle();
+    expect(find.text('Bookmark saved'), findsOneWidget);
+  });
+
   for (final locale in [const Locale('en'), const Locale('ar')]) {
     testWidgets('now-reciting SnackBar fits a 360 dp phone in $locale', (
       tester,
@@ -597,6 +696,7 @@ void main() {
     );
     final p = _FakePlayback(const PlaybackState(isLoading: true));
     await tester.pumpWidget(_wrap(m: m, p: p));
+    // CircularProgressIndicator animates infinitely — use pump() not pumpAndSettle()
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.byIcon(Icons.play_arrow), findsNothing);
@@ -613,5 +713,29 @@ void main() {
     await tester.tap(find.text('1.5x'));
     await tester.pumpAndSettle();
     expect(p.speedSet, 1.5);
+  });
+
+  testWidgets('options sheet range edit re-arms follow', (tester) async {
+    final m = _FakeMushaf(
+      const MushafState(currentPage: 1, selectedAyah: _target),
+    );
+    final p = _FakePlayback(
+      const PlaybackState(
+        rangeStart: _target,
+        rangeEnd: AyahIdentifier(surah: 2, ayah: 10),
+      ),
+    );
+    await _pump(tester, m, p);
+    await tester.tap(find.byIcon(Icons.tune));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('range-from')),
+        matching: find.byIcon(Icons.add),
+      ),
+    );
+    await tester.pump();
+    expect(p.lastRangeStart, const AyahIdentifier(surah: 2, ayah: 6));
+    expect(m.resumed, isTrue);
   });
 }

@@ -8,6 +8,7 @@ import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifie
 import 'package:quran_app/features/quran_playback/domain/services/playback_range_validator.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
+import 'package:quran_app/features/quran_playback/presentation/utils/surah_display_name.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 /// Expanded playback panel: from→to range + per-ayah / per-range repeat counts
@@ -40,7 +41,7 @@ class PlaybackRepeatOptions extends StatelessWidget {
         final crossSurah =
             start != null && end != null && start.surah != end.surah;
         String endLabel(AyahIdentifier a) =>
-            '${context.isArabic ? quran.getSurahNameArabic(a.surah) : quran.getSurahName(a.surah)} ${a.ayah.toLocalized(context)}';
+            '${surahDisplayName(context, a.surah)} ${a.ayah.toLocalized(context)}';
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

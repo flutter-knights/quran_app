@@ -11,11 +11,13 @@ import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../../quran_playback/domain/entities/reciter.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
+import '../../../../../quran_playback/presentation/utils/surah_display_name.dart';
 import '../../../../../quran_playback/presentation/widgets/playback_repeat_options.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 
 const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+const _playerClearance = 76.0;
 
 /// Compact frosted-glass mini-player that floats over the Mushaf page without
 /// pushing or resizing the content.
@@ -24,8 +26,16 @@ const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 /// context — stable, rebuilt only on ayah-selection changes) rather than by
 /// [_MiniPlayer] (inner BlocBuilder context — rebuilt on every ayah advance
 /// during playback). This prevents "deactivated context" overlay crashes.
-class AyahPlaybackOverlay extends StatelessWidget {
+class AyahPlaybackOverlay extends StatefulWidget {
   const AyahPlaybackOverlay({super.key});
+
+  @override
+  State<AyahPlaybackOverlay> createState() => _AyahPlaybackOverlayState();
+}
+
+class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _snack;
+  var _snackVisible = false;
 
   void _openReciterSheet(BuildContext context) {
     showModalBottomSheet<void>(
@@ -96,10 +106,10 @@ class AyahPlaybackOverlay extends StatelessWidget {
                   ),
                   BlocListener<PlaybackCubit, PlaybackState>(
                     listenWhen: (a, b) =>
-                        (a.requestedAyah ?? a.currentAyah) != null &&
-                        (b.requestedAyah ?? b.currentAyah) == null,
-                    listener: (context, _) =>
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                        ((a.requestedAyah ?? a.currentAyah) != null &&
+                            (b.requestedAyah ?? b.currentAyah) == null) ||
+                        (a.error != null && b.error == null),
+                    listener: (_, _) => _hideSnack(),
                   ),
                   BlocListener<MushafCubit, MushafState>(
                     listenWhen: (a, b) =>
@@ -110,8 +120,7 @@ class AyahPlaybackOverlay extends StatelessWidget {
                   ),
                   BlocListener<MushafCubit, MushafState>(
                     listenWhen: (a, b) => !a.followPlayback && b.followPlayback,
-                    listener: (context, _) =>
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                    listener: (_, _) => _hideSnack(),
                   ),
                 ],
                 child: IgnorePointer(
@@ -154,48 +163,66 @@ class AyahPlaybackOverlay extends StatelessWidget {
     );
   }
 
+  void _showSnack(
+    BuildContext context,
+    String text,
+    String label,
+    VoidCallback onPressed,
+  ) {
+    _hideSnack();
+    final controller = ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        behavior: SnackBarBehavior.floating,
+        persist: false,
+        margin: EdgeInsets.fromLTRB(
+          16,
+          0,
+          16,
+          _playerClearance + MediaQuery.of(context).padding.bottom,
+        ),
+        onVisible: () => _snackVisible = true,
+        action: SnackBarAction(label: label, onPressed: onPressed),
+      ),
+    );
+    _snack = controller;
+    controller.closed.whenComplete(() {
+      if (_snack == controller) {
+        _snack = null;
+        _snackVisible = false;
+      }
+    });
+  }
+
+  void _hideSnack() {
+    if (_snackVisible) _snack?.close();
+  }
+
   void _showAudioError(BuildContext context, PlaybackState state) {
     final ayah = (state.requestedAyah ?? state.currentAyah)!;
     final pending = PendingS.current;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            pending.mushaf_audioError(ayah.ayah.toLocalized(context)),
-          ),
-          action: SnackBarAction(
-            label: pending.mushaf_retry,
-            onPressed: context.read<PlaybackCubit>().retry,
-          ),
-        ),
-      );
+    _showSnack(
+      context,
+      pending.mushaf_audioError(ayah.ayah.toLocalized(context)),
+      pending.mushaf_retry,
+      context.read<PlaybackCubit>().retry,
+    );
   }
 
   void _showNowReciting(BuildContext context, MushafState state) {
     final mushaf = context.read<MushafCubit>();
     final ayah = state.playingAyah!;
     final pending = PendingS.current;
-    final surah = context.isArabic
-        ? q.getSurahNameArabic(ayah.surah)
-        : q.getSurahName(ayah.surah);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            pending.mushaf_nowReciting(
-              surah,
-              ayah.ayah.toLocalized(context),
-              mushaf.playingPage!.toLocalized(context),
-            ),
-          ),
-          action: SnackBarAction(
-            label: pending.mushaf_returnToReciting,
-            onPressed: mushaf.resumeFollow,
-          ),
-        ),
-      );
+    _showSnack(
+      context,
+      pending.mushaf_nowReciting(
+        surahDisplayName(context, ayah.surah),
+        ayah.ayah.toLocalized(context),
+        mushaf.playingPage!.toLocalized(context),
+      ),
+      pending.mushaf_returnToReciting,
+      mushaf.resumeFollow,
+    );
   }
 }
 
@@ -360,9 +387,7 @@ class _InfoColumn extends StatelessWidget {
             S
                 .of(context)
                 .ayah_label(
-                  context.isArabic
-                      ? q.getSurahNameArabic(target.surah)
-                      : q.getSurahName(target.surah),
+                  surahDisplayName(context, target.surah),
                   (target.ayah == 0 ? 1 : target.ayah).toLocalized(context),
                 ),
             textAlign: TextAlign.center,
