@@ -607,6 +607,70 @@ void main() {
     },
   );
 
+  group('preloading the next ayah', () {
+    late StreamController<AyahIdentifier> ayahs;
+
+    setUp(() {
+      ayahs = StreamController<AyahIdentifier>.broadcast();
+      when(() => repo.currentAyahStream).thenAnswer((_) => ayahs.stream);
+      when(
+        () => seq.getNextAyahs(
+          current: any(named: 'current'),
+          count: any(named: 'count'),
+          endSurah: any(named: 'endSurah'),
+          endAyah: any(named: 'endAyah'),
+        ),
+      ).thenReturn([ayah26]);
+    });
+
+    tearDown(() => ayahs.close());
+
+    test('a failed prepare of the next ayah feeds error naming it', () async {
+      stubPrepareFails();
+      final c = build();
+      ayahs.add(ayah25);
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(c.state.currentAyah, ayah25);
+      expect(c.state.requestedAyah, ayah26);
+      expect(c.state.error, isNotNull);
+      await c.close();
+    });
+
+    test('a successful prepare leaves error clear', () async {
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) async => const Right('/p.mp3'));
+      final c = build();
+      ayahs.add(ayah25);
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(c.state.error, isNull);
+      await c.close();
+    });
+
+    test('a prepare that fails after the play moved on is ignored', () async {
+      final late = Completer<Either<Failure, String>>();
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) => late.future);
+      final c = build();
+      ayahs.add(ayah25);
+      await Future<void>.delayed(Duration.zero);
+      await c.stop();
+      late.complete(const Left(NetworkFailure('offline')));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.state.error, isNull);
+      await c.close();
+    });
+  });
+
   // ── Task 7: skipNext / skipPrevious ──────────────────────────────────────
 
   blocTest<PlaybackCubit, PlaybackState>(

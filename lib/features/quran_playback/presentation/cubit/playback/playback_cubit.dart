@@ -279,13 +279,29 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> _preloadNextAyahs(AyahIdentifier current) async {
+    final generation = _playGeneration;
+    final reciter = state.reciter;
     final nextAyahs = ayahSequenceService.getNextAyahs(
       current: current,
       count: 5,
       endSurah: _endSurah,
       endAyah: _endAyah,
     );
-    await repository.preloadAyahs(ayahs: nextAyahs, reciter: state.reciter);
+    await repository.preloadAyahs(ayahs: nextAyahs, reciter: reciter);
+    if (nextAyahs.isEmpty) return;
+    final next = nextAyahs.first;
+    final prepared = await repository.prepareAyahAudio(
+      ayah: next,
+      reciter: reciter,
+    );
+    if (isClosed || generation != _playGeneration || state.error != null) {
+      return;
+    }
+    prepared.fold(
+      (failure) =>
+          emit(state.copyWith(error: failure.message, requestedAyah: next)),
+      (_) {},
+    );
   }
 
   Future<void> preloadFullSurah({
