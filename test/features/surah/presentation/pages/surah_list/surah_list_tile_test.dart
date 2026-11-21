@@ -145,7 +145,7 @@ void main() {
       downloads,
     );
     expect(extra, isNull);
-    expect(downloads, [(Reciter.husary, 2)]);
+    expect(downloads, [(Reciter.alafasy, 2)]);
     expect(
       tester
           .widget<SurahDownloadButton>(find.byType(SurahDownloadButton))
