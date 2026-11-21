@@ -121,13 +121,11 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
 
     if (newPageHeight == _scrollPageHeight) return; // no change
 
+    // first call — use the navigation target
+    // orientation flip — stay on current page
     final currentPage = _scrollPageHeight == 0
-        ? widget
-              .args
-              .page // first call — use the navigation target
-        : _mushafCubit
-              .state
-              .currentPage; // orientation flip — stay on current page
+        ? widget.args.page
+        : _mushafCubit.state.currentPage;
 
     _scrollPageHeight = newPageHeight;
 

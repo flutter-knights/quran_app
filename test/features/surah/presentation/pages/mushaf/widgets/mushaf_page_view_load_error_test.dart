@@ -21,6 +21,7 @@ import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_view.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_printed_chrome.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
@@ -41,6 +42,9 @@ class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
 
 class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   _FakeMushaf() : super(const MushafState(currentPage: 1));
+  int reloads = 0;
+  @override
+  Future<void> reloadPageAyahs() async => reloads++;
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
@@ -71,9 +75,11 @@ class _StubPageBookmarkRepo implements PageBookmarkRepository {
 void main() {
   final sl = GetIt.instance;
   late _FlakyMushafRepo repo;
+  late _FakeMushaf mushaf;
 
   setUp(() {
     repo = _FlakyMushafRepo();
+    mushaf = _FakeMushaf();
     if (sl.isRegistered<GetMushafPage>()) sl.unregister<GetMushafPage>();
     sl.registerSingleton<GetMushafPage>(GetMushafPage(repo));
   });
@@ -95,7 +101,7 @@ void main() {
         home: MultiBlocProvider(
           providers: [
             BlocProvider<SettingsCubit>.value(value: _FakeSettings()),
-            BlocProvider<MushafCubit>.value(value: _FakeMushaf()),
+            BlocProvider<MushafCubit>.value(value: mushaf),
             BlocProvider<PlaybackCubit>.value(value: _FakePlayback()),
             BlocProvider<PageBookmarkCubit>(
               create: (_) => PageBookmarkCubit(
@@ -111,12 +117,23 @@ void main() {
     await tester.pump();
 
     expect(find.text('Couldn\'t load the page'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) => w is GestureDetector && w.onLongPressStart != null,
+      ),
+      findsNothing,
+    );
+    expect(find.byType(MushafPrintedChrome), findsNothing);
 
     await tester.tap(find.text('Try again'));
     await tester.pump();
+
+    expect(find.text('Couldn\'t load the page'), findsNothing);
+
     await tester.pump();
 
     expect(find.text('Couldn\'t load the page'), findsNothing);
     expect(repo.calls, 2);
+    expect(mushaf.reloads, 1);
   });
 }

@@ -59,11 +59,6 @@ void main() {
     Future<void> open(WidgetTester tester, AyahIdentifier ayah) async {
       mushaf = _FakeMushaf();
       playback = _FakePlayback();
-      final onError = FlutterError.onError;
-      FlutterError.onError = (details) {
-        if (!details.toString().contains('overflowed')) onError!(details);
-      };
-      addTearDown(() => FlutterError.onError = onError);
       await tester.pumpWidget(
         MaterialApp(
           locale: const Locale('en'),
@@ -73,6 +68,12 @@ void main() {
             GlobalWidgetsLocalizations.delegate,
           ],
           supportedLocales: S.delegate.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(0.5)),
+            child: child!,
+          ),
           home: MultiBlocProvider(
             providers: [
               BlocProvider<BookmarkCubit>.value(value: _FakeBookmarks()),
@@ -124,6 +125,18 @@ void main() {
       expect(find.text('Translation'), findsOneWidget);
       expect(find.text('Bookmark'), findsOneWidget);
       expect(find.text('Share'), findsOneWidget);
+      expect(find.text('Listen from the start of the surah'), findsNothing);
+    });
+
+    testWidgets('closing the mushaf cubit dismisses the popover', (
+      tester,
+    ) async {
+      await open(tester, const AyahIdentifier(surah: 2, ayah: 0));
+      expect(find.text('Listen from the start of the surah'), findsOneWidget);
+
+      await mushaf.close();
+      await tester.pump();
+
       expect(find.text('Listen from the start of the surah'), findsNothing);
     });
   });

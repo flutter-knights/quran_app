@@ -59,7 +59,7 @@ class AyahActionPopover {
 
     subscription = mushafCubit.stream.listen((state) {
       if (state.currentPage != startPage) dismiss();
-    });
+    }, onDone: dismiss);
 
     entry = OverlayEntry(
       builder: (_) => _AyahActionPopoverOverlay(

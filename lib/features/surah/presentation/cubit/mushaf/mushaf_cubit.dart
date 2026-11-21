@@ -81,19 +81,14 @@ class MushafCubit extends Cubit<MushafState> {
 
   void resumeFollow() => emit(state.copyWith(followPlayback: true));
 
+  Future<void> reloadPageAyahs() => _loadPageAyahs(state.currentPage);
+
   /// Publishes the normalized vertical center of the currently highlighted
   /// ayah so the playback overlay can avoid covering it.
   void setHighlightBounds(double centerY) {
     if (state.selectedAyah == null) return;
     if (state.highlightedAyahCenterY == centerY) return;
     emit(state.copyWith(highlightedAyahCenterY: centerY));
-  }
-
-  /// Opens the playback overlay without requiring a verse to be selected
-  /// (driven by the floating action button).
-  void pinOverlay() {
-    if (state.isOverlayPinned) return;
-    emit(state.copyWith(isOverlayPinned: true));
   }
 
   /// Toggles the Mushaf chrome (app bar, bottom bar, etc.) visibility.

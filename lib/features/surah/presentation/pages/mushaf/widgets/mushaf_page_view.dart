@@ -61,6 +61,14 @@ class _MushafPageViewState extends State<MushafPageView>
         ),
       );
 
+  void _retry() {
+    final cubit = context.read<MushafCubit>();
+    if (widget.pageNumber == cubit.state.currentPage) cubit.reloadPageAyahs();
+    setState(() {
+      _entityFuture = _load();
+    });
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -81,7 +89,8 @@ class _MushafPageViewState extends State<MushafPageView>
     return FutureBuilder<MushafPageEntity>(
       future: _entityFuture,
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
+        if (snapshot.hasError &&
+            snapshot.connectionState == ConnectionState.done) {
           final pendingS = PendingS.of(context);
           return AspectRatio(
             aspectRatio: 1 / 1.82,
@@ -97,9 +106,7 @@ class _MushafPageViewState extends State<MushafPageView>
                       style: TS.medium14.copyWith(color: paperColors.ink),
                     ),
                     TextButton(
-                      onPressed: () => setState(() {
-                        _entityFuture = _load();
-                      }),
+                      onPressed: _retry,
                       child: Text(pendingS.mushaf_retry, style: TS.medium14),
                     ),
                   ],

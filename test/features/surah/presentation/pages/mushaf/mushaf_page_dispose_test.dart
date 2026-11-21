@@ -66,8 +66,6 @@ class _FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   @override
   void setHighlightBounds(double centerY) {}
   @override
-  void pinOverlay() {}
-  @override
   void unpinOverlay() {}
   @override
   void toggleChrome() {}
