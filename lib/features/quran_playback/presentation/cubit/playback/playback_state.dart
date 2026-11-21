@@ -1,10 +1,12 @@
+import 'package:equatable/equatable.dart';
+
 import '../../../domain/entities/ayah_identifier.dart';
 import '../../../domain/entities/reciter.dart';
 
 /// Which repeat dimension the infinite (∞) toggle applies to.
 enum RepeatTarget { eachAyah, range }
 
-class PlaybackState {
+class PlaybackState extends Equatable {
   final AyahIdentifier? currentAyah;
   final bool isPlaying;
   final bool isPaused;
@@ -17,6 +19,7 @@ class PlaybackState {
   /// intro.
   final bool isPlayingBasmala;
   final String? error;
+  final AyahIdentifier? requestedAyah;
   final Reciter reciter;
   final double speed;
 
@@ -48,6 +51,7 @@ class PlaybackState {
     this.isLoading = false,
     this.isPlayingBasmala = false,
     this.error,
+    this.requestedAyah,
     this.reciter = Reciter.alafasy,
     this.speed = 1.0,
     this.rangeStart,
@@ -60,6 +64,28 @@ class PlaybackState {
     this.currentRangePass = 1,
   });
 
+  @override
+  List<Object?> get props => [
+    currentAyah,
+    isPlaying,
+    isPaused,
+    isAutoPlaying,
+    isLoading,
+    isPlayingBasmala,
+    error,
+    requestedAyah,
+    reciter,
+    speed,
+    rangeStart,
+    rangeEnd,
+    eachAyahRepeat,
+    rangeRepeat,
+    infiniteRepeat,
+    infiniteTarget,
+    currentAyahPlayCount,
+    currentRangePass,
+  ];
+
   PlaybackState copyWith({
     AyahIdentifier? currentAyah,
     bool? isPlaying,
@@ -68,6 +94,7 @@ class PlaybackState {
     bool? isLoading,
     bool? isPlayingBasmala,
     String? error,
+    AyahIdentifier? requestedAyah,
     Reciter? reciter,
     double? speed,
     bool clearCurrentAyah = false,
@@ -80,6 +107,8 @@ class PlaybackState {
     int? currentAyahPlayCount,
     int? currentRangePass,
     bool clearRange = false,
+    bool clearRequested = false,
+    bool clearError = false,
   }) {
     return PlaybackState(
       currentAyah: clearCurrentAyah ? null : (currentAyah ?? this.currentAyah),
@@ -88,7 +117,10 @@ class PlaybackState {
       isAutoPlaying: isAutoPlaying ?? this.isAutoPlaying,
       isLoading: isLoading ?? this.isLoading,
       isPlayingBasmala: isPlayingBasmala ?? this.isPlayingBasmala,
-      error: error,
+      error: clearError ? null : (error ?? this.error),
+      requestedAyah: clearRequested
+          ? null
+          : (requestedAyah ?? this.requestedAyah),
       reciter: reciter ?? this.reciter,
       speed: speed ?? this.speed,
       rangeStart: clearRange ? null : (rangeStart ?? this.rangeStart),

@@ -71,16 +71,22 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
           '${dir.path}/${reciter.folderName}/${ayah.surah}/${ayah.ayah}.mp3';
 
       final file = File(filePath);
-      await file.parent.create(recursive: true); // ✅ FIX
-
-      final future = remote.downloadAudio(url, filePath);
+      final future = () async {
+        await file.parent.create(recursive: true);
+        return remote.downloadAudio(url, filePath);
+      }();
       _inFlightDownloads[url] = future;
 
-      final downloadedPath = await future;
-      _inFlightDownloads.remove(url);
-
-      local.cacheAudioMetadata(url, downloadedPath);
-      return Right(downloadedPath);
+      try {
+        final downloadedPath = await future;
+        local.cacheAudioMetadata(url, downloadedPath);
+        return Right(downloadedPath);
+      } catch (_) {
+        if (file.existsSync()) file.deleteSync();
+        rethrow;
+      } finally {
+        _inFlightDownloads.remove(url);
+      }
     } on DioException catch (e) {
       return left(DioErrorHandler.handle(e));
     } catch (e) {
@@ -114,9 +120,9 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
       await _sequenceIndexSub?.cancel();
       _sequenceIndexSub = null;
 
-      await player.setAudioSources(
-        [for (final p in localPaths) AudioSource.file(p)],
-      );
+      await player.setAudioSources([
+        for (final p in localPaths) AudioSource.file(p),
+      ]);
 
       if (onAdvanceToFinalTrack != null) {
         final lastIndex = localPaths.length - 1;
