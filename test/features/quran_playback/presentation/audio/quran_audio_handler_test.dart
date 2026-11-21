@@ -69,6 +69,7 @@ void main() {
   });
 
   test('OS commands route to the attached cubit', () async {
+    cubit.push(const PlaybackState(currentAyah: ayah25, isPlaying: true));
     handler.attach(cubit);
     await handler.play();
     await handler.pause();
@@ -86,6 +87,15 @@ void main() {
       'stop',
       'stop',
     ]);
+  });
+
+  test('play, pause and seek on an idle cubit do nothing', () async {
+    handler.attach(cubit);
+    await handler.play();
+    await handler.pause();
+    await handler.seek(const Duration(seconds: 3));
+    await handler.skipToNext();
+    expect(cubit.calls, ['next']);
   });
 
   test('commands before attach do nothing', () async {
@@ -181,6 +191,19 @@ void main() {
       expect(item.duration, const Duration(seconds: 9));
     },
   );
+
+  test('the configured art rides on the MediaItem', () async {
+    final art = Uri.file('/data/media_art.png');
+    handler = QuranAudioHandler(
+      player: player,
+      langCode: () => lang,
+      artUri: art,
+    );
+    handler.attach(cubit);
+    cubit.push(const PlaybackState(requestedAyah: ayah25));
+    await pumpEventQueue();
+    expect(handler.mediaItem.value!.artUri, art);
+  });
 
   test('duration reaches the current MediaItem', () async {
     handler.attach(cubit);

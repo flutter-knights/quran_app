@@ -70,10 +70,10 @@ void main() {
     expect(cubit.pauses, 1);
   });
 
-  test('a duck interruption pauses too: speech is not ducked', () async {
+  test('a duck interruption does not pause: the player ducks itself', () async {
     cubit.push(playing);
     await begin(AudioInterruptionType.duck);
-    expect(cubit.pauses, 1);
+    expect(cubit.pauses, 0);
   });
 
   test('an unknown interruption pauses', () async {
@@ -129,7 +129,13 @@ void main() {
   });
 
   test('an interruption between ayat pauses', () async {
-    cubit.push(const PlaybackState(currentAyah: ayah25, requestedAyah: ayah26));
+    cubit.push(
+      const PlaybackState(
+        currentAyah: ayah25,
+        requestedAyah: ayah26,
+        isPlaying: true,
+      ),
+    );
     await begin(AudioInterruptionType.pause);
     expect(cubit.pauses, 1);
   });
@@ -158,6 +164,25 @@ void main() {
     expect(cubit.pauses, 0);
   });
 
+  test(
+    'a failed preload still lets focus loss pause the audible ayah',
+    () async {
+      cubit.push(
+        const PlaybackState(
+          currentAyah: ayah25,
+          requestedAyah: ayah26,
+          isPlaying: true,
+          error: 'offline',
+        ),
+      );
+      noisy.add(null);
+      await pumpEventQueue();
+      expect(cubit.pauses, 1);
+      await begin(AudioInterruptionType.pause);
+      expect(cubit.pauses, 2);
+    },
+  );
+
   test('connectAudioFocus configures speech and wires both streams', () async {
     final session = _MockSession();
     final sessionInterruptions =
@@ -182,8 +207,11 @@ void main() {
     expect(connected, isNotNull);
     expect(
       configs.single.toJson(),
-      const AudioSessionConfiguration.speech().toJson(),
+      const AudioSessionConfiguration.speech()
+          .copyWith(androidWillPauseWhenDucked: false)
+          .toJson(),
     );
+    expect(configs.single.androidWillPauseWhenDucked, isFalse);
     cubit.push(playing);
     sessionInterruptions.add(
       AudioInterruptionEvent(true, AudioInterruptionType.pause),

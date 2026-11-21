@@ -12,16 +12,22 @@ class QuranAudioHandler extends BaseAudioHandler {
   QuranAudioHandler({
     required AudioPlayer player,
     required String Function() langCode,
+    Uri? artUri,
   }) : _player = player,
-       _langCode = langCode {
+       _langCode = langCode,
+       _artUri = artUri {
     _player.playbackEventStream.listen(_broadcast);
     _player.durationStream.listen(_onDuration);
   }
 
   final AudioPlayer _player;
   final String Function() _langCode;
+  final Uri? _artUri;
   PlaybackCubit? _cubit;
   StreamSubscription? _cubitSub;
+
+  PlaybackCubit? get _active =>
+      _cubit?.state.skipOrigin == null ? null : _cubit;
 
   void attach(PlaybackCubit cubit) {
     _cubitSub?.cancel();
@@ -31,7 +37,11 @@ class QuranAudioHandler extends BaseAudioHandler {
   }
 
   void _publish(PlaybackCubit cubit) {
-    final item = nowPlayingItem(cubit.state, langCode: _langCode());
+    final item = nowPlayingItem(
+      cubit.state,
+      langCode: _langCode(),
+      artUri: _artUri,
+    );
     final current = mediaItem.value;
     if (item == null) {
       if (current != null) mediaItem.add(null);
@@ -71,10 +81,10 @@ class QuranAudioHandler extends BaseAudioHandler {
   }
 
   @override
-  Future<void> play() async => _cubit?.resume();
+  Future<void> play() async => _active?.resume();
 
   @override
-  Future<void> pause() async => _cubit?.pause();
+  Future<void> pause() async => _active?.pause();
 
   @override
   Future<void> stop() async => _cubit?.stop();
@@ -86,7 +96,7 @@ class QuranAudioHandler extends BaseAudioHandler {
   Future<void> skipToPrevious() async => _cubit?.skipPrevious();
 
   @override
-  Future<void> seek(Duration position) async => _cubit?.seek(position);
+  Future<void> seek(Duration position) async => _active?.seek(position);
 
   @override
   Future<void> onTaskRemoved() async => _cubit?.stop();

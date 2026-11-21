@@ -12,7 +12,7 @@ class PlaybackAudioFocus {
   }) : _cubit = cubit {
     _subscriptions = [
       interruptions.listen((event) {
-        if (event.begin) _pause();
+        if (event.begin && event.type != AudioInterruptionType.duck) _pause();
       }),
       becomingNoisy.listen((_) => _pause()),
     ];
@@ -23,7 +23,7 @@ class PlaybackAudioFocus {
 
   void _pause() {
     final state = _cubit.state;
-    if (state.skipOrigin != null && !state.isPaused && state.error == null) {
+    if (state.isPlaying || state.isLoading) {
       _cubit.pause();
     }
   }
@@ -41,7 +41,11 @@ Future<PlaybackAudioFocus?> connectAudioFocus({
 }) async {
   try {
     final s = await session();
-    await s.configure(const AudioSessionConfiguration.speech());
+    await s.configure(
+      const AudioSessionConfiguration.speech().copyWith(
+        androidWillPauseWhenDucked: false,
+      ),
+    );
     return PlaybackAudioFocus(
       interruptions: s.interruptionEventStream,
       becomingNoisy: s.becomingNoisyEventStream,
