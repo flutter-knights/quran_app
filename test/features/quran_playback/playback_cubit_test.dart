@@ -717,7 +717,11 @@ void main() {
 
     test('skipNext at the range end is a no-op', () async {
       when(
-        () => seq.getNextAyah(current: any(named: 'current')),
+        () => seq.getNextAyah(
+          current: any(named: 'current'),
+          endSurah: any(named: 'endSurah'),
+          endAyah: any(named: 'endAyah'),
+        ),
       ).thenReturn(const AyahIdentifier(surah: 2, ayah: 8));
       stubPrepareOk();
       stubPlay();
@@ -754,6 +758,63 @@ void main() {
           ),
         );
       await c.skipPrevious();
+      verifyNever(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      );
+      await c.close();
+    });
+
+    test(
+      'skipPrevious steps from a pending request, never past the start',
+      () async {
+        when(
+          () => seq.getPreviousAyah(current: any(named: 'current')),
+        ).thenReturn(const AyahIdentifier(surah: 2, ayah: 4));
+        stubPrepareOk();
+        stubPlay();
+        final c = build()
+          ..emit(
+            const PlaybackState(
+              currentAyah: AyahIdentifier(surah: 2, ayah: 6),
+              requestedAyah: start,
+              rangeStart: start,
+              rangeEnd: end,
+            ),
+          );
+        await c.skipPrevious();
+        verifyNever(
+          () => repo.prepareAyahAudio(
+            ayah: any(named: 'ayah'),
+            reciter: any(named: 'reciter'),
+          ),
+        );
+        await c.close();
+      },
+    );
+
+    test('skipNext steps from a pending request, never past the end', () async {
+      when(
+        () => seq.getNextAyah(
+          current: any(named: 'current'),
+          endSurah: any(named: 'endSurah'),
+          endAyah: any(named: 'endAyah'),
+        ),
+      ).thenReturn(const AyahIdentifier(surah: 2, ayah: 8));
+      stubPrepareOk();
+      stubPlay();
+      final c = build()
+        ..emit(
+          const PlaybackState(
+            currentAyah: AyahIdentifier(surah: 2, ayah: 6),
+            requestedAyah: end,
+            rangeStart: start,
+            rangeEnd: end,
+          ),
+        );
+      await c.skipNext();
       verifyNever(
         () => repo.prepareAyahAudio(
           ayah: any(named: 'ayah'),

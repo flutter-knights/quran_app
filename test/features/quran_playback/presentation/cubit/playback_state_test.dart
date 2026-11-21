@@ -107,5 +107,36 @@ void main() {
         prev: true,
       );
     });
+
+    test('a pending request is the skip origin, not the old ayah', () {
+      expectSkips(
+        const PlaybackState(
+          currentAyah: b,
+          requestedAyah: a,
+          rangeStart: a,
+          rangeEnd: c,
+        ),
+        next: true,
+        prev: false,
+      );
+      expectSkips(
+        const PlaybackState(
+          currentAyah: b,
+          requestedAyah: c,
+          rangeStart: a,
+          rangeEnd: c,
+        ),
+        next: false,
+        prev: true,
+      );
+    });
+
+    test('a failed first play can still skip both ways', () {
+      expectSkips(
+        const PlaybackState(requestedAyah: a, error: 'x'),
+        next: true,
+        prev: true,
+      );
+    });
   });
 }

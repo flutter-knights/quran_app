@@ -318,7 +318,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   Future<void> skipNext() async {
     if (!state.canSkipNext) return;
-    final current = state.requestedAyah ?? state.currentAyah;
+    final current = state.skipOrigin;
     if (current == null) return;
     final next = ayahSequenceService.getNextAyah(
       current: current,
@@ -332,7 +332,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   Future<void> skipPrevious() async {
     if (!state.canSkipPrevious) return;
-    final current = state.requestedAyah ?? state.currentAyah;
+    final current = state.skipOrigin;
     if (current == null) return;
     final prev = ayahSequenceService.getPreviousAyah(current: current);
     if (prev == null) return;

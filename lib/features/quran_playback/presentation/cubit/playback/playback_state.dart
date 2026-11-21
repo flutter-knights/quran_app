@@ -64,17 +64,23 @@ class PlaybackState extends Equatable {
     this.currentRangePass = 1,
   });
 
-  bool get canSkipNext =>
-      currentAyah != null &&
-      (rangeEnd == null
-          ? currentAyah != const AyahIdentifier(surah: 114, ayah: 6)
-          : currentAyah!.compareTo(rangeEnd!) < 0);
+  AyahIdentifier? get skipOrigin => requestedAyah ?? currentAyah;
 
-  bool get canSkipPrevious =>
-      currentAyah != null &&
-      (rangeStart == null
-          ? currentAyah != const AyahIdentifier(surah: 1, ayah: 1)
-          : currentAyah!.compareTo(rangeStart!) > 0);
+  bool get canSkipNext {
+    final at = skipOrigin;
+    if (at == null) return false;
+    return rangeEnd == null
+        ? at != const AyahIdentifier(surah: 114, ayah: 6)
+        : at.compareTo(rangeEnd!) < 0;
+  }
+
+  bool get canSkipPrevious {
+    final at = skipOrigin;
+    if (at == null) return false;
+    return rangeStart == null
+        ? at != const AyahIdentifier(surah: 1, ayah: 1)
+        : at.compareTo(rangeStart!) > 0;
+  }
 
   @override
   List<Object?> get props => [
