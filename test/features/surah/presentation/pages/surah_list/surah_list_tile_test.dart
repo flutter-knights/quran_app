@@ -12,15 +12,23 @@ import 'package:quran_app/features/surah/presentation/pages/surah_list/widgets/s
 
 class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   _FakePlayback() : super(const PlaybackState());
-  AyahIdentifier? lastPlay;
+  AyahIdentifier? rangeStart;
+  AyahIdentifier? rangeEnd;
   @override
-  Future<void> playFromAyah(AyahIdentifier a) async => lastPlay = a;
+  Future<void> playRange({
+    required AyahIdentifier start,
+    required AyahIdentifier end,
+  }) async {
+    rangeStart = start;
+    rangeEnd = end;
+  }
+
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
 
 void main() {
-  testWidgets('play button calls playFromAyah(surah, 1)', (tester) async {
+  testWidgets('play button plays the whole surah as a range', (tester) async {
     final surah = SurahEntity(
       number: 2,
       name: 'البقرة',
@@ -43,18 +51,21 @@ void main() {
         GoRoute(path: '/mushaf', builder: (_, _) => const SizedBox()),
       ],
     );
-    await tester.pumpWidget(MaterialApp.router(
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
-      routerConfig: router,
-    ));
+    await tester.pumpWidget(
+      MaterialApp.router(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        routerConfig: router,
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.play_circle_outline));
     await tester.pumpAndSettle();
-    expect(playback.lastPlay, const AyahIdentifier(surah: 2, ayah: 1));
+    expect(playback.rangeStart, const AyahIdentifier(surah: 2, ayah: 1));
+    expect(playback.rangeEnd, const AyahIdentifier(surah: 2, ayah: 286));
   });
 }

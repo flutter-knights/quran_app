@@ -11,8 +11,9 @@ class AyahSequenceService {
     final lastAyahInSurah = getVerseCount(current.surah);
 
     if (endSurah != null &&
-        current.surah == endSurah &&
-        current.ayah == endAyah) {
+        endAyah != null &&
+        current.compareTo(AyahIdentifier(surah: endSurah, ayah: endAyah)) >=
+            0) {
       return null;
     }
 

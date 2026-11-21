@@ -711,6 +711,111 @@ void main() {
     verify: (_) => verifyNever(() => repo.notifyAyahChanged(any())),
   );
 
+  group('range bounds', () {
+    const start = AyahIdentifier(surah: 2, ayah: 5);
+    const end = AyahIdentifier(surah: 2, ayah: 7);
+
+    test('skipNext at the range end is a no-op', () async {
+      when(
+        () => seq.getNextAyah(current: any(named: 'current')),
+      ).thenReturn(const AyahIdentifier(surah: 2, ayah: 8));
+      stubPrepareOk();
+      stubPlay();
+      final c = build()
+        ..emit(
+          const PlaybackState(
+            currentAyah: end,
+            rangeStart: start,
+            rangeEnd: end,
+          ),
+        );
+      await c.skipNext();
+      verifyNever(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      );
+      await c.close();
+    });
+
+    test('skipPrevious at the range start is a no-op', () async {
+      when(
+        () => seq.getPreviousAyah(current: any(named: 'current')),
+      ).thenReturn(const AyahIdentifier(surah: 2, ayah: 4));
+      stubPrepareOk();
+      stubPlay();
+      final c = build()
+        ..emit(
+          const PlaybackState(
+            currentAyah: start,
+            rangeStart: start,
+            rangeEnd: end,
+          ),
+        );
+      await c.skipPrevious();
+      verifyNever(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      );
+      await c.close();
+    });
+
+    test('skipNext passes the range end to getNextAyah', () async {
+      when(
+        () => seq.getNextAyah(
+          current: any(named: 'current'),
+          endSurah: any(named: 'endSurah'),
+          endAyah: any(named: 'endAyah'),
+        ),
+      ).thenReturn(ayah26);
+      stubPrepareOk();
+      stubPlay();
+      final c = build()
+        ..emit(
+          const PlaybackState(
+            currentAyah: start,
+            rangeStart: start,
+            rangeEnd: end,
+          ),
+        );
+      await c.skipNext();
+      verify(
+        () => seq.getNextAyah(current: start, endSurah: 2, endAyah: 7),
+      ).called(1);
+      await c.close();
+    });
+
+    test('stop clears rangeStart and rangeEnd', () async {
+      final c = build()
+        ..emit(
+          const PlaybackState(
+            currentAyah: start,
+            rangeStart: start,
+            rangeEnd: end,
+          ),
+        );
+      await c.stop();
+      expect(c.state.rangeStart, isNull);
+      expect(c.state.rangeEnd, isNull);
+      await c.close();
+    });
+
+    test('playRange keeps a cross-surah range', () async {
+      stubPrepareOk();
+      stubPlay();
+      const crossStart = AyahIdentifier(surah: 4, ayah: 176);
+      const crossEnd = AyahIdentifier(surah: 5, ayah: 2);
+      final c = build();
+      await c.playRange(start: crossStart, end: crossEnd);
+      expect(c.state.rangeStart, crossStart);
+      expect(c.state.rangeEnd, crossEnd);
+      await c.close();
+    });
+  });
+
   // ── Task 8: restartCurrent ───────────────────────────────────────────────
 
   blocTest<PlaybackCubit, PlaybackState>(

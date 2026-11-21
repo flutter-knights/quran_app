@@ -143,7 +143,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     await _playAyah(ayah);
   }
 
-  /// Plays [start]..[end] (single surah) with the current repeat settings.
+  /// Plays [start]..[end] with the current repeat settings.
   Future<void> playRange({
     required AyahIdentifier start,
     required AyahIdentifier end,
@@ -317,15 +317,21 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> skipNext() async {
+    if (!state.canSkipNext) return;
     final current = state.requestedAyah ?? state.currentAyah;
     if (current == null) return;
-    final next = ayahSequenceService.getNextAyah(current: current);
+    final next = ayahSequenceService.getNextAyah(
+      current: current,
+      endSurah: state.rangeEnd?.surah,
+      endAyah: state.rangeEnd?.ayah,
+    );
     if (next == null) return;
     emit(state.copyWith(clearError: true));
     await _playAyah(next);
   }
 
   Future<void> skipPrevious() async {
+    if (!state.canSkipPrevious) return;
     final current = state.requestedAyah ?? state.currentAyah;
     if (current == null) return;
     final prev = ayahSequenceService.getPreviousAyah(current: current);
@@ -394,8 +400,11 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     final generation = ++_playGeneration;
     await repository.stop();
     if (isClosed || generation != _playGeneration) return;
+    _endSurah = null;
+    _endAyah = null;
     emit(
       state.copyWith(
+        clearRange: true,
         isPlaying: false,
         isPaused: false,
         isAutoPlaying: false,

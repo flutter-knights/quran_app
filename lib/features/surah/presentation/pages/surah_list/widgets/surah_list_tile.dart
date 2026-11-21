@@ -59,8 +59,12 @@ class SurahListTile extends StatelessWidget {
                 tooltip: S.of(context).play_surah,
                 icon: const Icon(Icons.play_circle_outline),
                 onPressed: () {
-                  context.read<PlaybackCubit>().playFromAyah(
-                    AyahIdentifier(surah: surah.number, ayah: 1),
+                  context.read<PlaybackCubit>().playRange(
+                    start: AyahIdentifier(surah: surah.number, ayah: 1),
+                    end: AyahIdentifier(
+                      surah: surah.number,
+                      ayah: surah.numberOfAyahs,
+                    ),
                   );
                   _openMushaf(context);
                 },
