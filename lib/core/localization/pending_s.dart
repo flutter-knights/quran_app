@@ -252,6 +252,16 @@ class PendingS {
       : 'Tap any ayah to see its meaning and actions';
   String get notice_gotIt => _ar ? 'فهمت' : 'Got it';
 
+  String get leaf_listenFromHere => _ar ? 'استماع من هنا' : 'Listen from here';
+  String get leaf_saveAyah => _ar ? 'حفظ الآية' : 'Save ayah';
+  String get leaf_sajda => _ar ? 'سجدة' : 'Sajda';
+  String mushaf_surahTitle(String surah) =>
+      _ar ? 'سورة $surah' : 'Surah $surah';
+  String mushaf_surahCaption(String place, String ayahs) =>
+      _ar ? '$place، $ayahs' : '$place, $ayahs';
+  String get mushaf_playWholePage =>
+      _ar ? 'استماع الصفحة كاملة' : 'Listen to the whole page';
+
   String alerts_minutes(num count) {
     final n = count.toInt();
     if (!_ar) return n == 1 ? '1 minute' : '$n minutes';

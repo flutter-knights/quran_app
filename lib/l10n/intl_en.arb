@@ -476,5 +476,17 @@
     "placeholders": { "page": { "type": "String" } }
   },
   "notice_tapHint": "Tap any ayah to see its meaning and actions",
-  "notice_gotIt": "Got it"
+  "notice_gotIt": "Got it",
+  "leaf_listenFromHere": "Listen from here",
+  "leaf_saveAyah": "Save ayah",
+  "leaf_sajda": "Sajda",
+  "mushaf_surahTitle": "Surah {surah}",
+  "@mushaf_surahTitle": {
+    "placeholders": { "surah": { "type": "String" } }
+  },
+  "mushaf_surahCaption": "{place}, {ayahs}",
+  "@mushaf_surahCaption": {
+    "placeholders": { "place": { "type": "String" }, "ayahs": { "type": "String" } }
+  },
+  "mushaf_playWholePage": "Listen to the whole page"
 }

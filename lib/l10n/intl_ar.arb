@@ -460,5 +460,17 @@
     "placeholders": { "page": { "type": "String" } }
   },
   "notice_tapHint": "اضغط على أي آية لترى معناها وأزرارها",
-  "notice_gotIt": "فهمت"
+  "notice_gotIt": "فهمت",
+  "leaf_listenFromHere": "استماع من هنا",
+  "leaf_saveAyah": "حفظ الآية",
+  "leaf_sajda": "سجدة",
+  "mushaf_surahTitle": "سورة {surah}",
+  "@mushaf_surahTitle": {
+    "placeholders": { "surah": { "type": "String" } }
+  },
+  "mushaf_surahCaption": "{place}، {ayahs}",
+  "@mushaf_surahCaption": {
+    "placeholders": { "place": { "type": "String" }, "ayahs": { "type": "String" } }
+  },
+  "mushaf_playWholePage": "استماع الصفحة كاملة"
 }
