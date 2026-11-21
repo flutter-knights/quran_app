@@ -173,8 +173,6 @@ void main() {
     verify: (_) => verify(() => repo.setSpeed(1.25)).called(1),
   );
 
-  // ── Task 3: errors, requestedAyah, retry ─────────────────────────────────
-
   const ayah26 = AyahIdentifier(surah: 2, ayah: 6);
 
   void stubPlay() {
@@ -331,6 +329,96 @@ void main() {
     final c = build()
       ..emit(const PlaybackState(currentAyah: ayah25, error: 'x'));
     await c.skipNext();
+    expect(c.state.error, isNull);
+    await c.close();
+  });
+
+  void stubPrepareOk() {
+    when(
+      () => repo.prepareAyahAudio(
+        ayah: any(named: 'ayah'),
+        reciter: any(named: 'reciter'),
+      ),
+    ).thenAnswer((_) async => const Right('/p.mp3'));
+  }
+
+  test('skipPrevious clears a stale error', () async {
+    when(
+      () => seq.getPreviousAyah(current: any(named: 'current')),
+    ).thenReturn(const AyahIdentifier(surah: 2, ayah: 4));
+    stubPrepareOk();
+    stubPlay();
+    final c = build()
+      ..emit(const PlaybackState(currentAyah: ayah25, error: 'x'));
+    await c.skipPrevious();
+    expect(c.state.error, isNull);
+    await c.close();
+  });
+
+  test(
+    'playRange emits requestedAyah (normalised from ayah 0) and clears error',
+    () async {
+      stubPrepareOk();
+      stubPlay();
+      final c = build()..emit(const PlaybackState(error: 'x'));
+      final states = <PlaybackState>[];
+      final sub = c.stream.listen(states.add);
+      await c.playRange(
+        start: const AyahIdentifier(surah: 9, ayah: 0),
+        end: const AyahIdentifier(surah: 9, ayah: 4),
+      );
+      await sub.cancel();
+      const normalised = AyahIdentifier(surah: 9, ayah: 1);
+      expect(states.first.requestedAyah, normalised);
+      expect(states.first.error, isNull);
+      expect(states.first.rangeStart, normalised);
+      await c.close();
+    },
+  );
+
+  test('setReciter on an active ayah clears a stale error', () async {
+    when(() => repo.stop()).thenAnswer((_) async {});
+    stubPrepareOk();
+    stubPlay();
+    final c = build()
+      ..emit(
+        const PlaybackState(currentAyah: ayah25, isPaused: true, error: 'x'),
+      );
+    await c.setReciter(Reciter.sudais);
+    expect(c.state.error, isNull);
+    await c.close();
+  });
+
+  test('a superseded play of the same ayah leaves no error', () async {
+    final first = Completer<Either<Failure, void>>();
+    var plays = 0;
+    stubPrepareOk();
+    when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+    when(() => repo.playPreparedAudio(any())).thenAnswer(
+      (_) => ++plays == 1 ? first.future : Future.value(const Right(null)),
+    );
+    final c = build();
+    final firstPlay = c.playSelected(ayah25);
+    await Future<void>.delayed(Duration.zero);
+    await c.playSelected(ayah25);
+    first.complete(const Left(UnknownFailure('Loading interrupted')));
+    await firstPlay;
+    expect(c.state.error, isNull);
+    await c.close();
+  });
+
+  test('a play cut off by stop leaves no error', () async {
+    final first = Completer<Either<Failure, void>>();
+    stubPrepareOk();
+    when(() => repo.notifyAyahChanged(any())).thenReturn(null);
+    when(() => repo.stop()).thenAnswer((_) async {});
+    when(() => repo.playPreparedAudio(any())).thenAnswer((_) => first.future);
+    final c = build();
+    final play = c.playSelected(ayah25);
+    await Future<void>.delayed(Duration.zero);
+    await c.stop();
+    first.complete(const Left(UnknownFailure('Loading interrupted')));
+    await play;
     expect(c.state.error, isNull);
     await c.close();
   });

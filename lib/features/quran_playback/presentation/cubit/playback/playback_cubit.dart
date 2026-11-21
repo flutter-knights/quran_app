@@ -87,10 +87,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   int? _endSurah;
   int? _endAyah;
 
-  /// Tracks the most recently requested ayah. Used as the race guard:
-  /// after an async prepare, if _inFlightAyah has changed, the older
-  /// call returns early without calling notifyAyahChanged.
-  AyahIdentifier? _inFlightAyah;
+  int _playGeneration = 0;
 
   PlaybackCubit({
     required this.ayahSequenceService,
@@ -117,6 +114,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     });
 
     _completeSub = repository.onAudioCompleted.listen((_) {
+      if (isClosed) return;
       _handleNextAyah();
     });
   }
@@ -173,13 +171,14 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   Future<void> _playAyah(AyahIdentifier ayah) async {
     if (isClosed) return;
+    final generation = ++_playGeneration;
+    bool stale() => isClosed || generation != _playGeneration;
     emit(state.copyWith(requestedAyah: ayah));
-    _inFlightAyah = ayah;
 
     // Prepare the basmala when starting any surah other than Al-Fatiha (1) or
     // At-Tawbah (9), so the canonical opening verse plays before ayah 1. The
     // reciter is captured once at the top of the call; a mid-flight
-    // `setReciter` cancels this run via `stop()` → `_inFlightAyah = null`, so
+    // `setReciter` cancels this run via `stop()` → a new `_playGeneration`, so
     // the two prepare calls always use the same reciter.
     String? basmalaPath;
     if (ayah.ayah == 1 && ayah.surah != 1 && ayah.surah != 9) {
@@ -187,8 +186,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         ayah: const AyahIdentifier(surah: 1, ayah: 1),
         reciter: state.reciter,
       );
-      if (isClosed) return;
-      if (_inFlightAyah != ayah) return;
+      if (stale()) return;
       basmalaPath = basmalaResult.fold((_) => null, (p) => p);
     }
 
@@ -197,11 +195,10 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       reciter: state.reciter,
     );
 
-    if (isClosed) return;
-    if (_inFlightAyah != ayah) return; // race guard
+    if (stale()) return;
 
     void fail(String message) {
-      if (isClosed || _inFlightAyah != ayah) return;
+      if (stale()) return;
       emit(
         state.copyWith(
           isPlaying: false,
@@ -214,6 +211,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
     await result.fold((failure) async => fail(failure.message), (path) async {
       await repository.setSpeed(state.speed);
+      if (stale()) return;
       if (basmalaPath != null) {
         // During basmala: set the target as currentAyah so the overlay
         // shows pause/playing, but raise `isPlayingBasmala` so the page
@@ -232,8 +230,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         final played = await repository.playPreparedAudioSequence(
           [basmalaPath, path],
           onAdvanceToFinalTrack: () {
-            if (isClosed) return;
-            if (_inFlightAyah != ayah) return;
+            if (stale()) return;
             emit(state.copyWith(isPlayingBasmala: false));
             repository.notifyAyahChanged(ayah);
           },
@@ -376,7 +373,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     final wasActive =
         state.currentAyah != null && (state.isPlaying || state.isPaused);
     final activeAyah = state.currentAyah;
-    emit(state.copyWith(reciter: reciter));
+    emit(state.copyWith(reciter: reciter, clearError: wasActive));
     settingsCubit.updateDefaultReciter(reciter);
     if (wasActive && activeAyah != null) {
       await repository.stop();
@@ -391,8 +388,9 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> stop() async {
-    _inFlightAyah = null;
+    _playGeneration++;
     await repository.stop();
+    if (isClosed) return;
     emit(
       state.copyWith(
         isPlaying: false,
