@@ -938,6 +938,16 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text(hintText), findsOneWidget);
         expect(settings.markCalls, 1);
+        ScaffoldMessenger.of(
+          tester.element(find.byType(Scaffold).first),
+        ).removeCurrentSnackBar();
+        await tester.pumpAndSettle();
+        p.push(playing);
+        await tester.pumpAndSettle();
+        p.push(fromNetwork);
+        await tester.pumpAndSettle();
+        expect(find.text(hintText), findsNothing);
+        expect(settings.markCalls, 1);
       },
     );
 

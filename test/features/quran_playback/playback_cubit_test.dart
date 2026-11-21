@@ -1383,6 +1383,34 @@ void main() {
       await c.close();
     });
 
+    test('an ayah fetched while paused still flags the network', () async {
+      final prepare = Completer<Either<Failure, String>>();
+      when(
+        () => repo.isAyahCached(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenReturn(false);
+      when(
+        () => repo.prepareAyahAudio(
+          ayah: any(named: 'ayah'),
+          reciter: any(named: 'reciter'),
+        ),
+      ).thenAnswer((_) => prepare.future);
+      when(() => repo.pause()).thenAnswer((_) async {});
+      final c = build();
+
+      unawaited(c.playSelected(ayah25));
+      await pumpEventQueue();
+      await c.pause();
+      prepare.complete(const Right('/a.mp3'));
+      await pumpEventQueue();
+
+      expect(c.state.isPaused, isTrue);
+      expect(c.state.playedFromNetwork, isTrue);
+      await c.close();
+    });
+
     test('pausing while the first ayah prepares keeps it unplayed', () async {
       final prepare = Completer<Either<Failure, String>>();
       when(

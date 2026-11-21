@@ -238,15 +238,14 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
     final settings = context.read<SettingsCubit>();
     if (settings.state.settingsModel.downloadHintSeen) return;
     settings.markDownloadHintSeen();
+    final downloads = context.read<SurahDownloadCubit>();
+    final surah = state.skipOrigin!.surah;
     final pending = PendingS.current;
     _showSnack(
       context,
       pending.surahDownload_hint,
       pending.surahDownload_download,
-      () => context.read<SurahDownloadCubit>().download(
-        state.reciter,
-        state.skipOrigin!.surah,
-      ),
+      () => downloads.download(state.reciter, surah),
       persist: false,
     );
   }

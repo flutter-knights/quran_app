@@ -226,11 +226,11 @@ class PlaybackCubit extends Cubit<PlaybackState> {
             isPlaying: false,
             isPaused: true,
             isLoading: false,
+            playedFromNetwork: !cached,
           ),
         );
         return;
       }
-      emit(state.copyWith(playedFromNetwork: !cached));
       if (basmalaPath != null) {
         // During basmala: set the target as currentAyah so the overlay
         // shows pause/playing, but raise `isPlayingBasmala` so the page
@@ -244,6 +244,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
             isPaused: false,
             isLoading: false,
             isPlayingBasmala: true,
+            playedFromNetwork: !cached,
           ),
         );
         final played = await repository.playPreparedAudioSequence(
@@ -256,6 +257,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         );
         await played.fold((failure) => fail(failure.message), (_) async {});
       } else {
+        emit(state.copyWith(playedFromNetwork: !cached));
         repository.notifyAyahChanged(ayah);
         final played = await repository.playPreparedAudio(path);
         await played.fold((failure) => fail(failure.message), (_) async {});
