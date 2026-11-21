@@ -98,6 +98,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   Future<Either<Failure, void>> playPreparedAudio(String localPath) async {
     try {
       await player.setFilePath(localPath);
+      if (_held) return const Right(null);
       await player.play();
       return const Right(null);
     } catch (e) {
@@ -140,6 +141,7 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
         });
       }
 
+      if (_held) return const Right(null);
       await player.play();
       return const Right(null);
     } catch (e) {
@@ -148,6 +150,10 @@ class QuranPlaybackRepoImpl extends QuranPlaybackRepo {
   }
 
   StreamSubscription<int?>? _sequenceIndexSub;
+  var _held = false;
+
+  @override
+  void holdPlayback(bool hold) => _held = hold;
 
   @override
   Future<void> stop() async {

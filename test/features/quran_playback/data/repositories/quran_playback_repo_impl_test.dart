@@ -78,4 +78,66 @@ void main() {
     expect(results.every((r) => r.isRight()), isTrue);
     verify(() => remote.downloadAudio(any(), any())).called(1);
   });
+
+  group('holdPlayback', () {
+    late _MockPlayer player;
+
+    setUp(() {
+      player = _MockPlayer();
+      repo = QuranPlaybackRepoImpl(
+        player: player,
+        remote: remote,
+        local: local,
+        dir: dir,
+      );
+      when(() => player.play()).thenAnswer((_) async {});
+    });
+
+    test('plays once the source is set when not held', () async {
+      when(() => player.setFilePath(any())).thenAnswer((_) async => null);
+
+      await repo.playPreparedAudio('/a.mp3');
+
+      verify(() => player.play()).called(1);
+    });
+
+    test('a hold raised while the source loads skips play', () async {
+      final loading = Completer<Duration?>();
+      when(() => player.setFilePath(any())).thenAnswer((_) => loading.future);
+      when(() => player.pause()).thenAnswer((_) async {});
+
+      final played = repo.playPreparedAudio('/a.mp3');
+      repo.holdPlayback(true);
+      await repo.pause();
+      loading.complete(null);
+      final result = await played;
+
+      expect(result.isRight(), isTrue);
+      verifyNever(() => player.play());
+    });
+
+    test('a hold raised while a sequence loads skips play', () async {
+      final loading = Completer<Duration?>();
+      when(
+        () => player.setAudioSources(any()),
+      ).thenAnswer((_) => loading.future);
+
+      final played = repo.playPreparedAudioSequence(['/a.mp3', '/b.mp3']);
+      repo.holdPlayback(true);
+      loading.complete(null);
+      await played;
+
+      verifyNever(() => player.play());
+    });
+
+    test('releasing the hold lets the next load play', () async {
+      when(() => player.setFilePath(any())).thenAnswer((_) async => null);
+
+      repo.holdPlayback(true);
+      repo.holdPlayback(false);
+      await repo.playPreparedAudio('/a.mp3');
+
+      verify(() => player.play()).called(1);
+    });
+  });
 }

@@ -26,6 +26,7 @@ abstract class QuranPlaybackRepo {
     List<String> localPaths, {
     void Function()? onAdvanceToFinalTrack,
   });
+  void holdPlayback(bool hold);
   Future<void> pause();
   Future<void> resume();
   void notifyAyahChanged(AyahIdentifier ayah);

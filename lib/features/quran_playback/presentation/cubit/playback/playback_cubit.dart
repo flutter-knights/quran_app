@@ -88,6 +88,8 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   int? _endAyah;
 
   int _playGeneration = 0;
+  var _held = false;
+  AyahIdentifier? _heldAyah;
 
   PlaybackCubit({
     required this.ayahSequenceService,
@@ -129,6 +131,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     }
     _endSurah = null;
     _endAyah = null;
+    _release();
     emit(
       state.copyWith(
         clearRange: true,
@@ -155,6 +158,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
         : start;
     _endSurah = end.surah;
     _endAyah = end.ayah;
+    _release();
     emit(
       state.copyWith(
         rangeStart: normStart,
@@ -214,6 +218,18 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     await result.fold((failure) async => fail(failure.message), (path) async {
       await repository.setSpeed(state.speed);
       if (stale()) return;
+      if (_held) {
+        _heldAyah = ayah;
+        emit(
+          state.copyWith(
+            currentAyah: ayah,
+            isPlaying: false,
+            isPaused: true,
+            isLoading: false,
+          ),
+        );
+        return;
+      }
       if (basmalaPath != null) {
         // During basmala: set the target as currentAyah so the overlay
         // shows pause/playing, but raise `isPlayingBasmala` so the page
@@ -328,6 +344,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   Future<void> retry() async {
     final ayah = state.requestedAyah;
     if (ayah == null) return;
+    _release();
     emit(state.copyWith(clearError: true, isLoading: true));
     await _playAyah(ayah);
   }
@@ -342,6 +359,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
       endAyah: state.rangeEnd?.ayah,
     );
     if (next == null) return;
+    _release();
     emit(state.copyWith(clearError: true));
     await _playAyah(next);
   }
@@ -352,6 +370,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     if (current == null) return;
     final prev = ayahSequenceService.getPreviousAyah(current: current);
     if (prev == null) return;
+    _release();
     emit(state.copyWith(clearError: true));
     await _playAyah(prev);
   }
@@ -359,6 +378,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   Future<void> restartCurrent() async {
     if (state.currentAyah == null) return;
     if (state.error != null) return retry();
+    _release();
     await repository.seek(Duration.zero);
     await repository.resume();
     emit(state.copyWith(isPlaying: true, isPaused: false));
@@ -400,6 +420,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
     final wasActive =
         state.currentAyah != null && (state.isPlaying || state.isPaused);
     final activeAyah = state.currentAyah;
+    if (wasActive) _release();
     emit(state.copyWith(reciter: reciter, clearError: wasActive));
     settingsCubit.updateDefaultReciter(reciter);
     if (wasActive && activeAyah != null) {
@@ -416,6 +437,7 @@ class PlaybackCubit extends Cubit<PlaybackState> {
 
   Future<void> stop() async {
     final generation = ++_playGeneration;
+    _release();
     await repository.stop();
     if (isClosed || generation != _playGeneration) return;
     _endSurah = null;
@@ -436,14 +458,25 @@ class PlaybackCubit extends Cubit<PlaybackState> {
   }
 
   Future<void> pause() async {
+    _held = true;
+    repository.holdPlayback(true);
     emit(state.copyWith(isPlaying: false, isPaused: true));
     await repository.pause();
   }
 
   Future<void> resume() async {
     if (state.error != null) return retry();
+    final heldAyah = _heldAyah;
+    _release();
     emit(state.copyWith(isPlaying: true, isPaused: false));
+    if (heldAyah != null) return _playAyah(heldAyah);
     await repository.resume();
+  }
+
+  void _release() {
+    _held = false;
+    _heldAyah = null;
+    repository.holdPlayback(false);
   }
 
   @override

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/presentation/audio/playback_audio_focus.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -23,7 +24,13 @@ class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class _MockSession extends Mock implements AudioSession {}
+
 void main() {
+  setUpAll(
+    () => registerFallbackValue(const AudioSessionConfiguration.speech()),
+  );
+
   late StreamController<AudioInterruptionEvent> interruptions;
   late StreamController<void> noisy;
   late _FakePlayback cubit;
@@ -108,38 +115,87 @@ void main() {
     expect(cubit.pauses, 0);
   });
 
-  test('an interruption during loading pauses once playback starts', () async {
+  test('an interruption during loading pauses straight away', () async {
     cubit.push(loading);
     await begin(AudioInterruptionType.pause);
-    expect(cubit.pauses, 0);
-    cubit.push(const PlaybackState(requestedAyah: ayah25, isPlaying: true));
-    await pumpEventQueue();
     expect(cubit.pauses, 1);
-    cubit.push(playing);
+  });
+
+  test('unplugging during loading pauses straight away', () async {
+    cubit.push(loading);
+    noisy.add(null);
     await pumpEventQueue();
     expect(cubit.pauses, 1);
   });
 
-  test('the interruption ending does not cancel the pending pause', () async {
+  test('an interruption between ayat pauses', () async {
+    cubit.push(const PlaybackState(currentAyah: ayah25, requestedAyah: ayah26));
+    await begin(AudioInterruptionType.pause);
+    expect(cubit.pauses, 1);
+  });
+
+  test('the interruption ending does not resume a loading pause', () async {
     cubit.push(loading);
     await begin(AudioInterruptionType.pause);
     interruptions.add(
       AudioInterruptionEvent(false, AudioInterruptionType.pause),
     );
     await pumpEventQueue();
-    cubit.push(playing);
-    await pumpEventQueue();
     expect(cubit.pauses, 1);
+    expect(cubit.resumes, 0);
   });
 
-  test('a stop clears the pending pause', () async {
-    cubit.push(loading);
+  test('nothing happens when idle', () async {
     await begin(AudioInterruptionType.pause);
-    cubit.push(const PlaybackState());
-    await pumpEventQueue();
-    cubit.push(const PlaybackState(currentAyah: ayah26, isPlaying: true));
+    noisy.add(null);
     await pumpEventQueue();
     expect(cubit.pauses, 0);
+  });
+
+  test('nothing happens after a failed load', () async {
+    cubit.push(const PlaybackState(requestedAyah: ayah25, error: 'offline'));
+    await begin(AudioInterruptionType.pause);
+    expect(cubit.pauses, 0);
+  });
+
+  test('connectAudioFocus configures speech and wires both streams', () async {
+    final session = _MockSession();
+    final sessionInterruptions =
+        StreamController<AudioInterruptionEvent>.broadcast();
+    final sessionNoisy = StreamController<void>.broadcast();
+    final configs = <AudioSessionConfiguration>[];
+    when(() => session.configure(any())).thenAnswer((i) async {
+      configs.add(i.positionalArguments.first as AudioSessionConfiguration);
+    });
+    when(
+      () => session.interruptionEventStream,
+    ).thenAnswer((_) => sessionInterruptions.stream);
+    when(
+      () => session.becomingNoisyEventStream,
+    ).thenAnswer((_) => sessionNoisy.stream);
+
+    final connected = await connectAudioFocus(
+      session: () async => session,
+      cubit: cubit,
+    );
+
+    expect(connected, isNotNull);
+    expect(
+      configs.single.toJson(),
+      const AudioSessionConfiguration.speech().toJson(),
+    );
+    cubit.push(playing);
+    sessionInterruptions.add(
+      AudioInterruptionEvent(true, AudioInterruptionType.pause),
+    );
+    await pumpEventQueue();
+    expect(cubit.pauses, 1);
+    sessionNoisy.add(null);
+    await pumpEventQueue();
+    expect(cubit.pauses, 2);
+    await connected!.dispose();
+    await sessionInterruptions.close();
+    await sessionNoisy.close();
   });
 
   test('connectAudioFocus survives a session that will not start', () async {

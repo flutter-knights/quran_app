@@ -15,27 +15,16 @@ class PlaybackAudioFocus {
         if (event.begin) _pause();
       }),
       becomingNoisy.listen((_) => _pause()),
-      cubit.stream.listen((state) {
-        if (state.skipOrigin == null) {
-          _pending = false;
-        } else if (_pending && state.isPlaying) {
-          _pending = false;
-          cubit.pause();
-        }
-      }),
     ];
   }
 
   final PlaybackCubit _cubit;
   late final List<StreamSubscription<Object?>> _subscriptions;
-  var _pending = false;
 
   void _pause() {
     final state = _cubit.state;
-    if (state.isPlaying) {
+    if (state.skipOrigin != null && !state.isPaused && state.error == null) {
       _cubit.pause();
-    } else if (state.isLoading) {
-      _pending = true;
     }
   }
 
