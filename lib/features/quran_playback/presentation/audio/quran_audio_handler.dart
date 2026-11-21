@@ -31,10 +31,13 @@ class QuranAudioHandler extends BaseAudioHandler {
 
   void _publish(PlaybackCubit cubit) {
     final item = nowPlayingItem(cubit.state, langCode: _langCode());
+    final current = mediaItem.value;
     if (item == null) {
-      if (mediaItem.value != null) mediaItem.add(null);
-    } else if (item.id != mediaItem.value?.id) {
+      if (current != null) mediaItem.add(null);
+    } else if (item.id != current?.id) {
       mediaItem.add(item);
+    } else if (item.title != current?.title) {
+      mediaItem.add(item.copyWith(duration: current?.duration));
     }
   }
 

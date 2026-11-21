@@ -42,6 +42,7 @@ void main() {
   late StreamController<Duration?> durations;
   late QuranAudioHandler handler;
   late _FakePlayback cubit;
+  var lang = 'ar';
 
   const ayah25 = AyahIdentifier(surah: 2, ayah: 5);
 
@@ -56,7 +57,8 @@ void main() {
     when(() => player.position).thenReturn(Duration.zero);
     when(() => player.bufferedPosition).thenReturn(Duration.zero);
     when(() => player.speed).thenReturn(1.0);
-    handler = QuranAudioHandler(player: player, langCode: () => 'ar');
+    lang = 'ar';
+    handler = QuranAudioHandler(player: player, langCode: () => lang);
     cubit = _FakePlayback();
   });
 
@@ -90,6 +92,8 @@ void main() {
     await handler.play();
     await handler.skipToNext();
     await handler.onTaskRemoved();
+    handler.attach(cubit);
+    expect(cubit.calls, isEmpty);
   });
 
   test('a new ayah publishes its MediaItem', () async {
@@ -142,7 +146,41 @@ void main() {
     expect(state.playing, isTrue);
     expect(state.processingState, AudioProcessingState.ready);
     expect(state.androidCompactActionIndices, [0, 1, 2]);
+    expect(state.systemActions, {MediaAction.seek});
+    expect(state.speed, 1.0);
   });
+
+  test('a paused player broadcasts the play control', () async {
+    when(() => player.playing).thenReturn(false);
+    events.add(PlaybackEvent());
+    await pumpEventQueue();
+    final state = handler.playbackState.value;
+    expect(state.controls[1], MediaControl.play);
+    expect(state.playing, isFalse);
+  });
+
+  test(
+    'a language switch retitles the MediaItem and keeps its duration',
+    () async {
+      handler.attach(cubit);
+      const playing = PlaybackState(
+        requestedAyah: ayah25,
+        reciter: Reciter.husary,
+      );
+      cubit.push(playing);
+      await pumpEventQueue();
+      durations.add(const Duration(seconds: 9));
+      await pumpEventQueue();
+      final arabicTitle = handler.mediaItem.value!.title;
+      lang = 'en';
+      cubit.push(playing.copyWith(isPlaying: true));
+      await pumpEventQueue();
+      final item = handler.mediaItem.value!;
+      expect(item.title, isNot(arabicTitle));
+      expect(item.id, 'husary:2:5');
+      expect(item.duration, const Duration(seconds: 9));
+    },
+  );
 
   test('duration reaches the current MediaItem', () async {
     handler.attach(cubit);
