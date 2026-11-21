@@ -23,8 +23,8 @@ void main() {
         c.background,
       );
       final stacked = Color.alphaBlend(
-        c.ink.withValues(alpha: 0.15),
-        accentTint,
+        c.accent.withValues(alpha: 0.20),
+        inkTint,
       );
 
       test('ink on background is at least 7', () {

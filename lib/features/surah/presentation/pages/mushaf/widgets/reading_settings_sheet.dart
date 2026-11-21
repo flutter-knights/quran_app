@@ -68,6 +68,7 @@ class _ReadingSettingsSheetState extends State<ReadingSettingsSheet> {
                           selected: selected,
                           label: p.localized(context),
                           excludeSemantics: true,
+                          onTap: () => cubit.updateMushafPaper(p),
                           child: GestureDetector(
                             key: ValueKey('reading-paper-${p.name}'),
                             onTap: () => cubit.updateMushafPaper(p),

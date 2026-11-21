@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,9 @@ import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reading_settings_sheet.dart';
 import 'package:quran_app/generated/l10n.dart';
+
+import '../../../../../notifications/presentation/alerts_test_harness.dart'
+    show loadAppFonts;
 
 class _MemStorage implements Storage {
   final _m = <String, dynamic>{};
@@ -74,39 +78,53 @@ void main() {
     addTearDown(cubit.close);
     await pumpSheet(tester, cubit, 'en');
     final handle = tester.ensureSemantics();
-
-    expect(
-      tester.getSemantics(find.bySemanticsLabel('Cream')),
-      isSemantics(isButton: true, isSelected: true),
-    );
-    expect(
-      tester.getSemantics(find.bySemanticsLabel('Sepia')),
-      isNot(isSemantics(isSelected: true)),
-    );
-    handle.dispose();
+    try {
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Cream')),
+        isSemantics(isButton: true, isSelected: true, hasTapAction: true),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Sepia')),
+        isNot(isSemantics(isSelected: true)),
+      );
+    } finally {
+      handle.dispose();
+    }
   });
+
+  for (final locale in ['en', 'ar']) {
+    testWidgets(
+      'swatch captions are not truncated on a 360dp phone ($locale)',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 780);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final cubit = SettingsCubit();
+        addTearDown(cubit.close);
+        await loadAppFonts();
+        await pumpSheet(tester, cubit, locale);
+
+        for (final p in MushafPaper.values) {
+          final caption = find.descendant(
+            of: find.byKey(ValueKey('reading-paper-${p.name}')),
+            matching: find.byType(Text),
+          );
+          expect(
+            tester.renderObject<RenderParagraph>(caption).didExceedMaxLines,
+            isFalse,
+            reason: '${p.name} ($locale)',
+          );
+        }
+      },
+    );
+  }
 
   testWidgets('tapping the night swatch updates the paper setting', (
     tester,
   ) async {
     final cubit = SettingsCubit();
     addTearDown(cubit.close);
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: BlocProvider.value(
-          value: cubit,
-          child: const Scaffold(body: ReadingSettingsSheet()),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpSheet(tester, cubit, 'en');
 
     await tester.tap(find.byKey(const ValueKey('reading-paper-night')));
     await tester.pump();
@@ -118,23 +136,7 @@ void main() {
   ) async {
     final cubit = SettingsCubit();
     addTearDown(cubit.close);
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: BlocProvider.value(
-          value: cubit,
-          child: const Scaffold(body: ReadingSettingsSheet()),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpSheet(tester, cubit, 'en');
 
     expect(cubit.state.settingsModel.readingMode, MushafReadingMode.page);
     await tester.tap(find.text('Scroll'));
@@ -147,23 +149,7 @@ void main() {
   ) async {
     final cubit = SettingsCubit();
     addTearDown(cubit.close);
-    await tester.pumpWidget(
-      MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: BlocProvider.value(
-          value: cubit,
-          child: const Scaffold(body: ReadingSettingsSheet()),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpSheet(tester, cubit, 'en');
 
     AnimatedOpacity body() => tester.widget<AnimatedOpacity>(
       find.byKey(const ValueKey('reading-sheet-body')),
