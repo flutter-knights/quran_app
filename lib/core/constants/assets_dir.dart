@@ -5,4 +5,6 @@ abstract class AssetsDir {
   static String jsonDir(String jsonName) => 'assets/json/$jsonName';
   static String mushafPage(int page) =>
       'assets/mushaf/pages/page_${page.toString().padLeft(3, '0')}.png';
+  static String mushafPageAccent(int page) =>
+      'assets/mushaf/pages/page_${page.toString().padLeft(3, '0')}_accent.png';
 }

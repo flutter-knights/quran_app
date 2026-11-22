@@ -610,6 +610,7 @@
   "tafsir_sectionTranslation": "Translation",
   "tafsir_sectionWords": "Word meanings",
   "tafsir_sectionNote": "My note",
+  "tafsir_sectionLater": "Later",
   "savedAyat_saved": "Saved ayah {ayah} of {surah}",
   "@savedAyat_saved": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }

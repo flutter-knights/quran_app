@@ -260,7 +260,7 @@ class _Chip extends StatelessWidget {
             if (!selected)
               AppStatusBadge(
                 color: colors.ink2,
-                label: PendingS.of(context).onb_later,
+                label: PendingS.of(context).tafsir_sectionLater,
                 showDot: false,
               ),
           ],

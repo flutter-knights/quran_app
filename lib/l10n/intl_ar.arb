@@ -594,6 +594,7 @@
   "tafsir_sectionTranslation": "الترجمة",
   "tafsir_sectionWords": "معاني الكلمات",
   "tafsir_sectionNote": "ملاحظتي",
+  "tafsir_sectionLater": "لاحقًا",
   "savedAyat_saved": "حُفظت الآية {ayah} من {surah}",
   "@savedAyat_saved": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }

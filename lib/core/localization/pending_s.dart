@@ -293,6 +293,7 @@ class PendingS {
   String get tafsir_sectionTranslation => _ar ? 'الترجمة' : 'Translation';
   String get tafsir_sectionWords => _ar ? 'معاني الكلمات' : 'Word meanings';
   String get tafsir_sectionNote => _ar ? 'ملاحظتي' : 'My note';
+  String get tafsir_sectionLater => _ar ? 'لاحقًا' : 'Later';
   String get leaf_sajda => _ar ? 'سجدة' : 'Sajda';
   String mushaf_surahTitle(String surah) =>
       _ar ? 'سورة $surah' : 'Surah $surah';

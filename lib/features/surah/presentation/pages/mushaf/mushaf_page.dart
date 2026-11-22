@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quran/quran.dart' as quran;
 
 import '../../../../../config/router/now_playing_route.dart';
+import '../../../../../core/constants/assets_dir.dart';
 import '../../../../../core/constants/leaf_tap_action.dart';
 import '../../../../../core/constants/mushaf_reading_mode.dart';
 import '../../../../../core/di/dependency_injection.dart';
@@ -267,12 +268,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   void _precacheAround(int page) {
     for (final n in [page - 1, page + 1]) {
       if (n < 1 || n > 604) continue;
-      precacheImage(
-        AssetImage(
-          'assets/mushaf/pages/page_${n.toString().padLeft(3, '0')}.png',
-        ),
-        context,
-      );
+      precacheImage(AssetImage(AssetsDir.mushafPage(n)), context);
     }
   }
 
