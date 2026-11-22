@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
@@ -37,12 +38,27 @@ class TafsirSection extends StatelessWidget {
         _ => TafsirLoading(ayah),
       },
       builder: (context, state) {
-        final retry = TextButton(
-          key: const ValueKey('tafsir-retry'),
-          style: buttonStyle,
-          onPressed: context.read<TafsirCubit>().retry,
-          child: Text(s.mushaf_retry, style: TS.medium14),
+        final onRetry = context.read<TafsirCubit>().retry;
+        final glyph = HugeIcon(
+          icon: HugeIcons.strokeRoundedRefresh,
+          color: ink,
+          size: lead ? 22 : 18,
         );
+        final retry = lead
+            ? IconButton(
+                key: const ValueKey('tafsir-retry'),
+                tooltip: s.mushaf_retry,
+                style: buttonStyle,
+                onPressed: onRetry,
+                icon: glyph,
+              )
+            : TextButton.icon(
+                key: const ValueKey('tafsir-retry'),
+                style: buttonStyle,
+                onPressed: onRetry,
+                icon: glyph,
+                label: Text(s.mushaf_retry, style: TS.semi14),
+              );
         return lead ? _lead(state, s, retry) : _full(state, s, retry);
       },
     );

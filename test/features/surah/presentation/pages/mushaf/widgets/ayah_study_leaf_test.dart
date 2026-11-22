@@ -120,6 +120,34 @@ void main() {
     },
   );
 
+  for (final scale in [1.0, 2.0]) {
+    testWidgets('all four section chips show at 360 px, text ${scale}x', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(cubit, calls, scale: scale));
+      await tester.pumpAndSettle();
+      for (final chip in ['tafsir', 'translation', 'words', 'note']) {
+        final rect = tester.getRect(find.byKey(ValueKey('study-chip-$chip')));
+        expect(rect.left, greaterThanOrEqualTo(0), reason: chip);
+        expect(rect.right, lessThanOrEqualTo(360), reason: chip);
+      }
+    });
+  }
+
+  testWidgets('التفسير is the first chip, at the right edge in Arabic', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(cubit, calls));
+    await tester.pumpAndSettle();
+    final tafsir = tester.getRect(
+      find.byKey(const ValueKey('study-chip-tafsir')),
+    );
+    final translation = tester.getRect(
+      find.byKey(const ValueKey('study-chip-translation')),
+    );
+    expect(tafsir.left, greaterThan(translation.left));
+  });
+
   testWidgets('the book row, caption, body and source show', (tester) async {
     await tester.pumpWidget(_host(cubit, calls));
     expect(find.text('التفسير الميسر'), findsOneWidget);

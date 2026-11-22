@@ -124,34 +124,32 @@ class AyahStudyLeaf extends StatelessWidget {
                     s.tafsir_behind,
                     style: TS.medium14.copyWith(color: colors.ink2),
                   ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      spacing: 8,
-                      children: [
-                        _Chip(
-                          key: const ValueKey('study-chip-tafsir'),
-                          label: s.tafsir_sectionTafsir,
-                          colors: colors,
-                          selected: true,
-                        ),
-                        _Chip(
-                          key: const ValueKey('study-chip-translation'),
-                          label: s.tafsir_sectionTranslation,
-                          colors: colors,
-                        ),
-                        _Chip(
-                          key: const ValueKey('study-chip-words'),
-                          label: s.tafsir_sectionWords,
-                          colors: colors,
-                        ),
-                        _Chip(
-                          key: const ValueKey('study-chip-note'),
-                          label: s.tafsir_sectionNote,
-                          colors: colors,
-                        ),
-                      ],
-                    ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _Chip(
+                        key: const ValueKey('study-chip-tafsir'),
+                        label: s.tafsir_sectionTafsir,
+                        colors: colors,
+                        selected: true,
+                      ),
+                      _Chip(
+                        key: const ValueKey('study-chip-translation'),
+                        label: s.tafsir_sectionTranslation,
+                        colors: colors,
+                      ),
+                      _Chip(
+                        key: const ValueKey('study-chip-words'),
+                        label: s.tafsir_sectionWords,
+                        colors: colors,
+                      ),
+                      _Chip(
+                        key: const ValueKey('study-chip-note'),
+                        label: s.tafsir_sectionNote,
+                        colors: colors,
+                      ),
+                    ],
                   ),
                   TafsirSection(
                     ayah: ayah,
@@ -251,10 +249,12 @@ class _Chip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           spacing: 6,
           children: [
-            Text(
-              label,
-              style: TS.semi14.copyWith(
-                color: selected ? colors.ink : colors.ink2,
+            Flexible(
+              child: Text(
+                label,
+                style: TS.semi14.copyWith(
+                  color: selected ? colors.ink : colors.ink2,
+                ),
               ),
             ),
             if (!selected)

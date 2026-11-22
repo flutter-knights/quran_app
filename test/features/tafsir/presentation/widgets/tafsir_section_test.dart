@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
@@ -114,6 +115,91 @@ void main() {
     await tester.pump();
 
     expect(cubit.retries, 1);
+  });
+
+  testWidgets('the retry reads as a control, not a second sentence', (
+    tester,
+  ) async {
+    final cubit = FakeTafsirCubit(const TafsirFailed(_ayah));
+    await tester.pumpWidget(_host(cubit));
+    await tester.pumpAndSettle();
+
+    final retry = find.byKey(_retry);
+    expect(
+      find.descendant(of: retry, matching: find.byType(HugeIcon)),
+      findsOneWidget,
+    );
+    final label = tester.widget<Text>(
+      find.descendant(of: retry, matching: find.text('إعادة المحاولة')),
+    );
+    expect(label.style?.fontWeight, FontWeight.w600);
+    expect(tester.getSize(retry).height, greaterThanOrEqualTo(48));
+  });
+
+  testWidgets('the one-line lead retries from a labelled refresh button', (
+    tester,
+  ) async {
+    final cubit = FakeTafsirCubit(const TafsirFailed(_ayah));
+    await tester.pumpWidget(_host(cubit, lead: true));
+    await tester.pumpAndSettle();
+
+    final retry = find.byKey(_retry);
+    expect(
+      find.descendant(of: retry, matching: find.byType(HugeIcon)),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('إعادة المحاولة'), findsOneWidget);
+    expect(tester.getSize(retry).height, greaterThanOrEqualTo(48));
+    expect(tester.getSize(retry).width, greaterThanOrEqualTo(48));
+
+    await tester.tap(retry);
+    await tester.pump();
+    expect(cubit.retries, 1);
+  });
+
+  testWidgets('the lead retry ripples in the paper ink', (tester) async {
+    await tester.pumpWidget(
+      _host(FakeTafsirCubit(const TafsirFailed(_ayah)), lead: true),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<IconButton>(find.byKey(_retry)).style, _style);
+  });
+
+  testWidgets('the lead retry retries without opening the tafsir', (
+    tester,
+  ) async {
+    var taps = 0;
+    final cubit = FakeTafsirCubit(const TafsirFailed(_ayah));
+    await tester.pumpWidget(_host(cubit, lead: true, onTap: () => taps++));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('تعذّر تحميل التفسير'));
+    expect(taps, 1);
+    expect(cubit.retries, 0);
+
+    await tester.tap(find.byKey(_retry));
+    await tester.pump();
+    expect(cubit.retries, 1);
+    expect(taps, 1);
+  });
+
+  testWidgets('the lead retry is announced as a named button', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      _host(FakeTafsirCubit(const TafsirFailed(_ayah)), lead: true),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getSemantics(find.byKey(_retry)),
+      isSemantics(
+        tooltip: 'إعادة المحاولة',
+        isButton: true,
+        hasTapAction: true,
+      ),
+    );
+    handle.dispose();
   });
 
   testWidgets('full mode names the book, the caption and the source', (

@@ -29,6 +29,15 @@ extension MushafPaperButtonX on MushafPaperColors {
           ? ink.withValues(alpha: 0.38)
           : ink,
     ),
+    overlayColor: WidgetStateProperty.resolveWith(
+      (states) =>
+          states.contains(WidgetState.pressed) ||
+              states.contains(WidgetState.focused)
+          ? ink.withValues(alpha: 0.10)
+          : states.contains(WidgetState.hovered)
+          ? ink.withValues(alpha: 0.08)
+          : null,
+    ),
     side: outlined ? WidgetStatePropertyAll(BorderSide(color: accent)) : null,
   );
 }
