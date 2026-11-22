@@ -10,6 +10,7 @@ import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/display_sheet.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../notifications/presentation/alerts_test_harness.dart'
@@ -193,6 +194,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('display-keep-awake')));
     await tester.pump();
     expect(cubit.state.settingsModel.keepScreenOn, isFalse);
+    await tester.tap(find.byKey(const ValueKey('display-keep-awake')));
+    await tester.pump();
+    expect(cubit.state.settingsModel.keepScreenOn, isTrue);
   });
 
   testWidgets('done closes the sheet and is at least 48 by 48', (tester) async {
@@ -241,9 +245,18 @@ void main() {
       await pumpSheet(tester, cubit, 'en');
       for (final p in MushafPaper.values) {
         final tile = find.byKey(ValueKey('reading-paper-${p.name}'));
+        final paint = find.descendant(
+          of: tile,
+          matching: find.byType(CustomPaint),
+        );
+        expect(paint, findsOneWidget, reason: p.name);
         expect(
-          find.descendant(of: tile, matching: find.byType(CustomPaint)),
-          findsOneWidget,
+          tester.renderObject(paint),
+          paints
+            ..rect(color: p.colors.background)
+            ..rect(color: p.colors.accent)
+            ..line(color: p.colors.ink)
+            ..line(color: p.colors.ink),
           reason: p.name,
         );
         final text = tester.widget<Text>(

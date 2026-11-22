@@ -11,6 +11,7 @@ import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.d
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
+import 'package:quran_app/features/surah/presentation/utils/surah_caption.dart';
 import 'package:quran_app/generated/l10n.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -72,16 +73,7 @@ class AyahLeaf extends StatelessWidget {
                         ),
                         if (_isBanner)
                           Text(
-                            s.mushaf_surahCaption(
-                              quran.getPlaceOfRevelation(ayah.surah) == 'Makkah'
-                                  ? strings.makkiyya
-                                  : strings.madaniyya,
-                              strings.ayahs_count(
-                                quran
-                                    .getVerseCount(ayah.surah)
-                                    .toLocalized(context),
-                              ),
-                            ),
+                            surahCaption(context, ayah.surah),
                             style: TS.medium14.copyWith(color: colors.ink2),
                           ),
                       ],

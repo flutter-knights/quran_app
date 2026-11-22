@@ -40,13 +40,15 @@ void main() {
 
   Future<void> open(
     WidgetTester tester, {
-    int currentPage = 50,
     int? currentSurah = 3,
     int currentJuz = 4,
     bool viaShow = false,
+    Size size = const Size(400, 800),
+    double keyboard = 0,
   }) async {
-    tester.view.physicalSize = const Size(400, 800);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
+    tester.view.viewInsets = FakeViewPadding(bottom: keyboard);
     addTearDown(tester.view.reset);
     final playback = _FakePlayback();
     final downloads = _FakeDownloads();
@@ -74,7 +76,6 @@ void main() {
                   result = viaShow
                       ? await MenuSheet.show(
                           context,
-                          currentPage: currentPage,
                           currentSurah: currentSurah,
                           currentJuz: currentJuz,
                         )
@@ -82,7 +83,6 @@ void main() {
                           context: context,
                           isScrollControlled: true,
                           builder: (_) => MenuSheet(
-                            currentPage: currentPage,
                             currentSurah: currentSurah,
                             currentJuz: currentJuz,
                             juzEntries: QuranBrowseServiceImpl().juzEntries(),
@@ -210,7 +210,7 @@ void main() {
   });
 
   testWidgets('every surah row is at least 56 high', (tester) async {
-    await open(tester);
+    await open(tester, currentSurah: 1);
     for (final n in [1, 2, 3]) {
       expect(
         tester.getSize(find.byKey(ValueKey('menu-surah-$n'))).height,
@@ -218,5 +218,59 @@ void main() {
         reason: 'surah $n',
       );
     }
+  });
+
+  for (final (name, size, keyboard) in [
+    ('a 360x640 phone with a 300 dp keyboard', const Size(360, 640), 300.0),
+    ('landscape 800x360 with a 200 dp keyboard', const Size(800, 360), 200.0),
+  ]) {
+    testWidgets('$name keeps the search field and انتقال reachable', (
+      tester,
+    ) async {
+      await open(tester, size: size, keyboard: keyboard);
+      await tester.enterText(find.byKey(const ValueKey('menu-search')), '٥٨٢');
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      final go = find.byKey(const ValueKey('menu-go'));
+      expect(go.hitTestable(), findsOneWidget);
+      expect(
+        tester.getRect(go).bottom,
+        lessThanOrEqualTo(size.height - keyboard),
+      );
+      await tester.tap(go);
+      await tester.pumpAndSettle();
+      expect(result, const MenuJump(582));
+    });
+  }
+
+  testWidgets('opening the keyboard keeps the typed text and focus', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.enterText(find.byKey(const ValueKey('menu-search')), '٥٨٢');
+    await tester.pump();
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(find.text('٥٨٢'), findsOneWidget);
+    expect(find.byKey(const ValueKey('menu-go')).hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the surah list opens at the current surah', (tester) async {
+    await open(tester, currentSurah: 114);
+    expect(
+      find.byKey(const ValueKey('menu-surah-114')).hitTestable(),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the juz list opens at the current juz', (tester) async {
+    await open(tester, currentJuz: 30);
+    await tester.tap(find.text('الأجزاء'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('menu-juz-30')).hitTestable(),
+      findsOneWidget,
+    );
   });
 }

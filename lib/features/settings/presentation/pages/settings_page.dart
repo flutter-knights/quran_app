@@ -128,7 +128,7 @@ class SettingsPage extends StatelessWidget {
                             color: scheme.onSurface,
                             size: 20,
                           ),
-                          title: S.of(context).readingSettings,
+                          title: PendingS.of(context).menu_display,
                           subtitle: S.of(context).paper,
                           trailing: HugeIcon(
                             icon: forwardArrowIcon(context),

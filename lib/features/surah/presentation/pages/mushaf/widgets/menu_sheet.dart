@@ -19,6 +19,7 @@ import 'package:quran_app/features/quran_playback/presentation/widgets/surah_dow
 import 'package:quran_app/features/search/domain/entities/juz_browse_entry.dart';
 import 'package:quran_app/features/search/domain/services/quran_browse_service.dart';
 import 'package:quran_app/features/surah/presentation/utils/menu_query.dart';
+import 'package:quran_app/features/surah/presentation/utils/surah_caption.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 sealed class MenuAction extends Equatable {
@@ -52,20 +53,17 @@ final class MenuPlayPage extends MenuAction {
 class MenuSheet extends StatefulWidget {
   const MenuSheet({
     super.key,
-    required this.currentPage,
     required this.currentSurah,
     required this.currentJuz,
     required this.juzEntries,
   });
 
-  final int currentPage;
   final int? currentSurah;
   final int currentJuz;
   final List<JuzBrowseEntry> juzEntries;
 
   static Future<MenuAction?> show(
     BuildContext context, {
-    required int currentPage,
     required int? currentSurah,
     required int currentJuz,
   }) => showModalBottomSheet<MenuAction>(
@@ -79,7 +77,6 @@ class MenuSheet extends StatefulWidget {
         BlocProvider.value(value: context.read<SurahDownloadCubit>()),
       ],
       child: MenuSheet(
-        currentPage: currentPage,
         currentSurah: currentSurah,
         currentJuz: currentJuz,
         juzEntries: sl<QuranBrowseService>().juzEntries(),
@@ -92,8 +89,27 @@ class MenuSheet extends StatefulWidget {
 }
 
 class _MenuSheetState extends State<MenuSheet> {
+  static const _rowExtent = 80.0;
+
+  final _searchKey = GlobalKey();
+  late final _surahScroll = ScrollController(
+    initialScrollOffset: _offsetFor(widget.currentSurah),
+  );
+  late final _juzScroll = ScrollController(
+    initialScrollOffset: _offsetFor(widget.currentJuz),
+  );
   var _surahs = true;
   MenuQuery _resolved = const MenuQueryNone();
+
+  static double _offsetFor(int? number) =>
+      number == null ? 0 : math.max(0, (number - 2) * _rowExtent);
+
+  @override
+  void dispose() {
+    _surahScroll.dispose();
+    _juzScroll.dispose();
+    super.dispose();
+  }
 
   void _pop(MenuAction action) => Navigator.of(context).pop(action);
 
@@ -102,99 +118,125 @@ class _MenuSheetState extends State<MenuSheet> {
     final pending = PendingS.of(context);
     final scheme = context.colorScheme;
     final inset = MediaQuery.viewInsetsOf(context).bottom;
+    final search = KeyedSubtree(
+      key: _searchKey,
+      child: TextField(
+        key: const ValueKey('menu-search'),
+        keyboardType: TextInputType.text,
+        decoration: InputDecoration(hintText: pending.menu_searchHint),
+        onChanged: (value) =>
+            setState(() => _resolved = resolveMenuQuery(value)),
+      ),
+    );
+    final result = switch (_resolved) {
+      MenuQueryTarget(:final page, :final surah, :final juz) => Row(
+        spacing: 8,
+        children: [
+          Expanded(
+            child: Text(
+              pending.menu_pageResult(
+                page.toLocalized(context),
+                surahDisplayName(context, surah),
+                juz.toLocalized(context),
+              ),
+              style: TS.semi14,
+            ),
+          ),
+          FilledButton(
+            key: const ValueKey('menu-go'),
+            onPressed: () => _pop(MenuJump(page)),
+            child: Text(pending.menu_go),
+          ),
+        ],
+      ),
+      MenuQueryOutOfRange() => Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          pending.menu_pageRangeError,
+          style: TS.medium14.copyWith(color: scheme.error),
+        ),
+      ),
+      MenuQueryNone() => const SizedBox.shrink(),
+    };
     return Padding(
       padding: EdgeInsets.only(bottom: inset),
-      child: SizedBox(
-        height: math.max(0.0, MediaQuery.sizeOf(context).height * 0.85 - inset),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            spacing: 12,
-            children: [
-              Row(
-                spacing: 8,
-                children: [
-                  _Tile(
-                    key: const ValueKey('menu-tile-places'),
-                    icon: HugeIcons.strokeRoundedLocation01,
-                    label: pending.menu_places,
-                    onTap: () => _pop(const MenuOpenPlaces()),
-                  ),
-                  _Tile(
-                    key: const ValueKey('menu-tile-display'),
-                    icon: HugeIcons.strokeRoundedSettings02,
-                    label: pending.menu_display,
-                    onTap: () => _pop(const MenuOpenDisplay()),
-                  ),
-                  _Tile(
-                    key: const ValueKey('menu-tile-play'),
-                    icon: HugeIcons.strokeRoundedHeadphones,
-                    label: pending.mushaf_playWholePage,
-                    onTap: () => _pop(const MenuPlayPage()),
-                  ),
-                ],
-              ),
-              TextField(
-                key: const ValueKey('menu-search'),
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(hintText: pending.menu_searchHint),
-                onChanged: (value) =>
-                    setState(() => _resolved = resolveMenuQuery(value)),
-              ),
-              switch (_resolved) {
-                MenuQueryTarget(:final page, :final surah, :final juz) => Row(
-                  spacing: 8,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        pending.menu_pageResult(
-                          page.toLocalized(context),
-                          surahDisplayName(context, surah),
-                          juz.toLocalized(context),
+      child: LayoutBuilder(
+        builder: (context, constraints) => SizedBox(
+          height: math.min(
+            MediaQuery.sizeOf(context).height * 0.85,
+            constraints.maxHeight,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: inset > 0
+                ? SingleChildScrollView(
+                    child: Column(spacing: 12, children: [search, result]),
+                  )
+                : Column(
+                    spacing: 12,
+                    children: [
+                      Row(
+                        spacing: 8,
+                        children: [
+                          _Tile(
+                            key: const ValueKey('menu-tile-places'),
+                            icon: HugeIcons.strokeRoundedLocation01,
+                            label: pending.menu_places,
+                            onTap: () => _pop(const MenuOpenPlaces()),
+                          ),
+                          _Tile(
+                            key: const ValueKey('menu-tile-display'),
+                            icon: HugeIcons.strokeRoundedSettings02,
+                            label: pending.menu_display,
+                            onTap: () => _pop(const MenuOpenDisplay()),
+                          ),
+                          _Tile(
+                            key: const ValueKey('menu-tile-play'),
+                            icon: HugeIcons.strokeRoundedHeadphones,
+                            label: pending.mushaf_playWholePage,
+                            onTap: () => _pop(const MenuPlayPage()),
+                          ),
+                        ],
+                      ),
+                      search,
+                      result,
+                      AppSegmentedSelector<bool>(
+                        expand: true,
+                        selected: _surahs,
+                        onChanged: (value) => setState(() => _surahs = value),
+                        options: [
+                          SegmentOption(
+                            value: true,
+                            label: S.of(context).tab_surahs,
+                          ),
+                          SegmentOption(
+                            value: false,
+                            label: S.of(context).tab_juz,
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: KeyedSubtree(
+                          key: ValueKey(_surahs),
+                          child: _surahs
+                              ? ListView.builder(
+                                  key: const ValueKey('menu-list'),
+                                  controller: _surahScroll,
+                                  itemCount: quran.totalSurahCount,
+                                  itemBuilder: (context, i) =>
+                                      _surahRow(context, i + 1),
+                                )
+                              : ListView.builder(
+                                  key: const ValueKey('menu-list'),
+                                  controller: _juzScroll,
+                                  itemCount: widget.juzEntries.length,
+                                  itemBuilder: (context, i) =>
+                                      _juzRow(context, widget.juzEntries[i]),
+                                ),
                         ),
-                        style: TS.semi14,
                       ),
-                    ),
-                    FilledButton(
-                      key: const ValueKey('menu-go'),
-                      onPressed: () => _pop(MenuJump(page)),
-                      child: Text(pending.menu_go),
-                    ),
-                  ],
-                ),
-                MenuQueryOutOfRange() => Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text(
-                    pending.menu_pageRangeError,
-                    style: TS.medium14.copyWith(color: scheme.error),
+                    ],
                   ),
-                ),
-                MenuQueryNone() => const SizedBox.shrink(),
-              },
-              AppSegmentedSelector<bool>(
-                expand: true,
-                selected: _surahs,
-                onChanged: (value) => setState(() => _surahs = value),
-                options: [
-                  SegmentOption(value: true, label: S.of(context).tab_surahs),
-                  SegmentOption(value: false, label: S.of(context).tab_juz),
-                ],
-              ),
-              Expanded(
-                child: _surahs
-                    ? ListView.builder(
-                        key: const ValueKey('menu-list'),
-                        itemCount: 114,
-                        itemBuilder: (context, i) => _surahRow(context, i + 1),
-                      )
-                    : ListView.builder(
-                        key: const ValueKey('menu-list'),
-                        itemCount: widget.juzEntries.length,
-                        itemBuilder: (context, i) =>
-                            _juzRow(context, widget.juzEntries[i]),
-                      ),
-              ),
-            ],
           ),
         ),
       ),
@@ -202,19 +244,12 @@ class _MenuSheetState extends State<MenuSheet> {
   }
 
   Widget _surahRow(BuildContext context, int n) {
-    final strings = S.of(context);
-    final pending = PendingS.of(context);
     final page = quran.getPageNumber(n, 1);
     return _Row(
       key: ValueKey('menu-surah-$n'),
       number: n,
       title: surahDisplayName(context, n),
-      caption: pending.mushaf_surahCaption(
-        quran.getPlaceOfRevelation(n) == 'Makkah'
-            ? strings.makkiyya
-            : strings.madaniyya,
-        strings.ayahs_count(quran.getVerseCount(n).toLocalized(context)),
-      ),
+      caption: surahCaption(context, n),
       page: page,
       here: n == widget.currentSurah,
       trailing: SurahDownloadButton(surah: n),
