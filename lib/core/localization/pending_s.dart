@@ -278,6 +278,22 @@ class PendingS {
       _ar ? '$place، $ayahs' : '$place, $ayahs';
   String get mushaf_playWholePage =>
       _ar ? 'استماع الصفحة كاملة' : 'Listen to the whole page';
+  String get menu_places => _ar ? 'أماكني' : 'My places';
+  String get menu_display => _ar ? 'العرض' : 'Display';
+  String get menu_searchHint =>
+      _ar ? 'اسم سورة أو رقم صفحة' : 'Surah name or page number';
+  String menu_pageResult(String page, String surah, String juz) =>
+      _ar ? 'صفحة $page، $surah، الجزء $juz' : 'Page $page, $surah, juzʼ $juz';
+  String get menu_go => _ar ? 'انتقال' : 'Go';
+  String get menu_pageRangeError =>
+      _ar ? 'اكتب رقمًا من ١ إلى ٦٠٤' : 'Enter a number from 1 to 604';
+  String get menu_youAreHere => _ar ? 'أنت هنا' : 'You are here';
+  String mushaf_pageNumber(String page) => _ar ? 'صفحة $page' : 'Page $page';
+  String get display_paper => _ar ? 'لون الورق' : 'Paper colour';
+  String get display_readingMode => _ar ? 'طريقة القراءة' : 'Reading mode';
+  String get display_keepScreenOn =>
+      _ar ? 'إبقاء الشاشة مضيئة' : 'Keep the screen on';
+  String get display_done => _ar ? 'تم' : 'Done';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

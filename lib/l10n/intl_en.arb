@@ -510,5 +510,23 @@
   "@mushaf_surahCaption": {
     "placeholders": { "place": { "type": "String" }, "ayahs": { "type": "String" } }
   },
-  "mushaf_playWholePage": "Listen to the whole page"
+  "mushaf_playWholePage": "Listen to the whole page",
+  "menu_places": "My places",
+  "menu_display": "Display",
+  "menu_searchHint": "Surah name or page number",
+  "menu_pageResult": "Page {page}, {surah}, juzʼ {juz}",
+  "@menu_pageResult": {
+    "placeholders": { "page": { "type": "String" }, "surah": { "type": "String" }, "juz": { "type": "String" } }
+  },
+  "menu_go": "Go",
+  "menu_pageRangeError": "Enter a number from 1 to 604",
+  "menu_youAreHere": "You are here",
+  "mushaf_pageNumber": "Page {page}",
+  "@mushaf_pageNumber": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "display_paper": "Paper colour",
+  "display_readingMode": "Reading mode",
+  "display_keepScreenOn": "Keep the screen on",
+  "display_done": "Done"
 }

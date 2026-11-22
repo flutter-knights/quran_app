@@ -26,7 +26,7 @@ import 'widgets/mushaf_browse_bar.dart';
 import 'widgets/mushaf_page_view.dart';
 import 'widgets/mushaf_top_bar.dart';
 import 'widgets/page_jump_sheet.dart';
-import 'widgets/reading_settings_sheet.dart';
+import 'widgets/display_sheet.dart';
 
 class MushafPage extends StatefulWidget {
   const MushafPage({super.key, required this.args});
@@ -482,7 +482,7 @@ class _BrowseBarSlot extends StatelessWidget {
                           a.contains(currentPage) != b.contains(currentPage),
                       builder: (context, pb) => MushafBrowseBar(
                         isSaved: pb.contains(currentPage),
-                        onSettings: () => ReadingSettingsSheet.show(context),
+                        onSettings: () => DisplaySheet.show(context),
                         onPlay: onPlay,
                         onToggleSave: () => context
                             .read<PageBookmarkCubit>()

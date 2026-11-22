@@ -494,5 +494,23 @@
   "@mushaf_surahCaption": {
     "placeholders": { "place": { "type": "String" }, "ayahs": { "type": "String" } }
   },
-  "mushaf_playWholePage": "استماع الصفحة كاملة"
+  "mushaf_playWholePage": "استماع الصفحة كاملة",
+  "menu_places": "أماكني",
+  "menu_display": "العرض",
+  "menu_searchHint": "اسم سورة أو رقم صفحة",
+  "menu_pageResult": "صفحة {page}، {surah}، الجزء {juz}",
+  "@menu_pageResult": {
+    "placeholders": { "page": { "type": "String" }, "surah": { "type": "String" }, "juz": { "type": "String" } }
+  },
+  "menu_go": "انتقال",
+  "menu_pageRangeError": "اكتب رقمًا من ١ إلى ٦٠٤",
+  "menu_youAreHere": "أنت هنا",
+  "mushaf_pageNumber": "صفحة {page}",
+  "@mushaf_pageNumber": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "display_paper": "لون الورق",
+  "display_readingMode": "طريقة القراءة",
+  "display_keepScreenOn": "إبقاء الشاشة مضيئة",
+  "display_done": "تم"
 }
