@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
+
+Color fasilRibbon(FasilSlot slot, {required bool dark}) => switch (slot) {
+  FasilSlot.wird => dark ? const Color(0xFFE39AA2) : const Color(0xFF8A2F3B),
+  FasilSlot.hifz => dark ? const Color(0xFF8EBBE3) : const Color(0xFF1F5A8A),
+  FasilSlot.muraja => dark ? const Color(0xFFE2B85C) : const Color(0xFF835F0F),
+};
 
 class MushafPaperColors {
   const MushafPaperColors({
@@ -15,9 +22,24 @@ class MushafPaperColors {
   Color get leaf => Color.alphaBlend(ink.withValues(alpha: 0.06), background);
 }
 
+extension MushafPaperButtonX on MushafPaperColors {
+  ButtonStyle paperButton({bool outlined = false}) => ButtonStyle(
+    foregroundColor: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.disabled)
+          ? ink.withValues(alpha: 0.38)
+          : ink,
+    ),
+    side: outlined ? WidgetStatePropertyAll(BorderSide(color: accent)) : null,
+  );
+}
+
 extension MushafPaperX on MushafPaper {
   bool get isDark =>
       this == MushafPaper.night || this == MushafPaper.slateNight;
+
+  Color ribbon(FasilSlot slot) => fasilRibbon(slot, dark: isDark);
+
+  Color get ribbonShadow => const Color(0x33000000);
 
   MushafPaperColors get colors => switch (this) {
     MushafPaper.cream => const MushafPaperColors(

@@ -62,6 +62,12 @@ extension AppPaletteX on ColorPalette {
     ColorPalette.neutralLight || ColorPalette.slateLight => primary,
   };
 
+  Color get inversePrimary => switch (this) {
+    ColorPalette.neutralDark || ColorPalette.slateDark => primary,
+    ColorPalette.neutralLight => ColorPalette.neutralDark.primaryInk,
+    ColorPalette.slateLight => ColorPalette.slateDark.primaryInk,
+  };
+
   Color get primaryTint => isDark
       ? secondary.withValues(alpha: 0.24)
       : primary.withValues(alpha: 0.10);
@@ -92,6 +98,7 @@ extension AppPaletteX on ColorPalette {
     brightness: isDark ? Brightness.dark : Brightness.light,
     primary: primary,
     onPrimary: onPrimary,
+    inversePrimary: inversePrimary,
     secondary: secondary,
     onSecondary: const Color(0xFFF5F5F5),
     error: error,
@@ -117,6 +124,12 @@ extension AppPaletteX on ColorPalette {
       ),
       hintStyle: TS.regular15.copyWith(color: onSurface),
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(foregroundColor: primaryInk),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(foregroundColor: primaryInk),
     ),
     switchTheme: SwitchThemeData(
       trackColor: _whenSelected(primaryInk),

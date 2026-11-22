@@ -7,8 +7,9 @@ import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/app_status_badge.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/utils/place_notices.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/surah/presentation/utils/surah_caption.dart';
@@ -27,6 +28,7 @@ class AyahLeaf extends StatelessWidget {
     required this.onListenFromHere,
     required this.onListenFromSurahStart,
     required this.onListenPage,
+    required this.onFasil,
   });
 
   final AyahIdentifier ayah;
@@ -35,6 +37,7 @@ class AyahLeaf extends StatelessWidget {
   final VoidCallback onListenFromHere;
   final VoidCallback onListenFromSurahStart;
   final VoidCallback onListenPage;
+  final VoidCallback onFasil;
 
   bool get _isBanner => ayah.ayah == 0;
 
@@ -152,20 +155,30 @@ class AyahLeaf extends StatelessWidget {
                       ),
                       VerticalDivider(width: 1, color: colors.accent),
                       Expanded(
-                        child: BlocSelector<BookmarkCubit, BookmarkState, bool>(
-                          selector: (state) => state.contains(ayah),
-                          builder: (context, saved) => _Action(
-                            key: const ValueKey('leaf-save'),
-                            icon: saved
-                                ? HugeIcons.strokeRoundedBookmarkCheck02
-                                : HugeIcons.strokeRoundedBookmark02,
-                            label: s.leaf_saveAyah,
-                            color: colors.ink,
-                            toggled: saved,
-                            onTap: () =>
-                                context.read<BookmarkCubit>().toggle(ayah),
-                          ),
+                        child: _Action(
+                          key: const ValueKey('leaf-fasil'),
+                          icon: HugeIcons.strokeRoundedBookmark03,
+                          label: s.leaf_fasil,
+                          color: colors.ink,
+                          onTap: onFasil,
                         ),
+                      ),
+                      VerticalDivider(width: 1, color: colors.accent),
+                      Expanded(
+                        child:
+                            BlocSelector<SavedAyatCubit, SavedAyatState, bool>(
+                              selector: (state) => state.contains(ayah),
+                              builder: (context, saved) => _Action(
+                                key: const ValueKey('leaf-save'),
+                                icon: saved
+                                    ? HugeIcons.strokeRoundedBookmarkCheck02
+                                    : HugeIcons.strokeRoundedBookmark02,
+                                label: s.leaf_saveAyah,
+                                color: colors.ink,
+                                toggled: saved,
+                                onTap: () => _toggleSave(context),
+                              ),
+                            ),
                       ),
                       VerticalDivider(width: 1, color: colors.accent),
                       Expanded(
@@ -184,6 +197,35 @@ class AyahLeaf extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _toggleSave(BuildContext context) async {
+    final saved = context.read<SavedAyatCubit>();
+    final messenger = ScaffoldMessenger.of(context);
+    final s = PendingS.current;
+    final ayahText = ayah.ayah.toLocalized(context);
+    final surahText = surahDisplayName(context, ayah.surah);
+    final existing = saved.state.find(ayah);
+    if (existing != null) {
+      await saved.remove(existing);
+      if (saved.state.contains(ayah)) return showPlaceWriteError(messenger);
+      showPlaceNotice(
+        messenger,
+        s.savedAyat_removed(ayahText, surahText),
+        onUndo: () => saved.restore(existing),
+      );
+      return;
+    }
+    final place = await saved.save(ayah);
+    if (place == null) {
+      if (saved.state.error != null) showPlaceWriteError(messenger);
+      return;
+    }
+    showPlaceNotice(
+      messenger,
+      s.savedAyat_saved(ayahText, surahText),
+      onUndo: () => saved.remove(place),
     );
   }
 

@@ -16,18 +16,6 @@ import 'package:quran_app/generated/l10n.dart';
 
 const _tapSize = ButtonStyle(minimumSize: WidgetStatePropertyAll(Size(0, 48)));
 
-ButtonStyle _paperButton(MushafPaperColors colors, {bool outlined = false}) =>
-    ButtonStyle(
-      foregroundColor: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.disabled)
-            ? colors.ink.withValues(alpha: 0.38)
-            : colors.ink,
-      ),
-      side: outlined
-          ? WidgetStatePropertyAll(BorderSide(color: colors.accent))
-          : null,
-    );
-
 class PlayerLeaf extends StatelessWidget {
   const PlayerLeaf({
     super.key,
@@ -51,10 +39,10 @@ class PlayerLeaf extends StatelessWidget {
       shape: Border(top: BorderSide(color: colors.accent)),
       child: OutlinedButtonTheme(
         data: OutlinedButtonThemeData(
-          style: _paperButton(colors, outlined: true),
+          style: colors.paperButton(outlined: true),
         ),
         child: TextButtonTheme(
-          data: TextButtonThemeData(style: _paperButton(colors)),
+          data: TextButtonThemeData(style: colors.paperButton()),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

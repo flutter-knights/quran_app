@@ -529,5 +529,75 @@
   "display_paper": "Paper colour",
   "display_readingMode": "Reading mode",
   "display_keepScreenOn": "Keep the screen on",
-  "display_done": "Done"
+  "display_done": "Done",
+  "fasil_wird": "Wird",
+  "fasil_hifz": "Memorisation",
+  "fasil_muraja": "Review",
+  "places_position": "{place}, page {page}",
+  "@places_position": {
+    "placeholders": { "place": { "type": "String" }, "page": { "type": "String" } }
+  },
+  "places_today": "Today {time}",
+  "@places_today": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "places_yesterday": "Yesterday {time}",
+  "@places_yesterday": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "fasil_movedAt": "Moved {when}",
+  "@fasil_movedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "savedAyat_savedAt": "Saved {when}",
+  "@savedAyat_savedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "fasil_title": "Markers",
+  "fasil_notPlaced": "Not placed",
+  "fasil_moveHere": "Move here",
+  "fasil_moveNamedHere": "Move {name} here",
+  "@fasil_moveNamedHere": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fasil_placeHere": "Place here",
+  "fasil_placeNamedHere": "Place {name} here",
+  "@fasil_placeNamedHere": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fasil_clusterLabel": "Markers: {names}",
+  "@fasil_clusterLabel": {
+    "placeholders": { "names": { "type": "String" } }
+  },
+  "fasil_moved": "Moved the {name} marker to {place}",
+  "@fasil_moved": {
+    "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
+  },
+  "fasil_placed": "Placed the {name} marker at {place}",
+  "@fasil_placed": {
+    "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
+  },
+  "places_continue": "Continue reading",
+  "places_continueCaption": "Saved by itself where you read; jumps don't change it",
+  "places_page": "Page {page}",
+  "@places_page": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "places_savedAyat": "Saved ayat",
+  "places_noSavedAyat": "No saved ayat yet",
+  "places_writeFailed": "Couldn't save. Try again.",
+  "places_rename": "Rename",
+  "places_renameTitle": "Rename marker",
+  "places_cancel": "Cancel",
+  "places_remove": "Remove",
+  "places_more": "Options",
+  "savedAyat_removed": "Removed ayah {ayah} of {surah}",
+  "@savedAyat_removed": {
+    "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
+  },
+  "leaf_fasil": "Marker",
+  "savedAyat_saved": "Saved ayah {ayah} of {surah}",
+  "@savedAyat_saved": {
+    "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
+  }
 }

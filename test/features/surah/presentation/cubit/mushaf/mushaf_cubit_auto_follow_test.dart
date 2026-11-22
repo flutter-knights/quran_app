@@ -236,6 +236,41 @@ void main() {
       expect((m.state.jumpFrom, m.state.selectedAyah), (null, a));
     });
 
+    test('jumpTo with focus selects it on the new page', () {
+      const focus = AyahIdentifier(surah: 3, ayah: 6);
+      final m = _tracked(page: 2)..jumpTo(50, focus: focus);
+      expect(
+        (m.state.currentPage, m.state.selectedAyah, m.state.jumpFrom),
+        (50, focus, 2),
+      );
+    });
+
+    test('jumpTo the current page with focus only selects', () {
+      const focus = AyahIdentifier(surah: 3, ayah: 6);
+      final m = _tracked(page: 50)..jumpTo(100);
+      m.jumpTo(100, focus: focus);
+      expect(
+        (m.state.currentPage, m.state.selectedAyah, m.state.jumpFrom),
+        (100, focus, 50),
+      );
+    });
+
+    test('jumpTo ignores a banner focus', () {
+      const banner = AyahIdentifier(surah: 5, ayah: 0);
+      final m = _tracked(page: 2)..jumpTo(50, focus: banner);
+      expect((m.state.currentPage, m.state.selectedAyah), (50, null));
+    });
+
+    test('jumpTo the current page with a banner focus follows the rule', () {
+      const banner = AyahIdentifier(surah: 3, ayah: 0);
+      final m = _tracked(page: 50);
+      final states = <MushafState>[];
+      final sub = m.stream.listen(states.add);
+      addTearDown(sub.cancel);
+      m.jumpTo(50, focus: banner);
+      expect(states, isEmpty);
+    });
+
     test('a second jump keeps the first origin', () {
       final m = _tracked(page: 50)
         ..jumpTo(582)

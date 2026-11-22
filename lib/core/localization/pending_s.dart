@@ -272,6 +272,7 @@ class PendingS {
 
   String get leaf_listenFromHere => _ar ? 'استماع من هنا' : 'Listen from here';
   String get leaf_saveAyah => _ar ? 'حفظ الآية' : 'Save ayah';
+  String get leaf_fasil => _ar ? 'فاصل' : 'Marker';
   String get leaf_sajda => _ar ? 'سجدة' : 'Sajda';
   String mushaf_surahTitle(String surah) =>
       _ar ? 'سورة $surah' : 'Surah $surah';
@@ -295,6 +296,49 @@ class PendingS {
   String get display_keepScreenOn =>
       _ar ? 'إبقاء الشاشة مضيئة' : 'Keep the screen on';
   String get display_done => _ar ? 'تم' : 'Done';
+
+  String get fasil_wird => _ar ? 'الورد' : 'Wird';
+  String get fasil_hifz => _ar ? 'الحفظ' : 'Memorisation';
+  String get fasil_muraja => _ar ? 'المراجعة' : 'Review';
+  String places_position(String place, String page) =>
+      _ar ? '$place، صفحة $page' : '$place, page $page';
+  String places_today(String time) => _ar ? 'اليوم $time' : 'Today $time';
+  String places_yesterday(String time) => _ar ? 'أمس $time' : 'Yesterday $time';
+  String fasil_movedAt(String when) => _ar ? 'نُقل $when' : 'Moved $when';
+  String savedAyat_savedAt(String when) => _ar ? 'حُفظت $when' : 'Saved $when';
+  String get fasil_title => _ar ? 'الفواصل' : 'Markers';
+  String get fasil_notPlaced => _ar ? 'غير موضوع' : 'Not placed';
+  String get fasil_moveHere => _ar ? 'نقل إلى هنا' : 'Move here';
+  String fasil_moveNamedHere(String name) =>
+      _ar ? 'نقل $name إلى هنا' : 'Move $name here';
+  String get fasil_placeHere => _ar ? 'ضع هنا' : 'Place here';
+  String fasil_placeNamedHere(String name) =>
+      _ar ? 'ضع $name هنا' : 'Place $name here';
+  String fasil_clusterLabel(String names) =>
+      _ar ? 'الفواصل: $names' : 'Markers: $names';
+  String fasil_moved(String name, String place) =>
+      _ar ? 'نُقل فاصل $name إلى $place' : 'Moved the $name marker to $place';
+  String fasil_placed(String name, String place) =>
+      _ar ? 'وُضع فاصل $name عند $place' : 'Placed the $name marker at $place';
+  String get places_continue => _ar ? 'متابعة القراءة' : 'Continue reading';
+  String get places_continueCaption => _ar
+      ? 'تُحفظ وحدها حيث تقرأ، ولا تغيّرها الانتقالات'
+      : 'Saved by itself where you read; jumps don\'t change it';
+  String places_page(String page) => _ar ? 'صفحة $page' : 'Page $page';
+  String get places_savedAyat => _ar ? 'الآيات المحفوظة' : 'Saved ayat';
+  String get places_noSavedAyat =>
+      _ar ? 'لا توجد آيات محفوظة بعد' : 'No saved ayat yet';
+  String get places_writeFailed =>
+      _ar ? 'تعذّر الحفظ، حاول مرة أخرى' : 'Couldn\'t save. Try again.';
+  String get places_rename => _ar ? 'تسمية' : 'Rename';
+  String get places_renameTitle => _ar ? 'تسمية الفاصل' : 'Rename marker';
+  String get places_cancel => _ar ? 'إلغاء' : 'Cancel';
+  String get places_remove => _ar ? 'إزالة' : 'Remove';
+  String get places_more => _ar ? 'خيارات' : 'Options';
+  String savedAyat_removed(String ayah, String surah) =>
+      _ar ? 'أُزيلت الآية $ayah من $surah' : 'Removed ayah $ayah of $surah';
+  String savedAyat_saved(String ayah, String surah) =>
+      _ar ? 'حُفظت الآية $ayah من $surah' : 'Saved ayah $ayah of $surah';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

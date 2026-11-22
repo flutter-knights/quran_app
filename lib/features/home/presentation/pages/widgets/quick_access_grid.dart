@@ -4,6 +4,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/prettier_tap.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -32,7 +33,7 @@ class QuickAccessGrid extends StatelessWidget {
         ),
         _QuickTile(
           icon: HugeIcons.strokeRoundedFavourite,
-          label: S.of(context).bookmarks_screen_title,
+          label: PendingS.of(context).menu_places,
           onTap: () => context.push(AppRouter.bookmarksPath),
         ),
         _QuickTile(

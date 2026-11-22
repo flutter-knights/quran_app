@@ -67,7 +67,7 @@ These belong in `BlocListener.listener` or a callback:
 ## Cubit-to-cubit communication after writes
 1. **Listener-driven**, when both cubits are in scope: a `BlocListener` on the action cubit's success state calls the other cubit's method.
 2. **Pop with a result**, when they aren't: the action screen calls `context.pop(result)` and the previous screen updates its own cubit.
-3. App-wide cubits (`BookmarkCubit`, `LastReadCubit`, `PlaybackCubit`) are shared instances, so a write through one is already visible everywhere; don't mirror their state in a screen cubit.
+3. App-wide cubits (`SavedAyatCubit`, `LastReadCubit`, `PlaybackCubit`) are shared instances, so a write through one is already visible everywhere; don't mirror their state in a screen cubit.
 
 ## What `flutter analyze` won't catch
 Check by hand in review: a missing `isClosed` check, `BlocBuilder` without `buildWhen` on a 3+ field state, side effects in `builder`, a state without `Equatable` or with incomplete `props`, a trivial-builder `BlocConsumer`, `setState` duplicating cubit data, a cubit touching `BuildContext`, a subscription not cancelled in `close()`.

@@ -30,9 +30,9 @@ class _RecordingMushaf extends MushafCubit {
   }
 
   @override
-  void jumpTo(int page) {
+  void jumpTo(int page, {AyahIdentifier? focus}) {
     jumps.add(page);
-    super.jumpTo(page);
+    super.jumpTo(page, focus: focus);
   }
 }
 

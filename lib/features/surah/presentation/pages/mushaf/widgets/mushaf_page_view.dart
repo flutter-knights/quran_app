@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_state.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/place.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/utils/fasil_rules.dart';
+import 'package:quran_app/features/bookmarks/presentation/utils/place_labels.dart';
+import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
-import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../core/di/dependency_injection.dart';
@@ -17,12 +23,17 @@ import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 import '../../../utils/reader_rules.dart';
 import 'ayah_highlight_painter.dart';
-import 'mushaf_page_ribbon.dart';
+import 'fasil_ribbon_cluster.dart';
 
 class MushafPageView extends StatefulWidget {
-  const MushafPageView({super.key, required this.pageNumber});
+  const MushafPageView({
+    super.key,
+    required this.pageNumber,
+    required this.onOpenFawasil,
+  });
 
   final int pageNumber;
+  final void Function(FasilSlot? slot) onOpenFawasil;
 
   @override
   State<MushafPageView> createState() => _MushafPageViewState();
@@ -83,147 +94,164 @@ class _MushafPageViewState extends State<MushafPageView>
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsCubit>().state.settingsModel;
     final paperColors = settings.mushafPaper.colors;
-    return FutureBuilder<MushafPageEntity>(
-      future: _entityFuture,
-      builder: (context, snapshot) {
-        if (snapshot.hasError &&
-            snapshot.connectionState == ConnectionState.done) {
-          final pendingS = PendingS.of(context);
-          return AspectRatio(
-            aspectRatio: mushafPageAspect,
-            child: ColoredBox(
-              color: paperColors.background,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 8,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: FutureBuilder<MushafPageEntity>(
+        future: _entityFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasError &&
+              snapshot.connectionState == ConnectionState.done) {
+            final pendingS = PendingS.of(context);
+            return AspectRatio(
+              aspectRatio: mushafPageAspect,
+              child: ColoredBox(
+                color: paperColors.background,
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    Text(
-                      pendingS.mushaf_pageLoadFailed,
-                      style: TS.medium14.copyWith(color: paperColors.ink),
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: 8,
+                        children: [
+                          Text(
+                            pendingS.mushaf_pageLoadFailed,
+                            style: TS.medium14.copyWith(color: paperColors.ink),
+                          ),
+                          TextButton(
+                            style: paperColors.paperButton(),
+                            onPressed: _retry,
+                            child: Text(
+                              pendingS.mushaf_retry,
+                              style: TS.medium14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    TextButton(
-                      onPressed: _retry,
-                      child: Text(pendingS.mushaf_retry, style: TS.medium14),
+                    _FasilLayer(
+                      pageNumber: widget.pageNumber,
+                      entity: null,
+                      paper: settings.mushafPaper,
+                      onOpenFawasil: widget.onOpenFawasil,
                     ),
                   ],
                 ),
               ),
-            ),
-          );
-        }
-        final entity = snapshot.data;
-        return AspectRatio(
-          aspectRatio: mushafPageAspect,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  Positioned.fill(
-                    child: ColoredBox(color: paperColors.background),
-                  ),
-                  Image.asset(
-                    _imagePath,
-                    color: paperColors.ink,
-                    colorBlendMode: BlendMode.srcIn,
-                    gaplessPlayback: true,
-                    filterQuality: FilterQuality.medium,
-                    fit: BoxFit.fill,
-                  ),
-                  Image.asset(
-                    _accentPath,
-                    color: paperColors.accent,
-                    colorBlendMode: BlendMode.srcIn,
-                    gaplessPlayback: true,
-                    filterQuality: FilterQuality.medium,
-                    fit: BoxFit.fill,
-                  ),
-                  if (settings.pageBrightness < 1.0)
+            );
+          }
+          final entity = snapshot.data;
+          return AspectRatio(
+            aspectRatio: mushafPageAspect,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
                     Positioned.fill(
-                      child: IgnorePointer(
-                        child: ColoredBox(
-                          key: const ValueKey('page-brightness-scrim'),
-                          color: Colors.black.withValues(
-                            alpha: 1.0 - settings.pageBrightness,
-                          ),
-                        ),
-                      ),
+                      child: ColoredBox(color: paperColors.background),
                     ),
-                  if (entity != null)
-                    BlocBuilder<MushafCubit, MushafState>(
-                      buildWhen: (a, b) =>
-                          a.selectedAyah != b.selectedAyah ||
-                          a.playingAyah != b.playingAyah,
-                      builder: (context, state) {
-                        if (state.selectedAyah != _shownHighlightedAyah ||
-                            state.playingAyah != _shownPlayingAyah) {
-                          _prevHighlightedAyah = _shownHighlightedAyah;
-                          _prevPlayingAyah = _shownPlayingAyah;
-                          _shownHighlightedAyah = state.selectedAyah;
-                          _shownPlayingAyah = state.playingAyah;
-                          if (_shownHighlightedAyah != null ||
-                              _shownPlayingAyah != null ||
-                              _prevHighlightedAyah != null ||
-                              _prevPlayingAyah != null) {
-                            _controller.forward(from: 0);
-                          }
-                        }
-                        return AnimatedBuilder(
-                          animation: _controller,
-                          builder: (_, _) => CustomPaint(
-                            painter: AyahHighlightPainter(
-                              ayahs: entity.ayahs,
-                              selectedAyah: _shownHighlightedAyah,
-                              prevSelectedAyah: _prevHighlightedAyah,
-                              playingAyah: _shownPlayingAyah,
-                              prevPlayingAyah: _prevPlayingAyah,
-                              selectedColor: paperColors.accent,
-                              playingColor: paperColors.ink,
-                              animationValue: _controller.value,
+                    Image.asset(
+                      _imagePath,
+                      color: paperColors.ink,
+                      colorBlendMode: BlendMode.srcIn,
+                      gaplessPlayback: true,
+                      filterQuality: FilterQuality.medium,
+                      fit: BoxFit.fill,
+                    ),
+                    Image.asset(
+                      _accentPath,
+                      color: paperColors.accent,
+                      colorBlendMode: BlendMode.srcIn,
+                      gaplessPlayback: true,
+                      filterQuality: FilterQuality.medium,
+                      fit: BoxFit.fill,
+                    ),
+                    if (settings.pageBrightness < 1.0)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: ColoredBox(
+                            key: const ValueKey('page-brightness-scrim'),
+                            color: Colors.black.withValues(
+                              alpha: 1.0 - settings.pageBrightness,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  if (entity != null)
-                    Positioned.fill(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTapUp: (details) => _handleTap(
-                          context,
-                          details.localPosition,
-                          constraints,
-                          entity.ayahs,
-                        ),
-                        onLongPressStart: (details) => _handleLongPress(
-                          context,
-                          details.localPosition,
-                          constraints,
-                          entity.ayahs,
                         ),
                       ),
-                    ),
-                  BlocBuilder<PageBookmarkCubit, PageBookmarkState>(
-                    buildWhen: (a, b) =>
-                        a.contains(widget.pageNumber) !=
-                        b.contains(widget.pageNumber),
-                    builder: (context, pb) {
-                      if (!pb.contains(widget.pageNumber)) {
-                        return const SizedBox.shrink();
-                      }
-                      return MushafPageRibbon(
+                    if (entity != null)
+                      BlocBuilder<MushafCubit, MushafState>(
+                        buildWhen: (a, b) =>
+                            a.selectedAyah != b.selectedAyah ||
+                            a.playingAyah != b.playingAyah,
+                        builder: (context, state) {
+                          if (state.selectedAyah != _shownHighlightedAyah ||
+                              state.playingAyah != _shownPlayingAyah) {
+                            _prevHighlightedAyah = _shownHighlightedAyah;
+                            _prevPlayingAyah = _shownPlayingAyah;
+                            _shownHighlightedAyah = state.selectedAyah;
+                            _shownPlayingAyah = state.playingAyah;
+                            if (_shownHighlightedAyah != null ||
+                                _shownPlayingAyah != null ||
+                                _prevHighlightedAyah != null ||
+                                _prevPlayingAyah != null) {
+                              _controller.forward(from: 0);
+                            }
+                          }
+                          return AnimatedBuilder(
+                            animation: _controller,
+                            builder: (_, _) => CustomPaint(
+                              painter: AyahHighlightPainter(
+                                ayahs: entity.ayahs,
+                                selectedAyah: _shownHighlightedAyah,
+                                prevSelectedAyah: _prevHighlightedAyah,
+                                playingAyah: _shownPlayingAyah,
+                                prevPlayingAyah: _prevPlayingAyah,
+                                selectedColor: paperColors.accent,
+                                playingColor: paperColors.ink,
+                                animationValue: _controller.value,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    if (entity != null)
+                      Positioned.fill(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTapUp: (details) => _handleTap(
+                            context,
+                            details.localPosition,
+                            constraints,
+                            entity.ayahs,
+                          ),
+                          onLongPressStart: (details) => _handleLongPress(
+                            context,
+                            details.localPosition,
+                            constraints,
+                            entity.ayahs,
+                          ),
+                        ),
+                      ),
+                    if (entity != null)
+                      _SavedDots(
+                        pageNumber: widget.pageNumber,
+                        entity: entity,
+                        height: constraints.maxHeight,
                         color: paperColors.accent,
-                        onTap: () => _onRibbonTap(context),
-                      );
-                    },
-                  ),
-                ],
-              );
-            },
-          ),
-        );
-      },
+                      ),
+                    _FasilLayer(
+                      pageNumber: widget.pageNumber,
+                      entity: entity,
+                      paper: settings.mushafPaper,
+                      onOpenFawasil: widget.onOpenFawasil,
+                    ),
+                  ],
+                );
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -264,22 +292,128 @@ class _MushafPageViewState extends State<MushafPageView>
     final hit = _hitTest(local, c, ayahs);
     hit == null ? cubit.clearSelection() : cubit.toggleSelection(hit);
   }
+}
 
-  void _onRibbonTap(BuildContext context) {
-    final cubit = context.read<PageBookmarkCubit>();
-    cubit.toggle(widget.pageNumber);
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          S.of(context).pageRemovedFromBookmarks,
-          style: TS.regular14,
+class _SavedDots extends StatelessWidget {
+  const _SavedDots({
+    required this.pageNumber,
+    required this.entity,
+    required this.height,
+    required this.color,
+  });
+
+  final int pageNumber;
+  final MushafPageEntity entity;
+  final double height;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<SavedAyatCubit, SavedAyatState, List<Place>>(
+      selector: (s) => s.items,
+      builder: (context, items) => Positioned.fill(
+        child: Stack(
+          children: [
+            for (final place in items)
+              if (place.page == pageNumber)
+                if (firstLineOf(entity.ayahs, place.ayah) case final line?)
+                  PositionedDirectional(
+                    key: ValueKey(
+                      'saved-dot-${place.ayah.surah}:${place.ayah.ayah}',
+                    ),
+                    start: 6,
+                    top: (line.y + line.h / 2) * height - 3,
+                    width: 6,
+                    height: 6,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
         ),
-        action: SnackBarAction(
-          label: S.of(context).undo,
-          onPressed: () => cubit.toggle(widget.pageNumber),
-        ),
+      ),
+    );
+  }
+}
+
+class _FasilLayer extends StatelessWidget {
+  const _FasilLayer({
+    required this.pageNumber,
+    required this.entity,
+    required this.paper,
+    required this.onOpenFawasil,
+  });
+
+  final int pageNumber;
+  final MushafPageEntity? entity;
+  final MushafPaper paper;
+  final void Function(FasilSlot? slot) onOpenFawasil;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<FasilCubit, FasilState, Map<FasilSlot, Place>>(
+      selector: (s) => s.slots,
+      builder: (context, slots) => LayoutBuilder(
+        builder: (context, constraints) {
+          final ayahs = entity?.ayahs;
+          final geometry = FasilGeometry.forPage(
+            pageWidth: constraints.maxWidth,
+            textLeft: ayahs == null ? null : pageTextLeftOf(ayahs),
+          );
+          final tails = ayahs == null
+              ? const <FasilTail>[]
+              : fasilTails(
+                  places: slots.values,
+                  page: pageNumber,
+                  pageHeight: constraints.maxHeight,
+                  firstLineBottom: (ayah) => firstLineBottomOf(ayahs, ayah),
+                );
+          return Stack(
+            children: [
+              for (final tail in tails)
+                PositionedDirectional(
+                  end: geometry.ribbonOffset(tail.place.slot!),
+                  top: 0,
+                  width: geometry.ribbonWidth,
+                  height: tail.top,
+                  child: FasilStrip(slot: tail.place.slot!, paper: paper),
+                ),
+              for (final tail in tails)
+                PositionedDirectional(
+                  end: 0,
+                  top: tail.top,
+                  width: geometry.margin,
+                  height: fasilTailHeight,
+                  child: FasilTailTab(
+                    slot: tail.place.slot!,
+                    name: fasilName(context, tail.place.slot!, tail.place),
+                    paper: paper,
+                    geometry: geometry,
+                    onTap: () => onOpenFawasil(tail.place.slot),
+                  ),
+                ),
+              if (slots.isNotEmpty)
+                PositionedDirectional(
+                  end: 0,
+                  top: 0,
+                  child: FasilRibbonCluster(
+                    placed: {
+                      for (final e in slots.entries)
+                        e.key: fasilName(context, e.key, e.value),
+                    },
+                    paper: paper,
+                    geometry: geometry,
+                    onTap: () => onOpenFawasil(null),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

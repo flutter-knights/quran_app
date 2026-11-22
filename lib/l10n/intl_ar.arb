@@ -513,5 +513,75 @@
   "display_paper": "لون الورق",
   "display_readingMode": "طريقة القراءة",
   "display_keepScreenOn": "إبقاء الشاشة مضيئة",
-  "display_done": "تم"
+  "display_done": "تم",
+  "fasil_wird": "الورد",
+  "fasil_hifz": "الحفظ",
+  "fasil_muraja": "المراجعة",
+  "places_position": "{place}، صفحة {page}",
+  "@places_position": {
+    "placeholders": { "place": { "type": "String" }, "page": { "type": "String" } }
+  },
+  "places_today": "اليوم {time}",
+  "@places_today": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "places_yesterday": "أمس {time}",
+  "@places_yesterday": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "fasil_movedAt": "نُقل {when}",
+  "@fasil_movedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "savedAyat_savedAt": "حُفظت {when}",
+  "@savedAyat_savedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "fasil_title": "الفواصل",
+  "fasil_notPlaced": "غير موضوع",
+  "fasil_moveHere": "نقل إلى هنا",
+  "fasil_moveNamedHere": "نقل {name} إلى هنا",
+  "@fasil_moveNamedHere": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fasil_placeHere": "ضع هنا",
+  "fasil_placeNamedHere": "ضع {name} هنا",
+  "@fasil_placeNamedHere": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fasil_clusterLabel": "الفواصل: {names}",
+  "@fasil_clusterLabel": {
+    "placeholders": { "names": { "type": "String" } }
+  },
+  "fasil_moved": "نُقل فاصل {name} إلى {place}",
+  "@fasil_moved": {
+    "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
+  },
+  "fasil_placed": "وُضع فاصل {name} عند {place}",
+  "@fasil_placed": {
+    "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
+  },
+  "places_continue": "متابعة القراءة",
+  "places_continueCaption": "تُحفظ وحدها حيث تقرأ، ولا تغيّرها الانتقالات",
+  "places_page": "صفحة {page}",
+  "@places_page": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "places_savedAyat": "الآيات المحفوظة",
+  "places_noSavedAyat": "لا توجد آيات محفوظة بعد",
+  "places_writeFailed": "تعذّر الحفظ، حاول مرة أخرى",
+  "places_rename": "تسمية",
+  "places_renameTitle": "تسمية الفاصل",
+  "places_cancel": "إلغاء",
+  "places_remove": "إزالة",
+  "places_more": "خيارات",
+  "savedAyat_removed": "أُزيلت الآية {ayah} من {surah}",
+  "@savedAyat_removed": {
+    "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
+  },
+  "leaf_fasil": "فاصل",
+  "savedAyat_saved": "حُفظت الآية {ayah} من {surah}",
+  "@savedAyat_saved": {
+    "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
+  }
 }
