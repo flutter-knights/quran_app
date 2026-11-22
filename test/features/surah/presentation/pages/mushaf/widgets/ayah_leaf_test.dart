@@ -8,9 +8,9 @@ import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_state.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_leaf.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/tafsir/presentation/cubit/tafsir_cubit.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_leaf.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../bookmarks/place_fakes.dart';
@@ -288,10 +288,11 @@ void main() {
   ) async {
     await tester.pumpWidget(_host(cubit, tafsir, ayah, calls));
     final lead = find.byKey(const ValueKey('tafsir-lead'));
-    expect(
+    final text = tester.widget<Text>(
       find.descendant(of: lead, matching: find.text(tafsirText)),
-      findsOneWidget,
     );
+    expect(text.maxLines, 1);
+    expect(text.overflow, TextOverflow.ellipsis);
     await tester.tap(lead);
     expect(calls.taps, ['expand']);
   });
