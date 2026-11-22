@@ -552,5 +552,21 @@
   "savedAyat_savedAt": "Saved {when}",
   "@savedAyat_savedAt": {
     "placeholders": { "when": { "type": "String" } }
+  },
+  "fasil_title": "Markers",
+  "fasil_notPlaced": "Not placed",
+  "fasil_moveHere": "Move here",
+  "fasil_moveNamedHere": "Move {name} here",
+  "@fasil_moveNamedHere": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fasil_placeHere": "Place here",
+  "fasil_placeNamedHere": "Place {name} here",
+  "@fasil_placeNamedHere": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fasil_clusterLabel": "Markers: {names}",
+  "@fasil_clusterLabel": {
+    "placeholders": { "names": { "type": "String" } }
   }
 }

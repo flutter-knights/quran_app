@@ -536,5 +536,21 @@
   "savedAyat_savedAt": "حُفظت {when}",
   "@savedAyat_savedAt": {
     "placeholders": { "when": { "type": "String" } }
+  },
+  "fasil_title": "الفواصل",
+  "fasil_notPlaced": "غير موضوع",
+  "fasil_moveHere": "نقل إلى هنا",
+  "fasil_moveNamedHere": "نقل {name} إلى هنا",
+  "@fasil_moveNamedHere": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fasil_placeHere": "ضع هنا",
+  "fasil_placeNamedHere": "ضع {name} هنا",
+  "@fasil_placeNamedHere": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fasil_clusterLabel": "الفواصل: {names}",
+  "@fasil_clusterLabel": {
+    "placeholders": { "names": { "type": "String" } }
   }
 }

@@ -305,6 +305,16 @@ class PendingS {
   String places_yesterday(String time) => _ar ? 'أمس $time' : 'Yesterday $time';
   String fasil_movedAt(String when) => _ar ? 'نُقل $when' : 'Moved $when';
   String savedAyat_savedAt(String when) => _ar ? 'حُفظت $when' : 'Saved $when';
+  String get fasil_title => _ar ? 'الفواصل' : 'Markers';
+  String get fasil_notPlaced => _ar ? 'غير موضوع' : 'Not placed';
+  String get fasil_moveHere => _ar ? 'نقل إلى هنا' : 'Move here';
+  String fasil_moveNamedHere(String name) =>
+      _ar ? 'نقل $name إلى هنا' : 'Move $name here';
+  String get fasil_placeHere => _ar ? 'ضع هنا' : 'Place here';
+  String fasil_placeNamedHere(String name) =>
+      _ar ? 'ضع $name هنا' : 'Place $name here';
+  String fasil_clusterLabel(String names) =>
+      _ar ? 'الفواصل: $names' : 'Markers: $names';
 
   String alerts_minutes(num count) {
     final n = count.toInt();
