@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_meta_service.dart';
+import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
 import 'package:quran_app/features/surah/domain/entities/ayah_bound_entity.dart';
 import 'package:quran_app/features/surah/domain/entities/normalized_rect.dart';
+import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
+import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_leaf.dart';
@@ -22,6 +26,14 @@ import 'mushaf_page_harness.dart';
 const _a5 = AyahIdentifier(surah: 2, ayah: 5);
 const _a6 = AyahIdentifier(surah: 2, ayah: 6);
 const _end = AyahIdentifier(surah: 2, ayah: 286);
+
+class _SplitPageService implements QuranPageService {
+  @override
+  int getPageForAyah(int surah, int ayah) => surah == 3 ? 51 : 7;
+
+  @override
+  AyahIdentifier? getFirstAyahOfPage(int page) => null;
+}
 
 AyahBoundEntity _bound(AyahIdentifier a) => AyahBoundEntity(
   ayah: a,
@@ -141,15 +153,56 @@ void main() {
   testWidgets('listen from here replaces the recitation and shows the player', (
     tester,
   ) async {
-    final (mushaf, h) = await pump(tester, state: _state(selected: _a6));
+    final (mushaf, h) = await pump(
+      tester,
+      state: _state(selected: _a6),
+      playback: _playing,
+    );
+    expect(find.byType(AyahLeaf), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('leaf-listen')));
     await tester.pumpAndSettle();
 
     expect(h.playback.playRanges, [(_a6, _end)]);
+    expect(h.playback.state.currentAyah, _a6);
     expect(mushaf.state.selectedAyah, isNull);
     expect(find.byType(PlayerLeaf), findsOneWidget);
     expect(find.byType(AyahLeaf), findsNothing);
+  });
+
+  testWidgets('a recitation started while listening away keeps the page', (
+    tester,
+  ) async {
+    const away = AyahIdentifier(surah: 3, ayah: 12);
+    final notifier = ValueNotifier<AyahIdentifier?>(away);
+    final mushaf = MushafCubit(
+      args: const MushafArgs(page: 7),
+      currentAyahNotifier: notifier,
+      pageService: _SplitPageService(),
+      getMushafPage: GetIt.instance<GetMushafPage>(),
+    );
+    addTearDown(mushaf.close);
+    addTearDown(notifier.dispose);
+    final h = await pumpMushafPage(
+      tester,
+      const MushafArgs(page: 7),
+      mushaf: mushaf,
+      playback: FakePlayback(
+        const PlaybackState(currentAyah: away, isPlaying: true),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(mushaf.state.followPlayback, isFalse);
+
+    mushaf.select(_a6);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('leaf-listen')));
+    await tester.pumpAndSettle();
+
+    expect(h.playback.playRanges, [(_a6, _end)]);
+    expect(notifier.value, away);
+    expect(mushaf.state.followPlayback, isTrue);
+    expect(mushaf.state.currentPage, 7);
   });
 
   testWidgets('the banner leaf plays the whole page and gives the slot to the '
@@ -317,7 +370,7 @@ void main() {
       find.descendant(
         of: head,
         matching: find.text(
-          'الجزء ${_indic(meta.juz)}، الحزب ${_indic(meta.hizb)}',
+          'الجزء ${'${meta.juz}'.toIndicNumerals('ar')}، الحزب ${'${meta.hizb}'.toIndicNumerals('ar')}',
         ),
       ),
       findsOneWidget,
@@ -361,9 +414,3 @@ void main() {
     expect(find.text('آل عمران، الآية ٧'), findsOneWidget);
   });
 }
-
-String _indic(int n) => n
-    .toString()
-    .split('')
-    .map((d) => String.fromCharCode(0x0660 + int.parse(d)))
-    .join();

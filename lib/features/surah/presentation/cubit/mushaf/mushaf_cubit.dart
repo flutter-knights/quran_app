@@ -101,6 +101,9 @@ class MushafCubit extends Cubit<MushafState> {
 
   void resumeFollow() => emit(state.copyWith(followPlayback: true));
 
+  void followFrom(AyahIdentifier start) =>
+      emit(state.copyWith(playingAyah: start, followPlayback: true));
+
   Future<void> reloadPageAyahs() => _loadPageAyahs(state.currentPage);
 
   /// Publishes the normalized vertical center of the currently highlighted

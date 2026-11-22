@@ -95,6 +95,7 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   final toggles = <AyahIdentifier>[];
   var clearCalls = 0;
   var resumeCalls = 0;
+  final followFroms = <AyahIdentifier>[];
 
   void push(MushafState s) => emit(s);
 
@@ -154,6 +155,12 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   void resumeFollow() {
     resumeCalls++;
     emit(state.copyWith(followPlayback: true));
+  }
+
+  @override
+  void followFrom(AyahIdentifier start) {
+    followFroms.add(start);
+    emit(state.copyWith(playingAyah: start, followPlayback: true));
   }
 
   @override
@@ -325,6 +332,10 @@ Future<MushafHarness> pumpMushafPage(
   final lastRead = LastReadCubit(repository: h.repo);
   addTearDown(pageBookmarks.close);
   addTearDown(lastRead.close);
+  addTearDown(h.bookmarks.close);
+  addTearDown(h.downloads.close);
+  addTearDown(h.playback.close);
+  addTearDown(h.settings.close);
 
   Widget providers(Widget child) => MultiBlocProvider(
     providers: [

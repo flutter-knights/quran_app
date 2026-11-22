@@ -119,6 +119,19 @@ void main() {
       cubit.close();
     });
 
+    test('followFrom points the follow target at the range being started', () {
+      final n = _FakeNotifier();
+      final cubit = _cubit(n, page: 50, playingPage: 50);
+      n.value = a;
+      cubit.setPage(51, byUser: true);
+      expect(cubit.state.followPlayback, isFalse);
+      cubit.followFrom(b);
+      expect(cubit.state.followPlayback, isTrue);
+      expect(cubit.state.playingAyah, b);
+      expect(n.value, a);
+      cubit.close();
+    });
+
     test('in-place jump away while playing drops selection and follow', () {
       final n = _FakeNotifier();
       final cubit = _cubit(n, page: 50, playingPage: 50);

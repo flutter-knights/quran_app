@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quran/quran.dart' as quran;
 
 import '../../../../../config/router/app_router.dart';
 import '../../../../../config/router/now_playing_route.dart';
@@ -263,7 +264,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   }
 
   void _play(AyahIdentifier start, AyahIdentifier end) {
-    _mushafCubit.resumeFollow();
+    _mushafCubit.followFrom(start);
     _playbackCubit.playRange(start: start, end: end);
     _mushafCubit.clearSelection();
   }
@@ -283,11 +284,11 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   }
 
   void _onListenFromSurahStart(AyahIdentifier ayah) {
-    final range = listenRange(
-      selected: AyahIdentifier(surah: ayah.surah, ayah: 1),
-      ayahs: const [],
+    final surah = ayah.surah;
+    _play(
+      AyahIdentifier(surah: surah, ayah: 1),
+      AyahIdentifier(surah: surah, ayah: quran.getVerseCount(surah)),
     );
-    if (range != null) _play(range.start, range.end);
   }
 
   void _turnBy(int delta) {
@@ -357,85 +358,79 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
         : settings.readingMode;
     final colors = settings.mushafPaper.colors;
 
-    return BlocSelector<MushafCubit, MushafState, bool>(
-      selector: (s) => s.selectedAyah == null,
-      builder: (context, noLeaf) => PopScope(
-        canPop: noLeaf,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) _mushafCubit.clearSelection();
-        },
-        child: BlocListener<MushafCubit, MushafState>(
-          listenWhen: (a, b) =>
-              a.playingAyah != b.playingAyah ||
-              (!a.followPlayback && b.followPlayback),
-          listener: (_, state) => _onFollowChanged(state),
-          child: Scaffold(
-            backgroundColor: colors.background,
-            body: SafeArea(
-              child: Column(
-                children: [
-                  BlocSelector<MushafCubit, MushafState, (int, int?)>(
-                    selector: (s) => (s.currentPage, s.runningSurah),
-                    builder: (context, head) {
-                      final (page, surah) = head;
-                      final meta = sl<QuranMetaService>().getPageMeta(page);
-                      return RunningHead(
-                        surahName: surah == null
-                            ? ''
-                            : surahDisplayName(context, surah),
-                        page: page,
-                        juz: meta.juz,
-                        hizb: meta.hizb,
-                        colors: colors,
-                        onBack: () => Navigator.of(context).pop(),
-                        onOpenMenu: _openMenu,
-                      );
-                    },
-                  ),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: _buildReadingArea(context, effectiveMode),
-                        ),
-                        PositionedDirectional(
-                          start: 0,
-                          end: 0,
-                          bottom: 0,
-                          child: _LeafSlot(
-                            colors: colors,
-                            onListenFromHere: _onListen,
-                            onListenFromSurahStart: _onListenFromSurahStart,
-                            onListenPage: _onPlayPage,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  BlocBuilder<MushafCubit, MushafState>(
-                    buildWhen: (a, b) =>
-                        a.currentPage != b.currentPage ||
-                        a.selectedAyah != b.selectedAyah ||
-                        a.pageAyahs != b.pageAyahs,
-                    builder: (context, state) => ReaderFoot(
+    return _LeafPopScope(
+      onClose: _mushafCubit.clearSelection,
+      child: BlocListener<MushafCubit, MushafState>(
+        listenWhen: (a, b) =>
+            a.playingAyah != b.playingAyah ||
+            (!a.followPlayback && b.followPlayback),
+        listener: (_, state) => _onFollowChanged(state),
+        child: Scaffold(
+          backgroundColor: colors.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                BlocSelector<MushafCubit, MushafState, (int, int?)>(
+                  selector: (s) => (s.currentPage, s.runningSurah),
+                  builder: (context, head) {
+                    final (page, surah) = head;
+                    final meta = sl<QuranMetaService>().getPageMeta(page);
+                    return RunningHead(
+                      surahName: surah == null
+                          ? ''
+                          : surahDisplayName(context, surah),
+                      page: page,
+                      juz: meta.juz,
+                      hizb: meta.hizb,
                       colors: colors,
-                      onPrevious: state.currentPage > 1
-                          ? () => _turnBy(-1)
-                          : null,
-                      onNext: state.currentPage < 604 ? () => _turnBy(1) : null,
-                      onListen:
-                          listenRange(
-                                selected: state.selectedAyah,
-                                ayahs: state.pageAyahs,
-                              ) ==
-                              null
-                          ? null
-                          : _onListen,
-                      onMenu: _openMenu,
-                    ),
+                      onBack: () => Navigator.of(context).pop(),
+                      onOpenMenu: _openMenu,
+                    );
+                  },
+                ),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: _buildReadingArea(context, effectiveMode),
+                      ),
+                      PositionedDirectional(
+                        start: 0,
+                        end: 0,
+                        bottom: 0,
+                        child: _LeafSlot(
+                          colors: colors,
+                          onListenFromHere: _onListen,
+                          onListenFromSurahStart: _onListenFromSurahStart,
+                          onListenPage: _onPlayPage,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                BlocBuilder<MushafCubit, MushafState>(
+                  buildWhen: (a, b) =>
+                      a.currentPage != b.currentPage ||
+                      a.selectedAyah != b.selectedAyah ||
+                      a.pageAyahs != b.pageAyahs,
+                  builder: (context, state) => ReaderFoot(
+                    colors: colors,
+                    onPrevious: state.currentPage > 1
+                        ? () => _turnBy(-1)
+                        : null,
+                    onNext: state.currentPage < 604 ? () => _turnBy(1) : null,
+                    onListen:
+                        listenRange(
+                              selected: state.selectedAyah,
+                              ayahs: state.pageAyahs,
+                            ) ==
+                            null
+                        ? null
+                        : _onListen,
+                    onMenu: _openMenu,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -511,6 +506,26 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   }
 }
 
+class _LeafPopScope extends StatelessWidget {
+  const _LeafPopScope({required this.onClose, required this.child});
+
+  final VoidCallback onClose;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) =>
+      BlocSelector<MushafCubit, MushafState, bool>(
+        selector: (s) => s.selectedAyah == null,
+        builder: (context, noLeaf) => PopScope(
+          canPop: noLeaf,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) onClose();
+          },
+          child: child,
+        ),
+      );
+}
+
 class _LeafSlot extends StatelessWidget {
   const _LeafSlot({
     required this.colors,
@@ -529,7 +544,6 @@ class _LeafSlot extends StatelessWidget {
     final mushaf = context.read<MushafCubit>();
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {},
       child: BlocSelector<MushafCubit, MushafState, AyahIdentifier?>(
         selector: (s) => s.selectedAyah,
         builder: (context, selected) =>
