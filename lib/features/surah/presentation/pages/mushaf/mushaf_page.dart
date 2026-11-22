@@ -18,6 +18,7 @@ import '../../cubit/mushaf/mushaf_cubit.dart';
 import '../../cubit/mushaf/mushaf_state.dart';
 import '../../utils/follow_playback.dart';
 import '../../utils/page_bounds.dart';
+import '../../utils/reader_rules.dart';
 import 'last_read_saver.dart';
 import '../../utils/mushaf_args.dart';
 import 'page_turn_tracker.dart';
@@ -62,7 +63,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   MushafReadingMode? _lastBuiltMode;
 
   // Height of one Mushaf page in scroll mode. Derived from the available
-  // width × the fixed 1:1.82 aspect ratio. Updated in didChangeDependencies.
+  // width × the page image aspect ratio. Updated in didChangeDependencies.
   double _scrollPageHeight = 0.0;
 
   @override
@@ -118,7 +119,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     // matches the actual item heights rendered by the ListView.
     final mq = MediaQuery.of(context);
     final availableWidth = mq.size.width - mq.padding.left - mq.padding.right;
-    final newPageHeight = availableWidth * 1.82;
+    final newPageHeight = availableWidth / mushafPageAspect;
 
     if (newPageHeight == _scrollPageHeight) return; // no change
 
@@ -438,7 +439,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
         controller: _pageController,
         itemCount: 604,
         onPageChanged: (i) => _setPageFromView(i + 1),
-        itemBuilder: (_, i) => MushafPageView(pageNumber: i + 1),
+        itemBuilder: (_, i) => Center(child: MushafPageView(pageNumber: i + 1)),
       ),
     );
   }
