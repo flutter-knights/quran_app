@@ -69,6 +69,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   late final LastReadCubit _lastReadCubit;
   late final SettingsCubit _settingsCubit;
   final _overlayHeight = ValueNotifier(0.0);
+  AyahIdentifier? _slidFor;
 
   late final LastReadSaver _lastReadSaver;
   final _turns = PageTurnTracker();
@@ -372,8 +373,11 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     if (!mounted) return;
     _overlayHeight.value = size.height;
     final selected = _mushafCubit.state.selectedAyah;
-    if (selected != null &&
+    if (selected == null) {
+      _slidFor = null;
+    } else if (selected != _slidFor &&
         _effectiveMode(context) == MushafReadingMode.scroll) {
+      _slidFor = selected;
       _slideScrollTo(selected);
     }
   }
@@ -470,6 +474,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                 b.selectedAyah != null && a.selectedAyah != b.selectedAyah,
             listener: (context, state) {
               if (_effectiveMode(context) == MushafReadingMode.scroll) {
+                if (_slidFor != null) _slidFor = state.selectedAyah;
                 _slideScrollTo(state.selectedAyah!);
               }
             },
@@ -699,7 +704,7 @@ class _PageSlide extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<double>(
+  Widget build(BuildContext context) => ValueListenableBuilder(
     valueListenable: overlayHeight,
     child: child,
     builder: (context, overlay, child) =>
@@ -763,38 +768,37 @@ class _NoticeSlot extends StatelessWidget {
       hintSeen: hintSeen,
       audioError: audioError,
     );
+    final chip = switch (notice) {
+      null => null,
+      ReturnToPageNotice(:final page) => NoticeChip(
+        label: pending.notice_returnToPage(page.toLocalized(context)),
+        colors: colors,
+        onTap: () => onReturn(page),
+      ),
+      DownloadHintNotice(:final surah) => NoticeChip(
+        label: pending.surahDownload_hint,
+        colors: colors,
+        onTap: () => onDownload(surah),
+        actionLabel: pending.notice_gotIt,
+        onAction: settings.markDownloadHintSeen,
+      ),
+      TapHintNotice() => NoticeChip(
+        label: pending.notice_tapHint,
+        colors: colors,
+        onTap: settings.markHintSeen,
+        actionLabel: pending.notice_gotIt,
+        onAction: settings.markHintSeen,
+      ),
+    };
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 200),
-      child: switch (notice) {
-        null => const SizedBox.shrink(key: ValueKey('no-notice')),
-        final notice => Padding(
-          key: ValueKey(notice),
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Center(
-            child: switch (notice) {
-              ReturnToPageNotice(:final page) => NoticeChip(
-                label: pending.notice_returnToPage(page.toLocalized(context)),
-                colors: colors,
-                onTap: () => onReturn(page),
-              ),
-              DownloadHintNotice(:final surah) => NoticeChip(
-                label: pending.surahDownload_hint,
-                colors: colors,
-                onTap: () => onDownload(surah),
-                actionLabel: pending.notice_gotIt,
-                onAction: settings.markDownloadHintSeen,
-              ),
-              TapHintNotice() => NoticeChip(
-                label: pending.notice_tapHint,
-                colors: colors,
-                onTap: settings.markHintSeen,
-                actionLabel: pending.notice_gotIt,
-                onAction: settings.markHintSeen,
-              ),
-            },
-          ),
-        ),
-      },
+      child: chip == null
+          ? const SizedBox.shrink(key: ValueKey('no-notice'))
+          : Padding(
+              key: ValueKey(notice),
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Center(child: chip),
+            ),
     );
   }
 }

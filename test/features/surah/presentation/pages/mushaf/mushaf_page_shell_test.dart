@@ -618,6 +618,13 @@ void main() {
       pushed: true,
     );
     expect(slideOf(tester), lessThan(0));
+    expect(
+      find.ancestor(
+        of: find.byKey(const ValueKey('page-slide')),
+        matching: find.byType(ClipRect),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const ValueKey('head-back')));
     await tester.pumpAndSettle();
@@ -691,6 +698,60 @@ void main() {
       final extent = tester.widget<ListView>(find.byType(ListView)).itemExtent!;
       expect(pixels(tester), greaterThan(extent * 2));
       expect(find.byType(AyahLeaf), findsOneWidget);
+    });
+
+    testWidgets('a later overlay resize does not slide the page back', (
+      tester,
+    ) async {
+      final args = MushafArgs(
+        page: 3,
+        focusAyah: low,
+        origin: MushafOrigin.jump,
+      );
+      final (_, h) = await pump(
+        tester,
+        state: MushafState.initial(args).copyWith(pageAyahs: bounds()),
+        args: args,
+        settings: FakeSettings(
+          mode: MushafReadingMode.scroll,
+          downloadHintSeen: false,
+        ),
+      );
+      final controller = tester
+          .widget<ListView>(find.byType(ListView))
+          .controller!;
+      controller.jumpTo(controller.position.pixels - 60);
+      await tester.pumpAndSettle();
+      final scrolled = pixels(tester);
+      final leafHeight = tester.getSize(find.byType(AyahLeaf)).height;
+
+      h.playback.push(streaming);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('notice-chip')), findsOneWidget);
+      expect(tester.getSize(find.byType(AyahLeaf)).height, leafHeight);
+      expect(pixels(tester), scrolled);
+    });
+
+    testWidgets('selecting another ayah under the leaf slides without a '
+        'resize', (tester) async {
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(page: 3, ayahs: bounds()),
+        args: const MushafArgs(page: 3),
+        settings: FakeSettings(mode: MushafReadingMode.scroll),
+      );
+      mushaf.select(high);
+      await tester.pumpAndSettle();
+      final before = pixels(tester);
+      final overlay = tester.getSize(find.byType(AyahLeaf)).height;
+
+      mushaf.select(low);
+      await tester.pumpAndSettle();
+
+      expect(tester.getSize(find.byType(AyahLeaf)).height, overlay);
+      expect(pixels(tester) - before, greaterThan(0));
+      expect(pixels(tester) - before, lessThanOrEqualTo(overlay));
     });
   });
 
