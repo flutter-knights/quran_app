@@ -1,0 +1,48 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:quran_app/core/errors/exceptions.dart';
+import 'package:quran_app/core/errors/failure.dart';
+import 'package:quran_app/features/bookmarks/data/datasources/local/places_local_data_source.dart';
+import 'package:quran_app/features/bookmarks/data/repositories/places_repository_impl.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/place.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+
+class _MockDataSource extends Mock implements PlacesLocalDataSource {}
+
+void main() {
+  late _MockDataSource dataSource;
+  late PlacesRepositoryImpl repo;
+
+  final place = Place(
+    id: 'a',
+    ayah: const AyahIdentifier(surah: 2, ayah: 5),
+    page: 2,
+    createdAt: DateTime(2026, 11, 21),
+    updatedAt: DateTime(2026, 11, 21),
+  );
+
+  setUp(() {
+    dataSource = _MockDataSource();
+    repo = PlacesRepositoryImpl(dataSource: dataSource);
+  });
+
+  test('getAll wraps the list in Right', () async {
+    when(() => dataSource.getAll()).thenReturn([place]);
+    expect((await repo.getAll()).getOrElse(() => []), [place]);
+  });
+
+  test('a CacheException on save becomes CacheFailure', () async {
+    when(() => dataSource.save(place)).thenThrow(CacheException('boom'));
+    final result = await repo.save(place);
+    expect(result.fold((f) => f, (_) => null), isA<CacheFailure>());
+  });
+
+  test(
+    'an unexpected error on remove becomes a Failure, never a throw',
+    () async {
+      when(() => dataSource.remove('a')).thenThrow(StateError('bad'));
+      final result = await repo.remove('a');
+      expect(result.isLeft(), isTrue);
+    },
+  );
+}

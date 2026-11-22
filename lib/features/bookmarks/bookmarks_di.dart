@@ -3,12 +3,19 @@ import 'package:hive_ce/hive.dart';
 import '../../core/di/dependency_injection.dart';
 import 'data/datasources/local/bookmark_local_data_source.dart';
 import 'data/datasources/local/page_bookmark_local_data_source.dart';
+import 'data/datasources/local/places_local_data_source.dart';
+import 'data/models/place_record_model.dart';
 import 'data/repositories/bookmark_repository_impl.dart';
 import 'data/repositories/page_bookmark_repository_impl.dart';
+import 'data/repositories/places_repository_impl.dart';
 import 'domain/repositories/bookmark_repository.dart';
 import 'domain/repositories/page_bookmark_repository.dart';
+import 'domain/repositories/places_repository.dart';
 import 'domain/usecases/get_bookmarks.dart';
 import 'domain/usecases/get_page_bookmarks.dart';
+import 'domain/usecases/get_places.dart';
+import 'domain/usecases/remove_place.dart';
+import 'domain/usecases/save_place.dart';
 import 'domain/usecases/toggle_bookmark.dart';
 import 'domain/usecases/toggle_page_bookmark.dart';
 import 'presentation/cubit/bookmark_cubit.dart';
@@ -37,7 +44,9 @@ void initBookmarks() {
     () => PageBookmarkLocalDataSource(box: Hive.box<List>('page_bookmarks')),
   );
   sl.registerLazySingleton<PageBookmarkRepository>(
-    () => PageBookmarkRepositoryImpl(dataSource: sl<PageBookmarkLocalDataSource>()),
+    () => PageBookmarkRepositoryImpl(
+      dataSource: sl<PageBookmarkLocalDataSource>(),
+    ),
   );
   sl.registerLazySingleton<GetPageBookmarks>(
     () => GetPageBookmarks(sl<PageBookmarkRepository>()),
@@ -50,5 +59,16 @@ void initBookmarks() {
       getPageBookmarks: sl<GetPageBookmarks>(),
       togglePageBookmark: sl<TogglePageBookmark>(),
     ),
+  );
+  sl.registerLazySingleton<PlacesLocalDataSource>(
+    () => PlacesLocalDataSource(box: Hive.box<PlaceRecordModel>('places')),
+  );
+  sl.registerLazySingleton<PlacesRepository>(
+    () => PlacesRepositoryImpl(dataSource: sl<PlacesLocalDataSource>()),
+  );
+  sl.registerLazySingleton<GetPlaces>(() => GetPlaces(sl<PlacesRepository>()));
+  sl.registerLazySingleton<SavePlace>(() => SavePlace(sl<PlacesRepository>()));
+  sl.registerLazySingleton<RemovePlace>(
+    () => RemovePlace(sl<PlacesRepository>()),
   );
 }
