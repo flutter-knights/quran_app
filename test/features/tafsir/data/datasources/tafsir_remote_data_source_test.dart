@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/features/tafsir/data/datasources/remote/tafsir_remote_data_source.dart';
-import 'package:quran_app/features/tafsir/domain/entities/tafsir.dart';
+import 'package:quran_app/features/tafsir/data/models/tafsir_model.dart';
 
 class _MockDio extends Mock implements Dio {}
 
@@ -58,8 +58,8 @@ void main() {
     final items = await source.getPage(2, cancelToken: token);
 
     expect(items, const [
-      Tafsir(surah: 2, ayah: 1, text: 'هذه الحروف'),
-      Tafsir(surah: 2, ayah: 2, text: 'ذلك الكتاب'),
+      TafsirModel(surah: 2, ayah: 1, text: 'هذه الحروف'),
+      TafsirModel(surah: 2, ayah: 2, text: 'ذلك الكتاب'),
     ]);
     final captured =
         verify(
@@ -85,7 +85,10 @@ void main() {
 
     final item = await source.getAyah(2, 255, cancelToken: token);
 
-    expect(item, const Tafsir(surah: 2, ayah: 255, text: 'الله لا إله إلا هو'));
+    expect(
+      item,
+      const TafsirModel(surah: 2, ayah: 255, text: 'الله لا إله إلا هو'),
+    );
     final captured =
         verify(
               () => dio.get(

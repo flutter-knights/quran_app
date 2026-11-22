@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../entities/tafsir.dart';
@@ -13,7 +14,11 @@ class GetAyahTafsir {
     required int surah,
     required int ayah,
     required int page,
-  }) => _repository.getAyahTafsir(surah: surah, ayah: ayah, page: page);
-
-  void cancel() => _repository.cancelPending();
+    required CancelToken cancelToken,
+  }) => _repository.getAyahTafsir(
+    surah: surah,
+    ayah: ayah,
+    page: page,
+    cancelToken: cancelToken,
+  );
 }

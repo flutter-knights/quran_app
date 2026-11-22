@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -19,6 +20,8 @@ class TafsirCubit extends Cubit<TafsirState> {
   final GetAyahTafsir _getAyahTafsir;
   final QuranPageService _pageService;
   var _request = 0;
+  CancelToken? _token;
+  int? _page;
 
   Future<void> load(AyahIdentifier ayah) async {
     if (ayah.ayah == 0) {
@@ -29,10 +32,17 @@ class TafsirCubit extends Cubit<TafsirState> {
     if (current is TafsirLoaded && current.ayah == ayah) return;
     final request = ++_request;
     emit(TafsirLoading(ayah));
+    final page = _pageService.getPageForAyah(ayah.surah, ayah.ayah);
+    if (_page != page) {
+      _token?.cancel();
+      _page = page;
+      _token = CancelToken();
+    }
     final result = await _getAyahTafsir(
       surah: ayah.surah,
       ayah: ayah.ayah,
-      page: _pageService.getPageForAyah(ayah.surah, ayah.ayah),
+      page: page,
+      cancelToken: _token!,
     );
     if (isClosed || request != _request) return;
     emit(
@@ -49,14 +59,20 @@ class TafsirCubit extends Cubit<TafsirState> {
   }
 
   void cancel() {
-    _getAyahTafsir.cancel();
+    _dropToken();
     _request++;
     if (!isClosed && state is TafsirLoading) emit(const TafsirIdle());
   }
 
   @override
   Future<void> close() {
-    _getAyahTafsir.cancel();
+    _dropToken();
     return super.close();
+  }
+
+  void _dropToken() {
+    _token?.cancel();
+    _token = null;
+    _page = null;
   }
 }

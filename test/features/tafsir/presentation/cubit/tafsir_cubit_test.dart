@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
@@ -15,23 +16,22 @@ class _FakeRepo implements TafsirRepository {
   final pages = <int>[];
   final requests = <(int, int)>[];
   final pending = <Completer<Either<Failure, Tafsir>>>[];
-  var cancelled = 0;
+  final tokens = <CancelToken>[];
 
   @override
   Future<Either<Failure, Tafsir>> getAyahTafsir({
     required int surah,
     required int ayah,
     required int page,
+    required CancelToken cancelToken,
   }) {
     pages.add(page);
+    tokens.add(cancelToken);
     requests.add((surah, ayah));
     final completer = Completer<Either<Failure, Tafsir>>();
     pending.add(completer);
     return completer.future;
   }
-
-  @override
-  void cancelPending() => cancelled++;
 }
 
 class _PageService implements QuranPageService {
@@ -136,7 +136,7 @@ void main() {
     final future = cubit.load(a);
     cubit.cancel();
     expect(cubit.state, const TafsirIdle());
-    expect(repo.cancelled, 1);
+    expect(repo.tokens.single.isCancelled, isTrue);
     repo.pending.single.complete(const Left(NetworkFailure('offline')));
     await future;
     await pumpEventQueue();
@@ -156,9 +156,49 @@ void main() {
   test('close cancels the request in flight', () async {
     final future = cubit.load(a);
     await cubit.close();
-    expect(repo.cancelled, 1);
+    expect(repo.tokens.single.isCancelled, isTrue);
     repo.pending.single.complete(Right(_tafsir(1, 1)));
     await future;
+  });
+
+  test('ayat of one page share a token that another page cancels', () async {
+    final first = cubit.load(a);
+    final second = cubit.load(b);
+    expect(repo.tokens[1], same(repo.tokens[0]));
+    final third = cubit.load(kursi);
+    expect(repo.tokens[0].isCancelled, isTrue);
+    expect(repo.tokens[2].isCancelled, isFalse);
+    for (final c in repo.pending) {
+      c.complete(const Left(NetworkFailure('x')));
+    }
+    await Future.wait([first, second, third]);
+  });
+
+  test('closing one cubit leaves another cubit request alone', () async {
+    final other = TafsirCubit(
+      getAyahTafsir: GetAyahTafsir(repo),
+      pageService: _PageService(),
+    );
+    final mine = cubit.load(a);
+    final theirs = other.load(a);
+    await other.close();
+    expect(repo.tokens[0].isCancelled, isFalse);
+    expect(repo.tokens[1].isCancelled, isTrue);
+    repo.pending[0].complete(Right(_tafsir(1, 1)));
+    repo.pending[1].complete(Right(_tafsir(1, 1)));
+    await mine;
+    await theirs;
+    expect(cubit.state, TafsirLoaded(a, _tafsir(1, 1)));
+  });
+
+  test('retry after a failure reuses the live token', () async {
+    final failing = cubit.load(a);
+    repo.pending[0].complete(const Left(NetworkFailure('offline')));
+    await failing;
+    final retrying = cubit.retry();
+    expect(repo.tokens[1], same(repo.tokens[0]));
+    repo.pending[1].complete(Right(_tafsir(1, 1)));
+    await retrying;
   });
 
   test('cancel after close during a load does not throw', () async {

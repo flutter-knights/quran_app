@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:hive_ce/hive.dart';
 
 import '../../core/di/dependency_injection.dart';
@@ -11,19 +10,14 @@ import 'presentation/cubit/tafsir_cubit.dart';
 
 void initTafsir() {
   sl.registerLazySingleton<TafsirRemoteDataSource>(
-    () => TafsirRemoteDataSourceImpl(dio: sl<Dio>()),
+    () => TafsirRemoteDataSourceImpl(dio: sl()),
   );
-  sl.registerLazySingleton<TafsirLocalDataSource>(
+  sl.registerLazySingleton(
     () => TafsirLocalDataSource(box: Hive.box<String>('tafsirCache')),
   );
   sl.registerLazySingleton<TafsirRepository>(
-    () => TafsirRepositoryImpl(
-      remote: sl<TafsirRemoteDataSource>(),
-      local: sl<TafsirLocalDataSource>(),
-    ),
+    () => TafsirRepositoryImpl(remote: sl(), local: sl()),
   );
-  sl.registerLazySingleton<GetAyahTafsir>(
-    () => GetAyahTafsir(sl<TafsirRepository>()),
-  );
+  sl.registerLazySingleton(() => GetAyahTafsir(sl()));
   sl.registerFactory(() => TafsirCubit(getAyahTafsir: sl(), pageService: sl()));
 }

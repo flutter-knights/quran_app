@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 
-import '../../../domain/entities/tafsir.dart';
+import '../../models/tafsir_model.dart';
 
 abstract class TafsirRemoteDataSource {
-  Future<List<Tafsir>> getPage(int page, {CancelToken? cancelToken});
+  Future<List<TafsirModel>> getPage(int page, {CancelToken? cancelToken});
 
-  Future<Tafsir> getAyah(int surah, int ayah, {CancelToken? cancelToken});
+  Future<TafsirModel> getAyah(int surah, int ayah, {CancelToken? cancelToken});
 }
 
 class TafsirRemoteDataSourceImpl implements TafsirRemoteDataSource {
@@ -20,13 +20,16 @@ class TafsirRemoteDataSourceImpl implements TafsirRemoteDataSource {
   );
 
   @override
-  Future<List<Tafsir>> getPage(int page, {CancelToken? cancelToken}) async {
+  Future<List<TafsirModel>> getPage(
+    int page, {
+    CancelToken? cancelToken,
+  }) async {
     final data = await _get('$_base/page/$page/ar.muyassar', cancelToken);
     final ayahs = data['ayahs'];
     if (ayahs is! List) throw const FormatException('Missing ayahs');
     return [
       for (final item in ayahs)
-        _parse(
+        TafsirModel.fromJson(
           item is Map
               ? item
               : throw const FormatException('Malformed tafsir ayah'),
@@ -35,12 +38,13 @@ class TafsirRemoteDataSourceImpl implements TafsirRemoteDataSource {
   }
 
   @override
-  Future<Tafsir> getAyah(
+  Future<TafsirModel> getAyah(
     int surah,
     int ayah, {
     CancelToken? cancelToken,
-  }) async =>
-      _parse(await _get('$_base/ayah/$surah:$ayah/ar.muyassar', cancelToken));
+  }) async => TafsirModel.fromJson(
+    await _get('$_base/ayah/$surah:$ayah/ar.muyassar', cancelToken),
+  );
 
   Future<Map> _get(String url, CancelToken? cancelToken) async {
     final response = await dio.get(
@@ -53,16 +57,5 @@ class TafsirRemoteDataSourceImpl implements TafsirRemoteDataSource {
       return body['data'] as Map;
     }
     throw const FormatException('Unexpected tafsir response');
-  }
-
-  Tafsir _parse(Map item) {
-    final surah = item['surah'];
-    final number = surah is Map ? surah['number'] : null;
-    final ayah = item['numberInSurah'];
-    final text = item['text'];
-    if (number is! int || ayah is! int || text is! String) {
-      throw const FormatException('Malformed tafsir ayah');
-    }
-    return Tafsir(surah: number, ayah: ayah, text: text);
   }
 }

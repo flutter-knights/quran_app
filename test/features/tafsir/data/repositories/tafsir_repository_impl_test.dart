@@ -8,6 +8,7 @@ import 'package:quran_app/core/errors/exceptions.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/tafsir/data/datasources/local/tafsir_local_data_source.dart';
 import 'package:quran_app/features/tafsir/data/datasources/remote/tafsir_remote_data_source.dart';
+import 'package:quran_app/features/tafsir/data/models/tafsir_model.dart';
 import 'package:quran_app/features/tafsir/data/repositories/tafsir_repository_impl.dart';
 import 'package:quran_app/features/tafsir/domain/entities/tafsir.dart';
 
@@ -15,8 +16,8 @@ class _MockRemote extends Mock implements TafsirRemoteDataSource {}
 
 class _MockLocal extends Mock implements TafsirLocalDataSource {}
 
-List<Tafsir> _surahOne() => [
-  for (var a = 1; a <= 7; a++) Tafsir(surah: 1, ayah: a, text: 't1:$a'),
+List<TafsirModel> _surahOne() => [
+  for (var a = 1; a <= 7; a++) TafsirModel(surah: 1, ayah: a, text: 't1:$a'),
 ];
 
 DioException _dio(DioExceptionType type) =>
@@ -26,6 +27,7 @@ void main() {
   late _MockRemote remote;
   late _MockLocal local;
   late TafsirRepositoryImpl repo;
+  late CancelToken token;
 
   setUpAll(() {
     registerFallbackValue(CancelToken());
@@ -36,6 +38,7 @@ void main() {
     remote = _MockRemote();
     local = _MockLocal();
     repo = TafsirRepositoryImpl(remote: remote, local: local);
+    token = CancelToken();
     when(() => local.get(any(), any())).thenReturn(null);
     when(() => local.putAll(any())).thenAnswer((_) async {});
   });
@@ -52,7 +55,12 @@ void main() {
   test('a cached ayah never touches the network', () async {
     when(() => local.get(2, 255)).thenReturn('cached');
 
-    final result = await repo.getAyahTafsir(surah: 2, ayah: 255, page: 42);
+    final result = await repo.getAyahTafsir(
+      surah: 2,
+      ayah: 255,
+      page: 42,
+      cancelToken: token,
+    );
 
     expect(result, const Right(Tafsir(surah: 2, ayah: 255, text: 'cached')));
     verifyNever(
@@ -65,7 +73,12 @@ void main() {
       () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
     ).thenAnswer((_) async => _surahOne());
 
-    final result = await repo.getAyahTafsir(surah: 1, ayah: 3, page: 1);
+    final result = await repo.getAyahTafsir(
+      surah: 1,
+      ayah: 3,
+      page: 1,
+      cancelToken: token,
+    );
 
     expect(result, const Right(Tafsir(surah: 1, ayah: 3, text: 't1:3')));
     final stored =
@@ -75,13 +88,23 @@ void main() {
   });
 
   test('two ayat of one page share one request', () async {
-    final completer = Completer<List<Tafsir>>();
+    final completer = Completer<List<TafsirModel>>();
     when(
       () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
     ).thenAnswer((_) => completer.future);
 
-    final first = repo.getAyahTafsir(surah: 1, ayah: 2, page: 1);
-    final second = repo.getAyahTafsir(surah: 1, ayah: 4, page: 1);
+    final first = repo.getAyahTafsir(
+      surah: 1,
+      ayah: 2,
+      page: 1,
+      cancelToken: token,
+    );
+    final second = repo.getAyahTafsir(
+      surah: 1,
+      ayah: 4,
+      page: 1,
+      cancelToken: token,
+    );
     completer.complete(_surahOne());
 
     expect(await first, const Right(Tafsir(surah: 1, ayah: 2, text: 't1:2')));
@@ -98,16 +121,24 @@ void main() {
       when(
         () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
       ).thenAnswer(
-        (_) async => const [Tafsir(surah: 3, ayah: 8, text: 't3:8')],
+        (_) async => const [TafsirModel(surah: 3, ayah: 8, text: 't3:8')],
       );
       when(
         () => remote.getAyah(3, 9, cancelToken: any(named: 'cancelToken')),
-      ).thenAnswer((_) async => const Tafsir(surah: 3, ayah: 9, text: 't3:9'));
+      ).thenAnswer(
+        (_) async => const TafsirModel(surah: 3, ayah: 9, text: 't3:9'),
+      );
 
-      final result = await repo.getAyahTafsir(surah: 3, ayah: 9, page: 50);
+      final result = await repo.getAyahTafsir(
+        surah: 3,
+        ayah: 9,
+        page: 50,
+        cancelToken: token,
+      );
 
       expect(result, const Right(Tafsir(surah: 3, ayah: 9, text: 't3:9')));
       final pageToken = tokenOfPage(50);
+      expect(pageToken, same(token));
       final ayahToken =
           verify(
                 () => remote.getAyah(
@@ -126,20 +157,27 @@ void main() {
   test('a second miss on a fetched page skips the page download', () async {
     when(
       () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) async => const [Tafsir(surah: 3, ayah: 8, text: 't3:8')]);
+    ).thenAnswer(
+      (_) async => const [TafsirModel(surah: 3, ayah: 8, text: 't3:8')],
+    );
     when(
       () =>
           remote.getAyah(any(), any(), cancelToken: any(named: 'cancelToken')),
     ).thenAnswer(
-      (i) async => Tafsir(
+      (i) async => TafsirModel(
         surah: i.positionalArguments[0] as int,
         ayah: i.positionalArguments[1] as int,
         text: 'x',
       ),
     );
 
-    await repo.getAyahTafsir(surah: 3, ayah: 9, page: 50);
-    final second = await repo.getAyahTafsir(surah: 3, ayah: 10, page: 50);
+    await repo.getAyahTafsir(surah: 3, ayah: 9, page: 50, cancelToken: token);
+    final second = await repo.getAyahTafsir(
+      surah: 3,
+      ayah: 10,
+      page: 50,
+      cancelToken: token,
+    );
 
     expect(second.isRight(), isTrue);
     verify(
@@ -150,135 +188,60 @@ void main() {
     ).called(1);
   });
 
-  test('cancelPending forgets a fetched page', () async {
+  test('each token fetches its own page and cancels alone', () async {
+    final other = CancelToken();
+    final first = Completer<List<TafsirModel>>();
+    final second = Completer<List<TafsirModel>>();
+    var calls = 0;
     when(
-      () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) async => _surahOne());
+      () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
+    ).thenAnswer((_) => calls++ == 0 ? first.future : second.future);
 
-    await repo.getAyahTafsir(surah: 1, ayah: 1, page: 50);
-    repo.cancelPending();
-    await repo.getAyahTafsir(surah: 1, ayah: 2, page: 50);
+    final a = repo.getAyahTafsir(
+      surah: 1,
+      ayah: 1,
+      page: 1,
+      cancelToken: token,
+    );
+    final b = repo.getAyahTafsir(
+      surah: 1,
+      ayah: 2,
+      page: 1,
+      cancelToken: other,
+    );
+    token.cancel();
+    first.completeError(_dio(DioExceptionType.cancel));
+    second.complete(_surahOne());
 
+    expect(await a, isA<Left<Failure, Tafsir>>());
+    expect(await b, const Right(Tafsir(surah: 1, ayah: 2, text: 't1:2')));
+    expect(other.isCancelled, isFalse);
     verify(
-      () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
+      () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
     ).called(2);
   });
 
-  test('a request for another page cancels the previous one', () async {
-    final first = Completer<List<Tafsir>>();
-    final second = Completer<List<Tafsir>>();
-    when(
-      () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) => first.future);
-    when(
-      () => remote.getPage(2, cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) => second.future);
-
-    final a = repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
-    final firstToken = tokenOfPage(1);
-    final b = repo.getAyahTafsir(surah: 2, ayah: 1, page: 2);
-
-    expect(firstToken.isCancelled, isTrue);
-    first.completeError(_dio(DioExceptionType.cancel));
-    second.complete(const [Tafsir(surah: 2, ayah: 1, text: 't2:1')]);
-    expect(await a, isA<Left<Failure, Tafsir>>());
-    expect(await b, const Right(Tafsir(surah: 2, ayah: 1, text: 't2:1')));
-  });
-
-  test('a cancelled earlier page never clears the newer request', () async {
-    final first = Completer<List<Tafsir>>();
-    final second = Completer<List<Tafsir>>();
-    when(
-      () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) => first.future);
-    when(
-      () => remote.getPage(2, cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) => second.future);
-
-    final a = repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
-    final b = repo.getAyahTafsir(surah: 2, ayah: 1, page: 2);
-    first.completeError(_dio(DioExceptionType.cancel));
-    await a;
-    final c = repo.getAyahTafsir(surah: 2, ayah: 2, page: 2);
-    second.complete(const [
-      Tafsir(surah: 2, ayah: 1, text: 't2:1'),
-      Tafsir(surah: 2, ayah: 2, text: 't2:2'),
-    ]);
-
-    expect(await b, isA<Right<Failure, Tafsir>>());
-    expect(await c, const Right(Tafsir(surah: 2, ayah: 2, text: 't2:2')));
-    final token =
-        verify(
-              () => remote.getPage(
-                2,
-                cancelToken: captureAny(named: 'cancelToken'),
-              ),
-            ).captured.single
-            as CancelToken;
-    repo.cancelPending();
-    expect(token.isCancelled, isTrue);
-  });
-
-  test(
-    'a cached ayah on another page leaves the in-flight page running',
-    () async {
-      final pending = Completer<List<Tafsir>>();
-      when(
-        () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
-      ).thenAnswer((_) => pending.future);
-      when(() => local.get(2, 1)).thenReturn('cached');
-
-      final a = repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
-      final token = tokenOfPage(1);
-      final result = await repo.getAyahTafsir(surah: 2, ayah: 1, page: 2);
-
-      expect(result, isA<Right<Failure, Tafsir>>());
-      expect(token.isCancelled, isFalse);
-      pending.complete(_surahOne());
-      await a;
-    },
-  );
-
-  test('cancelPending cancels the request in flight', () async {
-    final pending = Completer<List<Tafsir>>();
-    when(
-      () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) => pending.future);
-
-    final a = repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
-    final token = tokenOfPage(1);
-    repo.cancelPending();
-
-    expect(token.isCancelled, isTrue);
-    pending.completeError(_dio(DioExceptionType.cancel));
-    await a;
-  });
-
-  test('cancelPending reaches a running fallback', () async {
-    final fallback = Completer<Tafsir>();
+  test('the fallback request uses the caller token', () async {
+    final fallback = Completer<TafsirModel>();
     when(
       () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
-    ).thenAnswer((_) async => const [Tafsir(surah: 3, ayah: 8, text: 't3:8')]);
+    ).thenAnswer(
+      (_) async => const [TafsirModel(surah: 3, ayah: 8, text: 't3:8')],
+    );
     when(
       () => remote.getAyah(3, 9, cancelToken: any(named: 'cancelToken')),
     ).thenAnswer((_) => fallback.future);
 
-    final a = repo.getAyahTafsir(surah: 3, ayah: 9, page: 50);
+    final a = repo.getAyahTafsir(
+      surah: 3,
+      ayah: 9,
+      page: 50,
+      cancelToken: token,
+    );
     await pumpEventQueue();
-    final token =
-        verify(
-              () => remote.getAyah(
-                3,
-                9,
-                cancelToken: captureAny(named: 'cancelToken'),
-              ),
-            ).captured.single
-            as CancelToken;
-    repo.cancelPending();
-
-    expect(token.isCancelled, isTrue);
-    fallback.completeError(_dio(DioExceptionType.cancel));
-    await a;
+    verify(() => remote.getAyah(3, 9, cancelToken: token)).called(1);
+    fallback.complete(const TafsirModel(surah: 3, ayah: 9, text: 't3:9'));
+    expect(await a, isA<Right<Failure, Tafsir>>());
   });
 
   test('offline becomes a NetworkFailure, never a throw', () async {
@@ -286,7 +249,12 @@ void main() {
       () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
     ).thenThrow(_dio(DioExceptionType.connectionError));
 
-    final result = await repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
+    final result = await repo.getAyahTafsir(
+      surah: 1,
+      ayah: 1,
+      page: 1,
+      cancelToken: token,
+    );
 
     expect(result.swap().toOption().toNullable(), isA<NetworkFailure>());
   });
@@ -296,7 +264,12 @@ void main() {
       () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
     ).thenThrow(_dio(DioExceptionType.receiveTimeout));
 
-    final result = await repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
+    final result = await repo.getAyahTafsir(
+      surah: 1,
+      ayah: 1,
+      page: 1,
+      cancelToken: token,
+    );
 
     expect(result.swap().toOption().toNullable(), isA<TimeoutFailure>());
   });
@@ -311,8 +284,18 @@ void main() {
       return _surahOne();
     });
 
-    final first = await repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
-    final second = await repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
+    final first = await repo.getAyahTafsir(
+      surah: 1,
+      ayah: 1,
+      page: 1,
+      cancelToken: token,
+    );
+    final second = await repo.getAyahTafsir(
+      surah: 1,
+      ayah: 1,
+      page: 1,
+      cancelToken: token,
+    );
 
     expect(first.isLeft(), isTrue);
     expect(second, const Right(Tafsir(surah: 1, ayah: 1, text: 't1:1')));
@@ -326,7 +309,12 @@ void main() {
       () => remote.getPage(1, cancelToken: any(named: 'cancelToken')),
     ).thenThrow(const FormatException());
 
-    final result = await repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
+    final result = await repo.getAyahTafsir(
+      surah: 1,
+      ayah: 1,
+      page: 1,
+      cancelToken: token,
+    );
 
     expect(result.isLeft(), isTrue);
   });
@@ -334,7 +322,12 @@ void main() {
   test('a failed cache read becomes a CacheFailure', () async {
     when(() => local.get(1, 1)).thenThrow(CacheException('read'));
 
-    final result = await repo.getAyahTafsir(surah: 1, ayah: 1, page: 1);
+    final result = await repo.getAyahTafsir(
+      surah: 1,
+      ayah: 1,
+      page: 1,
+      cancelToken: token,
+    );
 
     expect(result.swap().toOption().toNullable(), isA<CacheFailure>());
   });
@@ -345,7 +338,12 @@ void main() {
     ).thenAnswer((_) async => _surahOne());
     when(() => local.putAll(any())).thenThrow(CacheException('x'));
 
-    final result = await repo.getAyahTafsir(surah: 1, ayah: 2, page: 1);
+    final result = await repo.getAyahTafsir(
+      surah: 1,
+      ayah: 2,
+      page: 1,
+      cancelToken: token,
+    );
 
     expect(result, const Right(Tafsir(surah: 1, ayah: 2, text: 't1:2')));
   });

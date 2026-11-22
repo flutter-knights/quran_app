@@ -7,6 +7,7 @@ import '../../domain/entities/tafsir.dart';
 import '../../domain/repositories/tafsir_repository.dart';
 import '../datasources/local/tafsir_local_data_source.dart';
 import '../datasources/remote/tafsir_remote_data_source.dart';
+import '../models/tafsir_model.dart';
 
 class TafsirRepositoryImpl implements TafsirRepository {
   TafsirRepositoryImpl({required this.remote, required this.local});
@@ -14,74 +15,60 @@ class TafsirRepositoryImpl implements TafsirRepository {
   final TafsirRemoteDataSource remote;
   final TafsirLocalDataSource local;
 
-  CancelToken? _token;
-  int? _page;
-  int? _fetchedPage;
-  Future<List<Tafsir>>? _inFlight;
+  final _inFlight = Expando<Future<List<TafsirModel>>>();
+  final _fetched = Expando<int>();
 
   @override
   Future<Either<Failure, Tafsir>> getAyahTafsir({
     required int surah,
     required int ayah,
     required int page,
+    required CancelToken cancelToken,
   }) async {
-    Future<List<Tafsir>>? future;
+    Future<List<TafsirModel>>? future;
     try {
       final cached = local.get(surah, ayah);
       if (cached != null) {
         return Right(Tafsir(surah: surah, ayah: ayah, text: cached));
       }
-      if (_page != page) {
-        _token?.cancel();
-        _page = page;
-        _fetchedPage = null;
-        _token = CancelToken();
-        _inFlight = null;
-      }
-      final token = _token!;
-      Tafsir? hit;
-      if (_fetchedPage != page) {
-        future = _inFlight ??= _fetchPage(page, token);
+      TafsirModel? hit;
+      if (_fetched[cancelToken] != page) {
+        future = _inFlight[cancelToken] ??= _fetchPage(page, cancelToken);
         final items = await future;
-        if (identical(_token, token)) _fetchedPage = page;
+        _fetched[cancelToken] = page;
         hit = items
             .where((t) => t.surah == surah && t.ayah == ayah)
             .firstOrNull;
       }
-      return Right(hit ?? await _fetchAyah(surah, ayah, token));
+      return Right(
+        (hit ?? await _fetchAyah(surah, ayah, cancelToken)).toEntity(),
+      );
     } on CacheException catch (e) {
       return Left(CacheFailure(e.message));
     } catch (e) {
       return Left(Failure.fromException(e));
     } finally {
-      if (future != null && identical(_inFlight, future)) _inFlight = null;
+      if (future != null && identical(_inFlight[cancelToken], future)) {
+        _inFlight[cancelToken] = null;
+      }
     }
   }
 
-  @override
-  void cancelPending() {
-    _token?.cancel();
-    _token = null;
-    _page = null;
-    _fetchedPage = null;
-    _inFlight = null;
-  }
-
-  Future<List<Tafsir>> _fetchPage(int page, CancelToken token) async {
+  Future<List<TafsirModel>> _fetchPage(int page, CancelToken token) async {
     final items = await remote.getPage(page, cancelToken: token);
     await _store(items);
     return items;
   }
 
-  Future<Tafsir> _fetchAyah(int surah, int ayah, CancelToken token) async {
+  Future<TafsirModel> _fetchAyah(int surah, int ayah, CancelToken token) async {
     final item = await remote.getAyah(surah, ayah, cancelToken: token);
     await _store([item]);
     return item;
   }
 
-  Future<void> _store(List<Tafsir> items) async {
+  Future<void> _store(List<TafsirModel> items) async {
     try {
-      await local.putAll(items);
+      await local.putAll([for (final m in items) m.toEntity()]);
     } on CacheException {
       return;
     }
