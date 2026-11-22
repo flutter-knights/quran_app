@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
+import 'package:quran_app/features/surah/domain/entities/ayah_bound_entity.dart';
 import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
 import 'package:quran_app/features/surah/domain/repositories/mushaf_repo.dart';
 import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
@@ -36,6 +37,19 @@ class _StubMushafRepo implements MushafRepository {
   @override
   Future<Either<Failure, MushafPageEntity>> getPage(int pageNumber) async =>
       Right(MushafPageEntity(pageNumber: pageNumber, ayahs: const []));
+}
+
+class _CountingRepo implements MushafRepository {
+  final ayahs = const [
+    AyahBoundEntity(ayah: AyahIdentifier(surah: 2, ayah: 1), lines: []),
+  ];
+  final loads = <int>[];
+
+  @override
+  Future<Either<Failure, MushafPageEntity>> getPage(int pageNumber) async {
+    loads.add(pageNumber);
+    return Right(MushafPageEntity(pageNumber: pageNumber, ayahs: ayahs));
+  }
 }
 
 MushafCubit _cubit(_FakeNotifier n, {int page = 1, int playingPage = 1}) =>
@@ -243,6 +257,58 @@ void main() {
       expect(m.state.jumpFrom, 50);
       m.setPage(584, byUser: true);
       expect(m.state.jumpFrom, isNull);
+    });
+
+    test('a follow turn back onto the origin clears jumpFrom', () {
+      final m = _tracked(page: 50)
+        ..jumpTo(100)
+        ..setPage(50, byUser: false);
+      expect(m.state.jumpFrom, isNull);
+    });
+
+    test('setPage onto the page already showing emits nothing', () {
+      final m = _tracked(page: 50)..jumpTo(100);
+      final states = <MushafState>[];
+      final sub = m.stream.listen(states.add);
+      addTearDown(sub.cancel);
+      m.setPage(100, byUser: false);
+      m.setPage(100, byUser: true);
+      expect(states, isEmpty);
+    });
+  });
+
+  group('boundsFor', () {
+    test(
+      'returns the loaded ayahs of the current page without a load',
+      () async {
+        final repo = _CountingRepo();
+        final m = MushafCubit(
+          args: const MushafArgs(page: 50),
+          currentAyahNotifier: _FakeNotifier(),
+          pageService: _StubPageService(1),
+          getMushafPage: GetMushafPage(repo),
+        );
+        addTearDown(m.close);
+        await Future<void>.delayed(Duration.zero);
+        expect(await m.boundsFor(50), repo.ayahs);
+        expect(repo.loads, [50]);
+        expect(await m.boundsFor(60), repo.ayahs);
+        expect(repo.loads, [50, 60]);
+      },
+    );
+
+    test('loads another page through the use case', () async {
+      final m = _tracked(page: 50);
+      expect(await m.boundsFor(60), isEmpty);
+    });
+  });
+
+  group('playingTarget', () {
+    test('prefers the follow target and pairs it with its own page', () {
+      final m = _tracked(page: 50, playing: a)..followFrom(c);
+      expect(m.playingTarget, c);
+      m.cancelFollowTarget();
+      expect(m.playingTarget, a);
     });
   });
 

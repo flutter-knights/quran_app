@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
+import '../../../domain/entities/ayah_bound_entity.dart';
 import '../../../domain/usecases/get_mushaf_page.dart';
 import '../../utils/mushaf_args.dart';
 import '../../utils/follow_playback.dart';
@@ -35,19 +36,36 @@ class MushafCubit extends Cubit<MushafState> {
   @visibleForTesting
   ValueNotifier<AyahIdentifier?> get debugNotifier => _notifier;
 
+  AyahIdentifier? get playingTarget => _followTarget ?? state.playingAyah;
+
   int? get playingPage {
-    final playing = _followTarget ?? state.playingAyah;
+    final playing = playingTarget;
     if (playing == null) return null;
     return _pageService.getPageForAyah(playing.surah, playing.realAyah);
   }
 
   void setPage(int page, {required bool byUser}) {
+    if (page == state.currentPage) return;
     if (byUser) {
       _turnByUser(page);
       return;
     }
-    emit(state.copyWith(currentPage: page, pageAyahs: const []));
+    emit(
+      state.copyWith(
+        currentPage: page,
+        pageAyahs: const [],
+        clearJumpFrom: page == state.jumpFrom,
+      ),
+    );
     _loadPageAyahs(page);
+  }
+
+  Future<List<AyahBoundEntity>> boundsFor(int page) async {
+    if (page == state.currentPage && state.pageAyahs.isNotEmpty) {
+      return state.pageAyahs;
+    }
+    final result = await _getMushafPage(page);
+    return result.fold((_) => const [], (entity) => entity.ayahs);
   }
 
   void jumpTo(int page) {
