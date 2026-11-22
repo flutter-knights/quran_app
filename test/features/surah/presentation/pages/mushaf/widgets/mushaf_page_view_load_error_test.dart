@@ -21,7 +21,6 @@ import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_view.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_printed_chrome.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class _FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
@@ -123,7 +122,6 @@ void main() {
       ),
       findsNothing,
     );
-    expect(find.byType(MushafPrintedChrome), findsNothing);
 
     await tester.tap(find.text('Try again'));
     await tester.pump();

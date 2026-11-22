@@ -14,20 +14,6 @@ class MushafState extends Equatable {
   final List<AyahBoundEntity> pageAyahs;
   final int? jumpFrom;
 
-  /// Normalized vertical center (0..1) of the highlighted ayah within the
-  /// page. Used to decide whether the playback overlay floats at the top or
-  /// bottom so it does not cover the verse.
-  final double? highlightedAyahCenterY;
-
-  /// True when the user opened the playback overlay via the FAB without
-  /// selecting a verse. Lets the overlay stay visible against the current
-  /// playback target instead of vanishing the moment the highlight is cleared.
-  final bool isOverlayPinned;
-
-  /// True when the Mushaf chrome (app bar, bottom bar, etc.) is visible.
-  /// Defaults to false (chrome hidden by default).
-  final bool chromeVisible;
-
   const MushafState({
     required this.currentPage,
     this.selectedAyah,
@@ -36,9 +22,6 @@ class MushafState extends Equatable {
     this.openedSurah,
     this.pageAyahs = const [],
     this.jumpFrom,
-    this.highlightedAyahCenterY,
-    this.isOverlayPinned = false,
-    this.chromeVisible = false,
   });
 
   factory MushafState.initial(MushafArgs args) {
@@ -67,12 +50,8 @@ class MushafState extends Equatable {
     bool? followPlayback,
     List<AyahBoundEntity>? pageAyahs,
     int? jumpFrom,
-    double? highlightedAyahCenterY,
-    bool? isOverlayPinned,
-    bool? chromeVisible,
     bool clearSelected = false,
     bool clearPlaying = false,
-    bool clearHighlightedCenterY = false,
     bool clearJumpFrom = false,
   }) {
     return MushafState(
@@ -83,11 +62,6 @@ class MushafState extends Equatable {
       openedSurah: openedSurah,
       pageAyahs: pageAyahs ?? this.pageAyahs,
       jumpFrom: clearJumpFrom ? null : (jumpFrom ?? this.jumpFrom),
-      highlightedAyahCenterY: clearSelected || clearHighlightedCenterY
-          ? null
-          : (highlightedAyahCenterY ?? this.highlightedAyahCenterY),
-      isOverlayPinned: isOverlayPinned ?? this.isOverlayPinned,
-      chromeVisible: chromeVisible ?? this.chromeVisible,
     );
   }
 
@@ -100,8 +74,5 @@ class MushafState extends Equatable {
     openedSurah,
     pageAyahs,
     jumpFrom,
-    highlightedAyahCenterY,
-    isOverlayPinned,
-    chromeVisible,
   ];
 }

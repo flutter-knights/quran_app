@@ -111,29 +111,6 @@ class MushafCubit extends Cubit<MushafState> {
 
   Future<void> reloadPageAyahs() => _loadPageAyahs(state.currentPage);
 
-  /// Publishes the normalized vertical center of the currently highlighted
-  /// ayah so the playback overlay can avoid covering it.
-  void setHighlightBounds(double centerY) {
-    if (state.selectedAyah == null) return;
-    if (state.highlightedAyahCenterY == centerY) return;
-    emit(state.copyWith(highlightedAyahCenterY: centerY));
-  }
-
-  /// Toggles the Mushaf chrome (app bar, bottom bar, etc.) visibility.
-  void toggleChrome() =>
-      emit(state.copyWith(chromeVisible: !state.chromeVisible));
-
-  /// Sets the Mushaf chrome visibility explicitly.
-  void setChrome(bool visible) => emit(state.copyWith(chromeVisible: visible));
-
-  /// Shrinks the overlay back to its FAB state. Also clears any active
-  /// highlight so the overlay's visibility check (`selectedAyah != null ||
-  /// isOverlayPinned`) goes false.
-  void unpinOverlay() {
-    if (!state.isOverlayPinned && state.selectedAyah == null) return;
-    emit(state.copyWith(isOverlayPinned: false, clearSelected: true));
-  }
-
   void _onPlayingAyahChanged() {
     _followTarget = null;
     final next = _notifier.value;

@@ -168,9 +168,6 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   void cancelFollowTarget() => cancelFollowTargetCalls++;
 
   @override
-  void setHighlightBounds(double centerY) {}
-
-  @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
 

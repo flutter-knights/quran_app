@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_state.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
@@ -19,7 +18,6 @@ import '../../../cubit/mushaf/mushaf_state.dart';
 import '../../../utils/reader_rules.dart';
 import 'ayah_highlight_painter.dart';
 import 'mushaf_page_ribbon.dart';
-import 'mushaf_printed_chrome.dart';
 
 class MushafPageView extends StatefulWidget {
   const MushafPageView({super.key, required this.pageNumber});
@@ -170,11 +168,6 @@ class _MushafPageViewState extends State<MushafPageView>
                               _prevPlayingAyah != null) {
                             _controller.forward(from: 0);
                           }
-                          _publishHighlightBounds(
-                            context,
-                            _shownHighlightedAyah,
-                            entity.ayahs,
-                          );
                         }
                         return AnimatedBuilder(
                           animation: _controller,
@@ -225,17 +218,6 @@ class _MushafPageViewState extends State<MushafPageView>
                       );
                     },
                   ),
-                  // Hide chrome in scroll mode — multiple pages are visible
-                  // simultaneously so per-page headers/numbers add clutter.
-                  if (_isPageMode(context, settings.readingMode))
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: MushafPrintedChrome(
-                          pageNumber: widget.pageNumber,
-                          colors: paperColors,
-                        ),
-                      ),
-                    ),
                 ],
               );
             },
@@ -243,38 +225,6 @@ class _MushafPageViewState extends State<MushafPageView>
         );
       },
     );
-  }
-
-  // Chrome (surah header + page number) is shown only in page-flip mode.
-  // Landscape always forces scroll mode (mirrors MushafPage logic).
-  bool _isPageMode(BuildContext context, MushafReadingMode readingMode) {
-    if (MediaQuery.of(context).orientation == Orientation.landscape) {
-      return false;
-    }
-    return readingMode == MushafReadingMode.page;
-  }
-
-  void _publishHighlightBounds(
-    BuildContext context,
-    AyahIdentifier? ayah,
-    List<AyahBoundEntity> ayahs,
-  ) {
-    if (ayah == null) return;
-    AyahBoundEntity? bound;
-    for (final b in ayahs) {
-      if (b.ayah == ayah) {
-        bound = b;
-        break;
-      }
-    }
-    if (bound == null || bound.lines.isEmpty) return;
-    final first = bound.lines.first;
-    final centerY = first.y + first.h / 2;
-    final cubit = context.read<MushafCubit>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      cubit.setHighlightBounds(centerY);
-    });
   }
 
   AyahIdentifier? _hitTest(
