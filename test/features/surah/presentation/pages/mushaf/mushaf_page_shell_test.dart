@@ -1147,6 +1147,22 @@ void main() {
       expect(h.tafsir.loads.last, next);
     });
 
+    testWidgets('stepping back onto the playing ayah on the same page '
+        'resumes follow', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({}));
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: _a6, playingAyah: _a5),
+      );
+      await openStudy(tester);
+      expect(mushaf.state.followPlayback, isFalse);
+
+      await tapStep(tester, 'study-previous');
+
+      expect(mushaf.state.selectedAyah, _a5);
+      expect(mushaf.state.followPlayback, isTrue);
+    });
+
     testWidgets('الآية التالية on the last ayah of a page turns the page '
         'behind', (tester) async {
       setUpMushafHarness(pageService: _PageMap({next: 8}));

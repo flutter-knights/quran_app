@@ -526,9 +526,12 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   }
 
   void _holdStudiedPage() {
+    if (!_studying.value) return;
     final state = _mushafCubit.state;
-    if (_studying.value && state.selectedAyah != state.playingAyah) {
+    if (state.selectedAyah != state.playingAyah) {
       _mushafCubit.stopFollow();
+    } else if (!state.followPlayback) {
+      _mushafCubit.resumeFollow();
     }
   }
 
