@@ -162,31 +162,13 @@ abstract class AppRouter {
       GoRoute(
         path: mushafPath,
         pageBuilder: _fadePage(
-          builder: (context, state) {
-            final args = _mushafArgsFrom(state.extra);
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(create: (_) => sl<MushafCubit>(param1: args)),
-                BlocProvider(create: (_) => sl<TafsirCubit>()),
-              ],
-              child: MushafPage(args: args),
-            );
-          },
+          builder: (context, state) => _mushafScope(state),
         ),
       ),
       GoRoute(
         path: mushafImagePath,
         pageBuilder: _fadePage(
-          builder: (context, state) {
-            final args = _mushafArgsFrom(state.extra);
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(create: (_) => sl<MushafCubit>(param1: args)),
-                BlocProvider(create: (_) => sl<TafsirCubit>()),
-              ],
-              child: MushafPage(args: args),
-            );
-          },
+          builder: (context, state) => _mushafScope(state),
         ),
       ),
       GoRoute(
@@ -210,6 +192,17 @@ abstract class AppRouter {
         ),
       ),
     ],
+  );
+}
+
+Widget _mushafScope(GoRouterState state) {
+  final args = _mushafArgsFrom(state.extra);
+  return MultiBlocProvider(
+    providers: [
+      BlocProvider(create: (_) => sl<MushafCubit>(param1: args)),
+      BlocProvider(create: (_) => sl<TafsirCubit>()),
+    ],
+    child: MushafPage(args: args),
   );
 }
 

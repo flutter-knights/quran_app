@@ -20,7 +20,7 @@ class FakeTafsirCubit extends Cubit<TafsirState> implements TafsirCubit {
   Future<void> load(AyahIdentifier ayah) async {
     loads.add(ayah);
     if (ayah.ayah == 0) {
-      emit(const TafsirIdle());
+      cancel();
       return;
     }
     if (failNext) {

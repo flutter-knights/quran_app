@@ -51,7 +51,7 @@ class TafsirCubit extends Cubit<TafsirState> {
   void cancel() {
     _getAyahTafsir.cancel();
     _request++;
-    if (state is TafsirLoading) emit(const TafsirIdle());
+    if (!isClosed && state is TafsirLoading) emit(const TafsirIdle());
   }
 
   @override

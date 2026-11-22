@@ -160,4 +160,13 @@ void main() {
     repo.pending.single.complete(Right(_tafsir(1, 1)));
     await future;
   });
+
+  test('cancel after close during a load does not throw', () async {
+    final future = cubit.load(a);
+    await cubit.close();
+    expect(cubit.state, const TafsirLoading(a));
+    expect(cubit.cancel, returnsNormally);
+    repo.pending.single.complete(Right(_tafsir(1, 1)));
+    await future;
+  });
 }
