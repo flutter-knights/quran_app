@@ -315,6 +315,10 @@ class PendingS {
   String get display_readingMode => _ar ? 'طريقة القراءة' : 'Reading mode';
   String get display_keepScreenOn =>
       _ar ? 'إبقاء الشاشة مضيئة' : 'Keep the screen on';
+  String get display_tapAction =>
+      _ar ? 'عند الضغط على الآية' : 'When you tap an ayah';
+  String get display_tapMeaning => _ar ? 'المعنى' : 'Meaning';
+  String get display_tapOptions => _ar ? 'الخيارات' : 'Options';
   String get display_done => _ar ? 'تم' : 'Done';
 
   String get fasil_wird => _ar ? 'الورد' : 'Wird';

@@ -4,9 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
 import 'package:quran_app/features/settings/domain/entities/settings.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/display_sheet.dart';
@@ -273,8 +275,35 @@ void main() {
     final cubit = SettingsCubit();
     addTearDown(cubit.close);
     await pumpSheet(tester, cubit, 'ar');
-    for (final label in ['العرض', 'لون الورق', 'السطوع', 'طريقة القراءة']) {
+    for (final label in [
+      'العرض',
+      'لون الورق',
+      'السطوع',
+      'طريقة القراءة',
+      'عند الضغط على الآية',
+    ]) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
+  });
+
+  testWidgets('the tap-action selector starts on المعنى', (tester) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await pumpSheet(tester, cubit, 'ar');
+    final toggle = tester.widget<AppSegmentedSelector<LeafTapAction>>(
+      find.byKey(const ValueKey('tap-action-toggle')),
+    );
+    expect(toggle.selected, LeafTapAction.meaning);
+    expect(find.text('المعنى'), findsOneWidget);
+  });
+
+  testWidgets('the tap-action selector stores الخيارات', (tester) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await pumpSheet(tester, cubit, 'ar');
+    await tester.ensureVisible(find.text('الخيارات'));
+    await tester.tap(find.text('الخيارات'));
+    await tester.pump();
+    expect(cubit.state.settingsModel.tapAction, LeafTapAction.options);
   });
 }

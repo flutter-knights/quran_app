@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
@@ -99,6 +100,19 @@ class _DisplaySheetState extends State<DisplaySheet> {
                         value: MushafReadingMode.scroll,
                         label: s.continuousScroll,
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(pending.display_tapAction, style: TS.medium12),
+                  const SizedBox(height: 8),
+                  AppSegmentedSelector<LeafTapAction>(
+                    key: const ValueKey('tap-action-toggle'),
+                    selected: model.tapAction,
+                    expand: true,
+                    onChanged: cubit.updateTapAction,
+                    options: [
+                      for (final a in LeafTapAction.values)
+                        SegmentOption(value: a, label: a.localized(context)),
                     ],
                   ),
                   SwitchListTile(

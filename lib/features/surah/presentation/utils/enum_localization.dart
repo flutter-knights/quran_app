@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 
@@ -12,6 +13,16 @@ extension MushafPaperLocalization on MushafPaper {
       MushafPaper.gray => s.mushaf_paper_gray,
       MushafPaper.night => s.mushaf_paper_night,
       MushafPaper.slateNight => s.mushaf_paper_slateNight,
+    };
+  }
+}
+
+extension LeafTapActionLocalization on LeafTapAction {
+  String localized(BuildContext context) {
+    final s = PendingS.of(context);
+    return switch (this) {
+      LeafTapAction.meaning => s.display_tapMeaning,
+      LeafTapAction.options => s.display_tapOptions,
     };
   }
 }
