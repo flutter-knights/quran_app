@@ -525,7 +525,11 @@ void main() {
         sl.unregister<GetMushafPage>();
         sl.registerSingleton<GetMushafPage>(
           GetMushafPage(
-            _BoundsRepo([_bound(imran1, y: 0.1), _bound(imran6, y: 0.5)]),
+            _BoundsRepo([
+              _bound(imran1, y: 0.1),
+              _bound(imran6, y: 0.5),
+              _bound(imran7, y: 0.7),
+            ]),
           ),
         );
         return seeded({FasilSlot.wird: imran1, FasilSlot.hifz: imran6});
@@ -549,7 +553,7 @@ void main() {
               is FilledButton;
 
       testWidgets('a tail preselects its own فاصل', (tester) async {
-        await pumpOnPageFifty(tester, selected: imran6);
+        await pumpOnPageFifty(tester, selected: imran7);
 
         await tester.tap(find.byKey(const ValueKey('fasil-tail-wird')));
         await tester.pumpAndSettle();
@@ -562,7 +566,7 @@ void main() {
       testWidgets('the cluster preselects the فاصل before the ayah', (
         tester,
       ) async {
-        await pumpOnPageFifty(tester, selected: imran6);
+        await pumpOnPageFifty(tester, selected: imran7);
 
         await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
         await tester.pumpAndSettle();
@@ -570,6 +574,16 @@ void main() {
         expect(filled(tester, FasilSlot.hifz), isTrue);
         expect(filled(tester, FasilSlot.wird), isFalse);
         expect(find.text('نقل الحفظ إلى هنا'), findsOneWidget);
+      });
+
+      testWidgets('a فاصل already on the ayah offers no move', (tester) async {
+        await pumpOnPageFifty(tester, selected: imran6);
+
+        await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const ValueKey('fasil-move-hifz')), findsNothing);
+        expect(filled(tester, FasilSlot.wird), isTrue);
       });
 
       testWidgets('a banner selection offers no move buttons', (tester) async {

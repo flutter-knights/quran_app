@@ -213,6 +213,30 @@ void main() {
     expect(_enabled(tester, 'player-toggle'), isFalse);
   });
 
+  for (final paper in [MushafPaper.cream, MushafPaper.night]) {
+    testWidgets('the loading toggle stays visible in ${paper.name} paper ink', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        PlaybackState(currentAyah: _a(2, 5), isLoading: true),
+        paper: paper,
+        theme: ThemeData.dark(),
+      );
+      expect(_enabled(tester, 'player-toggle'), isFalse);
+      final style = tester.widget<FilledButton>(_key('player-toggle')).style!;
+      const disabled = {WidgetState.disabled};
+      expect(
+        style.backgroundColor!.resolve(disabled),
+        paper.colors.ink.withValues(alpha: 0.12),
+      );
+      expect(
+        style.foregroundColor!.resolve(disabled),
+        paper.colors.ink.withValues(alpha: 0.38),
+      );
+    });
+  }
+
   testWidgets('skips are disabled when idle', (tester) async {
     await _pump(tester, const PlaybackState());
     expect(_enabled(tester, 'player-previous'), isFalse);

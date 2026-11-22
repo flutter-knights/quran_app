@@ -39,8 +39,14 @@ FasilSlot chooserPreselect({
   required int page,
   required AyahIdentifier at,
 }) {
-  if (slots.isEmpty) return FasilSlot.wird;
-  final entries = slots.entries.toList()
+  final movable = slots.entries.where((e) => e.value.ayah != at).toList();
+  if (movable.isEmpty) {
+    return FasilSlot.values.firstWhere(
+      (s) => !slots.containsKey(s),
+      orElse: () => FasilSlot.wird,
+    );
+  }
+  final entries = movable
     ..sort((a, b) {
       final byAyah = a.value.ayah.compareTo(b.value.ayah);
       return byAyah != 0 ? byAyah : a.key.index.compareTo(b.key.index);
@@ -52,7 +58,7 @@ FasilSlot chooserPreselect({
   }
   final preceding = entries.where((e) => e.value.ayah.compareTo(at) <= 0);
   if (preceding.isNotEmpty) return preceding.last.key;
-  return slots.entries
+  return entries
       .reduce((a, b) => b.value.updatedAt.isAfter(a.value.updatedAt) ? b : a)
       .key;
 }

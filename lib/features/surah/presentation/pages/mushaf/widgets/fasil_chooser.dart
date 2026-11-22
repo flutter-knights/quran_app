@@ -80,7 +80,7 @@ class FasilChooser extends StatelessWidget {
               _FasilRow(
                 slot: slot,
                 place: slots[slot],
-                canMove: selected != null,
+                canMove: selected != null && slots[slot]?.ayah != selected,
                 filled: slot == preselect,
               ),
           ],
