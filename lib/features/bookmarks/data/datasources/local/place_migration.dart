@@ -49,17 +49,31 @@ class PlaceMigration {
     final entries = <AyahIdentifier, int>{};
     for (final key in ayahKeys) {
       final ayah = parseAyahKey(key);
-      if (ayah != null) entries.putIfAbsent(ayah, () => pageOf(ayah));
+      if (ayah == null || entries.containsKey(ayah)) continue;
+      final page = _pageOrNull(pageOf, ayah);
+      if (page != null) entries[ayah] = page;
     }
     for (final entry in pages) {
       final page = parsePage(entry);
-      final ayah = page == null ? null : firstAyahs[page];
-      if (ayah != null) entries.putIfAbsent(ayah, () => page!);
+      if (page == null) continue;
+      final ayah = firstAyahs[page];
+      if (ayah != null) entries.putIfAbsent(ayah, () => page);
     }
     return [
       for (final (i, e) in entries.entries.indexed)
         _place(e.key, e.value, now.subtract(Duration(microseconds: i))),
     ];
+  }
+
+  static int? _pageOrNull(
+    int Function(AyahIdentifier) pageOf,
+    AyahIdentifier a,
+  ) {
+    try {
+      return pageOf(a);
+    } catch (_) {
+      return null;
+    }
   }
 
   static Place _place(AyahIdentifier ayah, int page, DateTime at) => Place(

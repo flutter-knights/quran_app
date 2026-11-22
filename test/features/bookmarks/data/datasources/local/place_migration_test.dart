@@ -2,11 +2,15 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:quran_app/core/errors/exceptions.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/features/bookmarks/data/datasources/local/place_migration.dart';
 import 'package:quran_app/features/bookmarks/data/models/place_record_model.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/place.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+
+class _MockBox extends Mock implements Box<PlaceRecordModel> {}
 
 int pageOf(AyahIdentifier a) => quran.getPageNumber(a.surah, a.ayah);
 
@@ -73,9 +77,22 @@ void main() {
       expect(places.length, 1);
     });
 
+    test('an ayah repeated in one list is kept once at its first position', () {
+      final places = plan(ayahKeys: ['2:5', '3:8', '2:5']);
+      expect(places.map((p) => p.ayah), const [
+        AyahIdentifier(surah: 2, ayah: 5),
+        AyahIdentifier(surah: 3, ayah: 8),
+      ]);
+      expect(places[0].createdAt, now);
+      expect(
+        places[1].createdAt,
+        now.subtract(const Duration(microseconds: 1)),
+      );
+    });
+
     test('malformed entries are skipped', () {
       final places = plan(
-        ayahKeys: ['x', 7, '2:', '2:5'],
+        ayahKeys: ['x', 7, '2:', '2:999', '200:1', '2:5'],
         pages: ['12', 'abc'],
         firstAyahs: {12: const AyahIdentifier(surah: 2, ayah: 77)},
       );
@@ -194,6 +211,26 @@ void main() {
         expect(places.length, 2);
       },
     );
+
+    test('a count mismatch throws and leaves the flag unset', () async {
+      await seed();
+      final stub = _MockBox();
+      when(() => stub.values).thenReturn(<PlaceRecordModel>[]);
+      when(() => stub.deleteAll(any())).thenAnswer((_) async {});
+      when(() => stub.putAll(any())).thenAnswer((_) async {});
+      when(() => stub.containsKey(any())).thenReturn(false);
+      final broken = PlaceMigration(
+        places: stub,
+        meta: meta,
+        ayahBookmarks: ayahBookmarks,
+        pageBookmarks: pageBookmarks,
+        firstAyahOfPage: (p) async => {106: a4176}[p],
+        pageOf: pageOf,
+        now: () => now,
+      );
+      await expectLater(broken.run(), throwsA(isA<CacheException>()));
+      expect(meta.get('migratedV1'), isNull);
+    });
 
     test('old boxes are left intact', () async {
       await seed();

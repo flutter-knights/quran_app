@@ -69,6 +69,12 @@ void main() {
     expect((await repo.migrate()).isLeft(), isTrue);
   });
 
+  test('a CacheException on migrate becomes CacheFailure', () async {
+    when(() => migration.run()).thenThrow(CacheException('count'));
+    final result = await repo.migrate();
+    expect(result.fold((f) => f, (_) => null), isA<CacheFailure>());
+  });
+
   test('migrate returns Right(unit) on success', () async {
     when(() => migration.run()).thenAnswer((_) async => 2);
     expect(await repo.migrate(), const Right(unit));
