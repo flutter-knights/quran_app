@@ -23,5 +23,24 @@ void main() {
       expect(contrast(p.onPrimary, p.primary), greaterThanOrEqualTo(4.5));
       expect(contrast(p.onError, p.error), greaterThanOrEqualTo(4.5));
     });
+    test('$p text and outlined buttons read on cards', () {
+      final theme = p.toThemeData();
+      for (final style in [
+        theme.textButtonTheme.style,
+        theme.outlinedButtonTheme.style,
+      ]) {
+        final ink = style?.foregroundColor?.resolve({});
+        expect(ink, isNotNull);
+        expect(contrast(ink!, p.surface), greaterThanOrEqualTo(4.5));
+        expect(contrast(ink, p.bg), greaterThanOrEqualTo(4.5));
+      }
+    });
+    test('$p snack bar action reads on the snack bar', () {
+      final scheme = p.toThemeData().colorScheme;
+      expect(
+        contrast(scheme.inversePrimary, scheme.inverseSurface),
+        greaterThanOrEqualTo(4.5),
+      );
+    });
   }
 }

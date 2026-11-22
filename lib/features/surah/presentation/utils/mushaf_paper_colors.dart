@@ -22,6 +22,17 @@ class MushafPaperColors {
   Color get leaf => Color.alphaBlend(ink.withValues(alpha: 0.06), background);
 }
 
+extension MushafPaperButtonX on MushafPaperColors {
+  ButtonStyle paperButton({bool outlined = false}) => ButtonStyle(
+    foregroundColor: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.disabled)
+          ? ink.withValues(alpha: 0.38)
+          : ink,
+    ),
+    side: outlined ? WidgetStatePropertyAll(BorderSide(color: accent)) : null,
+  );
+}
+
 extension MushafPaperX on MushafPaper {
   bool get isDark =>
       this == MushafPaper.night || this == MushafPaper.slateNight;

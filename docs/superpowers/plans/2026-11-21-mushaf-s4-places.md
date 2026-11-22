@@ -570,3 +570,7 @@ git commit -m "feat(mushaf): S4 ayah leaf, أماكني in the reader; remove th
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+## Accepted trade-off (branch confirm, 2026-11-22)
+
+In page mode the page reaches the screen edge, so the ribbon cluster and tail tabs are only as wide as the text margin (about 37 px on a 360 px page) and cannot widen outward. Widening them inward would cover the text and steal ayah taps, so they keep the margin width with a 56 px (cluster) and 88 px (tail tab) height. The same targets stay reachable from «فاصل» in the ayah leaf and from «أماكني», both 48 px.

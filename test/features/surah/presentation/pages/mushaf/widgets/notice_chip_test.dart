@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_app/config/theme/app_palette.dart';
+import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/notice_chip.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
@@ -9,7 +11,10 @@ Widget _host({
   required VoidCallback onTap,
   String? actionLabel,
   VoidCallback? onAction,
+  MushafPaper paper = MushafPaper.cream,
+  ColorPalette palette = ColorPalette.slateLight,
 }) => MaterialApp(
+  theme: palette.toThemeData(),
   localizationsDelegates: GlobalMaterialLocalizations.delegates,
   supportedLocales: const [Locale('ar'), Locale('en')],
   locale: const Locale('ar'),
@@ -18,7 +23,7 @@ Widget _host({
       child: NoticeChip(
         label: 'العودة إلى صفحة ٥',
         onTap: onTap,
-        colors: MushafPaper.cream.colors,
+        colors: paper.colors,
         actionLabel: actionLabel,
         onAction: onAction,
       ),
@@ -70,4 +75,29 @@ void main() {
     );
     expect(semantics.properties.liveRegion, isTrue);
   });
+
+  for (final palette in ColorPalette.values) {
+    for (final paper in MushafPaper.values) {
+      testWidgets('the action reads in the paper ink: $palette on $paper', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _host(
+            onTap: () {},
+            actionLabel: 'فهمت',
+            onAction: () {},
+            paper: paper,
+            palette: palette,
+          ),
+        );
+        final text = tester.widget<RichText>(
+          find.descendant(
+            of: find.byKey(const ValueKey('notice-action')),
+            matching: find.byType(RichText),
+          ),
+        );
+        expect(text.text.style?.color, paper.colors.ink);
+      });
+    }
+  }
 }

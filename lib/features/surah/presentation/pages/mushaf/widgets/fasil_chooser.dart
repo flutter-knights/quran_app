@@ -114,8 +114,11 @@ class _FasilRow extends StatelessWidget {
       (false, true) => s.fasil_placeNamedHere(name),
       (false, false) => s.fasil_placeHere,
     };
+    final spoken = placed != null
+        ? s.fasil_moveNamedHere(name)
+        : s.fasil_placeNamedHere(name);
     final choice = FasilMoveHere(slot);
-    final child = Text(label, style: TS.bold14);
+    final child = Text(label, style: TS.bold14, semanticsLabel: spoken);
     return Padding(
       key: ValueKey('fasil-row-${slot.name}'),
       padding: const EdgeInsets.symmetric(vertical: 6),

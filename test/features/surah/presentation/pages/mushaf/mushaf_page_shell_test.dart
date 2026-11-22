@@ -463,6 +463,24 @@ void main() {
       expect(fawasil.restores.last, (FasilSlot.wird, previous));
     });
 
+    testWidgets('the فاصل notice leaves by itself', (tester) async {
+      final fawasil = seeded({FasilSlot.wird: _a5});
+      final (mushaf, _) = await pump(tester, fawasil: fawasil);
+      mushaf.push(_state(selected: imran7));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('fasil-move-wird')));
+      await tester.pumpAndSettle();
+      expect(find.byType(SnackBar), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
     testWidgets('a failed فاصل move shows the error and no undo', (
       tester,
     ) async {

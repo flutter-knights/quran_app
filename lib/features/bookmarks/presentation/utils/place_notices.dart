@@ -12,6 +12,9 @@ void showPlaceNotice(
   ..showSnackBar(
     SnackBar(
       content: Text(message, style: TS.regular14),
+      persist:
+          onUndo != null &&
+          MediaQuery.accessibleNavigationOf(messenger.context),
       action: onUndo == null
           ? null
           : SnackBarAction(label: S.current.undo, onPressed: onUndo),

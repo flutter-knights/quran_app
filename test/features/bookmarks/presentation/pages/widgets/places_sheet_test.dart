@@ -334,6 +334,27 @@ void main() {
     expect(saved.restores.last, place);
   });
 
+  testWidgets('the removal notice leaves by itself', (tester) async {
+    final place = savedPlace(_fatiha);
+    await open(tester, savedAyat: SavedAyatState(loaded: true, items: [place]));
+
+    await tester.tap(
+      find.descendant(
+        of: key('places-saved-2:5'),
+        matching: find.byType(IconButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(key('place-remove'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
   testWidgets('a failed removal keeps the row and shows the error notice', (
     tester,
   ) async {

@@ -119,6 +119,7 @@ class _MushafPageViewState extends State<MushafPageView>
                             style: TS.medium14.copyWith(color: paperColors.ink),
                           ),
                           TextButton(
+                            style: paperColors.paperButton(),
                             onPressed: _retry,
                             child: Text(
                               pendingS.mushaf_retry,

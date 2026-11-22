@@ -126,6 +126,18 @@ void main() {
     expect(cubit.removes.last.ayah, ayah);
   });
 
+  testWidgets('the save notice leaves by itself', (tester) async {
+    await tester.pumpWidget(_host(cubit, ayah, calls));
+    await tester.tap(find.byKey(const ValueKey('leaf-save')));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    expect(find.byType(SnackBar), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
   testWidgets('a saved ayah is removed with undo', (tester) async {
     final place = savedPlace(ayah);
     final saved = FakeSavedAyatCubit(

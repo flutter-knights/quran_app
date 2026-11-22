@@ -51,6 +51,7 @@ class NoticeChip extends StatelessWidget {
             if (actionLabel != null)
               TextButton(
                 key: const ValueKey('notice-action'),
+                style: colors.paperButton(),
                 onPressed: onAction,
                 child: Text(actionLabel!, style: TS.semi14),
               ),

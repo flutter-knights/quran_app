@@ -172,6 +172,17 @@ void main() {
     );
   });
 
+  testWidgets('screen readers hear which ribbon each button moves', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await open(tester, selected: const AyahIdentifier(surah: 2, ayah: 5));
+    expect(find.bySemanticsLabel('ضع الورد هنا'), findsOneWidget);
+    expect(find.bySemanticsLabel('ضع المراجعة هنا'), findsOneWidget);
+    expect(find.bySemanticsLabel('نقل الحفظ إلى هنا'), findsOneWidget);
+    handle.dispose();
+  });
+
   testWidgets('a renamed slot shows its name', (tester) async {
     await open(
       tester,
