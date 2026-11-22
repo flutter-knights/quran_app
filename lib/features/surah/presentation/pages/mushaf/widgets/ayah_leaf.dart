@@ -16,8 +16,6 @@ import 'package:quran_app/features/surah/presentation/utils/surah_caption.dart';
 import 'package:quran_app/features/tafsir/presentation/widgets/tafsir_section.dart';
 import 'package:quran_app/generated/l10n.dart';
 
-void _noop() {}
-
 class AyahLeaf extends StatelessWidget {
   const AyahLeaf({
     super.key,
@@ -28,8 +26,8 @@ class AyahLeaf extends StatelessWidget {
     required this.onListenFromSurahStart,
     required this.onListenPage,
     required this.onFasil,
-    this.onExpand = _noop,
-    this.tafsirLead = false,
+    required this.onExpand,
+    required this.tafsirLead,
   });
 
   final AyahIdentifier ayah;

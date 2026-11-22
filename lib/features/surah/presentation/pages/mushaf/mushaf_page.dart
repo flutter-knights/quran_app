@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quran/quran.dart' as quran;
 
 import '../../../../../config/router/now_playing_route.dart';
+import '../../../../../core/constants/leaf_tap_action.dart';
 import '../../../../../core/constants/mushaf_reading_mode.dart';
 import '../../../../../core/di/dependency_injection.dart';
 import '../../../../../core/helper functions/locale_helpers.dart';
@@ -25,6 +27,8 @@ import '../../../../quran_playback/presentation/cubit/playback/playback_cubit.da
 import '../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
 import '../../../../quran_playback/presentation/cubit/surah_download/surah_download_cubit.dart';
 import '../../../../settings/presentation/cubit/settings_cubit.dart';
+import '../../../../tafsir/presentation/cubit/tafsir_cubit.dart';
+import '../../../domain/entities/ayah_bound_entity.dart';
 import '../../../domain/entities/last_read.dart';
 import '../../cubit/last_read/last_read_cubit.dart';
 import '../../cubit/mushaf/mushaf_cubit.dart';
@@ -37,6 +41,7 @@ import '../../utils/reader_rules.dart';
 import 'last_read_saver.dart';
 import 'page_turn_tracker.dart';
 import 'widgets/ayah_leaf.dart';
+import 'widgets/ayah_study_leaf.dart';
 import 'widgets/display_sheet.dart';
 import 'widgets/fasil_chooser.dart';
 import 'widgets/menu_sheet.dart';
@@ -72,6 +77,8 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   late final PlaybackCubit _playbackCubit;
   late final LastReadCubit _lastReadCubit;
   late final SettingsCubit _settingsCubit;
+  late final TafsirCubit _tafsirCubit;
+  final _studying = ValueNotifier(false);
   final _overlayHeight = ValueNotifier(0.0);
   final _chipHeight = ValueNotifier(0.0);
   AyahIdentifier? _slidFor;
@@ -107,6 +114,9 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _playbackCubit = context.read<PlaybackCubit>();
     _lastReadCubit = context.read<LastReadCubit>();
     _settingsCubit = context.read<SettingsCubit>();
+    _tafsirCubit = context.read<TafsirCubit>();
+    final initial = _mushafCubit.state.selectedAyah;
+    if (initial != null) _tafsirCubit.load(initial);
     if (_settingsCubit.state.settingsModel.keepScreenOn) {
       widget.screenWake.hold(this, on: true);
     }
@@ -210,6 +220,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _pageSub?.cancel();
     _resumeSub.cancel();
     _playbackSub.cancel();
+    _studying.dispose();
     _overlayHeight.dispose();
     _chipHeight.dispose();
     widget.screenWake.hold(this, on: false);
@@ -500,10 +511,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     );
   }
 
-  void _jumpInPlace(int page, {AyahIdentifier? focus}) {
-    _lastReadSaver.rearm();
-    final turn = _turns.begin(page);
-    _mushafCubit.jumpTo(page, focus: focus);
+  void _moveViewTo(int page) {
     if (_effectiveMode(context) == MushafReadingMode.page) {
       if (_pageController.hasClients) _pageController.jumpToPage(page - 1);
     } else {
@@ -511,6 +519,41 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
         _scrollController.jumpTo(_scrollOffsetFor(page));
       }
     }
+  }
+
+  void _jumpInPlace(int page, {AyahIdentifier? focus}) {
+    _lastReadSaver.rearm();
+    final turn = _turns.begin(page);
+    _mushafCubit.jumpTo(page, focus: focus);
+    _moveViewTo(page);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _turns.end(turn));
+  }
+
+  void _closeLeaf() {
+    if (_studying.value) {
+      _studying.value = false;
+    } else {
+      _mushafCubit.clearSelection();
+    }
+  }
+
+  void _stepAyah(int delta) {
+    final selected = _mushafCubit.state.selectedAyah;
+    if (selected == null) return;
+    final target = adjacentAyah(selected, delta);
+    if (target == null) return;
+    final page = sl<QuranPageService>().getPageForAyah(
+      target.surah,
+      target.ayah,
+    );
+    if (page == _mushafCubit.state.currentPage) {
+      _mushafCubit.stepTo(target, page: page);
+      return;
+    }
+    _lastReadSaver.onManualTurn();
+    final turn = _turns.begin(page);
+    _mushafCubit.stepTo(target, page: page);
+    _moveViewTo(page);
     WidgetsBinding.instance.addPostFrameCallback((_) => _turns.end(turn));
   }
 
@@ -530,7 +573,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     final colors = paper.colors;
 
     return _LeafPopScope(
-      onClose: _mushafCubit.clearSelection,
+      onClose: _closeLeaf,
       child: MultiBlocListener(
         listeners: [
           BlocListener<MushafCubit, MushafState>(
@@ -543,6 +586,18 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
             listenWhen: (a, b) =>
                 a.selectedAyah == null && b.selectedAyah != null,
             listener: (_, _) => _settingsCubit.markHintSeen(),
+          ),
+          BlocListener<MushafCubit, MushafState>(
+            listenWhen: (a, b) => a.selectedAyah != b.selectedAyah,
+            listener: (_, state) {
+              final selected = state.selectedAyah;
+              if (selected == null) {
+                _studying.value = false;
+                _tafsirCubit.cancel();
+              } else {
+                _tafsirCubit.load(selected);
+              }
+            },
           ),
           BlocListener<MushafCubit, MushafState>(
             listenWhen: (a, b) {
@@ -631,9 +686,19 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                                       _onListenFromSurahStart,
                                   onListenPage: _onPlayPage,
                                   onFasil: () => _openFawasil(null),
+                                  studying: _studying,
+                                  onExpand: () => _studying.value = true,
                                 ),
                               ],
                             ),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: _StudyLayer(
+                            studying: _studying,
+                            colors: colors,
+                            onBack: () => _studying.value = false,
+                            onStep: _stepAyah,
                           ),
                         ),
                       ],
@@ -641,10 +706,15 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                   ),
                 ),
                 if (effectiveMode == MushafReadingMode.scroll)
-                  _NoticeSlot(
-                    colors: colors,
-                    onReturn: _jumpInPlace,
-                    onDownload: _downloadPlaying,
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _studying,
+                    builder: (context, studying, _) => studying
+                        ? const SizedBox.shrink()
+                        : _NoticeSlot(
+                            colors: colors,
+                            onReturn: _jumpInPlace,
+                            onDownload: _downloadPlaying,
+                          ),
                   ),
                 BlocBuilder<MushafCubit, MushafState>(
                   buildWhen: (a, b) =>
@@ -949,9 +1019,13 @@ class _LeafSlot extends StatelessWidget {
     required this.onListenPage,
     required this.onNewPlay,
     required this.onFasil,
+    required this.studying,
+    required this.onExpand,
   });
 
   final MushafPaperColors colors;
+  final ValueListenable<bool> studying;
+  final VoidCallback onExpand;
   final VoidCallback onListenFromHere;
   final void Function(AyahIdentifier ayah) onListenFromSurahStart;
   final VoidCallback onListenPage;
@@ -961,6 +1035,9 @@ class _LeafSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mushaf = context.read<MushafCubit>();
+    final lead =
+        context.select((SettingsCubit c) => c.state.settingsModel.tapAction) ==
+        LeafTapAction.meaning;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       child: BlocSelector<MushafCubit, MushafState, AyahIdentifier?>(
@@ -971,16 +1048,24 @@ class _LeafSlot extends StatelessWidget {
               builder: (context, active) => AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: selected != null
-                    ? AyahLeaf(
+                    ? ValueListenableBuilder<bool>(
                         key: ValueKey(selected),
-                        ayah: selected,
-                        colors: colors,
-                        onClose: mushaf.clearSelection,
-                        onListenFromHere: onListenFromHere,
-                        onListenFromSurahStart: () =>
-                            onListenFromSurahStart(selected),
-                        onListenPage: onListenPage,
-                        onFasil: onFasil,
+                        valueListenable: studying,
+                        builder: (context, studying, _) => ExcludeSemantics(
+                          excluding: studying,
+                          child: AyahLeaf(
+                            ayah: selected,
+                            colors: colors,
+                            onClose: mushaf.clearSelection,
+                            onListenFromHere: onListenFromHere,
+                            onListenFromSurahStart: () =>
+                                onListenFromSurahStart(selected),
+                            onListenPage: onListenPage,
+                            onFasil: onFasil,
+                            onExpand: onExpand,
+                            tafsirLead: lead,
+                          ),
+                        ),
                       )
                     : active
                     ? _PlayerSlot(
@@ -994,6 +1079,81 @@ class _LeafSlot extends StatelessWidget {
       ),
     );
   }
+}
+
+class _StudyLayer extends StatefulWidget {
+  const _StudyLayer({
+    required this.studying,
+    required this.colors,
+    required this.onBack,
+    required this.onStep,
+  });
+
+  final ValueListenable<bool> studying;
+  final MushafPaperColors colors;
+  final VoidCallback onBack;
+  final void Function(int delta) onStep;
+
+  @override
+  State<_StudyLayer> createState() => _StudyLayerState();
+}
+
+class _StudyLayerState extends State<_StudyLayer> {
+  int? _boundsPage;
+  Future<List<AyahBoundEntity>>? _bounds;
+
+  Widget _leaf(BuildContext context, MushafState state, AyahIdentifier ayah) {
+    final page = sl<QuranPageService>().getPageForAyah(ayah.surah, ayah.ayah);
+    if (page != _boundsPage) {
+      _boundsPage = page;
+      _bounds = context.read<MushafCubit>().boundsFor(page);
+    }
+    final previous = adjacentAyah(ayah, -1);
+    final next = adjacentAyah(ayah, 1);
+    return FutureBuilder(
+      key: ValueKey(page),
+      future: _bounds,
+      initialData: page == state.currentPage && state.pageAyahs.isNotEmpty
+          ? state.pageAyahs
+          : null,
+      builder: (context, snapshot) => AyahStudyLeaf(
+        key: const ValueKey('study-leaf'),
+        ayah: ayah,
+        page: page,
+        lines:
+            snapshot.data?.where((b) => b.ayah == ayah).firstOrNull?.lines ??
+            const [],
+        colors: widget.colors,
+        onBack: widget.onBack,
+        onPrevious: previous == null ? null : () => widget.onStep(-1),
+        onNext: next == null ? null : () => widget.onStep(1),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+    valueListenable: widget.studying,
+    builder: (context, studying, _) => BlocBuilder<MushafCubit, MushafState>(
+      buildWhen: (a, b) =>
+          a.selectedAyah != b.selectedAyah ||
+          a.currentPage != b.currentPage ||
+          a.pageAyahs != b.pageAyahs,
+      builder: (context, state) {
+        final ayah = state.selectedAyah;
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: studying && ayah != null && ayah.ayah != 0
+              ? GestureDetector(
+                  key: const ValueKey('study'),
+                  behavior: HitTestBehavior.opaque,
+                  child: _leaf(context, state, ayah),
+                )
+              : const SizedBox.shrink(key: ValueKey('no-study')),
+        );
+      },
+    ),
+  );
 }
 
 class _PlayerSlot extends StatelessWidget {
