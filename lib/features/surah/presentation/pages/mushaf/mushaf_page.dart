@@ -67,6 +67,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   late final LastReadCubit _lastReadCubit;
   late final SettingsCubit _settingsCubit;
   final _overlayHeight = ValueNotifier(0.0);
+  final _chipHeight = ValueNotifier(0.0);
   AyahIdentifier? _slidFor;
 
   late final LastReadSaver _lastReadSaver;
@@ -101,7 +102,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _lastReadCubit = context.read<LastReadCubit>();
     _settingsCubit = context.read<SettingsCubit>();
     if (_settingsCubit.state.settingsModel.keepScreenOn) {
-      widget.screenWake.set(true);
+      widget.screenWake.hold(this, on: true);
     }
     if (widget.args.focusAyah != null) _settingsCubit.markHintSeen();
     _resumeSub = nowPlayingResume.stream.listen(
@@ -199,7 +200,8 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _resumeSub.cancel();
     _playbackSub.cancel();
     _overlayHeight.dispose();
-    widget.screenWake.set(false);
+    _chipHeight.dispose();
+    widget.screenWake.hold(this, on: false);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -359,11 +361,6 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
         _jumpInPlace(page);
       case MenuOpenPlaces():
         await context.push(AppRouter.bookmarksPath);
-        if (mounted) {
-          widget.screenWake.set(
-            _settingsCubit.state.settingsModel.keepScreenOn,
-          );
-        }
       case MenuOpenDisplay():
         DisplaySheet.show(context);
       case MenuPlayPage():
@@ -495,8 +492,10 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
           BlocListener<SettingsCubit, SettingsState>(
             listenWhen: (a, b) =>
                 a.settingsModel.keepScreenOn != b.settingsModel.keepScreenOn,
-            listener: (_, state) =>
-                widget.screenWake.set(state.settingsModel.keepScreenOn),
+            listener: (_, state) => widget.screenWake.hold(
+              this,
+              on: state.settingsModel.keepScreenOn,
+            ),
           ),
         ],
         child: Scaffold(
@@ -545,11 +544,16 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                _NoticeSlot(
-                                  colors: colors,
-                                  onReturn: _jumpInPlace,
-                                  onDownload: _downloadPlaying,
-                                ),
+                                if (effectiveMode == MushafReadingMode.page)
+                                  _MeasuredSize(
+                                    onChange: (size) =>
+                                        _chipHeight.value = size.height,
+                                    child: _NoticeSlot(
+                                      colors: colors,
+                                      onReturn: _jumpInPlace,
+                                      onDownload: _downloadPlaying,
+                                    ),
+                                  ),
                                 _LeafSlot(
                                   colors: colors,
                                   onListenFromHere: _onListen,
@@ -566,6 +570,12 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                     ),
                   ),
                 ),
+                if (effectiveMode == MushafReadingMode.scroll)
+                  _NoticeSlot(
+                    colors: colors,
+                    onReturn: _jumpInPlace,
+                    onDownload: _downloadPlaying,
+                  ),
                 BlocBuilder<MushafCubit, MushafState>(
                   buildWhen: (a, b) =>
                       a.currentPage != b.currentPage ||
@@ -663,6 +673,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     return _PageSlide(
       area: area,
       overlayHeight: _overlayHeight,
+      chipHeight: _chipHeight,
       child: Directionality(
         textDirection: TextDirection.rtl,
         child: PageView.builder(
@@ -713,35 +724,42 @@ class _PageSlide extends StatelessWidget {
   const _PageSlide({
     required this.area,
     required this.overlayHeight,
+    required this.chipHeight,
     required this.child,
   });
 
   final Size area;
   final ValueNotifier<double> overlayHeight;
+  final ValueNotifier<double> chipHeight;
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder(
-    valueListenable: overlayHeight,
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: Listenable.merge([overlayHeight, chipHeight]),
     child: child,
-    builder: (context, overlay, child) =>
+    builder: (context, child) =>
         BlocSelector<MushafCubit, MushafState, (double?, double?)>(
           selector: (s) => (
             lineBottomOf(s.pageAyahs, s.selectedAyah ?? s.playingAyah),
             pageBottomOf(s.pageAyahs),
           ),
           builder: (context, bottoms) {
-            final lineBottom = bottoms.$1 ?? bottoms.$2;
+            final (ayahBottom, pageBottom) = bottoms;
+            final end = ayahBottom != null
+                ? leafSlide(
+                    area: area,
+                    lineBottom: ayahBottom,
+                    overlay: overlayHeight.value,
+                  )
+                : pageBottom != null
+                ? leafSlide(
+                    area: area,
+                    lineBottom: pageBottom,
+                    overlay: chipHeight.value,
+                  )
+                : 0.0;
             return TweenAnimationBuilder<double>(
-              tween: Tween(
-                end: lineBottom == null
-                    ? 0
-                    : leafSlide(
-                        area: area,
-                        lineBottom: lineBottom,
-                        overlay: overlay,
-                      ),
-              ),
+              tween: Tween(end: end),
               duration: const Duration(milliseconds: 200),
               child: child,
               builder: (context, slide, child) => Transform.translate(

@@ -672,6 +672,20 @@ void main() {
     expect(box.top + box.height * 0.95, lessThanOrEqualTo(leaf.top + 0.5));
   });
 
+  testWidgets('listening away never slides the page for the player leaf', (
+    tester,
+  ) async {
+    const away = AyahIdentifier(surah: 3, ayah: 12);
+    await pump(
+      tester,
+      state: _state(follow: false, playingAyah: away, ayahs: fullPage),
+      playback: const PlaybackState(currentAyah: away, isPlaying: true),
+    );
+
+    expect(find.byType(PlayerLeaf), findsOneWidget);
+    expect(slideOf(tester), 0);
+  });
+
   testWidgets('a jump arrival with focusAyah marks the tap hint seen', (
     tester,
   ) async {
@@ -737,6 +751,24 @@ void main() {
         .pixels;
 
     setUp(() => setUpMushafHarness(pageService: QuranPageServiceImpl()));
+
+    testWidgets('the return chip sits below the scrolling pages', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        state: _state(page: 3, ayahs: bounds()),
+        args: const MushafArgs(page: 3),
+        settings: FakeSettings(mode: MushafReadingMode.scroll),
+      );
+      await jumpFromMenu(tester, '120');
+
+      final chip = tester.getRect(find.byKey(const ValueKey('notice-chip')));
+      expect(
+        chip.top,
+        greaterThanOrEqualTo(tester.getRect(find.byType(ListView)).bottom),
+      );
+    });
 
     testWidgets('an ayah under the leaf scrolls by the need, one above it '
         'does not', (tester) async {
@@ -878,27 +910,6 @@ void main() {
     );
 
     expect(h.wake.calls.where((on) => on), isEmpty);
-  });
-
-  testWidgets('keep-awake is restored after the places page pops', (
-    tester,
-  ) async {
-    final (_, h) = await pump(tester, pushed: true);
-    expect(h.wake.calls, [true]);
-
-    await tester.tap(find.byKey(const ValueKey('foot-menu')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('menu-tile-places')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pumpAndSettle();
-    expect(find.text('bookmarks-stub'), findsOneWidget);
-
-    h.wake.calls.add(false);
-    tester.state<NavigatorState>(find.byType(Navigator)).pop();
-    await tester.pumpAndSettle();
-
-    expect(h.wake.calls, [true, false, true]);
   });
 
   testWidgets('switching keep-awake off while open releases the screen', (
