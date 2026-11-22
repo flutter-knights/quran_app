@@ -20,7 +20,7 @@ class KhatamMedallion extends StatelessWidget {
     )..layout();
     final extent = math.max(painter.width, painter.height);
     painter.dispose();
-    final side = (extent + 20).clamp(36.0, 56.0);
+    final side = (extent + 20).clamp(36.0, 44.0);
     return SizedBox.square(
       dimension: side,
       child: Stack(

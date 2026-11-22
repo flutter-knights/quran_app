@@ -34,10 +34,10 @@ class RunningHead extends StatelessWidget {
     return Material(
       color: colors.background,
       child: SizedBox(
-        height: 64,
-        child: Column(
+        height: 48,
+        child: Stack(
           children: [
-            Expanded(
+            Positioned.fill(
               child: Row(
                 children: [
                   Expanded(
@@ -109,10 +109,15 @@ class RunningHead extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
+            PositionedDirectional(
+              start: 0,
+              end: 0,
+              bottom: 0,
               height: 4,
-              decoration: BoxDecoration(
-                border: Border(top: hairline, bottom: hairline),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border(top: hairline, bottom: hairline),
+                ),
               ),
             ),
           ],

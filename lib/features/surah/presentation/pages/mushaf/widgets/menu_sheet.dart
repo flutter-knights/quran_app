@@ -104,7 +104,6 @@ class _MenuSheetState extends State<MenuSheet> {
       key: _searchKey,
       child: TextField(
         key: const ValueKey('menu-search'),
-        keyboardType: TextInputType.text,
         textInputAction: TextInputAction.go,
         decoration: InputDecoration(hintText: pending.menu_searchHint),
         onSubmitted: (_) {
@@ -250,7 +249,8 @@ class _MenuSheetState extends State<MenuSheet> {
     key: ValueKey('menu-juz-${entry.number}'),
     number: entry.number,
     title: S.of(context).juz_label(entry.number.toLocalized(context)),
-    caption: '${entry.firstSurahArabicName} – ${entry.lastSurahArabicName}',
+    caption:
+        '${surahDisplayName(context, entry.firstSurah)} – ${surahDisplayName(context, entry.lastSurah)}',
     page: entry.firstPage,
     here: entry.number == widget.currentJuz,
     onTap: () => _pop(MenuJump(entry.firstPage)),

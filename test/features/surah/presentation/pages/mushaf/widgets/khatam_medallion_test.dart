@@ -30,12 +30,12 @@ void main() {
   });
 
   for (final scale in [1.0, 2.0]) {
-    testWidgets('stays within 56 px at ${scale}x text', (tester) async {
+    testWidgets('stays within 44 px at ${scale}x text', (tester) async {
       await tester.pumpWidget(_host(scale: scale));
       expect(tester.takeException(), isNull);
       final size = tester.getSize(find.byType(KhatamMedallion));
-      expect(size.width, lessThanOrEqualTo(56));
-      expect(size.height, lessThanOrEqualTo(56));
+      expect(size.width, lessThanOrEqualTo(44));
+      expect(size.height, lessThanOrEqualTo(44));
     });
   }
 

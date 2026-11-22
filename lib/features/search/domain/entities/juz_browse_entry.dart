@@ -3,16 +3,15 @@ import 'package:equatable/equatable.dart';
 class JuzBrowseEntry extends Equatable {
   final int number; // 1..30
   final int firstPage;
-  final String firstSurahArabicName;
-  final String lastSurahArabicName;
+  final int firstSurah;
+  final int lastSurah;
   const JuzBrowseEntry({
     required this.number,
     required this.firstPage,
-    required this.firstSurahArabicName,
-    required this.lastSurahArabicName,
+    required this.firstSurah,
+    required this.lastSurah,
   });
 
   @override
-  List<Object?> get props =>
-      [number, firstPage, firstSurahArabicName, lastSurahArabicName];
+  List<Object?> get props => [number, firstPage, firstSurah, lastSurah];
 }

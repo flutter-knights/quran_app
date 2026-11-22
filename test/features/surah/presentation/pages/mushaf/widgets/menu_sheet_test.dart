@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -48,6 +49,7 @@ void main() {
     bool viaShow = false,
     Size size = const Size(400, 800),
     double keyboard = 0,
+    String locale = 'ar',
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -64,7 +66,7 @@ void main() {
           BlocProvider<SurahDownloadCubit>.value(value: downloads),
         ],
         child: MaterialApp(
-          locale: const Locale('ar'),
+          locale: Locale(locale),
           localizationsDelegates: const [
             S.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -182,6 +184,21 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('menu-surah-18')));
     await tester.pumpAndSettle();
     expect(result, const MenuJump(293));
+  });
+
+  testWidgets('juz rows name their surahs in the app language', (tester) async {
+    await open(tester, locale: 'en', currentJuz: 1);
+    await tester.tap(find.text('Juzʼ'));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('menu-juz-1')),
+        matching: find.textContaining(
+          '${quran.getSurahName(1)} – ${quran.getSurahName(2)}',
+        ),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the juz tab marks the current juz', (tester) async {

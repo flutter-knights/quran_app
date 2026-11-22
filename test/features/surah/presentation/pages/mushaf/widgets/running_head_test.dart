@@ -98,9 +98,9 @@ void main() {
   }
 
   for (final scale in [1.0, 1.3, 2.0]) {
-    testWidgets('is 64 px tall at ${scale}x text', (tester) async {
+    testWidgets('is 48 px tall at ${scale}x text', (tester) async {
       await tester.pumpWidget(_host(scale: scale));
-      expect(tester.getSize(find.byType(RunningHead)).height, 64);
+      expect(tester.getSize(find.byType(RunningHead)).height, 48);
       expect(tester.takeException(), isNull);
     });
   }

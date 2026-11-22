@@ -70,7 +70,7 @@ class _JuzTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${entry.firstSurahArabicName} – ${entry.lastSurahArabicName}',
+                    '${surahDisplayName(context, entry.firstSurah)} – ${surahDisplayName(context, entry.lastSurah)}',
                     style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
                   ),
                 ],
