@@ -29,24 +29,27 @@ Future<void> _pump(
   WidgetTester tester,
   _FakePlayback playback,
   String locale,
-) => tester.pumpWidget(
-  MaterialApp(
-    locale: Locale(locale),
-    localizationsDelegates: const [
-      S.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-    ],
-    supportedLocales: S.delegate.supportedLocales,
-    home: Scaffold(
-      body: BlocProvider<PlaybackCubit>.value(
-        value: playback,
-        child: const PlaybackOptionsSheet(),
+) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      locale: Locale(locale),
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
+      home: Scaffold(
+        body: BlocProvider<PlaybackCubit>.value(
+          value: playback,
+          child: const PlaybackOptionsSheet(),
+        ),
       ),
     ),
-  ),
-);
+  );
+  await tester.pumpAndSettle();
+}
 
 void main() {
   testWidgets('speed labels read in Arabic-Indic digits in Arabic', (
@@ -70,6 +73,8 @@ void main() {
     await _pump(tester, playback, 'ar');
     await tester.ensureVisible(find.text('١٫٢٥×'));
     await tester.tap(find.text('١٫٢٥×'));
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pumpAndSettle();
     expect(playback.speed, 1.25);
   });
 
@@ -77,6 +82,8 @@ void main() {
     final playback = _FakePlayback();
     await _pump(tester, playback, 'ar');
     await tester.tap(find.text(Reciter.husary.arabicName));
+    await tester.pump(const Duration(milliseconds: 200));
+    await tester.pumpAndSettle();
     expect(playback.reciter, Reciter.husary);
   });
 
@@ -88,7 +95,7 @@ void main() {
 
   testWidgets('every chip is at least 48 high', (tester) async {
     await _pump(tester, _FakePlayback(), 'ar');
-    final chips = find.byType(OptionChip);
+    final chips = find.byKey(const ValueKey('option-chip'));
     expect(chips, findsWidgets);
     for (final chip in chips.evaluate()) {
       expect(

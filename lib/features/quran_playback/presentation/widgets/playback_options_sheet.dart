@@ -4,6 +4,7 @@ import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
+import 'package:quran_app/core/widgets/prettier_tap.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
@@ -12,7 +13,7 @@ import 'package:quran_app/generated/l10n.dart';
 
 const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
-String speedLabel(BuildContext context, double speed) {
+String _speedLabel(BuildContext context, double speed) {
   final raw = speed == speed.truncateToDouble()
       ? speed.toInt().toString()
       : speed.toString();
@@ -51,9 +52,9 @@ class PlaybackOptionsSheet extends StatelessWidget {
           children: [
             Text(PendingS.of(context).player_optionsTitle, style: TS.bold16),
             Text(s.reciter_label, style: TS.medium14),
-            const ReciterGrid(),
+            const _ReciterGrid(),
             Text(s.playback_speed, style: TS.medium14),
-            const SpeedGrid(),
+            const _SpeedGrid(),
             PlaybackRepeatOptions(onNewPlay: onNewPlay),
           ],
         ),
@@ -62,8 +63,8 @@ class PlaybackOptionsSheet extends StatelessWidget {
   }
 }
 
-class ReciterGrid extends StatelessWidget {
-  const ReciterGrid({super.key});
+class _ReciterGrid extends StatelessWidget {
+  const _ReciterGrid();
 
   @override
   Widget build(BuildContext context) =>
@@ -74,7 +75,7 @@ class ReciterGrid extends StatelessWidget {
           runSpacing: 8,
           children: [
             for (final r in Reciter.values)
-              OptionChip(
+              _OptionChip(
                 label: r.arabicName,
                 selected: state.reciter == r,
                 onTap: () => context.read<PlaybackCubit>().setReciter(r),
@@ -84,8 +85,8 @@ class ReciterGrid extends StatelessWidget {
       );
 }
 
-class SpeedGrid extends StatelessWidget {
-  const SpeedGrid({super.key});
+class _SpeedGrid extends StatelessWidget {
+  const _SpeedGrid();
 
   @override
   Widget build(BuildContext context) =>
@@ -96,8 +97,8 @@ class SpeedGrid extends StatelessWidget {
           runSpacing: 8,
           children: [
             for (final speed in _speeds)
-              OptionChip(
-                label: speedLabel(context, speed),
+              _OptionChip(
+                label: _speedLabel(context, speed),
                 selected: state.speed == speed,
                 onTap: () => context.read<PlaybackCubit>().setSpeed(speed),
               ),
@@ -106,9 +107,8 @@ class SpeedGrid extends StatelessWidget {
       );
 }
 
-class OptionChip extends StatelessWidget {
-  const OptionChip({
-    super.key,
+class _OptionChip extends StatelessWidget {
+  const _OptionChip({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -127,9 +127,10 @@ class OptionChip extends StatelessWidget {
       excludeSemantics: true,
       label: label,
       onTap: onTap,
-      child: GestureDetector(
+      child: PrettierTap(
         onTap: onTap,
         child: AnimatedContainer(
+          key: const ValueKey('option-chip'),
           duration: const Duration(milliseconds: 180),
           constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
           alignment: Alignment.center,
