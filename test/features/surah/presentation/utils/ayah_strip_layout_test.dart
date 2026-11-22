@@ -25,6 +25,34 @@ void main() {
     expect(layout.slices[1].dst.width, closeTo(160, 1e-9));
   });
 
+  test('a short line keeps the full-line scale at the right edge', () {
+    const short = NormalizedRect(x: .5, y: .2, w: .09, h: .05);
+    final layout = ayahStripLayout(lines: [short], image: image, width: 320);
+    final dst = layout.slices.single.dst;
+    expect(dst.width, closeTo(.09 * 320 / ayahStripFullLine, 1e-9));
+    expect(dst.right, closeTo(320, 1e-9));
+    expect(layout.height, closeTo(aHeight, 1e-9));
+  });
+
+  test('a line wider than a full line still spans the strip', () {
+    const wide = NormalizedRect(x: .05, y: .2, w: .85, h: .05);
+    final layout = ayahStripLayout(lines: [wide], image: image, width: 320);
+    expect(layout.slices.single.dst.width, closeTo(320, 1e-9));
+  });
+
+  test('a zero-width line, or a width that is not finite, draws nothing', () {
+    const empty = NormalizedRect(x: .5, y: .2, w: 0, h: .05);
+    expect(
+      ayahStripLayout(lines: [empty], image: image, width: 320).slices,
+      isEmpty,
+    );
+    for (final width in [0.0, -1.0, double.infinity]) {
+      final layout = ayahStripLayout(lines: [a], image: image, width: width);
+      expect(layout.slices, isEmpty);
+      expect(layout.height, 0);
+    }
+  });
+
   test('lines stack top to bottom', () {
     final layout = ayahStripLayout(lines: [a, b], image: image, width: 320);
     expect(layout.slices[1].dst.top, layout.slices[0].dst.bottom);
@@ -63,7 +91,7 @@ void main() {
   test(
     'the cache width follows the strip width and never passes the page width',
     () {
-      expect(ayahStripCacheWidth(320, 3), 960);
+      expect(ayahStripCacheWidth(320, 3), 1200);
       expect(ayahStripCacheWidth(600, 3), 1536);
     },
   );

@@ -31,14 +31,27 @@ class _AyahStripState extends State<AyahStrip> {
   ImageStream? _stream;
   late final ImageStreamListener _listener = ImageStreamListener(
     _onImage,
-    onError: (_, _) {},
+    onError: _onError,
   );
   (double, double)? _resolvedKey;
+  bool _failed = false;
 
   void _onImage(ImageInfo info, bool synchronousCall) {
     _info?.dispose();
     _info = info;
     if (mounted) setState(() {});
+  }
+
+  void _onError(Object error, StackTrace? stack) {
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: error,
+        stack: stack,
+        library: 'ayah strip',
+        context: ErrorDescription('while decoding page ${widget.page}'),
+      ),
+    );
+    if (mounted) setState(() => _failed = true);
   }
 
   void _release() {
@@ -47,11 +60,14 @@ class _AyahStripState extends State<AyahStrip> {
     _info?.dispose();
     _info = null;
     _resolvedKey = null;
+    _failed = false;
   }
 
-  void _resolve(double width, double dpr) {
-    if (!mounted || _resolvedKey != (width, dpr)) return;
+  void _sync(double width, double dpr) {
+    if (!mounted || _resolvedKey == (width, dpr)) return;
     _stream?.removeListener(_listener);
+    _resolvedKey = (width, dpr);
+    _failed = false;
     final cacheWidth = ayahStripCacheWidth(width, dpr);
     final provider =
         widget.imageFor?.call(cacheWidth) ??
@@ -83,21 +99,19 @@ class _AyahStripState extends State<AyahStrip> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+        if (!width.isFinite || width <= 0) return const SizedBox.shrink();
+        if (_resolvedKey != (width, dpr)) {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _sync(width, dpr),
+          );
+        }
+        if (_failed) return const SizedBox.shrink();
         final layout = ayahStripLayout(
           lines: widget.lines,
           image: mushafPageSize,
           width: width,
         );
-        if (_resolvedKey != (width, dpr)) {
-          _release();
-          _resolvedKey = (width, dpr);
-          WidgetsBinding.instance.addPostFrameCallback(
-            (_) => _resolve(width, dpr),
-          );
-        }
-        return Semantics(
-          image: true,
-          excludeSemantics: true,
+        return ExcludeSemantics(
           child: SizedBox(
             width: width,
             height: layout.height,

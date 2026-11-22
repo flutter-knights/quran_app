@@ -9,7 +9,7 @@ import '../../domain/entities/ayah_bound_entity.dart';
 import '../../domain/entities/normalized_rect.dart';
 
 const mushafPageSize = Size(1536, 2795);
-final mushafPageAspect = mushafPageSize.aspectRatio;
+const mushafPageAspect = 1536 / 2795;
 
 ({AyahIdentifier start, AyahIdentifier end})? listenRange({
   AyahIdentifier? selected,

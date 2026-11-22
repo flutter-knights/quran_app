@@ -5,6 +5,7 @@ import 'package:quran_app/features/surah/domain/entities/normalized_rect.dart';
 import 'package:quran_app/features/surah/presentation/utils/reader_rules.dart';
 
 const ayahStripMaxLines = 3;
+const ayahStripFullLine = .8;
 
 ({List<({Rect src, Rect dst})> slices, double height}) ayahStripLayout({
   required List<NormalizedRect> lines,
@@ -12,9 +13,12 @@ const ayahStripMaxLines = 3;
   required double width,
 }) {
   final taken = lines.take(ayahStripMaxLines).toList();
-  if (taken.isEmpty) return (slices: const [], height: 0);
+  if (taken.isEmpty || !width.isFinite || width <= 0) {
+    return (slices: const [], height: 0);
+  }
   final widest = taken.map((l) => l.w).reduce(math.max);
-  final scale = width / (widest * image.width);
+  if (widest <= 0) return (slices: const [], height: 0);
+  final scale = width / (math.max(widest, ayahStripFullLine) * image.width);
   final slices = <({Rect src, Rect dst})>[];
   var top = 0.0;
   for (final l in taken) {
@@ -29,5 +33,7 @@ const ayahStripMaxLines = 3;
   return (slices: slices, height: top);
 }
 
-int ayahStripCacheWidth(double width, double devicePixelRatio) =>
-    math.min(mushafPageSize.width.toInt(), (width * devicePixelRatio).ceil());
+int ayahStripCacheWidth(double width, double devicePixelRatio) => math.min(
+  mushafPageSize.width.toInt(),
+  (width * devicePixelRatio / ayahStripFullLine).ceil(),
+);

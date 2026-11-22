@@ -1,6 +1,6 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
@@ -30,6 +30,33 @@ Widget _host(Widget child) => MaterialApp(
     ),
   ),
 );
+
+class _RecordingCanvas implements Canvas {
+  final rects = <(Rect, Color)>[];
+  final images = <(ui.Image, Rect, Rect, Paint)>[];
+
+  @override
+  void drawRect(Rect rect, Paint paint) => rects.add((rect, paint.color));
+
+  @override
+  void drawImageRect(ui.Image image, Rect src, Rect dst, Paint paint) =>
+      images.add((image, src, dst, paint));
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
+}
+
+class _FailingImage extends ImageProvider<_FailingImage> {
+  @override
+  Future<_FailingImage> obtainKey(ImageConfiguration configuration) =>
+      SynchronousFuture(this);
+
+  @override
+  ImageStreamCompleter loadImage(
+    _FailingImage key,
+    ImageDecoderCallback decode,
+  ) => OneFrameImageStreamCompleter(Future.error(StateError('no page')));
+}
 
 void main() {
   final colors = MushafPaper.cream.colors;
@@ -76,7 +103,7 @@ void main() {
         ),
       ),
     );
-    expect(requested.first, 960);
+    expect(requested.first, 1200);
   });
 
   testWidgets('an ayah with no lines draws nothing', (tester) async {
@@ -177,7 +204,7 @@ void main() {
     tester.view.devicePixelRatio = 3;
     await tester.pumpWidget(host);
     await tester.pump();
-    expect(requested, [640, 960]);
+    expect(requested, [800, 1200]);
   });
 
   testWidgets('removing the strip before the image decodes throws nothing', (
@@ -200,5 +227,125 @@ void main() {
     );
     await tester.pump();
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the painter crops the scaled source and tints it with ink', (
+    tester,
+  ) async {
+    final image = (await tester.runAsync(
+      () => createTestImage(width: 64, height: 116),
+    ))!;
+    const src = Rect.fromLTWH(150, 560, 1200, 140);
+    const dst = Rect.fromLTWH(0, 10, 320, 36);
+    final canvas = _RecordingCanvas();
+    AyahStripPainter(
+      image: image,
+      slices: const [(src: src, dst: dst)],
+      colors: colors,
+    ).paint(canvas, const Size(320, 60));
+    const k = 64 / 1536;
+    final (paper, paperColor) = canvas.rects.single;
+    expect(paper, const Rect.fromLTWH(0, 0, 320, 60));
+    expect(paperColor.toARGB32(), colors.background.toARGB32());
+    final (drawn, source, destination, paint) = canvas.images.single;
+    expect(drawn, same(image));
+    expect(source.left, closeTo(src.left * k, 1e-9));
+    expect(source.top, closeTo(src.top * k, 1e-9));
+    expect(source.right, closeTo(src.right * k, 1e-9));
+    expect(source.bottom, closeTo(src.bottom * k, 1e-9));
+    expect(destination, dst);
+    expect(paint.colorFilter, ColorFilter.mode(colors.ink, BlendMode.srcIn));
+  });
+
+  testWidgets('without an image the painter draws only the paper', (
+    tester,
+  ) async {
+    final canvas = _RecordingCanvas();
+    AyahStripPainter(
+      image: null,
+      slices: const [
+        (src: Rect.fromLTWH(0, 0, 10, 10), dst: Rect.fromLTWH(0, 0, 10, 10)),
+      ],
+      colors: colors,
+    ).paint(canvas, const Size(320, 60));
+    expect(canvas.rects, hasLength(1));
+    expect(canvas.images, isEmpty);
+  });
+
+  testWidgets('a failed decode is reported and the strip collapses', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        AyahStrip(
+          page: 5,
+          lines: _lines,
+          colors: colors,
+          imageFor: (_) => _FailingImage(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(tester.takeException(), isA<StateError>());
+    expect(tester.getSize(find.byType(AyahStrip)).height, 0);
+    expect(find.byKey(const ValueKey('ayah-strip-paint')), findsNothing);
+  });
+
+  testWidgets('a page change after a failure tries the new page again', (
+    tester,
+  ) async {
+    final bytes = await _png(tester);
+    Widget strip(int page) => _host(
+      AyahStrip(
+        page: page,
+        lines: _lines,
+        colors: colors,
+        imageFor: (_) => page == 5 ? _FailingImage() : MemoryImage(bytes),
+      ),
+    );
+    await tester.pumpWidget(strip(5));
+    await tester.pump();
+    await tester.pump();
+    expect(tester.takeException(), isA<StateError>());
+    await tester.pumpWidget(strip(6));
+    await tester.runAsync(
+      () => Future.delayed(const Duration(milliseconds: 200)),
+    );
+    await tester.pump();
+    expect(find.byKey(const ValueKey('ayah-strip-paint')), findsOneWidget);
+  });
+
+  testWidgets('an unbounded or zero width draws nothing and throws nothing', (
+    tester,
+  ) async {
+    final bytes = await _png(tester);
+    final strip = AyahStrip(
+      page: 5,
+      lines: _lines,
+      colors: colors,
+      imageFor: (_) => MemoryImage(bytes),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: strip,
+          ),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('ayah-strip-paint')), findsNothing);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(child: SizedBox(width: 0, child: strip)),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('ayah-strip-paint')), findsNothing);
   });
 }
