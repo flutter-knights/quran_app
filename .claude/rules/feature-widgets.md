@@ -5,10 +5,10 @@ paths: ["lib/features/**/presentation/**/*.dart", "lib/features/splash/**/*.dart
 
 # Feature Widgets
 
-- Feature widgets live beside the page that uses them: `features/<feature>/presentation/pages/**/widgets/` (e.g. `surah/presentation/pages/mushaf/widgets/`). `quran_playback` has no pages, so its widgets sit in `presentation/widgets/`.
+- Feature widgets live beside the page that uses them: `features/<feature>/presentation/pages/**/widgets/` (e.g. `surah/presentation/pages/mushaf/widgets/`). `quran_playback` and `tafsir` have no pages, so their widgets sit in `presentation/widgets/`.
 - They read state with `BlocBuilder`/`BlocSelector` on their own feature's cubit (`MushafCubit`, `PlaybackCubit`), per `state-management-patterns.md`.
 - Don't import a feature widget into another feature. Once a second feature needs it and it holds no feature-specific imports, move it to `core/widgets/` and add it to `core-widgets.md`.
-  - Exception: `notifications` exports `AlertsPromptGate` (used by `home`), `OpenSettingButton` (used by `onboarding`); `quran_playback` exports `SurahDownloadButton` and `PlaybackOptionsSheet` (used by `surah`). `bookmarks` exports `PlacesSheet`, `FasilRowSummary` (the swatch, name and position of a فاصل) and `placeTapTarget` (the 48 px tap-target `ButtonStyle`), all used by `surah`.
+  - Exception: `notifications` exports `AlertsPromptGate` (used by `home`), `OpenSettingButton` (used by `onboarding`); `quran_playback` exports `SurahDownloadButton` and `PlaybackOptionsSheet` (used by `surah`). `tafsir` exports `TafsirSection` (used by `surah`); it takes its ink colours and button style by constructor, so `tafsir` reads nothing from `surah`'s paper colours. `bookmarks` exports `PlacesSheet`, `FasilRowSummary` (the swatch, name and position of a فاصل) and `placeTapTarget` (the 48 px tap-target `ButtonStyle`), all used by `surah`.
   - Deliberate two-way coupling: `surah` reads `bookmarks` (`FasilSlot`, the cubits, `fasil_rules.dart`, `place_notices.dart`), and `bookmarks` reads `surah`'s `mushaf_paper_colors.dart` for `fasilRibbon`, so the ribbon hexes live once, in the file `theming.md` allows. `bookmarks` swatches pass the app palette's brightness, because they sit on app surfaces, not on a reading paper. Don't add more.
 
 ## Presentation utils (`features/<feature>/presentation/utils/`)

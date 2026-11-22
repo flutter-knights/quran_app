@@ -596,6 +596,10 @@
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
   },
   "leaf_fasil": "Marker",
+  "tafsir_muyassar": "Al-Tafsir al-Muyassar",
+  "tafsir_bookCaption": "Loaded from the internet, then saved on the device",
+  "tafsir_source": "Source: Al-Tafsir al-Muyassar, King Fahd Complex, via alquran.cloud",
+  "tafsir_loadFailed": "Couldn't load the tafsir",
   "savedAyat_saved": "Saved ayah {ayah} of {surah}",
   "@savedAyat_saved": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }

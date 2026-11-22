@@ -273,6 +273,16 @@ class PendingS {
   String get leaf_listenFromHere => _ar ? 'استماع من هنا' : 'Listen from here';
   String get leaf_saveAyah => _ar ? 'حفظ الآية' : 'Save ayah';
   String get leaf_fasil => _ar ? 'فاصل' : 'Marker';
+  String get tafsir_muyassar =>
+      _ar ? 'التفسير الميسر' : 'Al-Tafsir al-Muyassar';
+  String get tafsir_bookCaption => _ar
+      ? 'يُحمَّل من الإنترنت ثم يُحفظ على الجهاز'
+      : 'Loaded from the internet, then saved on the device';
+  String get tafsir_source => _ar
+      ? 'المصدر: التفسير الميسر، مجمع الملك فهد، عبر alquran.cloud'
+      : 'Source: Al-Tafsir al-Muyassar, King Fahd Complex, via alquran.cloud';
+  String get tafsir_loadFailed =>
+      _ar ? 'تعذّر تحميل التفسير' : 'Couldn\'t load the tafsir';
   String get leaf_sajda => _ar ? 'سجدة' : 'Sajda';
   String mushaf_surahTitle(String surah) =>
       _ar ? 'سورة $surah' : 'Surah $surah';
