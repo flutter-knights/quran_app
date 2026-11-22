@@ -305,5 +305,9 @@ void main() {
     await tester.tap(find.text('الخيارات'));
     await tester.pump();
     expect(cubit.state.settingsModel.tapAction, LeafTapAction.options);
+    final toggle = tester.widget<AppSegmentedSelector<LeafTapAction>>(
+      find.byKey(const ValueKey('tap-action-toggle')),
+    );
+    expect(toggle.selected, LeafTapAction.options);
   });
 }
