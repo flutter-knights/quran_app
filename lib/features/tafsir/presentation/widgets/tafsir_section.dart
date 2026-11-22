@@ -76,7 +76,7 @@ class TafsirSection extends StatelessWidget {
                       style: TS.medium14.copyWith(color: ink),
                     ),
                   ),
-                  Flexible(child: retry),
+                  retry,
                 ],
               ),
             ),
@@ -106,6 +106,7 @@ class TafsirSection extends StatelessWidget {
           s.tafsir_bookCaption,
           style: TS.regular14.copyWith(color: mutedInk),
         ),
+        Text(s.tafsir_source, style: TS.regular14.copyWith(color: mutedInk)),
         switch (state) {
           TafsirLoaded(:final tafsir) => Text(
             tafsir.text,
@@ -123,7 +124,7 @@ class TafsirSection extends StatelessWidget {
                     style: TS.medium14.copyWith(color: ink),
                   ),
                 ),
-                Flexible(child: retry),
+                retry,
               ],
             ),
           ),
@@ -141,7 +142,6 @@ class TafsirSection extends StatelessWidget {
             ),
           ),
         },
-        Text(s.tafsir_source, style: TS.regular14.copyWith(color: mutedInk)),
       ],
     );
   }

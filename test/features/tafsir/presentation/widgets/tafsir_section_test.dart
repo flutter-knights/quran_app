@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,7 @@ import 'package:quran_app/features/tafsir/presentation/widgets/tafsir_section.da
 import 'package:quran_app/generated/l10n.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../notifications/presentation/alerts_test_harness.dart';
 import '../../tafsir_fakes.dart';
 
 const _ayah = AyahIdentifier(surah: 3, ayah: 7);
@@ -64,6 +66,8 @@ Widget _host(
 );
 
 void main() {
+  setUpAll(loadAppFonts);
+
   testWidgets('loading shows a skeletonized paragraph and no retry', (
     tester,
   ) async {
@@ -200,6 +204,47 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byKey(_retry), findsOneWidget);
+  });
+
+  for (final (locale, message) in [
+    ('ar', 'تعذّر تحميل التفسير'),
+    ('en', "Couldn't load the tafsir"),
+  ]) {
+    testWidgets('lead failure message is not ellipsized in $locale at 1.7x', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          FakeTafsirCubit(const TafsirFailed(_ayah)),
+          lead: true,
+          scale: 1.7,
+          locale: locale,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.text(message),
+      );
+      expect(paragraph.didExceedMaxLines, isFalse);
+    });
+  }
+
+  testWidgets('full mode lists the source right after the caption', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(FakeTafsirCubit(_loaded(_ayah))));
+    await tester.pumpAndSettle();
+
+    final caption = tester.getTopLeft(
+      find.text('يُحمَّل من الإنترنت ثم يُحفظ على الجهاز'),
+    );
+    final source = tester.getTopLeft(
+      find.text('المصدر: التفسير الميسر، مجمع الملك فهد، عبر alquran.cloud'),
+    );
+    final body = tester.getTopLeft(find.byKey(const ValueKey('tafsir-body')));
+    expect(source.dy, greaterThan(caption.dy));
+    expect(body.dy, greaterThan(source.dy));
   });
 
   testWidgets('the body stays right-to-left in English', (tester) async {
