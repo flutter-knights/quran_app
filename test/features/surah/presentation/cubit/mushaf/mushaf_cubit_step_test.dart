@@ -68,8 +68,23 @@ void main() {
     cubit.stepTo(_id(3, 10), page: 51);
     await Future<void>.delayed(Duration.zero);
     await sub.cancel();
+    expect(emitted, hasLength(1));
     expect(emitted.first.selectedAyah, _id(3, 10));
     expect(emitted.first.currentPage, 51);
-    expect(emitted.every((s) => s.selectedAyah != null), isTrue);
+  });
+
+  test('stepTo off the playing page stops following playback', () {
+    final cubit = _cubit();
+    cubit.debugNotifier.value = _id(2, 5);
+    expect(cubit.state.followPlayback, isTrue);
+    cubit.stepTo(_id(3, 10), page: 51);
+    expect(cubit.state.followPlayback, isFalse);
+  });
+
+  test('stepTo onto the playing page keeps following playback', () {
+    final cubit = _cubit();
+    cubit.debugNotifier.value = _id(2, 5);
+    cubit.stepTo(_id(2, 6), page: 50);
+    expect(cubit.state.followPlayback, isTrue);
   });
 }

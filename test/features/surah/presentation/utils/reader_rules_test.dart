@@ -183,5 +183,10 @@ void main() {
       expect(adjacentAyah(id(2, 0), 1), id(2, 2));
       expect(adjacentAyah(id(2, 0), -1), id(1, 7));
     });
+
+    test('only a single step is accepted', () {
+      expect(() => adjacentAyah(id(3, 7), 2), throwsAssertionError);
+      expect(() => adjacentAyah(id(3, 7), 0), throwsAssertionError);
+    });
   });
 }

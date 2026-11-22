@@ -33,6 +33,7 @@ const mushafPageAspect = 1536 / 2795;
 }
 
 AyahIdentifier? adjacentAyah(AyahIdentifier ayah, int delta) {
+  assert(delta == 1 || delta == -1);
   final next = ayah.realAyah + delta;
   if (next >= 1 && next <= quran.getVerseCount(ayah.surah)) {
     return AyahIdentifier(surah: ayah.surah, ayah: next);
