@@ -52,9 +52,11 @@ void main() {
     expect(back, saved);
   });
 
-  test('an unknown slot index reads as a saved ayah', () {
-    final record = PlaceRecordModel.fromEntity(fasil)..slot = 7;
-    expect(record.toEntity().slot, isNull);
+  test('an out-of-range slot index reads as a saved ayah', () {
+    for (final index in [-1, 7]) {
+      final record = PlaceRecordModel.fromEntity(fasil)..slot = index;
+      expect(record.toEntity().slot, isNull);
+    }
   });
 
   test('survives a box close and reopen', () async {

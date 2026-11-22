@@ -1,3 +1,4 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/errors/exceptions.dart';
@@ -29,6 +30,18 @@ void main() {
   test('getAll wraps the list in Right', () async {
     when(() => dataSource.getAll()).thenReturn([place]);
     expect((await repo.getAll()).getOrElse(() => []), [place]);
+  });
+
+  test('a throw on getAll becomes a Failure', () async {
+    when(() => dataSource.getAll()).thenThrow(StateError('bad'));
+    expect((await repo.getAll()).isLeft(), isTrue);
+  });
+
+  test('save and remove return Right(unit) on success', () async {
+    when(() => dataSource.save(place)).thenAnswer((_) async {});
+    when(() => dataSource.remove('a')).thenAnswer((_) async {});
+    expect(await repo.save(place), const Right(unit));
+    expect(await repo.remove('a'), const Right(unit));
   });
 
   test('a CacheException on save becomes CacheFailure', () async {

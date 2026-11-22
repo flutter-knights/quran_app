@@ -44,8 +44,7 @@ class Place extends Equatable {
   @override
   List<Object?> get props => [
     id,
-    ayah.surah,
-    ayah.ayah,
+    ayah,
     page,
     slot,
     name,
