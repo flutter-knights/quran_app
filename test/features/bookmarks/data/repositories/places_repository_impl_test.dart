@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quran_app/core/errors/exceptions.dart';
 import 'package:quran_app/core/errors/failure.dart';
+import 'package:quran_app/features/bookmarks/data/datasources/local/place_migration.dart';
 import 'package:quran_app/features/bookmarks/data/datasources/local/places_local_data_source.dart';
 import 'package:quran_app/features/bookmarks/data/repositories/places_repository_impl.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/place.dart';
@@ -10,8 +11,11 @@ import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifie
 
 class _MockDataSource extends Mock implements PlacesLocalDataSource {}
 
+class _MockMigration extends Mock implements PlaceMigration {}
+
 void main() {
   late _MockDataSource dataSource;
+  late _MockMigration migration;
   late PlacesRepositoryImpl repo;
 
   final place = Place(
@@ -24,7 +28,8 @@ void main() {
 
   setUp(() {
     dataSource = _MockDataSource();
-    repo = PlacesRepositoryImpl(dataSource: dataSource);
+    migration = _MockMigration();
+    repo = PlacesRepositoryImpl(dataSource: dataSource, migration: migration);
   });
 
   test('getAll wraps the list in Right', () async {
@@ -58,4 +63,14 @@ void main() {
       expect(result.isLeft(), isTrue);
     },
   );
+
+  test('migrate maps a throw from the migration to a Failure', () async {
+    when(() => migration.run()).thenThrow(StateError('bad'));
+    expect((await repo.migrate()).isLeft(), isTrue);
+  });
+
+  test('migrate returns Right(unit) on success', () async {
+    when(() => migration.run()).thenAnswer((_) async => 2);
+    expect(await repo.migrate(), const Right(unit));
+  });
 }
