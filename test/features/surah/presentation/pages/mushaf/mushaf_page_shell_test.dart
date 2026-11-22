@@ -923,4 +923,24 @@ void main() {
 
     expect(h.wake.calls, [true, false]);
   });
+
+  group('last read while a new recitation loads', () {
+    setUp(() => setUpMushafHarness(pageService: QuranPageServiceImpl()));
+
+    testWidgets('the old ayah is not saved on a page it is not on', (
+      tester,
+    ) async {
+      const old = AyahIdentifier(surah: 3, ayah: 12);
+      final (mushaf, h) = await pump(
+        tester,
+        playback: const PlaybackState(currentAyah: old, isPlaying: true),
+      );
+      mushaf.playingPage = 7;
+
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      expect(h.repo.saved?.page, 7);
+      expect(h.repo.saved?.ayah, isNull);
+    });
+  });
 }

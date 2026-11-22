@@ -65,4 +65,27 @@ void main() {
       );
     }
   });
+
+  test('a full name beats an earlier surah whose name contains it', () {
+    const expected = {
+      'الناس': 114,
+      'الفتح': 48,
+      'الحج': 22,
+      'النبأ': 78,
+      'النبا': 78,
+      'ص': 38,
+      'ق': 50,
+    };
+    for (final e in expected.entries) {
+      expect(
+        (resolveMenuQuery(e.key) as MenuQueryTarget).surah,
+        e.value,
+        reason: e.key,
+      );
+    }
+  });
+
+  test('a partial name still finds the first surah that starts with it', () {
+    expect((resolveMenuQuery('الن') as MenuQueryTarget).surah, 4);
+  });
 }

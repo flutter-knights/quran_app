@@ -118,7 +118,12 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
         final s = _mushafCubit.state;
         final playing = _playbackCubit.state.currentAyah;
         final playingHere =
-            playing != null && _mushafCubit.playingPage == s.currentPage;
+            playing != null &&
+            sl<QuranPageService>().getPageForAyah(
+                  playing.surah,
+                  playing.realAyah,
+                ) ==
+                s.currentPage;
         final stored = _lastReadCubit.state;
         return LastRead(
           page: s.currentPage,

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:equatable/equatable.dart';
 import 'package:quran/quran.dart' as quran;
 
@@ -57,16 +59,32 @@ MenuQuery resolveMenuQuery(String raw) {
   if (arabic.isEmpty) return const MenuQueryNone();
   final bare = _bare(q);
   final latin = _latin(q);
-  for (var s = 1; s <= 114; s++) {
+  int? best;
+  var bestRank = 3;
+  for (var s = 1; s <= 114 && bestRank > 0; s++) {
     final name = quran.getSurahNameArabic(s);
-    if (normalizeArabic(name).contains(arabic) ||
-        (bare.isNotEmpty && _bare(name).contains(bare)) ||
-        (latin.isNotEmpty && _latin(quran.getSurahName(s)).contains(latin))) {
-      return _target(quran.getPageNumber(s, 1), s);
+    final rank = [
+      _rank(normalizeArabic(name), arabic),
+      if (bare.isNotEmpty) _rank(_bare(name), bare),
+      if (latin.isNotEmpty) _rank(_latin(quran.getSurahName(s)), latin),
+    ].reduce(math.min);
+    if (rank < bestRank) {
+      best = s;
+      bestRank = rank;
     }
   }
-  return const MenuQueryNone();
+  return best == null
+      ? const MenuQueryNone()
+      : _target(quran.getPageNumber(best, 1), best);
 }
+
+int _rank(String name, String query) => name == query
+    ? 0
+    : name.startsWith(query)
+    ? 1
+    : name.contains(query)
+    ? 2
+    : 3;
 
 String _bare(String s) => normalizeArabic(s.trim().replaceFirst('ال', ''));
 
