@@ -272,6 +272,7 @@ class PendingS {
 
   String get leaf_listenFromHere => _ar ? 'استماع من هنا' : 'Listen from here';
   String get leaf_saveAyah => _ar ? 'حفظ الآية' : 'Save ayah';
+  String get leaf_fasil => _ar ? 'فاصل' : 'Marker';
   String get leaf_sajda => _ar ? 'سجدة' : 'Sajda';
   String mushaf_surahTitle(String surah) =>
       _ar ? 'سورة $surah' : 'Surah $surah';
@@ -334,6 +335,8 @@ class PendingS {
   String get places_more => _ar ? 'خيارات' : 'Options';
   String savedAyat_removed(String ayah, String surah) =>
       _ar ? 'أُزيلت الآية $ayah من $surah' : 'Removed ayah $ayah of $surah';
+  String savedAyat_saved(String ayah, String surah) =>
+      _ar ? 'حُفظت الآية $ayah من $surah' : 'Saved ayah $ayah of $surah';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

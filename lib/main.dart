@@ -14,9 +14,7 @@ import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/download_book_cubit.dart';
 import 'package:quran_app/features/bookmarks/domain/usecases/migrate_places.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
 import 'package:quran_app/features/notifications/presentation/cubit/alerts_sync_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -91,8 +89,6 @@ class _AppLoaderState extends State<AppLoader> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<SettingsCubit>()),
-        BlocProvider(create: (_) => sl<BookmarkCubit>()),
-        BlocProvider(create: (_) => sl<PageBookmarkCubit>()),
         BlocProvider(create: (_) => sl<FasilCubit>()),
         BlocProvider(create: (_) => sl<SavedAyatCubit>()),
         BlocProvider(create: (_) => sl<LastReadCubit>()),

@@ -1,4 +1,3 @@
-import 'package:bloc_test/bloc_test.dart';
 import 'dart:ui' show SemanticsFlags, Tristate;
 
 import 'package:flutter/material.dart';
@@ -6,18 +5,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/core/constants/mushaf_paper.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_state.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_leaf.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/generated/l10n.dart';
 
-class _MockBookmarkCubit extends MockCubit<BookmarkState>
-    implements BookmarkCubit {}
+import '../../../../../bookmarks/place_fakes.dart';
 
 class _Calls {
   final taps = <String>[];
@@ -26,7 +23,7 @@ class _Calls {
 }
 
 Widget _host(
-  BookmarkCubit cubit,
+  SavedAyatCubit cubit,
   AyahIdentifier ayah,
   _Calls calls, {
   double scale = 1,
@@ -42,7 +39,7 @@ Widget _host(
     child: child!,
   ),
   home: Scaffold(
-    body: BlocProvider<BookmarkCubit>.value(
+    body: BlocProvider<SavedAyatCubit>.value(
       value: cubit,
       child: Align(
         alignment: Alignment.bottomCenter,
@@ -55,6 +52,7 @@ Widget _host(
             onListenFromHere: calls.tap('here'),
             onListenFromSurahStart: calls.tap('start'),
             onListenPage: calls.tap('page'),
+            onFasil: calls.tap('fasil'),
           ),
         ),
       ),
@@ -63,18 +61,13 @@ Widget _host(
 );
 
 void main() {
-  late _MockBookmarkCubit cubit;
+  late FakeSavedAyatCubit cubit;
   late _Calls calls;
 
-  setUpAll(
-    () => registerFallbackValue(const AyahIdentifier(surah: 1, ayah: 1)),
-  );
-
   setUp(() {
-    cubit = _MockBookmarkCubit();
+    cubit = FakeSavedAyatCubit();
     calls = _Calls();
-    when(() => cubit.state).thenReturn(const BookmarkState());
-    when(() => cubit.toggle(any())).thenAnswer((_) async {});
+    addTearDown(cubit.close);
   });
 
   const ayah = AyahIdentifier(surah: 3, ayah: 7);
@@ -82,7 +75,12 @@ void main() {
   testWidgets('ayah leaf labels are distinct', (tester) async {
     await tester.pumpWidget(_host(cubit, ayah, calls));
     final labels = [
-      for (final key in ['leaf-listen', 'leaf-save', 'leaf-share'])
+      for (final key in [
+        'leaf-listen',
+        'leaf-fasil',
+        'leaf-save',
+        'leaf-share',
+      ])
         tester
             .widget<Text>(
               find.descendant(
@@ -92,8 +90,8 @@ void main() {
             )
             .data,
     ];
-    expect(labels, ['استماع من هنا', 'حفظ الآية', 'مشاركة']);
-    expect(labels.toSet().length, 3);
+    expect(labels, ['استماع من هنا', 'فاصل', 'حفظ الآية', 'مشاركة']);
+    expect(labels.toSet().length, 4);
   });
 
   testWidgets('title names the surah and ayah in Arabic-Indic digits', (
@@ -103,15 +101,48 @@ void main() {
     expect(find.text('آل عمران، الآية ٧'), findsOneWidget);
   });
 
-  testWidgets('listen from here, close and save reach their handlers', (
+  testWidgets('listen from here, close, فاصل and save reach their handlers', (
     tester,
   ) async {
     await tester.pumpWidget(_host(cubit, ayah, calls));
     await tester.tap(find.byKey(const ValueKey('leaf-listen')));
     await tester.tap(find.byKey(const ValueKey('leaf-close')));
+    await tester.tap(find.byKey(const ValueKey('leaf-fasil')));
     await tester.tap(find.byKey(const ValueKey('leaf-save')));
-    expect(calls.taps, ['here', 'close']);
-    verify(() => cubit.toggle(ayah)).called(1);
+    await tester.pump();
+    expect(calls.taps, ['here', 'close', 'fasil']);
+    expect(cubit.saves.last, ayah);
+  });
+
+  testWidgets('saving confirms and تراجع removes it', (tester) async {
+    await tester.pumpWidget(_host(cubit, ayah, calls));
+    await tester.tap(find.byKey(const ValueKey('leaf-save')));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    expect(find.text('حُفظت الآية ٧ من آل عمران'), findsOneWidget);
+
+    await tester.tap(find.text('تراجع'));
+    await tester.pump();
+
+    expect(cubit.removes.last.ayah, ayah);
+  });
+
+  testWidgets('a saved ayah is removed with undo', (tester) async {
+    final place = savedPlace(ayah);
+    final saved = FakeSavedAyatCubit(
+      SavedAyatState(items: [place], loaded: true),
+    );
+    addTearDown(saved.close);
+    await tester.pumpWidget(_host(saved, ayah, calls));
+    await tester.tap(find.byKey(const ValueKey('leaf-save')));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    expect(saved.removes.last, place);
+    expect(find.text('أُزيلت الآية ٧ من آل عمران'), findsOneWidget);
+
+    await tester.tap(find.text('تراجع'));
+    await tester.pump();
+
+    expect(saved.restores.last, place);
   });
 
   testWidgets('dragging down closes', (tester) async {
@@ -146,6 +177,7 @@ void main() {
     expect(find.text('استماع الصفحة كاملة'), findsOneWidget);
     expect(find.text('مشاركة'), findsNothing);
     expect(find.text('حفظ الآية'), findsNothing);
+    expect(find.text('فاصل'), findsNothing);
     expect(find.textContaining('الآية ٠'), findsNothing);
   });
 
@@ -219,9 +251,12 @@ void main() {
     await tester.pumpWidget(_host(cubit, ayah, calls));
     expect(saveFlags().isButton, isTrue);
     expect(saveFlags().isToggled, Tristate.isFalse);
-    when(() => cubit.state).thenReturn(BookmarkState(bookmarks: {ayah}));
+    final saved = FakeSavedAyatCubit(
+      SavedAyatState(items: [savedPlace(ayah)], loaded: true),
+    );
+    addTearDown(saved.close);
     await tester.pumpWidget(const SizedBox());
-    await tester.pumpWidget(_host(cubit, ayah, calls));
+    await tester.pumpWidget(_host(saved, ayah, calls));
     expect(saveFlags().isToggled, Tristate.isTrue);
     handle.dispose();
   });

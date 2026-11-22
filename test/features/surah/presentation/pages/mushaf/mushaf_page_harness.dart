@@ -5,18 +5,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/utils/screen_wake.dart';
-import 'package:quran_app/features/bookmarks/domain/repositories/page_bookmark_repository.dart';
-import 'package:quran_app/features/bookmarks/domain/usecases/get_page_bookmarks.dart';
-import 'package:quran_app/features/bookmarks/domain/usecases/toggle_page_bookmark.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
@@ -245,18 +238,6 @@ class FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
 
-class FakeBookmarks extends Cubit<BookmarkState> implements BookmarkCubit {
-  FakeBookmarks() : super(const BookmarkState(loaded: true));
-
-  final toggles = <AyahIdentifier>[];
-
-  @override
-  Future<void> toggle(AyahIdentifier ayah) async => toggles.add(ayah);
-
-  @override
-  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
-}
-
 class FakeDownloads extends Cubit<SurahDownloadState>
     implements SurahDownloadCubit {
   FakeDownloads() : super(const SurahDownloadState());
@@ -304,14 +285,6 @@ class _StubMushafRepo implements MushafRepository {
       Right(MushafPageEntity(pageNumber: pageNumber, ayahs: const []));
 }
 
-class _StubPageBookmarkRepo implements PageBookmarkRepository {
-  @override
-  Future<Either<Failure, Set<int>>> getAll() async => const Right(<int>{});
-
-  @override
-  Future<Either<Failure, bool>> toggle(int page) async => const Right(true);
-}
-
 void _replace<T extends Object>(T instance) {
   final sl = GetIt.instance;
   if (sl.isRegistered<T>()) sl.unregister<T>();
@@ -331,7 +304,6 @@ void setUpMushafHarness({QuranPageService? pageService}) {
 typedef MushafHarness = ({
   FakePlayback playback,
   FakeSettings settings,
-  FakeBookmarks bookmarks,
   FakeDownloads downloads,
   FakeScreenWake wake,
   StubLastReadRepo repo,
@@ -357,23 +329,16 @@ Future<MushafHarness> pumpMushafPage(
   final h = (
     playback: playback ?? FakePlayback(),
     settings: settings ?? FakeSettings(),
-    bookmarks: FakeBookmarks(),
     downloads: FakeDownloads(),
     wake: FakeScreenWake(),
     repo: StubLastReadRepo(stored),
     fawasil: fawasil ?? FakeFasilCubit(),
     saved: saved ?? FakeSavedAyatCubit(),
   );
-  final pageBookmarks = PageBookmarkCubit(
-    getPageBookmarks: GetPageBookmarks(_StubPageBookmarkRepo()),
-    togglePageBookmark: TogglePageBookmark(_StubPageBookmarkRepo()),
-  );
   final lastRead = LastReadCubit(repository: h.repo);
-  addTearDown(pageBookmarks.close);
   addTearDown(h.fawasil.close);
   addTearDown(h.saved.close);
   addTearDown(lastRead.close);
-  addTearDown(h.bookmarks.close);
   addTearDown(h.downloads.close);
   addTearDown(h.playback.close);
   addTearDown(h.settings.close);
@@ -384,8 +349,6 @@ Future<MushafHarness> pumpMushafPage(
       BlocProvider<MushafCubit>.value(value: mushaf),
       BlocProvider<PlaybackCubit>.value(value: h.playback),
       BlocProvider<LastReadCubit>.value(value: lastRead),
-      BlocProvider<PageBookmarkCubit>.value(value: pageBookmarks),
-      BlocProvider<BookmarkCubit>.value(value: h.bookmarks),
       BlocProvider<FasilCubit>.value(value: h.fawasil),
       BlocProvider<SavedAyatCubit>.value(value: h.saved),
       BlocProvider<SurahDownloadCubit>.value(value: h.downloads),
@@ -414,10 +377,6 @@ Future<MushafHarness> pumpMushafPage(
         GoRoute(
           path: '/reader',
           builder: (_, _) => MushafPage(args: args, screenWake: h.wake),
-        ),
-        GoRoute(
-          path: AppRouter.bookmarksPath,
-          builder: (_, _) => const Scaffold(body: Text('bookmarks-stub')),
         ),
       ],
     );

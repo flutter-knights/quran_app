@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran/quran.dart' as quran;
 
-import '../../../../../config/router/app_router.dart';
 import '../../../../../config/router/now_playing_route.dart';
 import '../../../../../config/theme/typography_styles.dart';
 import '../../../../../core/constants/mushaf_reading_mode.dart';
@@ -17,6 +16,7 @@ import '../../../../../core/utils/screen_wake.dart';
 import '../../../../../generated/l10n.dart';
 import '../../../../bookmarks/domain/entities/fasil_slot.dart';
 import '../../../../bookmarks/presentation/cubit/fasil_cubit.dart';
+import '../../../../bookmarks/presentation/pages/widgets/places_sheet.dart';
 import '../../../../bookmarks/presentation/utils/fasil_rules.dart';
 import '../../../../bookmarks/presentation/utils/place_labels.dart';
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
@@ -372,7 +372,9 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
       case MenuJump(:final page):
         _jumpInPlace(page);
       case MenuOpenPlaces():
-        await context.push(AppRouter.bookmarksPath);
+        final open = await PlacesSheet.show(context);
+        if (!mounted || open == null) return;
+        _jumpInPlace(open.page, focus: open.focus);
       case MenuOpenDisplay():
         DisplaySheet.show(context);
       case MenuPlayPage():
@@ -633,6 +635,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                                   onListenFromSurahStart:
                                       _onListenFromSurahStart,
                                   onListenPage: _onPlayPage,
+                                  onFasil: () => _openFawasil(null),
                                 ),
                               ],
                             ),
@@ -950,6 +953,7 @@ class _LeafSlot extends StatelessWidget {
     required this.onListenFromSurahStart,
     required this.onListenPage,
     required this.onNewPlay,
+    required this.onFasil,
   });
 
   final MushafPaperColors colors;
@@ -957,6 +961,7 @@ class _LeafSlot extends StatelessWidget {
   final void Function(AyahIdentifier ayah) onListenFromSurahStart;
   final VoidCallback onListenPage;
   final VoidCallback onNewPlay;
+  final VoidCallback onFasil;
 
   @override
   Widget build(BuildContext context) {
@@ -980,6 +985,7 @@ class _LeafSlot extends StatelessWidget {
                         onListenFromSurahStart: () =>
                             onListenFromSurahStart(selected),
                         onListenPage: onListenPage,
+                        onFasil: onFasil,
                       )
                     : active
                     ? _PlayerSlot(

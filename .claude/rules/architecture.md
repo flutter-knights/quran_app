@@ -20,7 +20,7 @@ paths: ["lib/**/*.dart"]
 - GetIt, aliased `sl`.
 - Data sources, repositories, use cases: **LazySingleton**.
 - Cubits: **Factory**, a new instance per screen.
-  - Except app-wide cubits that must share one instance. `main.dart`'s `MultiBlocProvider` provides `SettingsCubit` (`registerSingleton`), `BookmarkCubit`, `PageBookmarkCubit`, `FasilCubit`, `SavedAyatCubit`, `LastReadCubit`, `PlaybackCubit`, `DownloadBookCubit`, `SurahDownloadCubit` and `AlertsSyncCubit` (`registerLazySingleton`). `HadithBookmarkCubit` is a lazy singleton handed to each screen with `BlocProvider.value(value: sl<HadithBookmarkCubit>())`. Add a singleton only when two screens must see the same instance.
+  - Except app-wide cubits that must share one instance. `main.dart`'s `MultiBlocProvider` provides `SettingsCubit` (`registerSingleton`), `FasilCubit`, `SavedAyatCubit`, `LastReadCubit`, `PlaybackCubit`, `DownloadBookCubit`, `SurahDownloadCubit` and `AlertsSyncCubit` (`registerLazySingleton`). `HadithBookmarkCubit` is a lazy singleton handed to each screen with `BlocProvider.value(value: sl<HadithBookmarkCubit>())`. Add a singleton only when two screens must see the same instance.
 - Register in `features/<feature>/<feature>_di.dart`, called from `core/di/dependency_injection.dart`.
 
 ## Caching

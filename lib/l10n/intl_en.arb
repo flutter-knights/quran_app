@@ -593,5 +593,10 @@
   "savedAyat_removed": "Removed ayah {ayah} of {surah}",
   "@savedAyat_removed": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
+  },
+  "leaf_fasil": "Marker",
+  "savedAyat_saved": "Saved ayah {ayah} of {surah}",
+  "@savedAyat_saved": {
+    "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
   }
 }

@@ -577,5 +577,10 @@
   "savedAyat_removed": "أُزيلت الآية {ayah} من {surah}",
   "@savedAyat_removed": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
+  },
+  "leaf_fasil": "فاصل",
+  "savedAyat_saved": "حُفظت الآية {ayah} من {surah}",
+  "@savedAyat_saved": {
+    "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
   }
 }
