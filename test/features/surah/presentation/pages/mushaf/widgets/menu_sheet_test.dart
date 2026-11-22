@@ -14,6 +14,9 @@ import 'package:quran_app/features/search/domain/services/quran_browse_service.d
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/menu_sheet.dart';
 import 'package:quran_app/generated/l10n.dart';
 
+import '../../../../../notifications/presentation/alerts_test_harness.dart'
+    show loadAppFonts;
+
 class _FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
   _FakePlayback() : super(const PlaybackState(reciter: Reciter.husary));
 
@@ -252,25 +255,86 @@ void main() {
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.pumpAndSettle();
     expect(find.text('٥٨٢'), findsOneWidget);
+    expect(
+      tester.widget<EditableText>(find.byType(EditableText)).focusNode.hasFocus,
+      isTrue,
+    );
     expect(find.byKey(const ValueKey('menu-go')).hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the surah list opens at the current surah', (tester) async {
-    await open(tester, currentSurah: 114);
+  for (final surah in [1, 2, 3, 50, 80, 114]) {
+    testWidgets('the surah list opens at surah $surah on the app fonts', (
+      tester,
+    ) async {
+      await loadAppFonts();
+      await open(tester, currentSurah: surah);
+      final row = find.byKey(ValueKey('menu-surah-$surah'));
+      expect(row.hitTestable(), findsOneWidget);
+      expect(
+        find.descendant(of: row, matching: find.text('أنت هنا')),
+        findsOneWidget,
+      );
+    });
+  }
+
+  for (final juz in [1, 2, 15, 22, 30]) {
+    testWidgets('the juz list opens at juz $juz on the app fonts', (
+      tester,
+    ) async {
+      await loadAppFonts();
+      await open(tester, currentJuz: juz);
+      await tester.tap(find.text('الأجزاء'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(ValueKey('menu-juz-$juz')).hitTestable(),
+        findsOneWidget,
+      );
+    });
+  }
+
+  testWidgets('the surah list opens at the top with no current surah', (
+    tester,
+  ) async {
+    await open(tester, currentSurah: null);
     expect(
-      find.byKey(const ValueKey('menu-surah-114')).hitTestable(),
+      find.byKey(const ValueKey('menu-surah-1')).hitTestable(),
       findsOneWidget,
     );
   });
 
-  testWidgets('the juz list opens at the current juz', (tester) async {
-    await open(tester, currentJuz: 30);
-    await tester.tap(find.text('الأجزاء'));
+  testWidgets('the three tiles are the same height on a 360 dp phone', (
+    tester,
+  ) async {
+    await loadAppFonts();
+    await open(tester, size: const Size(360, 780));
+    final heights = [
+      for (final key in [
+        'menu-tile-places',
+        'menu-tile-display',
+        'menu-tile-play',
+      ])
+        tester.getSize(find.byKey(ValueKey(key))).height,
+    ];
+    expect(heights.toSet(), hasLength(1), reason: '$heights');
+  });
+
+  testWidgets('the keyboard action key on a valid page jumps', (tester) async {
+    await open(tester);
+    await tester.enterText(find.byKey(const ValueKey('menu-search')), '٥٨٢');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
     await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('menu-juz-30')).hitTestable(),
-      findsOneWidget,
-    );
+    expect(result, const MenuJump(582));
+  });
+
+  testWidgets('the keyboard action key on an invalid page does nothing', (
+    tester,
+  ) async {
+    await open(tester);
+    await tester.enterText(find.byKey(const ValueKey('menu-search')), '٦٠٥');
+    await tester.testTextInput.receiveAction(TextInputAction.go);
+    await tester.pumpAndSettle();
+    expect(result, isNull);
+    expect(closed, isFalse);
   });
 }

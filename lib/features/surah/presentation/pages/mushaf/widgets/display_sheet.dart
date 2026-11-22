@@ -19,6 +19,8 @@ class DisplaySheet extends StatefulWidget {
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
+    // Transparent barrier + background so that, when the body fades during a
+    // brightness drag, the page behind is fully visible.
     barrierColor: Colors.transparent,
     backgroundColor: context.colorScheme.surface,
     builder: (_) => BlocProvider.value(

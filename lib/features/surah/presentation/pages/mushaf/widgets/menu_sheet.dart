@@ -89,27 +89,9 @@ class MenuSheet extends StatefulWidget {
 }
 
 class _MenuSheetState extends State<MenuSheet> {
-  static const _rowExtent = 80.0;
-
   final _searchKey = GlobalKey();
-  late final _surahScroll = ScrollController(
-    initialScrollOffset: _offsetFor(widget.currentSurah),
-  );
-  late final _juzScroll = ScrollController(
-    initialScrollOffset: _offsetFor(widget.currentJuz),
-  );
   var _surahs = true;
   MenuQuery _resolved = const MenuQueryNone();
-
-  static double _offsetFor(int? number) =>
-      number == null ? 0 : math.max(0, (number - 2) * _rowExtent);
-
-  @override
-  void dispose() {
-    _surahScroll.dispose();
-    _juzScroll.dispose();
-    super.dispose();
-  }
 
   void _pop(MenuAction action) => Navigator.of(context).pop(action);
 
@@ -123,7 +105,13 @@ class _MenuSheetState extends State<MenuSheet> {
       child: TextField(
         key: const ValueKey('menu-search'),
         keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.go,
         decoration: InputDecoration(hintText: pending.menu_searchHint),
+        onSubmitted: (_) {
+          if (_resolved case MenuQueryTarget(:final page)) {
+            _pop(MenuJump(page));
+          }
+        },
         onChanged: (value) =>
             setState(() => _resolved = resolveMenuQuery(value)),
       ),
@@ -175,28 +163,31 @@ class _MenuSheetState extends State<MenuSheet> {
                 : Column(
                     spacing: 12,
                     children: [
-                      Row(
-                        spacing: 8,
-                        children: [
-                          _Tile(
-                            key: const ValueKey('menu-tile-places'),
-                            icon: HugeIcons.strokeRoundedLocation01,
-                            label: pending.menu_places,
-                            onTap: () => _pop(const MenuOpenPlaces()),
-                          ),
-                          _Tile(
-                            key: const ValueKey('menu-tile-display'),
-                            icon: HugeIcons.strokeRoundedSettings02,
-                            label: pending.menu_display,
-                            onTap: () => _pop(const MenuOpenDisplay()),
-                          ),
-                          _Tile(
-                            key: const ValueKey('menu-tile-play'),
-                            icon: HugeIcons.strokeRoundedHeadphones,
-                            label: pending.mushaf_playWholePage,
-                            onTap: () => _pop(const MenuPlayPage()),
-                          ),
-                        ],
+                      IntrinsicHeight(
+                        child: Row(
+                          spacing: 8,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _Tile(
+                              key: const ValueKey('menu-tile-places'),
+                              icon: HugeIcons.strokeRoundedLocation01,
+                              label: pending.menu_places,
+                              onTap: () => _pop(const MenuOpenPlaces()),
+                            ),
+                            _Tile(
+                              key: const ValueKey('menu-tile-display'),
+                              icon: HugeIcons.strokeRoundedSettings02,
+                              label: pending.menu_display,
+                              onTap: () => _pop(const MenuOpenDisplay()),
+                            ),
+                            _Tile(
+                              key: const ValueKey('menu-tile-play'),
+                              icon: HugeIcons.strokeRoundedHeadphones,
+                              label: pending.mushaf_playWholePage,
+                              onTap: () => _pop(const MenuPlayPage()),
+                            ),
+                          ],
+                        ),
                       ),
                       search,
                       result,
@@ -219,17 +210,15 @@ class _MenuSheetState extends State<MenuSheet> {
                         child: KeyedSubtree(
                           key: ValueKey(_surahs),
                           child: _surahs
-                              ? ListView.builder(
-                                  key: const ValueKey('menu-list'),
-                                  controller: _surahScroll,
+                              ? _IndexList(
                                   itemCount: quran.totalSurahCount,
+                                  current: widget.currentSurah,
                                   itemBuilder: (context, i) =>
                                       _surahRow(context, i + 1),
                                 )
-                              : ListView.builder(
-                                  key: const ValueKey('menu-list'),
-                                  controller: _juzScroll,
+                              : _IndexList(
                                   itemCount: widget.juzEntries.length,
+                                  current: widget.currentJuz,
                                   itemBuilder: (context, i) =>
                                       _juzRow(context, widget.juzEntries[i]),
                                 ),
@@ -268,6 +257,63 @@ class _MenuSheetState extends State<MenuSheet> {
   );
 }
 
+class _IndexList extends StatefulWidget {
+  const _IndexList({
+    required this.itemCount,
+    required this.current,
+    required this.itemBuilder,
+  });
+
+  final int itemCount;
+  final int? current;
+  final IndexedWidgetBuilder itemBuilder;
+
+  @override
+  State<_IndexList> createState() => _IndexListState();
+}
+
+class _IndexListState extends State<_IndexList> {
+  final _controller = ScrollController();
+  final _first = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _revealCurrent());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _revealCurrent() {
+    final current = widget.current;
+    final row = _first.currentContext?.size;
+    if (!mounted || current == null || row == null || !_controller.hasClients) {
+      return;
+    }
+    _controller.jumpTo(
+      math.min(
+        math.max(0, current - 2) * row.height,
+        _controller.position.maxScrollExtent,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => ListView.builder(
+    key: const ValueKey('menu-list'),
+    controller: _controller,
+    itemCount: widget.itemCount,
+    itemBuilder: (context, i) {
+      final row = widget.itemBuilder(context, i);
+      return i == 0 ? KeyedSubtree(key: _first, child: row) : row;
+    },
+  );
+}
+
 class _Tile extends StatelessWidget {
   const _Tile({
     super.key,
@@ -287,6 +333,7 @@ class _Tile extends StatelessWidget {
       onTap: onTap,
       child: Column(
         spacing: 6,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           HugeIcon(icon: icon, size: 24, color: context.colorScheme.primary),
           Text(label, style: TS.semi14, textAlign: TextAlign.center),
