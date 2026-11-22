@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_bookmark.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/hadith_bookmark_cubit.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/hadith_bookmark_state.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_state.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
@@ -24,7 +26,7 @@ import 'package:quran_app/generated/l10n.dart';
 import '../../../surah/presentation/pages/mushaf/mushaf_page_harness.dart';
 import '../../place_fakes.dart';
 
-const _fatiha = AyahIdentifier(surah: 2, ayah: 5);
+const _baqarah5 = AyahIdentifier(surah: 2, ayah: 5);
 
 class _FakeHadithBookmarks extends Cubit<HadithBookmarkState>
     implements HadithBookmarkCubit {
@@ -50,6 +52,7 @@ void main() {
   Future<void> open(
     WidgetTester tester, {
     Set<HadithBookmark> hadiths = const {},
+    FasilState fasil = const FasilState(loaded: true),
   }) async {
     captured = null;
     tester.view.physicalSize = const Size(360, 1200);
@@ -59,9 +62,9 @@ void main() {
       HadithBookmarkState(bookmarks: hadiths, loaded: true),
     );
     sl.registerSingleton<HadithBookmarkCubit>(hadithCubit);
-    final fawasil = FakeFasilCubit(const FasilState(loaded: true));
+    final fawasil = FakeFasilCubit(fasil);
     final saved = FakeSavedAyatCubit(
-      SavedAyatState(loaded: true, items: [savedPlace(_fatiha)]),
+      SavedAyatState(loaded: true, items: [savedPlace(_baqarah5)]),
     );
     final settings = FakeSettings();
     final last = LastReadCubit(
@@ -144,7 +147,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final args = captured as MushafArgs;
-    expect(args.focusAyah, _fatiha);
+    expect(args.focusAyah, _baqarah5);
     expect(args.origin, MushafOrigin.jump);
   });
 
@@ -155,5 +158,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(captured, 50);
+  });
+
+  testWidgets('a placed فاصل opens the reader focused on its ayah', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      fasil: FasilState(
+        loaded: true,
+        slots: {FasilSlot.hifz: fasilPlace(FasilSlot.hifz, _baqarah5)},
+      ),
+    );
+
+    await tester.ensureVisible(key('places-go-hifz'));
+    await tester.tap(key('places-go-hifz'));
+    await tester.pumpAndSettle();
+
+    final args = captured as MushafArgs;
+    expect(args.focusAyah, _baqarah5);
+    expect(args.origin, MushafOrigin.jump);
+  });
+
+  testWidgets('the hadith row arrow points forward in RTL', (tester) async {
+    await open(
+      tester,
+      hadiths: {const HadithBookmark(bookSlug: 'bukhari', hadithNumber: '1')},
+    );
+
+    await tester.scrollUntilVisible(find.text('الأحاديث'), 200);
+    final icons = tester
+        .widgetList<HugeIcon>(find.byType(HugeIcon))
+        .map((i) => i.icon);
+    expect(icons, contains(HugeIcons.strokeRoundedArrowLeft02));
   });
 }
