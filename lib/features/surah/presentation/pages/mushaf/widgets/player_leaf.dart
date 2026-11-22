@@ -161,7 +161,7 @@ class _Controls extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 12,
                 children: [
-                  _Transport(onNewPlay: onNewPlay),
+                  _Transport(colors: colors, onNewPlay: onNewPlay),
                   _Actions(colors: colors, onNewPlay: onNewPlay),
                 ],
               ),
@@ -219,8 +219,9 @@ class _Error extends StatelessWidget {
 }
 
 class _Transport extends StatelessWidget {
-  const _Transport({required this.onNewPlay});
+  const _Transport({required this.colors, required this.onNewPlay});
 
+  final MushafPaperColors colors;
   final VoidCallback onNewPlay;
 
   Widget _label(String text) => FittedBox(
@@ -262,7 +263,11 @@ class _Transport extends StatelessWidget {
               flex: 2,
               child: FilledButton.icon(
                 key: const ValueKey('player-toggle'),
-                style: FilledButton.styleFrom(minimumSize: const Size(0, 56)),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 56),
+                  disabledBackgroundColor: colors.ink.withValues(alpha: 0.12),
+                  disabledForegroundColor: colors.ink.withValues(alpha: 0.38),
+                ),
                 icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
                 label: _label(
                   isPlaying

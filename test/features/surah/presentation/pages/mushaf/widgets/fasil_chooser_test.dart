@@ -128,6 +128,18 @@ void main() {
     }
   });
 
+  testWidgets('a ribbon already on the selected ayah offers no move', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      selected: const AyahIdentifier(surah: 3, ayah: 6),
+      preselect: FasilSlot.hifz,
+    );
+    expect(find.byKey(const ValueKey('fasil-move-hifz')), findsNothing);
+    expect(find.byKey(const ValueKey('fasil-move-wird')), findsOneWidget);
+  });
+
   testWidgets('with a selection placed rows move and unset rows place', (
     tester,
   ) async {
