@@ -10,10 +10,9 @@ import '../../../../../config/router/app_router.dart';
 import '../../../../../config/router/now_playing_route.dart';
 import '../../../../../core/constants/mushaf_reading_mode.dart';
 import '../../../../../core/di/dependency_injection.dart';
-import '../../../../../core/utils/screen_wake.dart';
 import '../../../../../core/helper functions/locale_helpers.dart';
 import '../../../../../core/localization/pending_s.dart';
-import '../../utils/mushaf_paper_colors.dart';
+import '../../../../../core/utils/screen_wake.dart';
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_meta_service.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
@@ -21,17 +20,16 @@ import '../../../../quran_playback/presentation/cubit/playback/playback_cubit.da
 import '../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
 import '../../../../quran_playback/presentation/cubit/surah_download/surah_download_cubit.dart';
 import '../../../../settings/presentation/cubit/settings_cubit.dart';
-import '../../../domain/entities/ayah_bound_entity.dart';
 import '../../../domain/entities/last_read.dart';
-import '../../../domain/usecases/get_mushaf_page.dart';
 import '../../cubit/last_read/last_read_cubit.dart';
 import '../../cubit/mushaf/mushaf_cubit.dart';
 import '../../cubit/mushaf/mushaf_state.dart';
 import '../../utils/follow_playback.dart';
+import '../../utils/mushaf_args.dart';
+import '../../utils/mushaf_paper_colors.dart';
 import '../../utils/page_bounds.dart';
 import '../../utils/reader_rules.dart';
 import 'last_read_saver.dart';
-import '../../utils/mushaf_args.dart';
 import 'page_turn_tracker.dart';
 import 'widgets/ayah_leaf.dart';
 import 'widgets/display_sheet.dart';
@@ -85,7 +83,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   MushafReadingMode? _lastBuiltMode;
 
   // Height of one Mushaf page in scroll mode. Derived from the available
-  // width ÷ the page image aspect ratio. Updated in didChangeDependencies.
+  // width × the fixed 1:1.82 aspect ratio. Updated in didChangeDependencies.
   double _scrollPageHeight = 0.0;
 
   @override
@@ -105,6 +103,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     if (_settingsCubit.state.settingsModel.keepScreenOn) {
       widget.screenWake.set(true);
     }
+    if (widget.args.focusAyah != null) _settingsCubit.markHintSeen();
     _resumeSub = nowPlayingResume.stream.listen(
       (_) => _mushafCubit.resumeFollow(),
     );
@@ -359,7 +358,12 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
       case MenuJump(:final page):
         _jumpInPlace(page);
       case MenuOpenPlaces():
-        context.push(AppRouter.bookmarksPath);
+        await context.push(AppRouter.bookmarksPath);
+        if (mounted) {
+          widget.screenWake.set(
+            _settingsCubit.state.settingsModel.keepScreenOn,
+          );
+        }
       case MenuOpenDisplay():
         DisplaySheet.show(context);
       case MenuPlayPage():
@@ -372,14 +376,19 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   void _onOverlayMeasured(Size size) {
     if (!mounted) return;
     _overlayHeight.value = size.height;
-    final selected = _mushafCubit.state.selectedAyah;
-    if (selected == null) {
+    final target = _slideTarget;
+    if (target == null || size.height == 0) {
       _slidFor = null;
-    } else if (selected != _slidFor &&
+    } else if (target != _slidFor &&
         _effectiveMode(context) == MushafReadingMode.scroll) {
-      _slidFor = selected;
-      _slideScrollTo(selected);
+      _slidFor = target;
+      _slideScrollTo(target);
     }
+  }
+
+  AyahIdentifier? get _slideTarget {
+    final state = _mushafCubit.state;
+    return state.selectedAyah ?? state.playingAyah;
   }
 
   Future<void> _slideScrollTo(AyahIdentifier ayah) async {
@@ -388,16 +397,16 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
       ayah.realAyah,
     );
     final state = _mushafCubit.state;
-    final bounds = page == state.currentPage && state.pageAyahs.isNotEmpty
-        ? state.pageAyahs
-        : (await sl<GetMushafPage>()(
-            page,
-          )).fold((_) => const <AyahBoundEntity>[], (e) => e.ayahs);
+    if (_overlayHeight.value == 0 ||
+        (state.selectedAyah == null && page != state.currentPage)) {
+      return;
+    }
+    final bounds = await _mushafCubit.boundsFor(page);
     final lineBottom = lineBottomOf(bounds, ayah);
     if (!mounted ||
         lineBottom == null ||
         !_scrollController.hasClients ||
-        _mushafCubit.state.selectedAyah != ayah) {
+        _slideTarget != ayah) {
       return;
     }
     final position = _scrollController.position;
@@ -470,12 +479,16 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
             listener: (_, _) => _settingsCubit.markHintSeen(),
           ),
           BlocListener<MushafCubit, MushafState>(
-            listenWhen: (a, b) =>
-                b.selectedAyah != null && a.selectedAyah != b.selectedAyah,
+            listenWhen: (a, b) {
+              final target = b.selectedAyah ?? b.playingAyah;
+              return target != null &&
+                  target != (a.selectedAyah ?? a.playingAyah);
+            },
             listener: (context, state) {
               if (_effectiveMode(context) == MushafReadingMode.scroll) {
-                if (_slidFor != null) _slidFor = state.selectedAyah;
-                _slideScrollTo(state.selectedAyah!);
+                final target = state.selectedAyah ?? state.playingAyah!;
+                if (_slidFor != null) _slidFor = target;
+                _slideScrollTo(target);
               }
             },
           ),
@@ -504,7 +517,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                       juz: meta.juz,
                       hizb: meta.hizb,
                       colors: colors,
-                      onBack: () => Navigator.of(context).pop(),
+                      onBack: () => context.pop(),
                       onOpenMenu: _openMenu,
                     );
                   },
@@ -620,13 +633,17 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
 
       return ColoredBox(
         color: separatorColor,
-        child: ListView.builder(
-          controller: _scrollController,
-          itemCount: 604,
-          itemExtent: _scrollPageHeight + _scrollPageGap,
-          itemBuilder: (_, i) => Padding(
-            padding: const EdgeInsets.only(bottom: _scrollPageGap),
-            child: MushafPageView(pageNumber: i + 1),
+        child: ValueListenableBuilder(
+          valueListenable: _overlayHeight,
+          builder: (context, overlay, _) => ListView.builder(
+            controller: _scrollController,
+            padding: EdgeInsets.only(bottom: overlay),
+            itemCount: 604,
+            itemExtent: _scrollPageHeight + _scrollPageGap,
+            itemBuilder: (_, i) => Padding(
+              padding: const EdgeInsets.only(bottom: _scrollPageGap),
+              child: MushafPageView(pageNumber: i + 1),
+            ),
           ),
         ),
       );
@@ -708,26 +725,32 @@ class _PageSlide extends StatelessWidget {
     valueListenable: overlayHeight,
     child: child,
     builder: (context, overlay, child) =>
-        BlocSelector<MushafCubit, MushafState, double?>(
-          selector: (s) => lineBottomOf(s.pageAyahs, s.selectedAyah),
-          builder: (context, lineBottom) => TweenAnimationBuilder<double>(
-            tween: Tween(
-              end: lineBottom == null
-                  ? 0
-                  : leafSlide(
-                      area: area,
-                      lineBottom: lineBottom,
-                      overlay: overlay,
-                    ),
-            ),
-            duration: const Duration(milliseconds: 200),
-            child: child,
-            builder: (context, slide, child) => Transform.translate(
-              key: const ValueKey('page-slide'),
-              offset: Offset(0, -slide),
-              child: child,
-            ),
+        BlocSelector<MushafCubit, MushafState, (double?, double?)>(
+          selector: (s) => (
+            lineBottomOf(s.pageAyahs, s.selectedAyah ?? s.playingAyah),
+            pageBottomOf(s.pageAyahs),
           ),
+          builder: (context, bottoms) {
+            final lineBottom = bottoms.$1 ?? bottoms.$2;
+            return TweenAnimationBuilder<double>(
+              tween: Tween(
+                end: lineBottom == null
+                    ? 0
+                    : leafSlide(
+                        area: area,
+                        lineBottom: lineBottom,
+                        overlay: overlay,
+                      ),
+              ),
+              duration: const Duration(milliseconds: 200),
+              child: child,
+              builder: (context, slide, child) => Transform.translate(
+                key: const ValueKey('page-slide'),
+                offset: Offset(0, -slide),
+                child: child,
+              ),
+            );
+          },
         ),
   );
 }
@@ -862,31 +885,44 @@ class _LeafSlot extends StatelessWidget {
                         onListenPage: onListenPage,
                       )
                     : active
-                    ? BlocBuilder<MushafCubit, MushafState>(
+                    ? _PlayerSlot(
                         key: const ValueKey('player'),
-                        buildWhen: (a, b) =>
-                            a.followPlayback != b.followPlayback ||
-                            a.playingAyah != b.playingAyah,
-                        builder: (context, state) {
-                          final playing = state.playingAyah;
-                          final page = mushaf.playingPage;
-                          return PlayerLeaf(
-                            colors: colors,
-                            away:
-                                !state.followPlayback &&
-                                    playing != null &&
-                                    page != null
-                                ? (ayah: playing, page: page)
-                                : null,
-                            onReturnToPlaying: mushaf.resumeFollow,
-                            onNewPlay: onNewPlay,
-                          );
-                        },
+                        colors: colors,
+                        onNewPlay: onNewPlay,
                       )
                     : const SizedBox.shrink(),
               ),
             ),
       ),
+    );
+  }
+}
+
+class _PlayerSlot extends StatelessWidget {
+  const _PlayerSlot({super.key, required this.colors, required this.onNewPlay});
+
+  final MushafPaperColors colors;
+  final VoidCallback onNewPlay;
+
+  @override
+  Widget build(BuildContext context) {
+    final mushaf = context.read<MushafCubit>();
+    return BlocBuilder<MushafCubit, MushafState>(
+      buildWhen: (a, b) =>
+          a.followPlayback != b.followPlayback ||
+          a.playingAyah != b.playingAyah,
+      builder: (context, state) {
+        final playing = mushaf.playingTarget;
+        final page = mushaf.playingPage;
+        return PlayerLeaf(
+          colors: colors,
+          away: !state.followPlayback && playing != null && page != null
+              ? (ayah: playing, page: page)
+              : null,
+          onReturnToPlaying: mushaf.resumeFollow,
+          onNewPlay: onNewPlay,
+        );
+      },
     );
   }
 }

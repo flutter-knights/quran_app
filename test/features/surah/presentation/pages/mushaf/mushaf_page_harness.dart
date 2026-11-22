@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
+import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/errors/failure.dart';
@@ -26,6 +28,7 @@ import 'package:quran_app/features/search/data/quran_browse_service_impl.dart';
 import 'package:quran_app/features/search/domain/services/quran_browse_service.dart';
 import 'package:quran_app/features/settings/data/models/settings_model.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:quran_app/features/surah/domain/entities/ayah_bound_entity.dart';
 import 'package:quran_app/features/surah/domain/entities/last_read.dart';
 import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
 import 'package:quran_app/features/surah/domain/repositories/last_read_repository.dart';
@@ -96,6 +99,12 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
 
   @override
   int? playingPage;
+
+  @override
+  AyahIdentifier? get playingTarget => state.playingAyah;
+
+  @override
+  Future<List<AyahBoundEntity>> boundsFor(int page) async => state.pageAyahs;
 
   final setPages = <(int, bool)>[];
   final jumps = <int>[];
@@ -370,37 +379,59 @@ Future<MushafHarness> pumpMushafPage(
     child: child,
   );
 
-  MaterialApp app(Widget home) => MaterialApp(
-    locale: const Locale('ar'),
-    localizationsDelegates: const [
-      S.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    supportedLocales: S.delegate.supportedLocales,
-    builder: (context, child) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
-      child: child!,
-    ),
-    home: home,
+  Widget builder(BuildContext context, Widget? child) => MediaQuery(
+    data: MediaQuery.of(
+      context,
+    ).copyWith(textScaler: TextScaler.linear(textScale)),
+    child: child!,
   );
 
+  const delegates = <LocalizationsDelegate<dynamic>>[
+    S.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ];
+
   if (pushed) {
-    await tester.pumpWidget(providers(app(const SizedBox.shrink())));
-    tester
-        .state<NavigatorState>(find.byType(Navigator))
-        .push(
-          MaterialPageRoute<void>(
-            builder: (_) => MushafPage(args: args, screenWake: h.wake),
-          ),
-        );
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const SizedBox.shrink()),
+        GoRoute(
+          path: '/reader',
+          builder: (_, _) => MushafPage(args: args, screenWake: h.wake),
+        ),
+        GoRoute(
+          path: AppRouter.bookmarksPath,
+          builder: (_, _) => const Scaffold(body: Text('bookmarks-stub')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      providers(
+        MaterialApp.router(
+          routerConfig: router,
+          locale: const Locale('ar'),
+          localizationsDelegates: delegates,
+          supportedLocales: S.delegate.supportedLocales,
+          builder: builder,
+        ),
+      ),
+    );
+    router.push('/reader');
     await tester.pumpAndSettle();
   } else {
     await tester.pumpWidget(
-      app(providers(MushafPage(args: args, screenWake: h.wake))),
+      providers(
+        MaterialApp(
+          locale: const Locale('ar'),
+          localizationsDelegates: delegates,
+          supportedLocales: S.delegate.supportedLocales,
+          builder: builder,
+          home: MushafPage(args: args, screenWake: h.wake),
+        ),
+      ),
     );
     await tester.pump();
   }

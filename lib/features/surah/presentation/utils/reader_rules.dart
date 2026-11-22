@@ -55,6 +55,14 @@ double? lineBottomOf(List<AyahBoundEntity> ayahs, AyahIdentifier? ayah) {
   return null;
 }
 
+double? pageBottomOf(List<AyahBoundEntity> ayahs) {
+  final bottoms = [
+    for (final b in ayahs)
+      for (final l in b.lines) l.y + l.h,
+  ];
+  return bottoms.isEmpty ? null : bottoms.reduce(math.max);
+}
+
 double leafSlide({
   required Size area,
   required double lineBottom,

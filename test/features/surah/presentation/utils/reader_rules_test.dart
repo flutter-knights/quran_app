@@ -61,6 +61,29 @@ void main() {
     });
   });
 
+  group('pageBottomOf', () {
+    test('is the lowest line of any ayah on the page', () {
+      final ayahs = [
+        AyahBoundEntity(
+          ayah: id(2, 3),
+          lines: const [NormalizedRect(x: 0, y: 0.1, w: 1, h: 0.05)],
+        ),
+        AyahBoundEntity(
+          ayah: id(2, 4),
+          lines: const [
+            NormalizedRect(x: 0, y: 0.5, w: 1, h: 0.05),
+            NormalizedRect(x: 0, y: 0.9, w: 1, h: 0.05),
+          ],
+        ),
+      ];
+      expect(pageBottomOf(ayahs), closeTo(0.95, 1e-9));
+    });
+
+    test('is null with no lines', () {
+      expect(pageBottomOf(const []), isNull);
+    });
+  });
+
   group('lineBottomOf', () {
     test('is the lowest line edge of the ayah', () {
       final ayahs = [

@@ -610,6 +610,89 @@ void main() {
     expect(slideOf(tester), 0);
   });
 
+  Rect pageBox(WidgetTester tester) => tester.getRect(
+    find
+        .descendant(
+          of: find.byType(MushafPageView),
+          matching: find.byType(AspectRatio),
+        )
+        .first,
+  );
+
+  final fullPage = [
+    _bound(_a6),
+    _bound(const AyahIdentifier(surah: 2, ayah: 20), y: 0.9148),
+  ];
+
+  testWidgets('the return chip never covers the last line of the page', (
+    tester,
+  ) async {
+    await pump(tester, state: _state(ayahs: fullPage));
+    await jumpFromMenu(tester, '120');
+
+    final chip = tester.getRect(find.byKey(const ValueKey('notice-chip')));
+    final box = pageBox(tester);
+    final lastLineBottom = box.top + box.height * 0.9648;
+    expect(find.text('العودة إلى صفحة ٧'), findsOneWidget);
+    expect(chip.top, greaterThanOrEqualTo(lastLineBottom - 0.5));
+    expect(
+      box.top + box.height * 0.065,
+      greaterThanOrEqualTo(tester.getRect(find.byType(RunningHead)).bottom),
+    );
+  });
+
+  testWidgets('the first-open hint never covers the last line', (tester) async {
+    await pump(
+      tester,
+      state: _state(ayahs: fullPage),
+      settings: FakeSettings(hintSeen: false),
+    );
+
+    final chip = tester.getRect(find.byKey(const ValueKey('notice-chip')));
+    final box = pageBox(tester);
+    expect(chip.top, greaterThanOrEqualTo(box.top + box.height * 0.9648 - 0.5));
+  });
+
+  testWidgets('the player leaf slides the page for the ayah being recited', (
+    tester,
+  ) async {
+    const low = AyahIdentifier(surah: 2, ayah: 20);
+    await pump(
+      tester,
+      state: _state(
+        playingAyah: low,
+        ayahs: [_bound(_a6), _bound(low, y: 0.9)],
+      ),
+      playback: _playing,
+    );
+
+    final leaf = tester.getRect(find.byType(PlayerLeaf));
+    final box = pageBox(tester);
+    expect(slideOf(tester), lessThan(0));
+    expect(box.top + box.height * 0.95, lessThanOrEqualTo(leaf.top + 0.5));
+  });
+
+  testWidgets('a jump arrival with focusAyah marks the tap hint seen', (
+    tester,
+  ) async {
+    const focus = AyahIdentifier(surah: 3, ayah: 7);
+    final args = MushafArgs(
+      page: 50,
+      focusAyah: focus,
+      origin: MushafOrigin.jump,
+    );
+    final settings = FakeSettings(hintSeen: false);
+    await pump(
+      tester,
+      state: MushafState.initial(args),
+      args: args,
+      settings: settings,
+    );
+
+    expect(settings.markHintSeenCalls, 1);
+    expect(find.text('اضغط على أي آية لترى معناها وأزرارها'), findsNothing);
+  });
+
   testWidgets('the raised page never covers the running head', (tester) async {
     const low = AyahIdentifier(surah: 2, ayah: 20);
     await pump(
@@ -680,6 +763,28 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(pixels(tester), after);
+    });
+
+    testWidgets('the end of the mushaf can scroll above the leaf', (
+      tester,
+    ) async {
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(page: 604, ayahs: bounds()),
+        args: const MushafArgs(page: 604),
+        settings: FakeSettings(mode: MushafReadingMode.scroll),
+      );
+      final position = tester
+          .widget<ListView>(find.byType(ListView))
+          .controller!
+          .position;
+      final before = position.maxScrollExtent;
+
+      mushaf.select(low);
+      await tester.pumpAndSettle();
+
+      final overlay = tester.getSize(find.byType(AyahLeaf)).height;
+      expect(position.maxScrollExtent - before, overlay);
     });
 
     testWidgets('arrival with focusAyah slides once', (tester) async {
@@ -773,6 +878,27 @@ void main() {
     );
 
     expect(h.wake.calls.where((on) => on), isEmpty);
+  });
+
+  testWidgets('keep-awake is restored after the places page pops', (
+    tester,
+  ) async {
+    final (_, h) = await pump(tester, pushed: true);
+    expect(h.wake.calls, [true]);
+
+    await tester.tap(find.byKey(const ValueKey('foot-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('menu-tile-places')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+    expect(find.text('bookmarks-stub'), findsOneWidget);
+
+    h.wake.calls.add(false);
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+
+    expect(h.wake.calls, [true, false, true]);
   });
 
   testWidgets('switching keep-awake off while open releases the screen', (
