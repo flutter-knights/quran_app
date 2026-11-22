@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
+import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_meta_service.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
@@ -35,9 +37,9 @@ class _SplitPageService implements QuranPageService {
   AyahIdentifier? getFirstAyahOfPage(int page) => null;
 }
 
-AyahBoundEntity _bound(AyahIdentifier a) => AyahBoundEntity(
+AyahBoundEntity _bound(AyahIdentifier a, {double y = 0.1}) => AyahBoundEntity(
   ayah: a,
-  lines: const [NormalizedRect(x: 0.1, y: 0.1, w: 0.8, h: 0.05)],
+  lines: [NormalizedRect(x: 0.1, y: y, w: 0.8, h: 0.05)],
 );
 
 MushafState _state({
@@ -72,6 +74,7 @@ void main() {
     MushafArgs args = const MushafArgs(page: 7),
     bool pushed = false,
     double textScale = 1.0,
+    FakeSettings? settings,
   }) async {
     final mushaf = FakeMushaf(state ?? _state());
     addTearDown(mushaf.close);
@@ -80,6 +83,7 @@ void main() {
       args,
       mushaf: mushaf,
       playback: FakePlayback(playback),
+      settings: settings,
       pushed: pushed,
       textScale: textScale,
     );
@@ -439,5 +443,286 @@ void main() {
 
     expect(find.byType(AyahLeaf), findsOneWidget);
     expect(find.text('آل عمران، الآية ٧'), findsOneWidget);
+  });
+
+  const downloadHint = 'يمكنك تنزيل السورة لتستمع دون إنترنت';
+  const streaming = PlaybackState(
+    requestedAyah: AyahIdentifier(surah: 3, ayah: 4),
+    currentAyah: AyahIdentifier(surah: 3, ayah: 4),
+    isPlaying: true,
+    playedFromNetwork: true,
+  );
+
+  Future<void> jumpFromMenu(WidgetTester tester, String page) async {
+    await tester.tap(find.byKey(const ValueKey('foot-menu')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('menu-search')), page);
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('menu-go')));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('after a menu jump the chip offers the way back', (tester) async {
+    final (mushaf, _) = await pump(tester);
+
+    await jumpFromMenu(tester, '120');
+
+    expect(find.text('العودة إلى صفحة ٧'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('notice-chip')));
+    await tester.pumpAndSettle();
+
+    expect(mushaf.jumps, [120, 7]);
+    expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
+  });
+
+  testWidgets('a manual turn removes the return chip', (tester) async {
+    await pump(tester);
+    await jumpFromMenu(tester, '120');
+
+    await tester.tap(find.byKey(const ValueKey('foot-next')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
+  });
+
+  testWidgets('first open shows the tap hint until فهمت', (tester) async {
+    final settings = FakeSettings(hintSeen: false);
+    await pump(tester, settings: settings);
+
+    expect(find.text('اضغط على أي آية لترى معناها وأزرارها'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('notice-action')));
+    await tester.pumpAndSettle();
+
+    expect(settings.markHintSeenCalls, 1);
+    expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
+  });
+
+  testWidgets('selecting an ayah marks the hint seen', (tester) async {
+    final settings = FakeSettings(hintSeen: false);
+    final (mushaf, _) = await pump(tester, settings: settings);
+
+    mushaf.select(_a6);
+    await tester.pumpAndSettle();
+
+    expect(settings.markHintSeenCalls, 1);
+  });
+
+  testWidgets('the download hint downloads the playing surah', (tester) async {
+    final settings = FakeSettings(downloadHintSeen: false);
+    final (_, h) = await pump(tester, settings: settings);
+
+    h.playback.push(streaming);
+    await tester.pumpAndSettle();
+    expect(find.text(downloadHint), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('notice-chip')));
+    await tester.pumpAndSettle();
+
+    expect(h.downloads.downloads, [(Reciter.alafasy, 3)]);
+    expect(settings.markDownloadHintSeenCalls, 1);
+  });
+
+  testWidgets('the download hint action only marks it seen', (tester) async {
+    final settings = FakeSettings(downloadHintSeen: false);
+    final (_, h) = await pump(tester, settings: settings);
+    h.playback.push(streaming);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('notice-action')));
+    await tester.pumpAndSettle();
+
+    expect(h.downloads.downloads, isEmpty);
+    expect(settings.markDownloadHintSeenCalls, 1);
+  });
+
+  testWidgets('a seen download hint never shows', (tester) async {
+    final settings = FakeSettings();
+    final (_, h) = await pump(tester, settings: settings);
+
+    h.playback.push(streaming);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
+    expect(settings.markDownloadHintSeenCalls, 0);
+  });
+
+  testWidgets('opening the reader mid-stream still shows the download hint', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      playback: streaming,
+      settings: FakeSettings(downloadHintSeen: false),
+    );
+
+    expect(find.text(downloadHint), findsOneWidget);
+  });
+
+  testWidgets('an audio error hides the download hint', (tester) async {
+    final (_, h) = await pump(
+      tester,
+      playback: streaming,
+      settings: FakeSettings(downloadHintSeen: false),
+    );
+    expect(find.byKey(const ValueKey('notice-chip')), findsOneWidget);
+
+    h.playback.push(
+      streaming.copyWith(
+        error: 'x',
+        requestedAyah: const AyahIdentifier(surah: 3, ayah: 4),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
+    expect(find.byKey(const ValueKey('player-retry')), findsOneWidget);
+  });
+
+  double slideOf(WidgetTester tester) => tester
+      .widget<Transform>(find.byKey(const ValueKey('page-slide')))
+      .transform
+      .getTranslation()
+      .y;
+
+  testWidgets('an ayah under the leaf slides the page up, one above it does '
+      'not', (tester) async {
+    const low = AyahIdentifier(surah: 2, ayah: 20);
+    final (mushaf, _) = await pump(
+      tester,
+      state: _state(ayahs: [_bound(_a6), _bound(low, y: 0.9)]),
+    );
+    expect(slideOf(tester), 0);
+
+    mushaf.select(low);
+    await tester.pumpAndSettle();
+
+    final overlay = tester.getSize(find.byType(AyahLeaf)).height;
+    expect(slideOf(tester), lessThan(0));
+    expect(slideOf(tester), greaterThanOrEqualTo(-overlay));
+
+    mushaf.clearSelection();
+    await tester.pumpAndSettle();
+    mushaf.select(_a6);
+    await tester.pumpAndSettle();
+
+    expect(slideOf(tester), 0);
+  });
+
+  testWidgets('the raised page never covers the running head', (tester) async {
+    const low = AyahIdentifier(surah: 2, ayah: 20);
+    await pump(
+      tester,
+      state: _state(selected: low, ayahs: [_bound(_a6), _bound(low, y: 0.9)]),
+      pushed: true,
+    );
+    expect(slideOf(tester), lessThan(0));
+
+    await tester.tap(find.byKey(const ValueKey('head-back')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MushafPage), findsNothing);
+  });
+
+  group('scroll mode', () {
+    const high = AyahIdentifier(surah: 2, ayah: 6);
+    const low = AyahIdentifier(surah: 2, ayah: 16);
+
+    List<AyahBoundEntity> bounds() => [
+      AyahBoundEntity(
+        ayah: high,
+        lines: const [NormalizedRect(x: 0.1, y: 0.1, w: 0.8, h: 0.05)],
+      ),
+      AyahBoundEntity(
+        ayah: low,
+        lines: const [NormalizedRect(x: 0.1, y: 0.85, w: 0.8, h: 0.05)],
+      ),
+    ];
+
+    double pixels(WidgetTester tester) => tester
+        .widget<ListView>(find.byType(ListView))
+        .controller!
+        .position
+        .pixels;
+
+    setUp(() => setUpMushafHarness(pageService: QuranPageServiceImpl()));
+
+    testWidgets('an ayah under the leaf scrolls by the need, one above it '
+        'does not', (tester) async {
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(page: 3, ayahs: bounds()),
+        args: const MushafArgs(page: 3),
+        settings: FakeSettings(mode: MushafReadingMode.scroll),
+      );
+      final before = pixels(tester);
+
+      mushaf.select(low);
+      await tester.pumpAndSettle();
+
+      final overlay = tester.getSize(find.byType(AyahLeaf)).height;
+      expect(pixels(tester) - before, greaterThan(0));
+      expect(pixels(tester) - before, lessThanOrEqualTo(overlay));
+      expect(mushaf.setPages.where((c) => c.$2), isEmpty);
+
+      final after = pixels(tester);
+      mushaf.clearSelection();
+      await tester.pumpAndSettle();
+      mushaf.select(high);
+      await tester.pumpAndSettle();
+
+      expect(pixels(tester), after);
+    });
+
+    testWidgets('arrival with focusAyah slides once', (tester) async {
+      final args = MushafArgs(
+        page: 3,
+        focusAyah: low,
+        origin: MushafOrigin.jump,
+      );
+      await pump(
+        tester,
+        state: MushafState.initial(args).copyWith(pageAyahs: bounds()),
+        args: args,
+        settings: FakeSettings(mode: MushafReadingMode.scroll),
+      );
+
+      final extent = tester.widget<ListView>(find.byType(ListView)).itemExtent!;
+      expect(pixels(tester), greaterThan(extent * 2));
+      expect(find.byType(AyahLeaf), findsOneWidget);
+    });
+  });
+
+  testWidgets('keep-awake turns on at entry and off on dispose', (
+    tester,
+  ) async {
+    final (_, h) = await pump(tester);
+    expect(h.wake.calls, [true]);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+
+    expect(h.wake.calls, [true, false]);
+  });
+
+  testWidgets('keep-awake stays off when the setting is off', (tester) async {
+    final (_, h) = await pump(
+      tester,
+      settings: FakeSettings(keepScreenOn: false),
+    );
+
+    expect(h.wake.calls.where((on) => on), isEmpty);
+  });
+
+  testWidgets('switching keep-awake off while open releases the screen', (
+    tester,
+  ) async {
+    final settings = FakeSettings();
+    final (_, h) = await pump(tester, settings: settings);
+
+    settings.updateKeepScreenOn(false);
+    await tester.pump();
+
+    expect(h.wake.calls, [true, false]);
   });
 }

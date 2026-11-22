@@ -118,6 +118,31 @@ void main() {
     expect(repo.saved, isNull);
   });
 
+  testWidgets('return chip: dispose does not overwrite last read', (
+    tester,
+  ) async {
+    final (repo, _) = await disposeOn(
+      tester,
+      const MushafArgs(page: 7),
+      mushafState: const MushafState(currentPage: 7),
+      act: (_) async {
+        await tester.tap(find.byKey(const ValueKey('foot-menu')));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const ValueKey('menu-search')),
+          '300',
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('menu-go')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('notice-chip')));
+        await tester.pumpAndSettle();
+      },
+    );
+
+    expect(repo.saved, isNull);
+  });
+
   testWidgets('a normal arrival on the last-read page keeps its ayah', (
     tester,
   ) async {

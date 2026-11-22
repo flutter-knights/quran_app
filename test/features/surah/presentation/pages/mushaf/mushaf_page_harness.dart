@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/errors/failure.dart';
+import 'package:quran_app/core/utils/screen_wake.dart';
 import 'package:quran_app/features/bookmarks/domain/repositories/page_bookmark_repository.dart';
 import 'package:quran_app/features/bookmarks/domain/usecases/get_page_bookmarks.dart';
 import 'package:quran_app/features/bookmarks/domain/usecases/toggle_page_bookmark.dart';
@@ -81,6 +82,13 @@ class FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
 
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
+class FakeScreenWake extends ScreenWake {
+  final calls = <bool>[];
+
+  @override
+  Future<void> set(bool on) async => calls.add(on);
 }
 
 class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
@@ -312,6 +320,7 @@ typedef MushafHarness = ({
   FakeSettings settings,
   FakeBookmarks bookmarks,
   FakeDownloads downloads,
+  FakeScreenWake wake,
   StubLastReadRepo repo,
 });
 
@@ -333,6 +342,7 @@ Future<MushafHarness> pumpMushafPage(
     settings: settings ?? FakeSettings(),
     bookmarks: FakeBookmarks(),
     downloads: FakeDownloads(),
+    wake: FakeScreenWake(),
     repo: StubLastReadRepo(stored),
   );
   final pageBookmarks = PageBookmarkCubit(
@@ -382,10 +392,16 @@ Future<MushafHarness> pumpMushafPage(
     await tester.pumpWidget(providers(app(const SizedBox.shrink())));
     tester
         .state<NavigatorState>(find.byType(Navigator))
-        .push(MaterialPageRoute<void>(builder: (_) => MushafPage(args: args)));
+        .push(
+          MaterialPageRoute<void>(
+            builder: (_) => MushafPage(args: args, screenWake: h.wake),
+          ),
+        );
     await tester.pumpAndSettle();
   } else {
-    await tester.pumpWidget(app(providers(MushafPage(args: args))));
+    await tester.pumpWidget(
+      app(providers(MushafPage(args: args, screenWake: h.wake))),
+    );
     await tester.pump();
   }
   return h;
