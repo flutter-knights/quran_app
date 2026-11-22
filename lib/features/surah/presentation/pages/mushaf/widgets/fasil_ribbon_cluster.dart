@@ -21,13 +21,13 @@ extension on FasilSlot {
 class _RibbonPainter extends CustomPainter {
   const _RibbonPainter({
     required this.color,
-    required this.stitch,
+    this.stitch,
     this.end = _End.square,
     this.shadow = true,
   });
 
   final Color color;
-  final Color stitch;
+  final Color? stitch;
   final _End end;
   final bool shadow;
 
@@ -59,11 +59,18 @@ class _RibbonPainter extends CustomPainter {
       );
     }
     canvas.drawPath(path, Paint()..color = color);
+    final stitch = this.stitch;
+    if (stitch == null) return;
+    final stitchEnd = end == _End.square ? h : h - 8;
     final line = Paint()
       ..color = stitch
       ..strokeWidth = 1;
-    for (var y = 3.0; y < h - 8; y += 4) {
-      canvas.drawLine(Offset(w / 2, y), Offset(w / 2, min(y + 2, h - 8)), line);
+    for (var y = 3.0; y < stitchEnd; y += 4) {
+      canvas.drawLine(
+        Offset(w / 2, y),
+        Offset(w / 2, min(y + 2, stitchEnd)),
+        line,
+      );
     }
   }
 
@@ -103,6 +110,7 @@ class FasilRibbonCluster extends StatelessWidget {
     return Semantics(
       button: true,
       excludeSemantics: true,
+      onTap: onTap,
       label: s.fasil_clusterLabel(names.join('، ')),
       child: Tooltip(
         message: s.fasil_title,
@@ -117,6 +125,7 @@ class FasilRibbonCluster extends StatelessWidget {
               children: [
                 for (final slot in placed.keys)
                   Positioned(
+                    key: ValueKey('fasil-rib-${slot.name}'),
                     left: fasilRibbonX(slot),
                     top: 0,
                     width: 12,
@@ -157,6 +166,7 @@ class FasilTailTab extends StatelessWidget {
     return Semantics(
       button: true,
       excludeSemantics: true,
+      onTap: onTap,
       label: name,
       child: GestureDetector(
         onTap: onTap,
@@ -176,7 +186,6 @@ class FasilTailTab extends StatelessWidget {
                 child: CustomPaint(
                   painter: _RibbonPainter(
                     color: paper.ribbon(slot),
-                    stitch: Colors.transparent,
                     end: slot.end,
                   ),
                   child: RotatedBox(
@@ -192,6 +201,7 @@ class FasilTailTab extends StatelessWidget {
                           textScaler: TextScaler.noScaling,
                           style: TS.bold14.copyWith(
                             color: paper.colors.background,
+                            height: 22 / 14,
                           ),
                         ),
                       ),

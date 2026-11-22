@@ -79,13 +79,45 @@ void main() {
     final cluster = find.byKey(const ValueKey('fasil-cluster'));
     expect(tester.getSize(cluster), const Size(48, 56));
     expect(find.bySemanticsLabel('الفواصل: الورد، المراجعة'), findsOneWidget);
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('الفواصل: الورد، المراجعة')),
+      matchesSemantics(
+        label: 'الفواصل: الورد، المراجعة',
+        isButton: true,
+        hasTapAction: true,
+      ),
+    );
     await tester.tap(cluster);
     expect(taps, 1);
     handle.dispose();
   });
 
+  for (final direction in TextDirection.values) {
+    testWidgets('only placed ribbons are drawn, from the left in $direction', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        FasilRibbonCluster(
+          placed: const {FasilSlot.wird: 'الورد', FasilSlot.muraja: 'المراجعة'},
+          paper: MushafPaper.sepia,
+          onTap: () {},
+        ),
+        direction: direction,
+      );
+      final cluster = find.byKey(const ValueKey('fasil-cluster'));
+      double x(String slot) =>
+          tester.getTopLeft(find.byKey(ValueKey('fasil-rib-$slot'))).dx -
+          tester.getTopLeft(cluster).dx;
+      expect(x('wird'), 4);
+      expect(x('muraja'), 32);
+      expect(find.byKey(const ValueKey('fasil-rib-hifz')), findsNothing);
+    });
+  }
+
   testWidgets('the tail tab prints its name and is 48 by 88', (tester) async {
     var taps = 0;
+    final handle = tester.ensureSemantics();
     await pump(
       tester,
       FasilTailTab(
@@ -98,8 +130,13 @@ void main() {
     final tab = find.byKey(const ValueKey('fasil-tail-hifz'));
     expect(find.text('الحفظ'), findsOneWidget);
     expect(tester.getSize(tab), const Size(48, 88));
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('الحفظ')),
+      matchesSemantics(label: 'الحفظ', isButton: true, hasTapAction: true),
+    );
     await tester.tap(tab);
     expect(taps, 1);
+    handle.dispose();
   });
 
   for (final direction in TextDirection.values) {
@@ -159,10 +196,9 @@ void main() {
         onTap: () {},
       ),
     );
-    expect(
-      tester.widget<Text>(find.text('الورد')).style!.color,
-      MushafPaper.sepia.colors.background,
-    );
+    final style = tester.widget<Text>(find.text('الورد')).style!;
+    expect(style.color, MushafPaper.sepia.colors.background);
+    expect(style.height, 22 / 14);
   });
 
   testWidgets('the strip ignores taps', (tester) async {
@@ -190,5 +226,56 @@ void main() {
     );
     await tester.tapAt(const Offset(24, 100));
     expect(taps, 1);
+  });
+
+  testWidgets('a strip stitches to its bottom edge', (tester) async {
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.rtl,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 18,
+              top: 0,
+              width: 12,
+              height: 200,
+              child: FasilStrip(slot: FasilSlot.hifz, paper: MushafPaper.sepia),
+            ),
+          ],
+        ),
+      ),
+    );
+    final paint = find.descendant(
+      of: find.byKey(const ValueKey('fasil-strip-hifz')),
+      matching: find.byType(CustomPaint),
+    );
+    var lastStitch = 0.0;
+    expect(
+      tester.renderObject(paint.first),
+      paints..everything((method, arguments) {
+        if (method == #drawLine) {
+          lastStitch = (arguments[1] as Offset).dy;
+        }
+        return true;
+      }),
+    );
+    expect(lastStitch, 200);
+  });
+
+  testWidgets('the tail tab draws no stitches', (tester) async {
+    await pump(
+      tester,
+      FasilTailTab(
+        slot: FasilSlot.wird,
+        name: 'الورد',
+        paper: MushafPaper.sepia,
+        onTap: () {},
+      ),
+    );
+    final paint = find.descendant(
+      of: find.byKey(const ValueKey('fasil-tail-label')),
+      matching: find.byType(CustomPaint),
+    );
+    expect(tester.renderObject(paint.first), isNot(paints..line()));
   });
 }
