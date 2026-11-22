@@ -89,6 +89,26 @@ void main() {
     expect(repo.places, {saved.id: saved});
   });
 
+  test('restore skips an ayah saved again meanwhile', () async {
+    final cubit = await build();
+    final first = (await cubit.save(a25))!;
+    await cubit.remove(first);
+    final second = (await cubit.save(a25))!;
+    await cubit.restore(first);
+    expect(cubit.state.items, [second]);
+    expect(repo.places, {second.id: second});
+  });
+
+  test('a failing remove sets the error and keeps the item', () async {
+    final cubit = await build();
+    final saved = (await cubit.save(a25))!;
+    repo.failNext = true;
+    await cubit.remove(saved);
+    expect(cubit.state.error, isNotNull);
+    expect(cubit.state.items, [saved]);
+    expect(repo.places, {saved.id: saved});
+  });
+
   test('contains and find look up by ayah', () async {
     final cubit = await build();
     final saved = (await cubit.save(a25))!;

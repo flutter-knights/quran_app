@@ -104,6 +104,19 @@ void main() {
   });
 
   test(
+    'a failing restore with null sets the error and keeps the slot',
+    () async {
+      final cubit = await build();
+      final placed = (await cubit.move(FasilSlot.wird, a25))!.moved;
+      repo.failNext = true;
+      await cubit.restore(FasilSlot.wird, null);
+      expect(cubit.state.error, isNotNull);
+      expect(cubit.state.slots, {FasilSlot.wird: placed});
+      expect(repo.places, {placed.id: placed});
+    },
+  );
+
+  test(
     'restore brings back the exact previous record even after a rename',
     () async {
       final cubit = await build();

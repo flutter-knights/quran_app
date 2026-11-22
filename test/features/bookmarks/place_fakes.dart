@@ -124,7 +124,10 @@ class FakeSavedAyatCubit extends Cubit<SavedAyatState>
   @override
   Future<Place?> save(AyahIdentifier ayah) async {
     saves.add(ayah);
-    final place = savedPlace(ayah);
+    final place = savedPlace(
+      ayah,
+      at: _defaultAt.add(Duration(minutes: saves.length)),
+    );
     emit(state.copyWith(items: [place, ...state.items]));
     return place;
   }

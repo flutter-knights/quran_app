@@ -57,7 +57,7 @@ class SavedAyatCubit extends Cubit<SavedAyatState> {
   }
 
   Future<void> restore(Place place) async {
-    if (!state.loaded) return;
+    if (!state.loaded || state.contains(place.ayah)) return;
     await _add(place);
   }
 
