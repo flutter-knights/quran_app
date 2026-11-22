@@ -2,13 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../../config/router/app_router.dart';
 import '../../../../../config/router/now_playing_route.dart';
 import '../../../../../core/constants/mushaf_reading_mode.dart';
+import '../../../../../core/di/dependency_injection.dart';
 import '../../../../../core/helper functions/locale_helpers.dart';
 import '../../utils/mushaf_paper_colors.dart';
-import '../../../../bookmarks/presentation/cubit/page_bookmark_cubit.dart';
-import '../../../../bookmarks/presentation/cubit/page_bookmark_state.dart';
+import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../../quran_playback/domain/services/quran_meta_service.dart';
 import '../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../quran_playback/presentation/cubit/playback/playback_state.dart';
 import '../../../../settings/presentation/cubit/settings_cubit.dart';
@@ -22,12 +25,13 @@ import '../../utils/reader_rules.dart';
 import 'last_read_saver.dart';
 import '../../utils/mushaf_args.dart';
 import 'page_turn_tracker.dart';
-import 'widgets/ayah_playback_overlay.dart';
-import 'widgets/mushaf_browse_bar.dart';
-import 'widgets/mushaf_page_view.dart';
-import 'widgets/mushaf_top_bar.dart';
-import 'widgets/page_jump_sheet.dart';
+import 'widgets/ayah_leaf.dart';
 import 'widgets/display_sheet.dart';
+import 'widgets/menu_sheet.dart';
+import 'widgets/mushaf_page_view.dart';
+import 'widgets/player_leaf.dart';
+import 'widgets/reader_foot.dart';
+import 'widgets/running_head.dart';
 
 class MushafPage extends StatefulWidget {
   const MushafPage({super.key, required this.args});
@@ -258,18 +262,79 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     return context.read<SettingsCubit>().state.settingsModel.readingMode;
   }
 
-  void _onPlayPage() {
-    final range = pagePlaybackRange(_mushafCubit.state.pageAyahs);
-    if (range == null) return;
+  void _play(AyahIdentifier start, AyahIdentifier end) {
     _mushafCubit.resumeFollow();
-    _playbackCubit.playRange(start: range.start, end: range.end);
+    _playbackCubit.playRange(start: start, end: end);
+    _mushafCubit.clearSelection();
   }
 
-  Future<void> _onJumpToPage(BuildContext context) async {
-    final page = await PageJumpSheet.show(context);
-    if (page == null || !context.mounted) return;
+  void _onPlayPage() {
+    final range = pagePlaybackRange(_mushafCubit.state.pageAyahs);
+    if (range != null) _play(range.start, range.end);
+  }
+
+  void _onListen() {
+    final state = _mushafCubit.state;
+    final range = listenRange(
+      selected: state.selectedAyah,
+      ayahs: state.pageAyahs,
+    );
+    if (range != null) _play(range.start, range.end);
+  }
+
+  void _onListenFromSurahStart(AyahIdentifier ayah) {
+    final range = listenRange(
+      selected: AyahIdentifier(surah: ayah.surah, ayah: 1),
+      ayahs: const [],
+    );
+    if (range != null) _play(range.start, range.end);
+  }
+
+  void _turnBy(int delta) {
+    final page = _mushafCubit.state.currentPage;
+    if (_effectiveMode(context) == MushafReadingMode.page) {
+      if (!_pageController.hasClients) return;
+      _pageController.animateToPage(
+        page - 1 + delta,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      if (!_scrollController.hasClients || _scrollPageHeight == 0) return;
+      _scrollController.animateTo(
+        _scrollOffsetFor(page + delta),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  Future<void> _openMenu() async {
+    final state = _mushafCubit.state;
+    final action = await MenuSheet.show(
+      context,
+      currentSurah: state.runningSurah,
+      currentJuz: sl<QuranMetaService>().getPageMeta(state.currentPage).juz,
+    );
+    if (!mounted) return;
+    switch (action) {
+      case MenuJump(:final page):
+        _jumpInPlace(page);
+      case MenuOpenPlaces():
+        context.push(AppRouter.bookmarksPath);
+      case MenuOpenDisplay():
+        DisplaySheet.show(context);
+      case MenuPlayPage():
+        _onPlayPage();
+      case null:
+        break;
+    }
+  }
+
+  void _jumpInPlace(int page) {
     _lastReadSaver.rearm();
     final turn = _turns.begin(page);
+    _mushafCubit.jumpTo(page);
     if (_effectiveMode(context) == MushafReadingMode.page) {
       if (_pageController.hasClients) _pageController.jumpToPage(page - 1);
     } else {
@@ -277,7 +342,6 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
         _scrollController.jumpTo(_scrollOffsetFor(page));
       }
     }
-    _mushafCubit.setPage(page, byUser: true);
     WidgetsBinding.instance.addPostFrameCallback((_) => _turns.end(turn));
   }
 
@@ -285,92 +349,94 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // Reading mode: landscape always uses scroll; portrait respects settings.
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    final readingMode = context
-        .watch<SettingsCubit>()
-        .state
-        .settingsModel
-        .readingMode;
-    final effectiveMode = isLandscape ? MushafReadingMode.scroll : readingMode;
+    final settings = context.watch<SettingsCubit>().state.settingsModel;
+    final effectiveMode = isLandscape
+        ? MushafReadingMode.scroll
+        : settings.readingMode;
+    final colors = settings.mushafPaper.colors;
 
-    return BlocListener<MushafCubit, MushafState>(
-      listenWhen: (a, b) =>
-          a.playingAyah != b.playingAyah ||
-          (!a.followPlayback && b.followPlayback),
-      listener: (_, state) => _onFollowChanged(state),
-      child: Scaffold(
-        body: SafeArea(
-          child: Stack(
-            children: [
-              // Reading area.
-              Positioned.fill(child: _buildReadingArea(context, effectiveMode)),
-
-              // Top bar — visible whenever chrome is visible (even during
-              // playback, so back / page-jump stay reachable).
-              BlocBuilder<MushafCubit, MushafState>(
-                buildWhen: (a, b) =>
-                    a.chromeVisible != b.chromeVisible ||
-                    a.currentPage != b.currentPage ||
-                    a.selectedAyah != b.selectedAyah ||
-                    a.playingAyah != b.playingAyah ||
-                    a.pageAyahs != b.pageAyahs ||
-                    a.openedSurah != b.openedSurah,
-                builder: (context, state) {
-                  final running = state.runningSurah;
-                  return SafeArea(
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: AnimatedSlide(
-                        offset: state.chromeVisible
-                            ? Offset.zero
-                            : const Offset(0, -2),
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOutCubic,
-                        child: AnimatedOpacity(
-                          opacity: state.chromeVisible ? 1 : 0,
-                          duration: const Duration(milliseconds: 180),
-                          child: IgnorePointer(
-                            ignoring: !state.chromeVisible,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                              child: MushafTopBar(
-                                surahName: running == null
-                                    ? ''
-                                    : surahDisplayName(context, running),
-                                pageNumber: state.currentPage,
-                                localeCode: context.langCode,
-                                onBack: () => Navigator.of(context).maybePop(),
-                                onJump: () => _onJumpToPage(context),
-                              ),
-                            ),
+    return BlocSelector<MushafCubit, MushafState, bool>(
+      selector: (s) => s.selectedAyah == null,
+      builder: (context, noLeaf) => PopScope(
+        canPop: noLeaf,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _mushafCubit.clearSelection();
+        },
+        child: BlocListener<MushafCubit, MushafState>(
+          listenWhen: (a, b) =>
+              a.playingAyah != b.playingAyah ||
+              (!a.followPlayback && b.followPlayback),
+          listener: (_, state) => _onFollowChanged(state),
+          child: Scaffold(
+            backgroundColor: colors.background,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  BlocSelector<MushafCubit, MushafState, (int, int?)>(
+                    selector: (s) => (s.currentPage, s.runningSurah),
+                    builder: (context, head) {
+                      final (page, surah) = head;
+                      final meta = sl<QuranMetaService>().getPageMeta(page);
+                      return RunningHead(
+                        surahName: surah == null
+                            ? ''
+                            : surahDisplayName(context, surah),
+                        page: page,
+                        juz: meta.juz,
+                        hizb: meta.hizb,
+                        colors: colors,
+                        onBack: () => Navigator.of(context).pop(),
+                        onOpenMenu: _openMenu,
+                      );
+                    },
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: _buildReadingArea(context, effectiveMode),
+                        ),
+                        PositionedDirectional(
+                          start: 0,
+                          end: 0,
+                          bottom: 0,
+                          child: _LeafSlot(
+                            colors: colors,
+                            onListenFromHere: _onListen,
+                            onListenFromSurahStart: _onListenFromSurahStart,
+                            onListenPage: _onPlayPage,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                  BlocBuilder<MushafCubit, MushafState>(
+                    buildWhen: (a, b) =>
+                        a.currentPage != b.currentPage ||
+                        a.selectedAyah != b.selectedAyah ||
+                        a.pageAyahs != b.pageAyahs,
+                    builder: (context, state) => ReaderFoot(
+                      colors: colors,
+                      onPrevious: state.currentPage > 1
+                          ? () => _turnBy(-1)
+                          : null,
+                      onNext: state.currentPage < 604 ? () => _turnBy(1) : null,
+                      onListen:
+                          listenRange(
+                                selected: state.selectedAyah,
+                                ayahs: state.pageAyahs,
+                              ) ==
+                              null
+                          ? null
+                          : _onListen,
+                      onMenu: _openMenu,
+                    ),
+                  ),
+                ],
               ),
-
-              // Browse bar — only when chrome is visible AND the player is not.
-              BlocBuilder<MushafCubit, MushafState>(
-                buildWhen: (a, b) =>
-                    a.chromeVisible != b.chromeVisible ||
-                    a.selectedAyah != b.selectedAyah ||
-                    a.isOverlayPinned != b.isOverlayPinned ||
-                    a.currentPage != b.currentPage,
-                builder: (context, state) => _BrowseBarSlot(
-                  chromeVisible: state.chromeVisible,
-                  selectedOrPinned:
-                      state.selectedAyah != null || state.isOverlayPinned,
-                  currentPage: state.currentPage,
-                  onPlay: _onPlayPage,
-                ),
-              ),
-
-              const AyahPlaybackOverlay(),
-            ],
+            ),
           ),
         ),
       ),
@@ -445,58 +511,69 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   }
 }
 
-class _BrowseBarSlot extends StatelessWidget {
-  const _BrowseBarSlot({
-    required this.chromeVisible,
-    required this.selectedOrPinned,
-    required this.currentPage,
-    required this.onPlay,
+class _LeafSlot extends StatelessWidget {
+  const _LeafSlot({
+    required this.colors,
+    required this.onListenFromHere,
+    required this.onListenFromSurahStart,
+    required this.onListenPage,
   });
 
-  final bool chromeVisible;
-  final bool selectedOrPinned;
-  final int currentPage;
-  final VoidCallback onPlay;
+  final MushafPaperColors colors;
+  final VoidCallback onListenFromHere;
+  final void Function(AyahIdentifier ayah) onListenFromSurahStart;
+  final VoidCallback onListenPage;
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<PlaybackCubit, PlaybackState, bool>(
-      selector: (p) => (p.requestedAyah ?? p.currentAyah) != null,
-      builder: (context, active) {
-        final visible = chromeVisible && !(selectedOrPinned || active);
-        return SafeArea(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: AnimatedSlide(
-              offset: visible ? Offset.zero : const Offset(0, 2),
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              child: AnimatedOpacity(
-                opacity: visible ? 1 : 0,
-                duration: const Duration(milliseconds: 180),
-                child: IgnorePointer(
-                  ignoring: !visible,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: BlocBuilder<PageBookmarkCubit, PageBookmarkState>(
-                      buildWhen: (a, b) =>
-                          a.contains(currentPage) != b.contains(currentPage),
-                      builder: (context, pb) => MushafBrowseBar(
-                        isSaved: pb.contains(currentPage),
-                        onSettings: () => DisplaySheet.show(context),
-                        onPlay: onPlay,
-                        onToggleSave: () => context
-                            .read<PageBookmarkCubit>()
-                            .toggle(currentPage),
-                      ),
-                    ),
-                  ),
-                ),
+    final mushaf = context.read<MushafCubit>();
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {},
+      child: BlocSelector<MushafCubit, MushafState, AyahIdentifier?>(
+        selector: (s) => s.selectedAyah,
+        builder: (context, selected) =>
+            BlocSelector<PlaybackCubit, PlaybackState, bool>(
+              selector: (p) => (p.requestedAyah ?? p.currentAyah) != null,
+              builder: (context, active) => AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: selected != null
+                    ? AyahLeaf(
+                        key: ValueKey(selected),
+                        ayah: selected,
+                        colors: colors,
+                        onClose: mushaf.clearSelection,
+                        onListenFromHere: onListenFromHere,
+                        onListenFromSurahStart: () =>
+                            onListenFromSurahStart(selected),
+                        onListenPage: onListenPage,
+                      )
+                    : active
+                    ? BlocBuilder<MushafCubit, MushafState>(
+                        key: const ValueKey('player'),
+                        buildWhen: (a, b) =>
+                            a.followPlayback != b.followPlayback ||
+                            a.playingAyah != b.playingAyah,
+                        builder: (context, state) {
+                          final playing = state.playingAyah;
+                          final page = mushaf.playingPage;
+                          return PlayerLeaf(
+                            colors: colors,
+                            away:
+                                !state.followPlayback &&
+                                    playing != null &&
+                                    page != null
+                                ? (ayah: playing, page: page)
+                                : null,
+                            onReturnToPlaying: mushaf.resumeFollow,
+                            onNewPlay: mushaf.resumeFollow,
+                          );
+                        },
+                      )
+                    : const SizedBox.shrink(),
               ),
             ),
-          ),
-        );
-      },
+      ),
     );
   }
 }
