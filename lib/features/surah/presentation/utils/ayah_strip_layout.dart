@@ -2,9 +2,9 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:quran_app/features/surah/domain/entities/normalized_rect.dart';
+import 'package:quran_app/features/surah/presentation/utils/reader_rules.dart';
 
 const ayahStripMaxLines = 3;
-const ayahStripPageSize = Size(1536, 2795);
 
 ({List<({Rect src, Rect dst})> slices, double height}) ayahStripLayout({
   required List<NormalizedRect> lines,
@@ -29,7 +29,5 @@ const ayahStripPageSize = Size(1536, 2795);
   return (slices: slices, height: top);
 }
 
-int ayahStripCacheWidth(double width, double devicePixelRatio) => math.min(
-  ayahStripPageSize.width.toInt(),
-  (width * devicePixelRatio).ceil(),
-);
+int ayahStripCacheWidth(double width, double devicePixelRatio) =>
+    math.min(mushafPageSize.width.toInt(), (width * devicePixelRatio).ceil());

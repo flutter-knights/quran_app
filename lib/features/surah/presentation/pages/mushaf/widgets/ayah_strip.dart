@@ -6,6 +6,7 @@ import 'package:quran_app/core/constants/assets_dir.dart';
 import 'package:quran_app/features/surah/domain/entities/normalized_rect.dart';
 import 'package:quran_app/features/surah/presentation/utils/ayah_strip_layout.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
+import 'package:quran_app/features/surah/presentation/utils/reader_rules.dart';
 
 class AyahStrip extends StatefulWidget {
   const AyahStrip({
@@ -28,8 +29,11 @@ class AyahStrip extends StatefulWidget {
 class _AyahStripState extends State<AyahStrip> {
   ImageInfo? _info;
   ImageStream? _stream;
-  late final ImageStreamListener _listener = ImageStreamListener(_onImage);
-  double? _resolvedKey;
+  late final ImageStreamListener _listener = ImageStreamListener(
+    _onImage,
+    onError: (_, _) {},
+  );
+  (double, double)? _resolvedKey;
 
   void _onImage(ImageInfo info, bool synchronousCall) {
     _info?.dispose();
@@ -46,7 +50,8 @@ class _AyahStripState extends State<AyahStrip> {
   }
 
   void _resolve(double width, double dpr) {
-    if (!mounted || _resolvedKey != width) return;
+    if (!mounted || _resolvedKey != (width, dpr)) return;
+    _stream?.removeListener(_listener);
     final cacheWidth = ayahStripCacheWidth(width, dpr);
     final provider =
         widget.imageFor?.call(cacheWidth) ??
@@ -80,12 +85,12 @@ class _AyahStripState extends State<AyahStrip> {
         final width = constraints.maxWidth;
         final layout = ayahStripLayout(
           lines: widget.lines,
-          image: ayahStripPageSize,
+          image: mushafPageSize,
           width: width,
         );
-        if (_resolvedKey != width) {
+        if (_resolvedKey != (width, dpr)) {
           _release();
-          _resolvedKey = width;
+          _resolvedKey = (width, dpr);
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _resolve(width, dpr),
           );
@@ -128,7 +133,7 @@ class AyahStripPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, Paint()..color = colors.background);
     final image = this.image;
     if (image == null) return;
-    final k = image.width / ayahStripPageSize.width;
+    final k = image.width / mushafPageSize.width;
     final paint = Paint()
       ..colorFilter = ColorFilter.mode(colors.ink, BlendMode.srcIn)
       ..filterQuality = FilterQuality.medium;

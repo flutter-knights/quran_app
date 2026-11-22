@@ -8,6 +8,7 @@ import 'package:quran_app/features/surah/domain/entities/normalized_rect.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_strip.dart';
 import 'package:quran_app/features/surah/presentation/utils/ayah_strip_layout.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
+import 'package:quran_app/features/surah/presentation/utils/reader_rules.dart';
 
 const _lines = [
   NormalizedRect(x: .1, y: .2, w: .8, h: .05),
@@ -51,7 +52,7 @@ void main() {
     );
     final expected = ayahStripLayout(
       lines: _lines,
-      image: const Size(1536, 2795),
+      image: mushafPageSize,
       width: 320,
     ).height;
     expect(tester.getSize(find.byType(AyahStrip)).height, expected);
@@ -114,5 +115,90 @@ void main() {
       find.byKey(const ValueKey('ayah-strip-paint')),
     );
     expect((paint.painter! as AyahStripPainter).image, isNotNull);
+  });
+
+  testWidgets('a page change drops the old image and requests the new page', (
+    tester,
+  ) async {
+    final bytes = await _png(tester);
+    final requested = <int>[];
+    Widget strip(int page) => _host(
+      AyahStrip(
+        page: page,
+        lines: _lines,
+        colors: colors,
+        imageFor: (w) {
+          requested.add(page);
+          return MemoryImage(bytes);
+        },
+      ),
+    );
+    ui.Image? imageOf() =>
+        (tester
+                    .widget<CustomPaint>(
+                      find.byKey(const ValueKey('ayah-strip-paint')),
+                    )
+                    .painter!
+                as AyahStripPainter)
+            .image;
+
+    await tester.pumpWidget(strip(5));
+    await tester.runAsync(
+      () => Future.delayed(const Duration(milliseconds: 200)),
+    );
+    await tester.pump();
+    expect(imageOf(), isNotNull);
+    expect(requested, [5]);
+
+    await tester.pumpWidget(strip(6));
+    expect(imageOf(), isNull);
+    expect(requested, [5, 6]);
+  });
+
+  testWidgets('a pixel ratio change decodes again at the new width', (
+    tester,
+  ) async {
+    addTearDown(tester.view.reset);
+    final bytes = await _png(tester);
+    final requested = <int>[];
+    final host = _host(
+      AyahStrip(
+        page: 5,
+        lines: _lines,
+        colors: colors,
+        imageFor: (w) {
+          requested.add(w);
+          return MemoryImage(bytes);
+        },
+      ),
+    );
+    tester.view.devicePixelRatio = 2;
+    await tester.pumpWidget(host);
+    tester.view.devicePixelRatio = 3;
+    await tester.pumpWidget(host);
+    await tester.pump();
+    expect(requested, [640, 960]);
+  });
+
+  testWidgets('removing the strip before the image decodes throws nothing', (
+    tester,
+  ) async {
+    final bytes = await _png(tester);
+    await tester.pumpWidget(
+      _host(
+        AyahStrip(
+          page: 5,
+          lines: _lines,
+          colors: colors,
+          imageFor: (_) => MemoryImage(bytes),
+        ),
+      ),
+    );
+    await tester.pumpWidget(_host(const SizedBox.shrink()));
+    await tester.runAsync(
+      () => Future.delayed(const Duration(milliseconds: 200)),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
   });
 }

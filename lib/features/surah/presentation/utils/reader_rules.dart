@@ -8,7 +8,8 @@ import '../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../domain/entities/ayah_bound_entity.dart';
 import '../../domain/entities/normalized_rect.dart';
 
-const mushafPageAspect = 1536 / 2795;
+const mushafPageSize = Size(1536, 2795);
+final mushafPageAspect = mushafPageSize.aspectRatio;
 
 ({AyahIdentifier start, AyahIdentifier end})? listenRange({
   AyahIdentifier? selected,
