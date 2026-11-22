@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/widgets/design/directional_icons.dart';
@@ -14,7 +15,6 @@ import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/tafsir/presentation/cubit/tafsir_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
-import 'package:hugeicons/hugeicons.dart';
 
 import '../../../../../tafsir/tafsir_fakes.dart';
 
@@ -171,9 +171,26 @@ void main() {
     final colors = MushafPaper.night.colors;
     await tester.pumpWidget(_host(cubit, calls, colors: colors));
     await tester.ensureVisible(find.byKey(const ValueKey('study-next')));
-    for (final key in ['study-back', 'study-share', 'study-next']) {
+    for (final key in [
+      'study-back',
+      'study-share',
+      'study-previous',
+      'study-next',
+    ]) {
       final style = _button(tester, key).style!;
       expect(style.foregroundColor!.resolve({}), colors.ink, reason: key);
+    }
+    await tester.pumpWidget(
+      _host(cubit, calls, colors: colors, previous: false, next: false),
+    );
+    await tester.ensureVisible(find.byKey(const ValueKey('study-next')));
+    for (final key in ['study-previous', 'study-next']) {
+      final style = _button(tester, key).style!;
+      expect(
+        style.foregroundColor!.resolve({WidgetState.disabled}),
+        colors.ink.withValues(alpha: 0.38),
+        reason: key,
+      );
     }
   });
 
@@ -193,6 +210,38 @@ void main() {
     expect(icon.icon, HugeIcons.strokeRoundedArrowRight02);
     final body = tester.widget<Text>(find.byKey(const ValueKey('tafsir-body')));
     expect(body.textDirection, TextDirection.rtl);
+  });
+
+  testWidgets('the step arrows and their sides follow RTL in Arabic', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(cubit, calls));
+    await tester.ensureVisible(find.byKey(const ValueKey('study-next')));
+    final context = tester.element(find.byKey(const ValueKey('study-next')));
+    Finder icon(String key) => find.descendant(
+      of: find.byKey(ValueKey(key)),
+      matching: find.byType(HugeIcon),
+    );
+    Finder label(String key) => find.descendant(
+      of: find.byKey(ValueKey(key)),
+      matching: find.byType(Text),
+    );
+    expect(
+      tester.widget<HugeIcon>(icon('study-previous')).icon,
+      backArrowIcon(context),
+    );
+    expect(
+      tester.widget<HugeIcon>(icon('study-next')).icon,
+      forwardArrowIcon(context),
+    );
+    expect(
+      tester.getCenter(icon('study-previous')).dx,
+      greaterThan(tester.getCenter(label('study-previous')).dx),
+    );
+    expect(
+      tester.getCenter(icon('study-next')).dx,
+      lessThan(tester.getCenter(label('study-next')).dx),
+    );
   });
 
   testWidgets('fits at 2x text in 360 px', (tester) async {
