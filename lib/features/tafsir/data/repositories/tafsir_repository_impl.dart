@@ -16,6 +16,7 @@ class TafsirRepositoryImpl implements TafsirRepository {
 
   CancelToken? _token;
   int? _page;
+  int? _fetchedPage;
   Future<List<Tafsir>>? _inFlight;
 
   @override
@@ -33,15 +34,20 @@ class TafsirRepositoryImpl implements TafsirRepository {
       if (_page != page) {
         _token?.cancel();
         _page = page;
+        _fetchedPage = null;
         _token = CancelToken();
         _inFlight = null;
       }
       final token = _token!;
-      future = _inFlight ??= _fetchPage(page, token);
-      final items = await future;
-      final hit = items
-          .where((t) => t.surah == surah && t.ayah == ayah)
-          .firstOrNull;
+      Tafsir? hit;
+      if (_fetchedPage != page) {
+        future = _inFlight ??= _fetchPage(page, token);
+        final items = await future;
+        if (identical(_token, token)) _fetchedPage = page;
+        hit = items
+            .where((t) => t.surah == surah && t.ayah == ayah)
+            .firstOrNull;
+      }
       return Right(hit ?? await _fetchAyah(surah, ayah, token));
     } on CacheException catch (e) {
       return Left(CacheFailure(e.message));
@@ -57,6 +63,7 @@ class TafsirRepositoryImpl implements TafsirRepository {
     _token?.cancel();
     _token = null;
     _page = null;
+    _fetchedPage = null;
     _inFlight = null;
   }
 

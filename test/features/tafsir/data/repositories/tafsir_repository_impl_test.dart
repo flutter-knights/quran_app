@@ -123,6 +123,47 @@ void main() {
     },
   );
 
+  test('a second miss on a fetched page skips the page download', () async {
+    when(
+      () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
+    ).thenAnswer((_) async => const [Tafsir(surah: 3, ayah: 8, text: 't3:8')]);
+    when(
+      () =>
+          remote.getAyah(any(), any(), cancelToken: any(named: 'cancelToken')),
+    ).thenAnswer(
+      (i) async => Tafsir(
+        surah: i.positionalArguments[0] as int,
+        ayah: i.positionalArguments[1] as int,
+        text: 'x',
+      ),
+    );
+
+    await repo.getAyahTafsir(surah: 3, ayah: 9, page: 50);
+    final second = await repo.getAyahTafsir(surah: 3, ayah: 10, page: 50);
+
+    expect(second.isRight(), isTrue);
+    verify(
+      () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
+    ).called(1);
+    verify(
+      () => remote.getAyah(3, 10, cancelToken: any(named: 'cancelToken')),
+    ).called(1);
+  });
+
+  test('cancelPending forgets a fetched page', () async {
+    when(
+      () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
+    ).thenAnswer((_) async => _surahOne());
+
+    await repo.getAyahTafsir(surah: 1, ayah: 1, page: 50);
+    repo.cancelPending();
+    await repo.getAyahTafsir(surah: 1, ayah: 2, page: 50);
+
+    verify(
+      () => remote.getPage(50, cancelToken: any(named: 'cancelToken')),
+    ).called(2);
+  });
+
   test('a request for another page cancels the previous one', () async {
     final first = Completer<List<Tafsir>>();
     final second = Completer<List<Tafsir>>();

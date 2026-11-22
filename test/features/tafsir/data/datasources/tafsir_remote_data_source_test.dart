@@ -75,15 +75,40 @@ void main() {
   });
 
   test('getAyah reads one ayah', () async {
-    stub('https://api.alquran.cloud/v1/ayah/2:255/ar.muyassar', {
+    const url = 'https://api.alquran.cloud/v1/ayah/2:255/ar.muyassar';
+    final token = CancelToken();
+    stub(url, {
       'code': 200,
       'status': 'OK',
       'data': _ayah(2, 255, 'الله لا إله إلا هو'),
     });
 
-    final item = await source.getAyah(2, 255);
+    final item = await source.getAyah(2, 255, cancelToken: token);
 
     expect(item, const Tafsir(surah: 2, ayah: 255, text: 'الله لا إله إلا هو'));
+    final captured =
+        verify(
+              () => dio.get(
+                url,
+                cancelToken: token,
+                options: captureAny(named: 'options'),
+              ),
+            ).captured.single
+            as Options;
+    expect(captured.connectTimeout, const Duration(seconds: 10));
+    expect(captured.receiveTimeout, const Duration(seconds: 15));
+  });
+
+  test('a non-map entry in ayahs throws FormatException', () {
+    stub('https://api.alquran.cloud/v1/page/4/ar.muyassar', {
+      'code': 200,
+      'status': 'OK',
+      'data': {
+        'ayahs': [_ayah(2, 1, 'هذه الحروف'), 'garbled'],
+      },
+    });
+
+    expect(source.getPage(4), throwsA(isA<FormatException>()));
   });
 
   test('a code other than 200 throws FormatException', () {

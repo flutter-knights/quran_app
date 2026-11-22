@@ -26,7 +26,11 @@ class TafsirRemoteDataSourceImpl implements TafsirRemoteDataSource {
     if (ayahs is! List) throw const FormatException('Missing ayahs');
     return [
       for (final item in ayahs)
-        if (item is Map) _parse(item),
+        _parse(
+          item is Map
+              ? item
+              : throw const FormatException('Malformed tafsir ayah'),
+        ),
     ];
   }
 
