@@ -273,6 +273,7 @@ class PendingS {
   String get leaf_listenFromHere => _ar ? 'استماع من هنا' : 'Listen from here';
   String get leaf_saveAyah => _ar ? 'حفظ الآية' : 'Save ayah';
   String get leaf_fasil => _ar ? 'فاصل' : 'Marker';
+  String get leaf_tafsir => _ar ? 'تفسير الآية' : 'Ayah tafsir';
   String get tafsir_muyassar =>
       _ar ? 'التفسير الميسر' : 'Al-Tafsir al-Muyassar';
   String get tafsir_bookCaption => _ar

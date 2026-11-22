@@ -580,6 +580,7 @@
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
   },
   "leaf_fasil": "فاصل",
+  "leaf_tafsir": "تفسير الآية",
   "tafsir_muyassar": "التفسير الميسر",
   "tafsir_bookCaption": "يُحمَّل من الإنترنت ثم يُحفظ على الجهاز",
   "tafsir_source": "المصدر: التفسير الميسر، مجمع الملك فهد، عبر alquran.cloud",
