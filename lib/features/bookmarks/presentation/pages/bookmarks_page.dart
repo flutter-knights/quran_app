@@ -6,26 +6,21 @@ import 'package:quran_app/config/router/app_router.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
-import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
 import 'package:quran_app/core/widgets/design/app_screen_app_bar.dart';
+import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
+import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/app_section_header.dart';
+import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/ahadith/domain/entities/hadith_bookmark.dart';
 import 'package:quran_app/features/ahadith/domain/usecases/get_hadith_by_number.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/hadith_bookmark_cubit.dart';
 import 'package:quran_app/features/ahadith/presentation/cubit/hadith_bookmark_state.dart';
 import 'package:quran_app/features/ahadith/presentation/pages/widgets/books_list_view.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/utils/page_description.dart';
-import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/bookmarks/presentation/pages/widgets/places_groups.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/generated/l10n.dart';
 
-/// Unified bookmarks: saved Quran ayahs and saved ahadith, in sections.
-/// The ayah [BookmarkCubit] is provided app-wide (main.dart); the
-/// [HadithBookmarkCubit] singleton is provided here.
 class BookmarksPage extends StatelessWidget {
   const BookmarksPage({super.key});
 
@@ -43,189 +38,48 @@ class _BookmarksView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = context.colorScheme;
     return Scaffold(
-      backgroundColor: scheme.surface,
+      backgroundColor: context.colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
-            AppScreenAppBar(title: S.of(context).bookmarks_screen_title),
+            AppScreenAppBar(title: PendingS.of(context).menu_places),
             Expanded(
-              child: BlocBuilder<BookmarkCubit, BookmarkState>(
-                builder: (context, ayahState) {
-                  return BlocBuilder<HadithBookmarkCubit, HadithBookmarkState>(
-                    builder: (context, hadithState) {
-                      final ayahs = ayahState.bookmarks.toList()
-                        ..sort(
-                          (a, b) => a.surah != b.surah
-                              ? a.surah.compareTo(b.surah)
-                              : a.ayah.compareTo(b.ayah),
-                        );
-                      final hadiths = hadithState.bookmarks.toList()
-                        ..sort(
-                          (a, b) => a.bookSlug != b.bookSlug
-                              ? a.bookSlug.compareTo(b.bookSlug)
-                              : a.hadithNumber.compareTo(b.hadithNumber),
-                        );
-
-                      final pages =
-                          context
-                              .watch<PageBookmarkCubit>()
-                              .state
-                              .pages
-                              .toList()
-                            ..sort();
-
-                      if (ayahs.isEmpty && hadiths.isEmpty && pages.isEmpty) {
-                        return Center(
-                          child: Text(
-                            S.of(context).no_bookmarks_yet,
-                            style: TS.regular14.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        );
-                      }
-
-                      return ListView(
-                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
-                        children: [
-                          if (pages.isNotEmpty) ...[
-                            AppSectionHeader(
-                              label: S.of(context).bookmarks_pages_section,
-                            ),
-                            const SizedBox(height: 10),
-                            for (final p in pages) ...[
-                              _PageBookmarkTile(page: p),
-                              const SizedBox(height: 10),
-                            ],
-                            const SizedBox(height: 4),
-                          ],
-                          if (ayahs.isNotEmpty) ...[
-                            AppSectionHeader(
-                              label: S.of(context).bookmarks_quran_section,
-                            ),
-                            const SizedBox(height: 10),
-                            for (final a in ayahs) ...[
-                              _QuranBookmarkTile(ayah: a),
-                              const SizedBox(height: 10),
-                            ],
-                          ],
-                          if (hadiths.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            AppSectionHeader(
-                              label: S.of(context).bookmarks_ahadith_section,
-                            ),
-                            const SizedBox(height: 10),
-                            for (final h in hadiths) ...[
-                              _AhadithBookmarkTile(bookmark: h),
-                              const SizedBox(height: 10),
-                            ],
-                          ],
+              child: BlocBuilder<HadithBookmarkCubit, HadithBookmarkState>(
+                builder: (context, hadithState) {
+                  final hadiths = hadithState.bookmarks.toList()
+                    ..sort(
+                      (a, b) => a.bookSlug != b.bookSlug
+                          ? a.bookSlug.compareTo(b.bookSlug)
+                          : a.hadithNumber.compareTo(b.hadithNumber),
+                    );
+                  return ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+                    children: [
+                      PlacesGroups(
+                        onOpen: (page, focus) => context.push(
+                          AppRouter.mushafPath,
+                          extra: focus == null ? page : MushafArgs.focus(focus),
+                        ),
+                      ),
+                      if (hadiths.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        AppSectionHeader(
+                          label: S.of(context).bookmarks_ahadith_section,
+                        ),
+                        const SizedBox(height: 10),
+                        for (final h in hadiths) ...[
+                          _AhadithBookmarkTile(bookmark: h),
+                          const SizedBox(height: 10),
                         ],
-                      );
-                    },
+                      ],
+                    ],
                   );
                 },
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _QuranBookmarkTile extends StatelessWidget {
-  const _QuranBookmarkTile({required this.ayah});
-  final AyahIdentifier ayah;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.colorScheme;
-    final surahName = surahDisplayName(context, ayah.surah);
-    return SurfaceCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      radius: 12,
-      onTap: () =>
-          context.push(AppRouter.mushafPath, extra: MushafArgs.focus(ayah)),
-      child: Row(
-        children: [
-          HugeIcon(
-            icon: HugeIcons.strokeRoundedBookOpen01,
-            color: scheme.secondary,
-            size: 18,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  surahName,
-                  style: TS.bold14.copyWith(color: scheme.onSurface),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${ayah.surah.toLocalized(context)} : ${ayah.ayah.toLocalized(context)}',
-                  style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-          HugeIcon(
-            icon: HugeIcons.strokeRoundedArrowRight01,
-            color: scheme.onSurfaceVariant,
-            size: 16,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PageBookmarkTile extends StatelessWidget {
-  const _PageBookmarkTile({required this.page});
-  final int page;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.colorScheme;
-    final desc = describePage(page, localeCode: context.isArabic ? 'ar' : 'en');
-    return SurfaceCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      radius: 12,
-      onTap: () => context.push(
-        AppRouter.mushafPath,
-        extra: MushafArgs(page: page, origin: MushafOrigin.jump),
-      ),
-      child: Row(
-        children: [
-          HugeIcon(
-            icon: HugeIcons.strokeRoundedBookmark02,
-            color: scheme.secondary,
-            size: 18,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(desc, style: TS.bold14.copyWith(color: scheme.onSurface)),
-                const SizedBox(height: 2),
-                Text(
-                  '${S.of(context).pageByPage} ${page.toLocalized(context)}',
-                  style: TS.semi12.copyWith(color: scheme.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-          HugeIcon(
-            icon: HugeIcons.strokeRoundedArrowRight01,
-            color: scheme.onSurfaceVariant,
-            size: 16,
-          ),
-        ],
       ),
     );
   }
@@ -311,7 +165,7 @@ class _AhadithBookmarkTileState extends State<_AhadithBookmarkTile> {
             )
           else
             HugeIcon(
-              icon: HugeIcons.strokeRoundedArrowRight01,
+              icon: forwardArrowIcon(context),
               color: scheme.onSurfaceVariant,
               size: 16,
             ),
