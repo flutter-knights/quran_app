@@ -576,5 +576,22 @@
   "fasil_placed": "Placed the {name} marker at {place}",
   "@fasil_placed": {
     "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
+  },
+  "places_continue": "Continue reading",
+  "places_continueCaption": "Saved by itself where you read; jumps don't change it",
+  "places_page": "Page {page}",
+  "@places_page": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "places_savedAyat": "Saved ayat",
+  "places_noSavedAyat": "No saved ayat yet",
+  "places_rename": "Rename",
+  "places_renameTitle": "Rename marker",
+  "places_cancel": "Cancel",
+  "places_remove": "Remove",
+  "places_more": "Options",
+  "savedAyat_removed": "Removed ayah {ayah} of {surah}",
+  "@savedAyat_removed": {
+    "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
   }
 }

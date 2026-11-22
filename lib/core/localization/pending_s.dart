@@ -319,6 +319,21 @@ class PendingS {
       _ar ? 'نُقل فاصل $name إلى $place' : 'Moved the $name marker to $place';
   String fasil_placed(String name, String place) =>
       _ar ? 'وُضع فاصل $name عند $place' : 'Placed the $name marker at $place';
+  String get places_continue => _ar ? 'متابعة القراءة' : 'Continue reading';
+  String get places_continueCaption => _ar
+      ? 'تُحفظ وحدها حيث تقرأ، ولا تغيّرها الانتقالات'
+      : 'Saved by itself where you read; jumps don\'t change it';
+  String places_page(String page) => _ar ? 'صفحة $page' : 'Page $page';
+  String get places_savedAyat => _ar ? 'الآيات المحفوظة' : 'Saved ayat';
+  String get places_noSavedAyat =>
+      _ar ? 'لا توجد آيات محفوظة بعد' : 'No saved ayat yet';
+  String get places_rename => _ar ? 'تسمية' : 'Rename';
+  String get places_renameTitle => _ar ? 'تسمية الفاصل' : 'Rename marker';
+  String get places_cancel => _ar ? 'إلغاء' : 'Cancel';
+  String get places_remove => _ar ? 'إزالة' : 'Remove';
+  String get places_more => _ar ? 'خيارات' : 'Options';
+  String savedAyat_removed(String ayah, String surah) =>
+      _ar ? 'أُزيلت الآية $ayah من $surah' : 'Removed ayah $ayah of $surah';
 
   String alerts_minutes(num count) {
     final n = count.toInt();
