@@ -140,6 +140,24 @@ void main() {
       cubit.close();
     });
 
+    test(
+      'stopFollow sets follow false and a second call emits nothing',
+      () async {
+        final n = _FakeNotifier();
+        final cubit = _cubit(n, page: 50, playingPage: 50);
+        n.value = a;
+        expect(cubit.state.followPlayback, isTrue);
+        final states = <bool>[];
+        final sub = cubit.stream.listen((s) => states.add(s.followPlayback));
+        cubit.stopFollow();
+        cubit.stopFollow();
+        await pumpEventQueue();
+        expect(states, [false]);
+        await sub.cancel();
+        await cubit.close();
+      },
+    );
+
     test('followFrom points the follow target at the range being started', () {
       final n = _FakeNotifier();
       final cubit = _cubit(n, page: 50, playingPage: 50);

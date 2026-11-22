@@ -1227,6 +1227,93 @@ void main() {
       expect(tester.widget<AyahStrip>(find.byType(AyahStrip)).page, 51);
     });
 
+    testWidgets('the selection moving to a surah start closes the full '
+        'detent and frees the compact leaf', (tester) async {
+      const end = AyahIdentifier(surah: 4, ayah: 176);
+      const basmala = AyahIdentifier(surah: 5, ayah: 0);
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: end, playingAyah: end),
+        pushed: true,
+      );
+      await openStudy(tester);
+      expect(find.byKey(const ValueKey('study-leaf')), findsOneWidget);
+
+      mushaf.push(
+        mushaf.state.copyWith(selectedAyah: basmala, playingAyah: basmala),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('study-leaf')), findsNothing);
+      expect(
+        find.ancestor(
+          of: find.byType(AyahLeaf),
+          matching: find.byWidgetPredicate(
+            (w) => w is ExcludeSemantics && w.excluding,
+          ),
+        ),
+        findsNothing,
+      );
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(mushaf.clearCalls, 1);
+    });
+
+    testWidgets('opening the full detent on an ayah other than the playing '
+        'one stops following', (tester) async {
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: _a6, playingAyah: _a5),
+      );
+      expect(mushaf.state.followPlayback, isTrue);
+
+      await openStudy(tester);
+
+      expect(mushaf.state.followPlayback, isFalse);
+    });
+
+    testWidgets('opening the full detent on the playing ayah keeps '
+        'following until a step leaves it', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({}));
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: _a6, playingAyah: _a6),
+      );
+
+      await openStudy(tester);
+      expect(mushaf.state.followPlayback, isTrue);
+
+      await tapStep(tester, 'study-next');
+
+      expect(mushaf.state.selectedAyah, next);
+      expect(mushaf.state.followPlayback, isFalse);
+    });
+
+    testWidgets("the strip fills in from the page's ayat after a step "
+        'to another page', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({next: 8}));
+      final (mushaf, _) = await pump(tester, state: _state(selected: _a6));
+      await openStudy(tester);
+
+      mushaf.push(
+        mushaf.state.copyWith(
+          currentPage: 8,
+          selectedAyah: next,
+          pageAyahs: const [],
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<AyahStrip>(find.byType(AyahStrip)).lines, isEmpty);
+
+      mushaf.push(mushaf.state.copyWith(pageAyahs: [_bound(next)]));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<AyahStrip>(find.byType(AyahStrip)).lines,
+        isNotEmpty,
+      );
+    });
+
     testWidgets('with الخيارات the compact leaf has no tafsir line', (
       tester,
     ) async {

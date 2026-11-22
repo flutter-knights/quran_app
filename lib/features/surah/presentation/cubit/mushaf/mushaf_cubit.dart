@@ -147,6 +147,10 @@ class MushafCubit extends Cubit<MushafState> {
 
   void resumeFollow() => emit(state.copyWith(followPlayback: true));
 
+  void stopFollow() {
+    if (state.followPlayback) emit(state.copyWith(followPlayback: false));
+  }
+
   void followFrom(AyahIdentifier start) {
     _followTarget = start;
     emit(state.copyWith(followPlayback: true));

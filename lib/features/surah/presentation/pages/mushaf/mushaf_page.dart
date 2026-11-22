@@ -525,6 +525,18 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) => _turns.end(turn));
   }
 
+  void _holdStudiedPage() {
+    final state = _mushafCubit.state;
+    if (_studying.value && state.selectedAyah != state.playingAyah) {
+      _mushafCubit.stopFollow();
+    }
+  }
+
+  void _openStudy() {
+    _studying.value = true;
+    _holdStudiedPage();
+  }
+
   void _closeLeaf() {
     if (_studying.value) {
       _studying.value = false;
@@ -587,8 +599,12 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
             listenWhen: (a, b) => a.selectedAyah != b.selectedAyah,
             listener: (_, state) {
               final selected = state.selectedAyah;
-              if (selected == null) {
+              if (selected == null || selected.ayah == 0) {
                 _studying.value = false;
+              } else {
+                _holdStudiedPage();
+              }
+              if (selected == null) {
                 _tafsirCubit.cancel();
               } else {
                 _tafsirCubit.load(selected);
@@ -683,7 +699,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                                   onListenPage: _onPlayPage,
                                   onFasil: () => _openFawasil(null),
                                   studying: _studying,
-                                  onExpand: () => _studying.value = true,
+                                  onExpand: _openStudy,
                                 ),
                               ],
                             ),
@@ -1102,22 +1118,27 @@ class _StudyLayerState extends State<_StudyLayer> {
     final page = sl<QuranPageService>().getPageForAyah(ayah.surah, ayah.ayah);
     if (page != _boundsPage) {
       _boundsPage = page;
-      _bounds = context.read<MushafCubit>().boundsFor(page);
+      _bounds = context.read<MushafCubit>().boundsFor(page).then((bounds) {
+        if (bounds.isEmpty && _boundsPage == page) _boundsPage = null;
+        return bounds;
+      });
     }
+    final onPage = page == state.currentPage && state.pageAyahs.isNotEmpty;
     final previous = adjacentAyah(ayah, -1);
     final next = adjacentAyah(ayah, 1);
     return FutureBuilder(
       key: ValueKey(ayah),
       future: _bounds,
-      initialData: page == state.currentPage && state.pageAyahs.isNotEmpty
-          ? state.pageAyahs
-          : null,
+      initialData: onPage ? state.pageAyahs : null,
       builder: (context, snapshot) => AyahStudyLeaf(
         key: const ValueKey('study-leaf'),
         ayah: ayah,
         page: page,
         lines:
-            snapshot.data?.where((b) => b.ayah == ayah).firstOrNull?.lines ??
+            (onPage ? state.pageAyahs : snapshot.data)
+                ?.where((b) => b.ayah == ayah)
+                .firstOrNull
+                ?.lines ??
             const [],
         colors: widget.colors,
         onBack: widget.onBack,

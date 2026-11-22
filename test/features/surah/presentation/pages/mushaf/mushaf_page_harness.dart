@@ -193,6 +193,11 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   }
 
   @override
+  void stopFollow() {
+    if (state.followPlayback) emit(state.copyWith(followPlayback: false));
+  }
+
+  @override
   void followFrom(AyahIdentifier start) {
     followFroms.add(start);
     emit(state.copyWith(followPlayback: true));
