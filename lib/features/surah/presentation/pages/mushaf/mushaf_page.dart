@@ -59,6 +59,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   final _turns = PageTurnTracker();
   StreamSubscription<int>? _pageSub;
   late final StreamSubscription<void> _resumeSub;
+  late final StreamSubscription<PlaybackState> _playbackSub;
 
   // Gap between pages in scroll mode (logical pixels).
   static const double _scrollPageGap = 4.0;
@@ -87,6 +88,10 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _resumeSub = nowPlayingResume.stream.listen(
       (_) => _mushafCubit.resumeFollow(),
     );
+
+    _playbackSub = _playbackCubit.stream
+        .where((s) => !s.isLoading && !s.isPlaying)
+        .listen((_) => _mushafCubit.cancelFollowTarget());
 
     _lastReadSaver = LastReadSaver(
       readCurrent: () {
@@ -173,6 +178,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _lastReadSaver.dispose();
     _pageSub?.cancel();
     _resumeSub.cancel();
+    _playbackSub.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -269,6 +275,15 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _mushafCubit.clearSelection();
   }
 
+  void _followNewPlay() {
+    final next = _playbackCubit.state.requestedAyah;
+    if (next == null) {
+      _mushafCubit.resumeFollow();
+    } else {
+      _mushafCubit.followFrom(next);
+    }
+  }
+
   void _onPlayPage() {
     final range = pagePlaybackRange(_mushafCubit.state.pageAyahs);
     if (range != null) _play(range.start, range.end);
@@ -352,11 +367,14 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    final settings = context.watch<SettingsCubit>().state.settingsModel;
-    final effectiveMode = isLandscape
-        ? MushafReadingMode.scroll
-        : settings.readingMode;
-    final colors = settings.mushafPaper.colors;
+    final (readingMode, paper) = context.select(
+      (SettingsCubit c) => (
+        c.state.settingsModel.readingMode,
+        c.state.settingsModel.mushafPaper,
+      ),
+    );
+    final effectiveMode = isLandscape ? MushafReadingMode.scroll : readingMode;
+    final colors = paper.colors;
 
     return _LeafPopScope(
       onClose: _mushafCubit.clearSelection,
@@ -401,6 +419,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                         child: _LeafSlot(
                           colors: colors,
                           onListenFromHere: _onListen,
+                          onNewPlay: _followNewPlay,
                           onListenFromSurahStart: _onListenFromSurahStart,
                           onListenPage: _onPlayPage,
                         ),
@@ -532,12 +551,14 @@ class _LeafSlot extends StatelessWidget {
     required this.onListenFromHere,
     required this.onListenFromSurahStart,
     required this.onListenPage,
+    required this.onNewPlay,
   });
 
   final MushafPaperColors colors;
   final VoidCallback onListenFromHere;
   final void Function(AyahIdentifier ayah) onListenFromSurahStart;
   final VoidCallback onListenPage;
+  final VoidCallback onNewPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -580,7 +601,7 @@ class _LeafSlot extends StatelessWidget {
                                 ? (ayah: playing, page: page)
                                 : null,
                             onReturnToPlaying: mushaf.resumeFollow,
-                            onNewPlay: mushaf.resumeFollow,
+                            onNewPlay: onNewPlay,
                           );
                         },
                       )

@@ -308,6 +308,33 @@ void main() {
     expect(mushaf.resumeCalls, 1);
   });
 
+  testWidgets('skipping while listening away follows the ayah being started', (
+    tester,
+  ) async {
+    final (mushaf, _) = await pump(
+      tester,
+      state: _state(follow: false, playingAyah: _a5),
+      playback: _playing,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('player-next')));
+    await tester.pump();
+
+    expect(mushaf.followFroms, [_a6]);
+    expect(mushaf.resumeCalls, 0);
+  });
+
+  testWidgets('a playback that ends or fails drops the pending follow target', (
+    tester,
+  ) async {
+    final (mushaf, h) = await pump(tester, playback: _playing);
+
+    h.playback.push(const PlaybackState(error: 'offline'));
+    await tester.pump();
+
+    expect(mushaf.cancelFollowTargetCalls, 1);
+  });
+
   testWidgets('menu jump moves in place once', (tester) async {
     final (mushaf, _) = await pump(tester);
 

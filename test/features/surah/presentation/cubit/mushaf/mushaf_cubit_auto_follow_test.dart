@@ -25,6 +25,13 @@ class _StubPageService implements QuranPageService {
   AyahIdentifier? getFirstAyahOfPage(int page) => null;
 }
 
+class _MapPageService implements QuranPageService {
+  @override
+  int getPageForAyah(int surah, int ayah) => ayah < 100 ? 50 : 60;
+  @override
+  AyahIdentifier? getFirstAyahOfPage(int page) => null;
+}
+
 class _StubMushafRepo implements MushafRepository {
   @override
   Future<Either<Failure, MushafPageEntity>> getPage(int pageNumber) async =>
@@ -127,9 +134,38 @@ void main() {
       expect(cubit.state.followPlayback, isFalse);
       cubit.followFrom(b);
       expect(cubit.state.followPlayback, isTrue);
-      expect(cubit.state.playingAyah, b);
+      expect(cubit.state.playingAyah, a);
       expect(n.value, a);
       cubit.close();
+    });
+
+    test('followFrom with nothing playing never writes playingAyah', () {
+      final n = _FakeNotifier();
+      final cubit = _cubit(n);
+      addTearDown(cubit.close);
+      cubit.followFrom(b);
+      expect(cubit.state.playingAyah, isNull);
+      expect(cubit.playingPage, 1);
+      cubit.cancelFollowTarget();
+      expect(cubit.state.playingAyah, isNull);
+      expect(cubit.playingPage, isNull);
+    });
+
+    test('the follow target outranks a stale playing ayah until it ends', () {
+      final n = _FakeNotifier();
+      final cubit = MushafCubit(
+        args: const MushafArgs(page: 50),
+        currentAyahNotifier: n,
+        pageService: _MapPageService(),
+        getMushafPage: GetMushafPage(_StubMushafRepo()),
+      );
+      addTearDown(cubit.close);
+      n.value = a;
+      const far = AyahIdentifier(surah: 2, ayah: 150);
+      cubit.followFrom(far);
+      expect(cubit.playingPage, 60);
+      n.value = b;
+      expect(cubit.playingPage, 50);
     });
 
     test('in-place jump away while playing drops selection and follow', () {

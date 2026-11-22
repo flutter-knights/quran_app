@@ -30,12 +30,13 @@ class MushafCubit extends Cubit<MushafState> {
   final ValueNotifier<AyahIdentifier?> _notifier;
   final QuranPageService _pageService;
   final GetMushafPage _getMushafPage;
+  AyahIdentifier? _followTarget;
 
   @visibleForTesting
   ValueNotifier<AyahIdentifier?> get debugNotifier => _notifier;
 
   int? get playingPage {
-    final playing = state.playingAyah;
+    final playing = _followTarget ?? state.playingAyah;
     if (playing == null) return null;
     return _pageService.getPageForAyah(playing.surah, playing.realAyah);
   }
@@ -101,8 +102,12 @@ class MushafCubit extends Cubit<MushafState> {
 
   void resumeFollow() => emit(state.copyWith(followPlayback: true));
 
-  void followFrom(AyahIdentifier start) =>
-      emit(state.copyWith(playingAyah: start, followPlayback: true));
+  void followFrom(AyahIdentifier start) {
+    _followTarget = start;
+    emit(state.copyWith(followPlayback: true));
+  }
+
+  void cancelFollowTarget() => _followTarget = null;
 
   Future<void> reloadPageAyahs() => _loadPageAyahs(state.currentPage);
 
@@ -130,6 +135,7 @@ class MushafCubit extends Cubit<MushafState> {
   }
 
   void _onPlayingAyahChanged() {
+    _followTarget = null;
     final next = _notifier.value;
     final prevPlaying = state.playingAyah;
     if (next == null) {

@@ -96,6 +96,7 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   var clearCalls = 0;
   var resumeCalls = 0;
   final followFroms = <AyahIdentifier>[];
+  var cancelFollowTargetCalls = 0;
 
   void push(MushafState s) => emit(s);
 
@@ -160,8 +161,11 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   @override
   void followFrom(AyahIdentifier start) {
     followFroms.add(start);
-    emit(state.copyWith(playingAyah: start, followPlayback: true));
+    emit(state.copyWith(followPlayback: true));
   }
+
+  @override
+  void cancelFollowTarget() => cancelFollowTargetCalls++;
 
   @override
   void setHighlightBounds(double centerY) {}
@@ -196,6 +200,15 @@ class FakePlayback extends Cubit<PlaybackState> implements PlaybackCubit {
         clearError: true,
       ),
     );
+  }
+
+  @override
+  Future<void> skipNext() async {
+    final next = AyahIdentifier(
+      surah: state.requestedAyah!.surah,
+      ayah: state.requestedAyah!.ayah + 1,
+    );
+    emit(state.copyWith(requestedAyah: next));
   }
 
   @override
