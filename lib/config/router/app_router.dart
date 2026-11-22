@@ -22,6 +22,7 @@ import 'package:quran_app/features/splash/pages/splash_page.dart';
 import 'package:quran_app/features/search/presentation/cubit/search_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/surah/surah_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
+import 'package:quran_app/features/tafsir/presentation/cubit/tafsir_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/pages/surah_list/surah_list_page.dart';
@@ -163,8 +164,11 @@ abstract class AppRouter {
         pageBuilder: _fadePage(
           builder: (context, state) {
             final args = _mushafArgsFrom(state.extra);
-            return BlocProvider(
-              create: (_) => sl<MushafCubit>(param1: args),
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(create: (_) => sl<MushafCubit>(param1: args)),
+                BlocProvider(create: (_) => sl<TafsirCubit>()),
+              ],
               child: MushafPage(args: args),
             );
           },
@@ -175,8 +179,11 @@ abstract class AppRouter {
         pageBuilder: _fadePage(
           builder: (context, state) {
             final args = _mushafArgsFrom(state.extra);
-            return BlocProvider(
-              create: (_) => sl<MushafCubit>(param1: args),
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(create: (_) => sl<MushafCubit>(param1: args)),
+                BlocProvider(create: (_) => sl<TafsirCubit>()),
+              ],
               child: MushafPage(args: args),
             );
           },

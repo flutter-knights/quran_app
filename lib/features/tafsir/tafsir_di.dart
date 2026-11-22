@@ -7,6 +7,7 @@ import 'data/datasources/remote/tafsir_remote_data_source.dart';
 import 'data/repositories/tafsir_repository_impl.dart';
 import 'domain/repositories/tafsir_repository.dart';
 import 'domain/usecases/get_ayah_tafsir.dart';
+import 'presentation/cubit/tafsir_cubit.dart';
 
 void initTafsir() {
   sl.registerLazySingleton<TafsirRemoteDataSource>(
@@ -24,4 +25,5 @@ void initTafsir() {
   sl.registerLazySingleton<GetAyahTafsir>(
     () => GetAyahTafsir(sl<TafsirRepository>()),
   );
+  sl.registerFactory(() => TafsirCubit(getAyahTafsir: sl(), pageService: sl()));
 }
