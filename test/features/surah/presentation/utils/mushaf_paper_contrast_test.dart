@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 
 double contrast(Color a, Color b) {
@@ -50,6 +51,30 @@ void main() {
       test('ink stays readable on both tints stacked', () {
         expect(contrast(c.ink, stacked), greaterThanOrEqualTo(4.5));
       });
+
+      for (final s in FasilSlot.values) {
+        test('ribbon ${s.name} on background is at least 3', () {
+          expect(contrast(p.ribbon(s), c.background), greaterThanOrEqualTo(3));
+        });
+
+        test('tail text on ribbon ${s.name} is at least 4.5', () {
+          expect(
+            contrast(c.background, p.ribbon(s)),
+            greaterThanOrEqualTo(4.5),
+          );
+        });
+      }
     });
   }
+
+  test('ribbons follow the paper darkness', () {
+    expect(
+      MushafPaper.night.ribbon(FasilSlot.hifz),
+      fasilRibbon(FasilSlot.hifz, dark: true),
+    );
+    expect(
+      MushafPaper.cream.ribbon(FasilSlot.hifz),
+      fasilRibbon(FasilSlot.hifz, dark: false),
+    );
+  });
 }

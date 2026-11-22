@@ -513,5 +513,28 @@
   "display_paper": "لون الورق",
   "display_readingMode": "طريقة القراءة",
   "display_keepScreenOn": "إبقاء الشاشة مضيئة",
-  "display_done": "تم"
+  "display_done": "تم",
+  "fasil_wird": "الورد",
+  "fasil_hifz": "الحفظ",
+  "fasil_muraja": "المراجعة",
+  "places_position": "{place}، صفحة {page}",
+  "@places_position": {
+    "placeholders": { "place": { "type": "String" }, "page": { "type": "String" } }
+  },
+  "places_today": "اليوم {time}",
+  "@places_today": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "places_yesterday": "أمس {time}",
+  "@places_yesterday": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "fasil_movedAt": "نُقل {when}",
+  "@fasil_movedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "savedAyat_savedAt": "حُفظت {when}",
+  "@savedAyat_savedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  }
 }

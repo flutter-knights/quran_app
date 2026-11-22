@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
+
+Color fasilRibbon(FasilSlot slot, {required bool dark}) => switch (slot) {
+  FasilSlot.wird => dark ? const Color(0xFFE39AA2) : const Color(0xFF8A2F3B),
+  FasilSlot.hifz => dark ? const Color(0xFF8EBBE3) : const Color(0xFF1F5A8A),
+  FasilSlot.muraja => dark ? const Color(0xFFE2B85C) : const Color(0xFF835F0F),
+};
 
 class MushafPaperColors {
   const MushafPaperColors({
@@ -18,6 +25,8 @@ class MushafPaperColors {
 extension MushafPaperX on MushafPaper {
   bool get isDark =>
       this == MushafPaper.night || this == MushafPaper.slateNight;
+
+  Color ribbon(FasilSlot slot) => fasilRibbon(slot, dark: isDark);
 
   MushafPaperColors get colors => switch (this) {
     MushafPaper.cream => const MushafPaperColors(

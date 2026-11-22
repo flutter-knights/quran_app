@@ -296,6 +296,16 @@ class PendingS {
       _ar ? 'إبقاء الشاشة مضيئة' : 'Keep the screen on';
   String get display_done => _ar ? 'تم' : 'Done';
 
+  String get fasil_wird => _ar ? 'الورد' : 'Wird';
+  String get fasil_hifz => _ar ? 'الحفظ' : 'Memorisation';
+  String get fasil_muraja => _ar ? 'المراجعة' : 'Review';
+  String places_position(String place, String page) =>
+      _ar ? '$place، صفحة $page' : '$place, page $page';
+  String places_today(String time) => _ar ? 'اليوم $time' : 'Today $time';
+  String places_yesterday(String time) => _ar ? 'أمس $time' : 'Yesterday $time';
+  String fasil_movedAt(String when) => _ar ? 'نُقل $when' : 'Moved $when';
+  String savedAyat_savedAt(String when) => _ar ? 'حُفظت $when' : 'Saved $when';
+
   String alerts_minutes(num count) {
     final n = count.toInt();
     if (!_ar) return n == 1 ? '1 minute' : '$n minutes';

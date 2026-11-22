@@ -529,5 +529,28 @@
   "display_paper": "Paper colour",
   "display_readingMode": "Reading mode",
   "display_keepScreenOn": "Keep the screen on",
-  "display_done": "Done"
+  "display_done": "Done",
+  "fasil_wird": "Wird",
+  "fasil_hifz": "Memorisation",
+  "fasil_muraja": "Review",
+  "places_position": "{place}, page {page}",
+  "@places_position": {
+    "placeholders": { "place": { "type": "String" }, "page": { "type": "String" } }
+  },
+  "places_today": "Today {time}",
+  "@places_today": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "places_yesterday": "Yesterday {time}",
+  "@places_yesterday": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "fasil_movedAt": "Moved {when}",
+  "@fasil_movedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "savedAyat_savedAt": "Saved {when}",
+  "@savedAyat_savedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  }
 }
