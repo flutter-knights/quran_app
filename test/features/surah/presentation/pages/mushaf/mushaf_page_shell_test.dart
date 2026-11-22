@@ -1,6 +1,8 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
@@ -11,7 +13,9 @@ import 'package:quran_app/features/quran_playback/domain/services/quran_meta_ser
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
 import 'package:quran_app/features/surah/domain/entities/ayah_bound_entity.dart';
+import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
 import 'package:quran_app/features/surah/domain/entities/normalized_rect.dart';
+import 'package:quran_app/features/surah/domain/repositories/mushaf_repo.dart';
 import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
@@ -38,6 +42,16 @@ class _SplitPageService implements QuranPageService {
 
   @override
   AyahIdentifier? getFirstAyahOfPage(int page) => null;
+}
+
+class _BoundsRepo implements MushafRepository {
+  _BoundsRepo(this.ayahs);
+
+  final List<AyahBoundEntity> ayahs;
+
+  @override
+  Future<Either<Failure, MushafPageEntity>> getPage(int pageNumber) async =>
+      Right(MushafPageEntity(pageNumber: pageNumber, ayahs: ayahs));
 }
 
 AyahBoundEntity _bound(AyahIdentifier a, {double y = 0.1}) => AyahBoundEntity(
@@ -407,6 +421,84 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(fawasil.restores.last, (FasilSlot.wird, previous));
+    });
+
+    group('the chooser preselect', () {
+      const imran1 = AyahIdentifier(surah: 3, ayah: 1);
+      const banner = AyahIdentifier(surah: 3, ayah: 0);
+
+      FakeFasilCubit onPageFifty() {
+        final sl = GetIt.instance;
+        sl.unregister<GetMushafPage>();
+        sl.registerSingleton<GetMushafPage>(
+          GetMushafPage(
+            _BoundsRepo([_bound(imran1, y: 0.1), _bound(imran6, y: 0.5)]),
+          ),
+        );
+        return seeded({FasilSlot.wird: imran1, FasilSlot.hifz: imran6});
+      }
+
+      Future<FakeMushaf> pumpOnPageFifty(
+        WidgetTester tester, {
+        AyahIdentifier? selected,
+      }) async {
+        final (mushaf, _) = await pump(
+          tester,
+          state: _state(page: 50, selected: selected),
+          args: const MushafArgs(page: 50),
+          fawasil: onPageFifty(),
+        );
+        return mushaf;
+      }
+
+      bool filled(WidgetTester tester, FasilSlot slot) =>
+          tester.widget(find.byKey(ValueKey('fasil-move-${slot.name}')))
+              is FilledButton;
+
+      testWidgets('a tail preselects its own فاصل', (tester) async {
+        await pumpOnPageFifty(tester, selected: imran6);
+
+        await tester.tap(find.byKey(const ValueKey('fasil-tail-wird')));
+        await tester.pumpAndSettle();
+
+        expect(filled(tester, FasilSlot.wird), isTrue);
+        expect(filled(tester, FasilSlot.hifz), isFalse);
+        expect(find.text('نقل الورد إلى هنا'), findsOneWidget);
+      });
+
+      testWidgets('the cluster preselects the فاصل before the ayah', (
+        tester,
+      ) async {
+        await pumpOnPageFifty(tester, selected: imran6);
+
+        await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+        await tester.pumpAndSettle();
+
+        expect(filled(tester, FasilSlot.hifz), isTrue);
+        expect(filled(tester, FasilSlot.wird), isFalse);
+        expect(find.text('نقل الحفظ إلى هنا'), findsOneWidget);
+      });
+
+      testWidgets('a banner selection offers no move buttons', (tester) async {
+        await pumpOnPageFifty(tester, selected: banner);
+
+        await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const ValueKey('fasil-row-hifz')), findsOneWidget);
+        expect(find.byKey(const ValueKey('fasil-move-hifz')), findsNothing);
+        expect(find.byKey(const ValueKey('fasil-move-wird')), findsNothing);
+      });
+
+      testWidgets('no selection offers no move buttons', (tester) async {
+        await pumpOnPageFifty(tester);
+
+        await tester.tap(find.byKey(const ValueKey('fasil-tail-hifz')));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const ValueKey('fasil-row-hifz')), findsOneWidget);
+        expect(find.byKey(const ValueKey('fasil-move-hifz')), findsNothing);
+      });
     });
 
     testWidgets('placing an unset فاصل says وُضع', (tester) async {

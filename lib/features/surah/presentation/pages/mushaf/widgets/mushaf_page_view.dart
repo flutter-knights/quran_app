@@ -105,21 +105,30 @@ class _MushafPageViewState extends State<MushafPageView>
             aspectRatio: mushafPageAspect,
             child: ColoredBox(
               color: paperColors.background,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 8,
-                  children: [
-                    Text(
-                      pendingS.mushaf_pageLoadFailed,
-                      style: TS.medium14.copyWith(color: paperColors.ink),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 8,
+                      children: [
+                        Text(
+                          pendingS.mushaf_pageLoadFailed,
+                          style: TS.medium14.copyWith(color: paperColors.ink),
+                        ),
+                        TextButton(
+                          onPressed: _retry,
+                          child: Text(
+                            pendingS.mushaf_retry,
+                            style: TS.medium14,
+                          ),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: _retry,
-                      child: Text(pendingS.mushaf_retry, style: TS.medium14),
-                    ),
-                  ],
-                ),
+                  ),
+                  _fasil(null, 0, settings.mushafPaper),
+                ],
               ),
             ),
           );
@@ -216,7 +225,7 @@ class _MushafPageViewState extends State<MushafPageView>
                         ),
                       ),
                     ),
-                  if (entity != null) ...[
+                  if (entity != null)
                     BlocSelector<SavedAyatCubit, SavedAyatState, List<Place>>(
                       selector: (s) => s.items,
                       builder: (context, items) => _savedDots(
@@ -226,17 +235,7 @@ class _MushafPageViewState extends State<MushafPageView>
                         paperColors.accent,
                       ),
                     ),
-                    BlocSelector<FasilCubit, FasilState, Map<FasilSlot, Place>>(
-                      selector: (s) => s.slots,
-                      builder: (context, slots) => _fasilLayer(
-                        context,
-                        slots,
-                        entity,
-                        constraints.maxHeight,
-                        settings.mushafPaper,
-                      ),
-                    ),
-                  ],
+                  _fasil(entity, constraints.maxHeight, settings.mushafPaper),
                 ],
               );
             },
@@ -325,22 +324,30 @@ class _MushafPageViewState extends State<MushafPageView>
     );
   }
 
+  Widget _fasil(MushafPageEntity? entity, double height, MushafPaper paper) =>
+      BlocSelector<FasilCubit, FasilState, Map<FasilSlot, Place>>(
+        selector: (s) => s.slots,
+        builder: (context, slots) =>
+            _fasilLayer(context, slots, entity, height, paper),
+      );
+
   Widget _fasilLayer(
     BuildContext context,
     Map<FasilSlot, Place> slots,
-    MushafPageEntity entity,
+    MushafPageEntity? entity,
     double height,
     MushafPaper paper,
   ) {
     final onPage =
         [
-          for (final place in slots.values)
-            if (place.page == widget.pageNumber)
-              if (_firstLine(entity, place.ayah) case final line?)
-                (
-                  place: place,
-                  wanted: (line.y + line.h) * height - fasilTailHeight,
-                ),
+          if (entity != null)
+            for (final place in slots.values)
+              if (place.page == widget.pageNumber)
+                if (_firstLine(entity, place.ayah) case final line?)
+                  (
+                    place: place,
+                    wanted: (line.y + line.h) * height - fasilTailHeight,
+                  ),
         ]..sort((a, b) {
           final byTop = a.wanted.compareTo(b.wanted);
           return byTop != 0

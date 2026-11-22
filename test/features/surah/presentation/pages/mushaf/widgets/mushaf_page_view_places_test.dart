@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,6 +54,20 @@ class _BoundsRepo implements MushafRepository {
           ],
         ),
       );
+}
+
+class _PendingRepo implements MushafRepository {
+  final completer = Completer<Either<Failure, MushafPageEntity>>();
+
+  @override
+  Future<Either<Failure, MushafPageEntity>> getPage(int pageNumber) =>
+      completer.future;
+}
+
+class _FailingRepo implements MushafRepository {
+  @override
+  Future<Either<Failure, MushafPageEntity>> getPage(int pageNumber) async =>
+      const Left(CacheFailure('x'));
 }
 
 void main() {
@@ -222,5 +238,36 @@ void main() {
 
     expect(find.byKey(const ValueKey('saved-dot-3:1')), findsOneWidget);
     expect(find.byKey(const ValueKey('saved-dot-2:255')), findsNothing);
+  });
+
+  testWidgets('the cluster shows while the page bounds are loading', (
+    tester,
+  ) async {
+    final repo = _PendingRepo();
+    sl.unregister<GetMushafPage>();
+    sl.registerSingleton<GetMushafPage>(GetMushafPage(repo));
+    final opened = await pumpView(
+      tester,
+      fasil: placed({FasilSlot.hifz: _second}),
+    );
+
+    expect(find.byKey(const ValueKey('fasil-cluster')), findsOneWidget);
+    expect(find.byKey(const ValueKey('fasil-tail-hifz')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+
+    expect(opened, [null]);
+  });
+
+  testWidgets('the cluster shows when the page bounds fail to load', (
+    tester,
+  ) async {
+    sl.unregister<GetMushafPage>();
+    sl.registerSingleton<GetMushafPage>(GetMushafPage(_FailingRepo()));
+    await pumpView(tester, fasil: placed({FasilSlot.hifz: _second}));
+
+    expect(find.text('Try again'), findsOneWidget);
+    expect(find.byKey(const ValueKey('fasil-cluster')), findsOneWidget);
+    expect(find.byKey(const ValueKey('fasil-tail-hifz')), findsNothing);
   });
 }
