@@ -585,6 +585,7 @@
   },
   "places_savedAyat": "Saved ayat",
   "places_noSavedAyat": "No saved ayat yet",
+  "places_writeFailed": "Couldn't save. Try again.",
   "places_rename": "Rename",
   "places_renameTitle": "Rename marker",
   "places_cancel": "Cancel",

@@ -47,6 +47,28 @@ void main() {
     expect(cubit.state.loaded, isTrue);
   });
 
+  test('a failed load blocks writes so an ayah is never saved twice', () async {
+    final existing = savedPlace(a25, at: DateTime(2026, 11, 1));
+    repo = InMemoryPlacesRepository([existing])..failNext = true;
+    final cubit = await build();
+
+    expect(cubit.state.loaded, isFalse);
+    expect(cubit.state.loadFailed, isTrue);
+    expect(cubit.state.loading, isFalse);
+    expect(cubit.state.error, isNotNull);
+    expect(await cubit.save(a25), isNull);
+    expect(repo.places.values.toList(), [existing]);
+  });
+
+  test('two records for one ayah load as the newest one', () async {
+    final older = savedPlace(a25, at: DateTime(2026, 11, 1));
+    final newer = savedPlace(a25, at: DateTime(2026, 11, 2));
+    repo = InMemoryPlacesRepository([older, newer]);
+    final cubit = await build();
+
+    expect(cubit.state.items, [newer]);
+  });
+
   test('save adds a dated, unmigrated place at the top', () async {
     repo = InMemoryPlacesRepository([
       savedPlace(a1, at: DateTime(2026, 11, 1)),

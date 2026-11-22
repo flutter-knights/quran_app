@@ -84,6 +84,7 @@ class FakeFasilCubit extends Cubit<FasilState> implements FasilCubit {
   final moves = <(FasilSlot, AyahIdentifier)>[];
   final restores = <(FasilSlot, Place?)>[];
   final renames = <(FasilSlot, String)>[];
+  bool failMove = false;
 
   @override
   Future<({Place? previous, Place moved})?> move(
@@ -91,6 +92,7 @@ class FakeFasilCubit extends Cubit<FasilState> implements FasilCubit {
     AyahIdentifier ayah,
   ) async {
     moves.add((slot, ayah));
+    if (failMove) return null;
     final previous = state.slots[slot];
     final moved = fasilPlace(slot, ayah);
     emit(state.copyWith(slots: {...state.slots, slot: moved}));
@@ -106,8 +108,10 @@ class FakeFasilCubit extends Cubit<FasilState> implements FasilCubit {
   }
 
   @override
-  Future<void> rename(FasilSlot slot, String name) async =>
-      renames.add((slot, name));
+  Future<bool> rename(FasilSlot slot, String name) async {
+    renames.add((slot, name));
+    return true;
+  }
 
   @override
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
@@ -121,10 +125,12 @@ class FakeSavedAyatCubit extends Cubit<SavedAyatState>
   final removes = <Place>[];
   final restores = <Place>[];
   bool failRemove = false;
+  bool failSave = false;
 
   @override
   Future<Place?> save(AyahIdentifier ayah) async {
     saves.add(ayah);
+    if (failSave) return null;
     final place = savedPlace(
       ayah,
       at: _defaultAt.add(Duration(minutes: saves.length)),

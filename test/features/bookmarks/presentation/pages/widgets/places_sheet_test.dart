@@ -15,6 +15,7 @@ import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.da
 import 'package:quran_app/features/surah/domain/entities/last_read.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../surah/presentation/pages/mushaf/mushaf_page_harness.dart';
 import '../../../place_fakes.dart';
@@ -42,6 +43,7 @@ void main() {
     SavedAyatState savedAyat = const SavedAyatState(loaded: true),
     double textScale = 1,
     String locale = 'ar',
+    bool settle = true,
   }) async {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
@@ -94,8 +96,15 @@ void main() {
       ),
     );
     await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+    }
   }
+
+  final skeletons = find.byWidgetPredicate((w) => w is Skeletonizer);
 
   Finder key(String value) => find.byKey(ValueKey(value));
 
@@ -325,7 +334,7 @@ void main() {
     expect(saved.restores.last, place);
   });
 
-  testWidgets('a failed removal keeps the row and shows no removed notice', (
+  testWidgets('a failed removal keeps the row and shows the error notice', (
     tester,
   ) async {
     final place = savedPlace(_fatiha);
@@ -344,13 +353,50 @@ void main() {
 
     expect(saved.removes.last, place);
     expect(key('places-saved-2:5'), findsOneWidget);
-    expect(find.byType(SnackBar), findsNothing);
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('تعذّر الحفظ، حاول مرة أخرى'), findsOneWidget);
   });
 
   testWidgets('no saved ayat shows the empty line', (tester) async {
     await open(tester);
 
     expect(find.text('لا توجد آيات محفوظة بعد'), findsOneWidget);
+  });
+
+  testWidgets('while loading it skeletonizes instead of showing empty states', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      fasil: const FasilState(),
+      savedAyat: const SavedAyatState(),
+      settle: false,
+    );
+
+    expect(skeletons, findsNWidgets(2));
+    expect(find.text('لا توجد آيات محفوظة بعد'), findsNothing);
+
+    saved.emit(const SavedAyatState(loaded: true));
+    fawasil.emit(const FasilState(loaded: true));
+    await tester.pump();
+
+    expect(skeletons, findsOneWidget);
+    expect(tester.widget<Skeletonizer>(skeletons).enabled, isFalse);
+    expect(find.text('لا توجد آيات محفوظة بعد'), findsOneWidget);
+  });
+
+  testWidgets('a failed load shows the empty line, not a skeleton', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      fasil: const FasilState(loadFailed: true),
+      savedAyat: const SavedAyatState(loadFailed: true),
+    );
+
+    expect(find.text('لا توجد آيات محفوظة بعد'), findsOneWidget);
+    expect(skeletons, findsNWidgets(1));
+    expect(tester.widget<Skeletonizer>(skeletons).enabled, isFalse);
   });
 
   testWidgets('the sheet is titled أماكني and closes', (tester) async {

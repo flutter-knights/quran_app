@@ -328,6 +328,8 @@ class PendingS {
   String get places_savedAyat => _ar ? 'الآيات المحفوظة' : 'Saved ayat';
   String get places_noSavedAyat =>
       _ar ? 'لا توجد آيات محفوظة بعد' : 'No saved ayat yet';
+  String get places_writeFailed =>
+      _ar ? 'تعذّر الحفظ، حاول مرة أخرى' : 'Couldn\'t save. Try again.';
   String get places_rename => _ar ? 'تسمية' : 'Rename';
   String get places_renameTitle => _ar ? 'تسمية الفاصل' : 'Rename marker';
   String get places_cancel => _ar ? 'إلغاء' : 'Cancel';

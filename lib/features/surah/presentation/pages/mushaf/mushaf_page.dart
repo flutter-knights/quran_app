@@ -7,18 +7,17 @@ import 'package:go_router/go_router.dart';
 import 'package:quran/quran.dart' as quran;
 
 import '../../../../../config/router/now_playing_route.dart';
-import '../../../../../config/theme/typography_styles.dart';
 import '../../../../../core/constants/mushaf_reading_mode.dart';
 import '../../../../../core/di/dependency_injection.dart';
 import '../../../../../core/helper functions/locale_helpers.dart';
 import '../../../../../core/localization/pending_s.dart';
 import '../../../../../core/utils/screen_wake.dart';
-import '../../../../../generated/l10n.dart';
 import '../../../../bookmarks/domain/entities/fasil_slot.dart';
 import '../../../../bookmarks/presentation/cubit/fasil_cubit.dart';
 import '../../../../bookmarks/presentation/pages/widgets/places_sheet.dart';
 import '../../../../bookmarks/presentation/utils/fasil_rules.dart';
 import '../../../../bookmarks/presentation/utils/place_labels.dart';
+import '../../../../bookmarks/presentation/utils/place_notices.dart';
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_meta_service.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
@@ -483,26 +482,19 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     AyahIdentifier ayah,
   ) async {
     final result = await fawasil.move(slot, ayah);
-    if (!mounted || result == null) return;
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    if (result == null) return showPlaceWriteError(messenger);
     final s = PendingS.current;
     final name = fasilName(context, slot, result.moved);
     final place = ayahPlace(context, ayah);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            result.previous == null
-                ? s.fasil_placed(name, place)
-                : s.fasil_moved(name, place),
-            style: TS.regular14,
-          ),
-          action: SnackBarAction(
-            label: S.current.undo,
-            onPressed: () => fawasil.restore(slot, result.previous),
-          ),
-        ),
-      );
+    showPlaceNotice(
+      messenger,
+      result.previous == null
+          ? s.fasil_placed(name, place)
+          : s.fasil_moved(name, place),
+      onUndo: () => fawasil.restore(slot, result.previous),
+    );
   }
 
   void _jumpInPlace(int page, {AyahIdentifier? focus}) {

@@ -1,5 +1,3 @@
-import 'package:dartz/dartz.dart';
-
 import '../../../../../core/errors/exceptions.dart';
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../surah/domain/usecases/get_mushaf_page.dart';

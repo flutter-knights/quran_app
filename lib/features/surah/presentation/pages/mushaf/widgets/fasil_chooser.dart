@@ -2,13 +2,13 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
-import 'package:quran_app/core/helper functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/place.dart';
+import 'package:quran_app/features/bookmarks/presentation/pages/widgets/fasil_row_summary.dart';
+import 'package:quran_app/features/bookmarks/presentation/pages/widgets/place_tap_target.dart';
 import 'package:quran_app/features/bookmarks/presentation/utils/place_labels.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
-import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 
 sealed class FasilChoice extends Equatable {
   const FasilChoice();
@@ -35,7 +35,6 @@ final class FasilMoveHere extends FasilChoice {
 const _wideStyle = ButtonStyle(
   minimumSize: WidgetStatePropertyAll(Size.fromHeight(48)),
 );
-const _goStyle = ButtonStyle(minimumSize: WidgetStatePropertyAll(Size(48, 48)));
 
 class FasilChooser extends StatelessWidget {
   const FasilChooser({
@@ -107,7 +106,6 @@ class _FasilRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = PendingS.of(context);
-    final scheme = context.colorScheme;
     final name = fasilName(context, slot, place);
     final placed = place;
     final label = switch ((placed != null, filled)) {
@@ -126,47 +124,17 @@ class _FasilRow extends StatelessWidget {
         children: [
           ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 56),
-            child: Row(
-              children: [
-                Container(
-                  width: 12,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: fasilRibbon(
-                      slot,
-                      dark: scheme.brightness == Brightness.dark,
+            child: FasilRowSummary(
+              slot: slot,
+              place: placed,
+              trailing: placed == null
+                  ? null
+                  : TextButton(
+                      key: ValueKey('fasil-go-${slot.name}'),
+                      style: placeTapTarget,
+                      onPressed: () => Navigator.pop(context, FasilGo(placed)),
+                      child: Text(s.menu_go, style: TS.bold14),
                     ),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(name, style: TS.bold14),
-                      Text(
-                        placed == null
-                            ? s.fasil_notPlaced
-                            : s.places_position(
-                                ayahPlace(context, placed.ayah),
-                                placed.page.toLocalized(context),
-                              ),
-                        style: TS.medium14.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (placed != null)
-                  TextButton(
-                    key: ValueKey('fasil-go-${slot.name}'),
-                    style: _goStyle,
-                    onPressed: () => Navigator.pop(context, FasilGo(placed)),
-                    child: Text(s.menu_go, style: TS.bold14),
-                  ),
-              ],
             ),
           ),
           if (canMove)

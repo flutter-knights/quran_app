@@ -29,15 +29,27 @@ class SavedAyatCubit extends Cubit<SavedAyatState> {
   static List<Place> _newestFirst(Iterable<Place> places) =>
       places.toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
+  static Iterable<Place> _oneEach(Iterable<Place> places) {
+    final byAyah = <AyahIdentifier, Place>{};
+    for (final place in places) {
+      final current = byAyah[place.ayah];
+      if (current == null || place.createdAt.isAfter(current.createdAt)) {
+        byAyah[place.ayah] = place;
+      }
+    }
+    return byAyah.values;
+  }
+
   Future<void> _load() async {
     final result = await getPlaces();
     if (isClosed) return;
     result.fold(
-      (failure) => emit(state.copyWith(loaded: true, error: failure.message)),
+      (failure) =>
+          emit(state.copyWith(loadFailed: true, error: failure.message)),
       (places) => emit(
         state.copyWith(
           loaded: true,
-          items: _newestFirst(places.where((p) => p.slot == null)),
+          items: _newestFirst(_oneEach(places.where((p) => p.slot == null))),
           clearError: true,
         ),
       ),

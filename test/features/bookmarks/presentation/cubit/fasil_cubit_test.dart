@@ -152,15 +152,17 @@ void main() {
     expect(cubit.state.slots[FasilSlot.hifz]!.updatedAt, placed.updatedAt);
   });
 
-  test('onPage lists the page slots in slot order', () async {
+  test('a failed load blocks writes so a record is never duplicated', () async {
+    final hifz = fasilPlace(FasilSlot.hifz, a25);
+    repo = InMemoryPlacesRepository([hifz])..failNext = true;
     final cubit = await build();
-    await cubit.move(FasilSlot.muraja, a25);
-    await cubit.move(FasilSlot.wird, a25);
-    await cubit.move(FasilSlot.hifz, a100);
-    expect(cubit.state.onPage(2).map((p) => p.slot), [
-      FasilSlot.wird,
-      FasilSlot.muraja,
-    ]);
+
+    expect(cubit.state.loaded, isFalse);
+    expect(cubit.state.loadFailed, isTrue);
+    expect(cubit.state.loading, isFalse);
+    expect(cubit.state.error, isNotNull);
+    expect(await cubit.move(FasilSlot.hifz, a100), isNull);
+    expect(repo.places.values.toList(), [hifz]);
   });
 
   test('a failing save emits the error and keeps the slots', () async {

@@ -569,6 +569,7 @@
   },
   "places_savedAyat": "الآيات المحفوظة",
   "places_noSavedAyat": "لا توجد آيات محفوظة بعد",
+  "places_writeFailed": "تعذّر الحفظ، حاول مرة أخرى",
   "places_rename": "تسمية",
   "places_renameTitle": "تسمية الفاصل",
   "places_cancel": "إلغاء",

@@ -9,6 +9,7 @@ import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/app_status_badge.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/utils/place_notices.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/surah/presentation/utils/surah_caption.dart';
@@ -202,32 +203,27 @@ class AyahLeaf extends StatelessWidget {
   Future<void> _toggleSave(BuildContext context) async {
     final saved = context.read<SavedAyatCubit>();
     final messenger = ScaffoldMessenger.of(context);
-    final s = PendingS.of(context);
-    final undo = S.of(context).undo;
+    final s = PendingS.current;
     final ayahText = ayah.ayah.toLocalized(context);
     final surahText = surahDisplayName(context, ayah.surah);
     final existing = saved.state.find(ayah);
-    final String message;
-    final VoidCallback onUndo;
     if (existing != null) {
       await saved.remove(existing);
-      if (saved.state.contains(ayah)) return;
-      message = s.savedAyat_removed(ayahText, surahText);
-      onUndo = () => saved.restore(existing);
-    } else {
-      final place = await saved.save(ayah);
-      if (place == null) return;
-      message = s.savedAyat_saved(ayahText, surahText);
-      onUndo = () => saved.remove(place);
-    }
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message, style: TS.regular14),
-          action: SnackBarAction(label: undo, onPressed: onUndo),
-        ),
+      if (saved.state.contains(ayah)) return showPlaceWriteError(messenger);
+      showPlaceNotice(
+        messenger,
+        s.savedAyat_removed(ayahText, surahText),
+        onUndo: () => saved.restore(existing),
       );
+      return;
+    }
+    final place = await saved.save(ayah);
+    if (place == null) return showPlaceWriteError(messenger);
+    showPlaceNotice(
+      messenger,
+      s.savedAyat_saved(ayahText, surahText),
+      onUndo: () => saved.remove(place),
+    );
   }
 
   Future<void> _share(BuildContext context) async {

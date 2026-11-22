@@ -463,6 +463,23 @@ void main() {
       expect(fawasil.restores.last, (FasilSlot.wird, previous));
     });
 
+    testWidgets('a failed فاصل move shows the error and no undo', (
+      tester,
+    ) async {
+      final fawasil = seeded({FasilSlot.wird: _a5})..failMove = true;
+      final (mushaf, _) = await pump(tester, fawasil: fawasil);
+      mushaf.push(_state(selected: imran7));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('fasil-move-wird')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('تعذّر الحفظ، حاول مرة أخرى'), findsOneWidget);
+      expect(find.text('تراجع'), findsNothing);
+    });
+
     group('the chooser preselect', () {
       const imran1 = AyahIdentifier(surah: 3, ayah: 1);
       const banner = AyahIdentifier(surah: 3, ayah: 0);

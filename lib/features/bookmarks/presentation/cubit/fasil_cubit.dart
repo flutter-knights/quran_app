@@ -30,7 +30,8 @@ class FasilCubit extends Cubit<FasilState> {
     final result = await getPlaces();
     if (isClosed) return;
     result.fold(
-      (failure) => emit(state.copyWith(loaded: true, error: failure.message)),
+      (failure) =>
+          emit(state.copyWith(loadFailed: true, error: failure.message)),
       (places) {
         final slots = <FasilSlot, Place>{};
         for (final place in places) {
@@ -86,11 +87,11 @@ class FasilCubit extends Cubit<FasilState> {
     );
   }
 
-  Future<void> rename(FasilSlot slot, String name) async {
+  Future<bool> rename(FasilSlot slot, String name) async {
     final place = state.slots[slot];
-    if (!state.loaded || place == null) return;
+    if (!state.loaded || place == null) return false;
     final trimmed = name.trim();
-    await _write(
+    return _write(
       slot,
       trimmed.isEmpty
           ? place.copyWith(clearName: true)

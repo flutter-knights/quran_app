@@ -145,7 +145,9 @@ void main() {
     expect(saved.restores.last, place);
   });
 
-  testWidgets('a failed removal shows no removed notice', (tester) async {
+  testWidgets('a failed removal shows the error, not a removed notice', (
+    tester,
+  ) async {
     final place = savedPlace(ayah);
     final saved = FakeSavedAyatCubit(
       SavedAyatState(items: [place], loaded: true),
@@ -156,8 +158,21 @@ void main() {
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
     expect(saved.removes.last, place);
-    expect(find.byType(SnackBar), findsNothing);
+    expect(find.text('تعذّر الحفظ، حاول مرة أخرى'), findsOneWidget);
+    expect(find.text('أُزيلت الآية ٧ من آل عمران'), findsNothing);
     expect(saved.state.contains(ayah), isTrue);
+  });
+
+  testWidgets('a failed save shows the error', (tester) async {
+    final saved = FakeSavedAyatCubit()..failSave = true;
+    addTearDown(saved.close);
+    await tester.pumpWidget(_host(saved, ayah, calls));
+    await tester.tap(find.byKey(const ValueKey('leaf-save')));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    expect(saved.saves.last, ayah);
+    expect(find.text('تعذّر الحفظ، حاول مرة أخرى'), findsOneWidget);
+    expect(find.text('حُفظت الآية ٧ من آل عمران'), findsNothing);
   });
 
   testWidgets('dragging down closes', (tester) async {
