@@ -178,6 +178,6 @@ void main() {
     final size = tester.getSize(find.byType(AspectRatio));
 
     expect(box.aspectRatio, mushafPageAspect);
-    expect(size.width / size.height, closeTo(mushafPageAspect, 0.001));
+    expect(size.width / size.height, closeTo(mushafPageAspect, 1e-5));
   });
 }

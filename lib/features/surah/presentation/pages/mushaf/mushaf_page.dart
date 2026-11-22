@@ -63,7 +63,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
   MushafReadingMode? _lastBuiltMode;
 
   // Height of one Mushaf page in scroll mode. Derived from the available
-  // width × the page image aspect ratio. Updated in didChangeDependencies.
+  // width ÷ the page image aspect ratio. Updated in didChangeDependencies.
   double _scrollPageHeight = 0.0;
 
   @override

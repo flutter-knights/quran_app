@@ -26,6 +26,7 @@ import 'package:quran_app/features/surah/domain/usecases/get_mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_cubit.dart';
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
+import 'package:quran_app/features/surah/presentation/utils/reader_rules.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/generated/l10n.dart';
 
@@ -174,6 +175,21 @@ void main() {
     await tester.pump();
     mushaf.calls.clear();
   }
+
+  testWidgets('a page in page mode keeps its aspect in a tall viewport', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+
+    final box = find.descendant(
+      of: find.byType(PageView),
+      matching: find.byType(AspectRatio),
+    );
+    final size = tester.getSize(box.first);
+
+    expect(size.width / size.height, closeTo(mushafPageAspect, 1e-5));
+    expect(size.height, lessThan(800));
+  });
 
   testWidgets('a follow turn to the next page keeps the selection', (
     tester,
