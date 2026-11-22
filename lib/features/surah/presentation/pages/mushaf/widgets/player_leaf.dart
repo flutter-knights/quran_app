@@ -20,20 +20,18 @@ class PlayerLeaf extends StatelessWidget {
     required this.colors,
     required this.onReturnToPlaying,
     required this.onNewPlay,
-    this.awayAyah,
-    this.awayPage,
+    this.away,
   });
 
   final MushafPaperColors colors;
   final VoidCallback onReturnToPlaying;
   final VoidCallback onNewPlay;
-  final AyahIdentifier? awayAyah;
-  final int? awayPage;
+  final ({AyahIdentifier ayah, int page})? away;
 
   @override
   Widget build(BuildContext context) {
     final pending = PendingS.of(context);
-    final away = awayAyah;
+    final away = this.away;
     return Material(
       color: colors.leaf,
       shape: Border(top: BorderSide(color: colors.accent)),
@@ -89,9 +87,9 @@ class PlayerLeaf extends StatelessWidget {
                         children: [
                           Text(
                             pending.mushaf_nowReciting(
-                              surahDisplayName(context, away.surah),
-                              away.realAyah.toLocalized(context),
-                              (awayPage ?? 0).toLocalized(context),
+                              surahDisplayName(context, away.ayah.surah),
+                              away.ayah.realAyah.toLocalized(context),
+                              away.page.toLocalized(context),
                             ),
                             style: TS.medium14.copyWith(color: colors.ink),
                           ),
@@ -190,57 +188,60 @@ class PlayerLeaf extends StatelessWidget {
     PendingS pending,
     PlaybackCubit cubit,
     PlaybackState state,
-  ) => Row(
-    spacing: 8,
-    children: [
-      Expanded(
-        child: TextButton.icon(
-          key: const ValueKey('player-previous'),
-          style: _tapSize,
-          icon: const Icon(Icons.skip_previous),
-          label: _label(pending.player_previous),
-          onPressed: state.canSkipPrevious
-              ? () {
-                  cubit.skipPrevious();
-                  onNewPlay();
-                }
-              : null,
-        ),
-      ),
-      Expanded(
-        flex: 2,
-        child: FilledButton.icon(
-          key: const ValueKey('player-toggle'),
-          style: FilledButton.styleFrom(minimumSize: const Size(0, 56)),
-          icon: Icon(state.isPlaying ? Icons.pause : Icons.play_arrow),
-          label: _label(
-            state.isPlaying
-                ? S.of(context).playback_pause
-                : pending.player_resume,
+  ) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Row(
+      spacing: 8,
+      children: [
+        Expanded(
+          child: TextButton.icon(
+            key: const ValueKey('player-previous'),
+            style: _tapSize,
+            icon: Icon(rtl ? Icons.skip_next : Icons.skip_previous),
+            label: _label(pending.player_previous),
+            onPressed: state.canSkipPrevious
+                ? () {
+                    cubit.skipPrevious();
+                    onNewPlay();
+                  }
+                : null,
           ),
-          onPressed: state.isLoading
-              ? null
-              : state.isPlaying
-              ? cubit.pause
-              : cubit.resume,
         ),
-      ),
-      Expanded(
-        child: TextButton.icon(
-          key: const ValueKey('player-next'),
-          style: _tapSize,
-          icon: const Icon(Icons.skip_next),
-          label: _label(pending.strip_next),
-          onPressed: state.canSkipNext
-              ? () {
-                  cubit.skipNext();
-                  onNewPlay();
-                }
-              : null,
+        Expanded(
+          flex: 2,
+          child: FilledButton.icon(
+            key: const ValueKey('player-toggle'),
+            style: FilledButton.styleFrom(minimumSize: const Size(0, 56)),
+            icon: Icon(state.isPlaying ? Icons.pause : Icons.play_arrow),
+            label: _label(
+              state.isPlaying
+                  ? S.of(context).playback_pause
+                  : pending.player_resume,
+            ),
+            onPressed: state.isLoading
+                ? null
+                : state.isPlaying
+                ? cubit.pause
+                : cubit.resume,
+          ),
         ),
-      ),
-    ],
-  );
+        Expanded(
+          child: TextButton.icon(
+            key: const ValueKey('player-next'),
+            style: _tapSize,
+            icon: Icon(rtl ? Icons.skip_previous : Icons.skip_next),
+            label: _label(pending.strip_next),
+            onPressed: state.canSkipNext
+                ? () {
+                    cubit.skipNext();
+                    onNewPlay();
+                  }
+                : null,
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _actions(
     BuildContext context,

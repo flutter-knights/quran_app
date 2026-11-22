@@ -65,9 +65,6 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
     super.dispose();
   }
 
-  void _openReciterSheet(BuildContext context) =>
-      PlaybackOptionsSheet.show(context);
-
   void _openOptionsSheet(BuildContext context) {
     // If the options sheet is opened before playback has started (user tapped
     // an ayah but hasn't pressed play), seed the range from the highlighted
@@ -159,7 +156,7 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
                               playbackState.requestedAyah ??
                               playbackState.currentAyah,
                           active: active,
-                          onTapInfo: () => _openReciterSheet(stableCtx),
+                          onTapInfo: () => _openOptionsSheet(stableCtx),
                           onTapTune: () => _openOptionsSheet(stableCtx),
                           onDismiss: () =>
                               stableCtx.read<MushafCubit>().unpinOverlay(),

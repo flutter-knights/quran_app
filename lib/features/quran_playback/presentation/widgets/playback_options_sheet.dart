@@ -24,16 +24,18 @@ class PlaybackOptionsSheet extends StatelessWidget {
 
   final VoidCallback? onNewPlay;
 
-  static Future<void> show(BuildContext context, {VoidCallback? onNewPlay}) =>
-      showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        isScrollControlled: true,
-        builder: (_) => BlocProvider.value(
-          value: context.read<PlaybackCubit>(),
-          child: PlaybackOptionsSheet(onNewPlay: onNewPlay),
-        ),
-      );
+  static Future<void> show(BuildContext context, {VoidCallback? onNewPlay}) {
+    final playback = context.read<PlaybackCubit>();
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => BlocProvider.value(
+        value: playback,
+        child: PlaybackOptionsSheet(onNewPlay: onNewPlay),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

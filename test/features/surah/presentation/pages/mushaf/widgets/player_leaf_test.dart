@@ -66,9 +66,9 @@ AyahIdentifier _a(int surah, int ayah) =>
 Widget _host(
   _FakePlayback playback,
   _Calls calls, {
-  AyahIdentifier? awayAyah,
-  int? awayPage,
+  ({AyahIdentifier ayah, int page})? away,
   double scale = 1,
+  ValueNotifier<bool>? leafVisible,
 }) => MaterialApp(
   locale: const Locale('ar'),
   localizationsDelegates: const [
@@ -92,12 +92,16 @@ Widget _host(
         alignment: Alignment.bottomCenter,
         child: SizedBox(
           width: 360,
-          child: PlayerLeaf(
-            colors: MushafPaper.cream.colors,
-            onReturnToPlaying: () => calls.returned++,
-            onNewPlay: () => calls.newPlay++,
-            awayAyah: awayAyah,
-            awayPage: awayPage,
+          child: ValueListenableBuilder(
+            valueListenable: leafVisible ?? ValueNotifier(true),
+            builder: (context, visible, _) => visible
+                ? PlayerLeaf(
+                    colors: MushafPaper.cream.colors,
+                    onReturnToPlaying: () => calls.returned++,
+                    onNewPlay: () => calls.newPlay++,
+                    away: away,
+                  )
+                : const SizedBox.shrink(),
           ),
         ),
       ),
@@ -109,18 +113,18 @@ Future<_FakePlayback> _pump(
   WidgetTester tester,
   PlaybackState state, {
   _Calls? calls,
-  AyahIdentifier? awayAyah,
-  int? awayPage,
+  ({AyahIdentifier ayah, int page})? away,
   double scale = 1,
+  ValueNotifier<bool>? leafVisible,
 }) async {
   final playback = _FakePlayback(state);
   await tester.pumpWidget(
     _host(
       playback,
       calls ?? _Calls(),
-      awayAyah: awayAyah,
-      awayPage: awayPage,
+      away: away,
       scale: scale,
+      leafVisible: leafVisible,
     ),
   );
   return playback;
@@ -197,10 +201,8 @@ void main() {
     tester,
   ) async {
     await _pump(tester, PlaybackState(currentAyah: _a(2, 5), isLoading: true));
-    expect(
-      tester.widget(_key('player-loading')),
-      isA<LinearProgressIndicator>(),
-    );
+    final bar = tester.widget<LinearProgressIndicator>(_key('player-loading'));
+    expect(bar.minHeight, 2);
     expect(_enabled(tester, 'player-toggle'), isFalse);
   });
 
@@ -315,8 +317,7 @@ void main() {
       tester,
       PlaybackState(currentAyah: _a(3, 12), isPlaying: true),
       calls: calls,
-      awayAyah: _a(3, 12),
-      awayPage: 51,
+      away: (ayah: _a(3, 12), page: 51),
     );
     expect(find.text('يُتلى الآن: آل عمران ١٢، صفحة ٥١'), findsOneWidget);
     expect(find.text('العودة إلى الآية المتلوّة'), findsOneWidget);
@@ -356,10 +357,9 @@ void main() {
     expect(button.labelled, isTrue);
   });
 
-  testWidgets('fits at 2x text', (tester) async {
-    tester.view.physicalSize = const Size(360, 800);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+  testWidgets('transport glyphs point with the reading direction', (
+    tester,
+  ) async {
     await _pump(
       tester,
       PlaybackState(
@@ -368,8 +368,63 @@ void main() {
         rangeEnd: _a(2, 10),
         isPlaying: true,
       ),
-      scale: 2,
     );
+    IconData glyph(String key) => tester
+        .widget<Icon>(
+          find.descendant(of: _key(key), matching: find.byType(Icon)),
+        )
+        .icon!;
+    expect(tester.getCenter(_key('player-previous')).dx, greaterThan(180));
+    expect(glyph('player-previous'), Icons.skip_next);
+    expect(glyph('player-next'), Icons.skip_previous);
+  });
+
+  testWidgets('the options sheet survives the leaf leaving the tree', (
+    tester,
+  ) async {
+    final leafVisible = ValueNotifier(true);
+    await _pump(
+      tester,
+      PlaybackState(currentAyah: _a(2, 6), isPlaying: true),
+      leafVisible: leafVisible,
+    );
+    await tester.tap(_key('player-repeat'));
+    await tester.pumpAndSettle();
+    leafVisible.value = false;
+    await tester.pump();
+    tester.view.physicalSize = const Size(360, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpAndSettle();
+    expect(find.text('خيارات التلاوة'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('fits at 2x text on a 360 px screen', () {
+    final cases = {
+      'playing': PlaybackState(
+        currentAyah: _a(2, 6),
+        rangeStart: _a(2, 5),
+        rangeEnd: _a(2, 10),
+        isPlaying: true,
+      ),
+      'listening-away': PlaybackState(currentAyah: _a(3, 12), isPlaying: true),
+      'error': PlaybackState(error: 'x', requestedAyah: _a(3, 13)),
+    };
+
+    for (final MapEntry(:key, :value) in cases.entries) {
+      testWidgets(key, (tester) async {
+        tester.view.physicalSize = const Size(360, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await _pump(
+          tester,
+          value,
+          away: key == 'listening-away' ? (ayah: _a(3, 12), page: 51) : null,
+          scale: 2,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 }
