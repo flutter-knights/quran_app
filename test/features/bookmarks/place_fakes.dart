@@ -120,6 +120,7 @@ class FakeSavedAyatCubit extends Cubit<SavedAyatState>
   final saves = <AyahIdentifier>[];
   final removes = <Place>[];
   final restores = <Place>[];
+  bool failRemove = false;
 
   @override
   Future<Place?> save(AyahIdentifier ayah) async {
@@ -135,6 +136,7 @@ class FakeSavedAyatCubit extends Cubit<SavedAyatState>
   @override
   Future<void> remove(Place place) async {
     removes.add(place);
+    if (failRemove) return;
     emit(
       state.copyWith(
         items: state.items.where((p) => p.id != place.id).toList(),

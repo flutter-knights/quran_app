@@ -200,6 +200,61 @@ void main() {
     expect(fawasil.renames.last, (FasilSlot.hifz, 'حفظ رمضان'));
   });
 
+  testWidgets('confirming the untouched default name writes nothing', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      fasil: FasilState(
+        loaded: true,
+        slots: {FasilSlot.hifz: fasilPlace(FasilSlot.hifz, _hifz)},
+      ),
+    );
+
+    await tester.tap(key('places-rename-hifz'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تم'));
+    await tester.pumpAndSettle();
+
+    expect(fawasil.renames, isEmpty);
+  });
+
+  testWidgets('confirming an unchanged custom name still writes it', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      fasil: FasilState(
+        loaded: true,
+        slots: {
+          FasilSlot.hifz: fasilPlace(FasilSlot.hifz, _hifz, name: 'حفظ رمضان'),
+        },
+      ),
+    );
+
+    await tester.tap(key('places-rename-hifz'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تم'));
+    await tester.pumpAndSettle();
+
+    expect(fawasil.renames.last, (FasilSlot.hifz, 'حفظ رمضان'));
+  });
+
+  testWidgets('انتقال leads the row actions', (tester) async {
+    await open(
+      tester,
+      fasil: FasilState(
+        loaded: true,
+        slots: {FasilSlot.hifz: fasilPlace(FasilSlot.hifz, _hifz)},
+      ),
+    );
+
+    expect(
+      tester.getTopRight(key('places-go-hifz')).dx,
+      greaterThan(tester.getTopRight(key('places-rename-hifz')).dx),
+    );
+  });
+
   testWidgets('cancelling the rename writes nothing', (tester) async {
     await open(
       tester,
@@ -268,6 +323,28 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(saved.restores.last, place);
+  });
+
+  testWidgets('a failed removal keeps the row and shows no removed notice', (
+    tester,
+  ) async {
+    final place = savedPlace(_fatiha);
+    await open(tester, savedAyat: SavedAyatState(loaded: true, items: [place]));
+    saved.failRemove = true;
+
+    await tester.tap(
+      find.descendant(
+        of: key('places-saved-2:5'),
+        matching: find.byType(IconButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(key('place-remove'));
+    await tester.pumpAndSettle();
+
+    expect(saved.removes.last, place);
+    expect(key('places-saved-2:5'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   testWidgets('no saved ayat shows the empty line', (tester) async {

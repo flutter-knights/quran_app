@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:quran_app/config/theme/color_scheme.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
+import 'package:quran_app/features/bookmarks/presentation/pages/widgets/place_tap_target.dart';
 import 'package:quran_app/features/bookmarks/presentation/pages/widgets/places_groups.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/generated/l10n.dart';
@@ -61,9 +62,7 @@ class PlacesSheet extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  style: const ButtonStyle(
-                    minimumSize: WidgetStatePropertyAll(Size(48, 48)),
-                  ),
+                  style: placeTapTarget,
                   onPressed: () => Navigator.pop(context),
                   child: Text(S.of(context).playback_close, style: TS.bold14),
                 ),
