@@ -706,7 +706,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
                   ),
                 ),
                 if (effectiveMode == MushafReadingMode.scroll)
-                  ValueListenableBuilder<bool>(
+                  ValueListenableBuilder(
                     valueListenable: _studying,
                     builder: (context, studying, _) => studying
                         ? const SizedBox.shrink()
@@ -1048,7 +1048,7 @@ class _LeafSlot extends StatelessWidget {
               builder: (context, active) => AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: selected != null
-                    ? ValueListenableBuilder<bool>(
+                    ? ValueListenableBuilder(
                         key: ValueKey(selected),
                         valueListenable: studying,
                         builder: (context, studying, _) => ExcludeSemantics(
@@ -1111,7 +1111,7 @@ class _StudyLayerState extends State<_StudyLayer> {
     final previous = adjacentAyah(ayah, -1);
     final next = adjacentAyah(ayah, 1);
     return FutureBuilder(
-      key: ValueKey(page),
+      key: ValueKey(ayah),
       future: _bounds,
       initialData: page == state.currentPage && state.pageAyahs.isNotEmpty
           ? state.pageAyahs
@@ -1132,7 +1132,7 @@ class _StudyLayerState extends State<_StudyLayer> {
   }
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+  Widget build(BuildContext context) => ValueListenableBuilder(
     valueListenable: widget.studying,
     builder: (context, studying, _) => BlocBuilder<MushafCubit, MushafState>(
       buildWhen: (a, b) =>

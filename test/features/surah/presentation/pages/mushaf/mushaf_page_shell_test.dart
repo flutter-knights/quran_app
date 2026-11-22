@@ -2,9 +2,9 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
-import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_state.dart';
@@ -1157,9 +1157,59 @@ void main() {
 
       expect(mushaf.steps.last, (next, 8));
       expect(mushaf.state.currentPage, 8);
+      expect(
+        tester.widget<PageView>(find.byType(PageView)).controller!.page,
+        7,
+      );
       expect(mushaf.state.jumpFrom, isNull);
       expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
       expect(find.byKey(const ValueKey('study-leaf')), findsOneWidget);
+    });
+
+    testWidgets('stepping to another ayah scrolls the full detent back to '
+        'the top', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({}));
+      await pump(tester, state: _state(selected: _a6), textScale: 2);
+      tester.view.physicalSize = const Size(360, 800);
+      await tester.pumpAndSettle();
+      await openStudy(tester);
+      double offset() => tester
+          .state<ScrollableState>(
+            find
+                .descendant(
+                  of: find.byKey(const ValueKey('study-leaf')),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          )
+          .position
+          .pixels;
+
+      await tester.ensureVisible(find.byKey(const ValueKey('study-next')));
+      await tester.pumpAndSettle();
+      expect(offset(), greaterThan(0));
+
+      await tester.tap(find.byKey(const ValueKey('study-next')));
+      await tester.pumpAndSettle();
+
+      expect(offset(), 0);
+    });
+
+    testWidgets('a step to another page counts as a manual turn for '
+        'last read', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({next: 8}));
+      final args = MushafArgs(page: 7, origin: MushafOrigin.jump);
+      final (_, h) = await pump(
+        tester,
+        state: _state(selected: _a6),
+        args: args,
+      );
+      await openStudy(tester);
+
+      await tapStep(tester, 'study-next');
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(h.repo.saved?.page, 8);
     });
 
     testWidgets("the strip shows the ayah's own page, not the current "
