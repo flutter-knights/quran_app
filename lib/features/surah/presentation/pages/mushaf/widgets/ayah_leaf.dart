@@ -211,6 +211,7 @@ class AyahLeaf extends StatelessWidget {
     final VoidCallback onUndo;
     if (existing != null) {
       await saved.remove(existing);
+      if (saved.state.contains(ayah)) return;
       message = s.savedAyat_removed(ayahText, surahText);
       onUndo = () => saved.restore(existing);
     } else {

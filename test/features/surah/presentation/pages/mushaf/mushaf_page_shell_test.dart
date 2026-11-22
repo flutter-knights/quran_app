@@ -416,11 +416,12 @@ void main() {
         sl.registerSingleton<GetMushafPage>(
           GetMushafPage(_BoundsRepo([_bound(imran6), _bound(imran7, y: 0.5)])),
         );
+        final fawasil = seeded({FasilSlot.hifz: imran6});
         final (mushaf, _) = await pump(
           tester,
           state: _state(page: 50),
           args: const MushafArgs(page: 50),
-          fawasil: seeded({FasilSlot.hifz: imran6}),
+          fawasil: fawasil,
         );
         mushaf.push(_state(page: 50, selected: imran7));
         await tester.pumpAndSettle();
@@ -433,6 +434,11 @@ void main() {
           isA<FilledButton>(),
         );
         expect(find.text('نقل الحفظ إلى هنا'), findsOneWidget);
+
+        await tester.tap(find.byKey(const ValueKey('fasil-move-hifz')));
+        await tester.pumpAndSettle();
+
+        expect(fawasil.moves.last, (FasilSlot.hifz, imran7));
       },
     );
 
@@ -593,7 +599,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('menu-tile-places')));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('متابعة'));
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('places-continue')),
+        matching: find.byType(TextButton),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(mushaf.jumps.last, (50, null));

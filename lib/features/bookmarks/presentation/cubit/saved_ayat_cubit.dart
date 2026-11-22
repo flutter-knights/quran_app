@@ -24,6 +24,7 @@ class SavedAyatCubit extends Cubit<SavedAyatState> {
   final RemovePlace removePlace;
   final QuranPageService pageService;
   final DateTime Function() now;
+  final _saving = <AyahIdentifier>{};
 
   static List<Place> _newestFirst(Iterable<Place> places) =>
       places.toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -45,6 +46,7 @@ class SavedAyatCubit extends Cubit<SavedAyatState> {
 
   Future<Place?> save(AyahIdentifier ayah) async {
     if (!state.loaded || ayah.ayah == 0 || state.contains(ayah)) return null;
+    if (!_saving.add(ayah)) return null;
     final when = now();
     final place = Place(
       id: when.microsecondsSinceEpoch.toString(),
@@ -53,7 +55,9 @@ class SavedAyatCubit extends Cubit<SavedAyatState> {
       createdAt: when,
       updatedAt: when,
     );
-    return await _add(place) ? place : null;
+    final added = await _add(place);
+    _saving.remove(ayah);
+    return added ? place : null;
   }
 
   Future<void> restore(Place place) async {

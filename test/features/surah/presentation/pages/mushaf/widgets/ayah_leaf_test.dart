@@ -145,6 +145,21 @@ void main() {
     expect(saved.restores.last, place);
   });
 
+  testWidgets('a failed removal shows no removed notice', (tester) async {
+    final place = savedPlace(ayah);
+    final saved = FakeSavedAyatCubit(
+      SavedAyatState(items: [place], loaded: true),
+    )..failRemove = true;
+    addTearDown(saved.close);
+    await tester.pumpWidget(_host(saved, ayah, calls));
+    await tester.tap(find.byKey(const ValueKey('leaf-save')));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    expect(saved.removes.last, place);
+    expect(find.byType(SnackBar), findsNothing);
+    expect(saved.state.contains(ayah), isTrue);
+  });
+
   testWidgets('dragging down closes', (tester) async {
     await tester.pumpWidget(_host(cubit, ayah, calls));
     await tester.fling(find.byType(AyahLeaf), const Offset(0, 300), 1000);

@@ -70,6 +70,14 @@ void main() {
     expect(repo.places, hasLength(1));
   });
 
+  test('a second save while the first is in flight is ignored', () async {
+    final cubit = await build();
+    final results = await Future.wait([cubit.save(a25), cubit.save(a25)]);
+    expect(results.where((p) => p != null), hasLength(1));
+    expect(cubit.state.items, hasLength(1));
+    expect(repo.places, hasLength(1));
+  });
+
   test('save ignores the banner', () async {
     final cubit = await build();
     final result = await cubit.save(const AyahIdentifier(surah: 5, ayah: 0));
