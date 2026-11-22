@@ -11,9 +11,16 @@ import 'package:quran_app/features/quran_playback/presentation/cubit/surah_downl
 import 'package:quran_app/features/quran_playback/presentation/cubit/surah_download/surah_download_state.dart';
 
 class SurahDownloadButton extends StatelessWidget {
-  const SurahDownloadButton({super.key, required this.surah});
+  const SurahDownloadButton({
+    super.key,
+    required this.surah,
+    this.labelled = false,
+    this.foreground,
+  });
 
   final int surah;
+  final bool labelled;
+  final Color? foreground;
 
   @override
   Widget build(BuildContext context) =>
@@ -41,28 +48,28 @@ class SurahDownloadButton extends StatelessWidget {
   ) {
     final scheme = context.colorScheme;
     final pending = PendingS.of(context);
+    final percent = switch (status) {
+      SurahDownloading(:final progress) => (progress * 100).round().toLocalized(
+        context,
+      ),
+      _ => '',
+    };
     final (child, tooltip, onTap) = switch (status) {
       SurahNotDownloaded() => (
-        Icon(Icons.download_for_offline_outlined, color: scheme.secondary),
+        Icon(
+          Icons.download_for_offline_outlined,
+          color: foreground ?? scheme.secondary,
+        ),
         pending.surahDownload_download,
         () => cubit.download(reciter, surah),
       ),
       SurahDownloading(:final progress) => (
-        Semantics(
-          label: pending.surahDownload_progress(
-            (progress * 100).round().toLocalized(context),
-          ),
-          child: SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(value: progress, strokeWidth: 2.5),
-          ),
-        ),
+        _spinner(progress, pending.surahDownload_progress(percent)),
         pending.surahDownload_cancel,
         () => cubit.cancel(reciter, surah),
       ),
       SurahDownloaded() => (
-        Icon(Icons.offline_pin, color: scheme.primary),
+        Icon(Icons.offline_pin, color: foreground ?? scheme.primary),
         pending.surahDownload_saved,
         () => _confirmDelete(context, cubit, reciter),
       ),
@@ -72,12 +79,36 @@ class SurahDownloadButton extends StatelessWidget {
         () => cubit.download(reciter, surah),
       ),
     };
+    if (labelled) {
+      return OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
+        icon: child,
+        label: Text(switch (status) {
+          SurahDownloading() => pending.surahDownload_progress(percent),
+          _ => tooltip,
+        }, style: TS.medium14),
+        onPressed: onTap,
+      );
+    }
     return IconButton(
       constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
       tooltip: tooltip,
       icon: child,
       onPressed: onTap,
     );
+  }
+
+  Widget _spinner(double progress, String label) {
+    final spinner = SizedBox(
+      width: 22,
+      height: 22,
+      child: CircularProgressIndicator(
+        value: progress,
+        strokeWidth: 2.5,
+        color: foreground,
+      ),
+    );
+    return labelled ? spinner : Semantics(label: label, child: spinner);
   }
 
   Future<void> _confirmDelete(

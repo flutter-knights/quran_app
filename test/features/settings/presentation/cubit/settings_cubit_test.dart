@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
 import 'package:quran_app/features/notifications/domain/entities/prayer_alert.dart';
@@ -23,13 +24,56 @@ class _MemStorage implements Storage {
 void main() {
   setUpAll(() => HydratedBloc.storage = _MemStorage());
 
-  test('updatePageBrightness clamps to [0.3, 1.0]', () {
+  test('updatePageBrightness clamps to [0.6, 1.0]', () {
     final c = SettingsCubit();
     c.updatePageBrightness(0.1);
-    expect(c.state.settingsModel.pageBrightness, 0.3);
+    expect(c.state.settingsModel.pageBrightness, 0.6);
     c.updatePageBrightness(0.7);
     expect(c.state.settingsModel.pageBrightness, 0.7);
   });
+
+  test('markHintSeen sets the flag once', () async {
+    final c = SettingsCubit();
+    final emitted = [];
+    final sub = c.stream.listen(emitted.add);
+    c.markHintSeen();
+    c.markHintSeen();
+    await Future<void>.delayed(Duration.zero);
+    await sub.cancel();
+    expect(c.state.settingsModel.hintSeen, isTrue);
+    expect(emitted, hasLength(1));
+  });
+
+  test(
+    'updateKeepScreenOn stores the switch and skips an unchanged value',
+    () async {
+      final c = SettingsCubit();
+      final emitted = [];
+      final sub = c.stream.listen(emitted.add);
+      c.updateKeepScreenOn(true);
+      c.updateKeepScreenOn(false);
+      c.updateKeepScreenOn(false);
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
+      expect(c.state.settingsModel.keepScreenOn, isFalse);
+      expect(emitted, hasLength(1));
+    },
+  );
+
+  test(
+    'updateTapAction stores the choice and skips an unchanged value',
+    () async {
+      final c = SettingsCubit();
+      final emitted = [];
+      final sub = c.stream.listen(emitted.add);
+      c.updateTapAction(LeafTapAction.options);
+      c.updateTapAction(LeafTapAction.options);
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
+      expect(c.state.settingsModel.tapAction, LeafTapAction.options);
+      expect(emitted, hasLength(1));
+    },
+  );
 
   test('markDownloadHintSeen sets the flag once', () async {
     final c = SettingsCubit();

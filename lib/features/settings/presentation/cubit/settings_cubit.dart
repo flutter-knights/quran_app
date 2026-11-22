@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
@@ -96,6 +97,21 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
   void markDownloadHintSeen() {
     if (state.settingsModel.downloadHintSeen) return;
     emit(SettingsState(state.settingsModel.copyWith(downloadHintSeen: true)));
+  }
+
+  void markHintSeen() {
+    if (state.settingsModel.hintSeen) return;
+    emit(SettingsState(state.settingsModel.copyWith(hintSeen: true)));
+  }
+
+  void updateTapAction(LeafTapAction action) {
+    if (state.settingsModel.tapAction == action) return;
+    emit(SettingsState(state.settingsModel.copyWith(tapAction: action)));
+  }
+
+  void updateKeepScreenOn(bool value) {
+    if (state.settingsModel.keepScreenOn == value) return;
+    emit(SettingsState(state.settingsModel.copyWith(keepScreenOn: value)));
   }
 
   void updateShowSplashOnLaunch(bool value) {

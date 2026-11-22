@@ -6,8 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
+import 'package:quran_app/config/theme/typography_styles.dart';
+import 'package:quran_app/features/settings/domain/entities/settings.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reading_settings_sheet.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/display_sheet.dart';
+import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../notifications/presentation/alerts_test_harness.dart'
@@ -47,7 +50,7 @@ void main() {
         supportedLocales: S.delegate.supportedLocales,
         home: BlocProvider.value(
           value: cubit,
-          child: const Scaffold(body: ReadingSettingsSheet()),
+          child: const Scaffold(body: DisplaySheet()),
         ),
       ),
     );
@@ -171,5 +174,107 @@ void main() {
     slider.onChangeEnd!(0.6);
     await tester.pump();
     expect(body().opacity, 1.0);
+  });
+
+  testWidgets('the brightness slider starts at the 0.6 floor', (tester) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await pumpSheet(tester, cubit, 'en');
+    final slider = tester.widget<Slider>(
+      find.byKey(const ValueKey('reading-brightness-slider')),
+    );
+    expect(slider.min, Settings.minPageBrightness);
+  });
+
+  testWidgets('the keep-screen-on switch updates the setting', (tester) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await pumpSheet(tester, cubit, 'en');
+    expect(cubit.state.settingsModel.keepScreenOn, isTrue);
+    await tester.tap(find.byKey(const ValueKey('display-keep-awake')));
+    await tester.pump();
+    expect(cubit.state.settingsModel.keepScreenOn, isFalse);
+    await tester.tap(find.byKey(const ValueKey('display-keep-awake')));
+    await tester.pump();
+    expect(cubit.state.settingsModel.keepScreenOn, isTrue);
+  });
+
+  testWidgets('done closes the sheet and is at least 48 by 48', (tester) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        home: BlocProvider.value(
+          value: cubit,
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => DisplaySheet.show(context),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    final done = find.byKey(const ValueKey('display-done'));
+    expect(done, findsOneWidget);
+    final size = tester.getSize(done);
+    expect(size.width, greaterThanOrEqualTo(48));
+    expect(size.height, greaterThanOrEqualTo(48));
+    await tester.tap(done);
+    await tester.pumpAndSettle();
+    expect(done, findsNothing);
+  });
+
+  testWidgets(
+    'paper tiles draw a mini page and show a name of at least 14 px',
+    (tester) async {
+      final cubit = SettingsCubit();
+      addTearDown(cubit.close);
+      await pumpSheet(tester, cubit, 'en');
+      for (final p in MushafPaper.values) {
+        final tile = find.byKey(ValueKey('reading-paper-${p.name}'));
+        final paint = find.descendant(
+          of: tile,
+          matching: find.byType(CustomPaint),
+        );
+        expect(paint, findsOneWidget, reason: p.name);
+        expect(
+          tester.renderObject(paint),
+          paints
+            ..rect(color: p.colors.background)
+            ..rect(color: p.colors.accent)
+            ..line(color: p.colors.ink)
+            ..line(color: p.colors.ink),
+          reason: p.name,
+        );
+        final text = tester.widget<Text>(
+          find.descendant(of: tile, matching: find.byType(Text)),
+        );
+        expect(text.style!.fontSize, TS.medium14.fontSize, reason: p.name);
+      }
+    },
+  );
+
+  testWidgets('the title reads العرض and the sections are named', (
+    tester,
+  ) async {
+    final cubit = SettingsCubit();
+    addTearDown(cubit.close);
+    await pumpSheet(tester, cubit, 'ar');
+    for (final label in ['العرض', 'لون الورق', 'السطوع', 'طريقة القراءة']) {
+      expect(find.text(label), findsOneWidget, reason: label);
+    }
   });
 }

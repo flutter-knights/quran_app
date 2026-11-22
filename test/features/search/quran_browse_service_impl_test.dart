@@ -18,7 +18,7 @@ void main() {
     expect(entries, hasLength(30));
     expect(entries.first.number, 1);
     expect(entries.first.firstPage, 1);
-    expect(entries.first.firstSurahArabicName, isNotEmpty);
+    expect(entries.first.firstSurah, 1);
     expect(entries.last.number, 30);
   });
 }

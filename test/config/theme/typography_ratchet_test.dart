@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _baseline = {
-  'TextStyle(': 2,
-  'fontFamily:': 3,
-  'fontSize:': 11,
+  'TextStyle(': 0,
+  'fontFamily:': 1,
+  'fontSize:': 8,
   'fontWeight:': 0,
   'Theme.of(context).textTheme': 0,
 };

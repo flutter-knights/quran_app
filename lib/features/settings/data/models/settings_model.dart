@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:quran_app/core/constants/calculation_method.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/constants/prayer_name.dart';
@@ -29,6 +30,9 @@ class SettingsModel extends Settings {
     super.showSplashOnLaunch,
     super.notificationHintDismissed,
     super.downloadHintSeen,
+    super.tapAction,
+    super.hintSeen,
+    super.keepScreenOn,
     super.calculationMethod,
     super.asrSchool,
   });
@@ -53,6 +57,9 @@ class SettingsModel extends Settings {
     bool? showSplashOnLaunch,
     bool? notificationHintDismissed,
     bool? downloadHintSeen,
+    LeafTapAction? tapAction,
+    bool? hintSeen,
+    bool? keepScreenOn,
     CalculationMethod? calculationMethod,
     AsrSchool? asrSchool,
   }) {
@@ -79,6 +86,9 @@ class SettingsModel extends Settings {
       notificationHintDismissed:
           notificationHintDismissed ?? this.notificationHintDismissed,
       downloadHintSeen: downloadHintSeen ?? this.downloadHintSeen,
+      tapAction: tapAction ?? this.tapAction,
+      hintSeen: hintSeen ?? this.hintSeen,
+      keepScreenOn: keepScreenOn ?? this.keepScreenOn,
       calculationMethod: calculationMethod ?? this.calculationMethod,
       asrSchool: asrSchool ?? this.asrSchool,
     );
@@ -120,6 +130,13 @@ class SettingsModel extends Settings {
       showSplashOnLaunch: map['showSplashOnLaunch'] ?? true,
       notificationHintDismissed: map['notificationHintDismissed'] ?? false,
       downloadHintSeen: map['downloadHintSeen'] ?? false,
+      tapAction: _readEnum(
+        LeafTapAction.values,
+        map['tapAction'],
+        LeafTapAction.meaning,
+      ),
+      hintSeen: _readBool(map['hintSeen']),
+      keepScreenOn: _readBool(map['keepScreenOn'], true),
       calculationMethod: CalculationMethod.values.firstWhere(
         (m) => m.name == (map['calculationMethod'] as String?),
         orElse: () => CalculationMethod.auto,
@@ -167,6 +184,9 @@ class SettingsModel extends Settings {
       'showSplashOnLaunch': showSplashOnLaunch,
       'notificationHintDismissed': notificationHintDismissed,
       'downloadHintSeen': downloadHintSeen,
+      'tapAction': tapAction.name,
+      'hintSeen': hintSeen,
+      'keepScreenOn': keepScreenOn,
       'calculationMethod': calculationMethod.name,
       'asrSchool': asrSchool.name,
     };

@@ -216,6 +216,24 @@ class PendingS {
       : 'Now reciting: $surah $ayah, page $page';
   String get mushaf_returnToReciting =>
       _ar ? 'العودة إلى الآية المتلوّة' : 'Back to the recited ayah';
+  String player_untilSurahEnd(String reciter) =>
+      _ar ? '$reciter، حتى نهاية السورة' : '$reciter, to the end of the surah';
+  String player_untilPageEnd(String reciter) =>
+      _ar ? '$reciter، حتى نهاية الصفحة' : '$reciter, to the end of the page';
+  String get player_previous => _ar ? 'السابقة' : 'Previous';
+  String get player_next => _ar ? 'التالية' : 'Next';
+  String get player_resume => _ar ? 'متابعة' : 'Resume';
+  String player_repeat(String value) =>
+      _ar ? 'التكرار: $value' : 'Repeat: $value';
+  String get player_repeatOnce => _ar ? 'مرة واحدة' : 'once';
+  String get player_repeatForever => _ar ? 'بلا توقف' : 'endless';
+  String player_repeatCounts(String ayah, String passage) =>
+      _ar ? 'الآية ×$ayah، المقطع ×$passage' : 'ayah ×$ayah, passage ×$passage';
+  String get player_optionsTitle =>
+      _ar ? 'خيارات التلاوة' : 'Recitation options';
+  String get mushaf_audioErrorHint => _ar
+      ? 'تحقق من الاتصال بالإنترنت، ثم أعِد المحاولة'
+      : 'Check your internet connection, then try again';
   String get playback_repeatEachAyah =>
       _ar ? 'تكرار كل آية' : 'Repeat each ayah';
   String get playback_repeatPassage =>
@@ -238,6 +256,45 @@ class PendingS {
       _ar ? 'تعذّر التنزيل، أعِد المحاولة' : 'Download failed, try again';
   String surahDownload_progress(String percent) =>
       _ar ? 'جارٍ التنزيل $percent٪' : 'Downloading $percent%';
+
+  String head_juzHizb(String juz, String hizb) =>
+      _ar ? 'الجزء $juz، الحزب $hizb' : 'Juzʼ $juz, hizb $hizb';
+  String get foot_listen => _ar ? 'استماع' : 'Listen';
+  String get foot_menu => _ar ? 'القائمة' : 'Menu';
+  String get foot_previousPage => _ar ? 'الصفحة السابقة' : 'Previous page';
+  String get foot_nextPage => _ar ? 'الصفحة التالية' : 'Next page';
+  String notice_returnToPage(String page) =>
+      _ar ? 'العودة إلى صفحة $page' : 'Back to page $page';
+  String get notice_tapHint => _ar
+      ? 'اضغط على أي آية لترى معناها وأزرارها'
+      : 'Tap any ayah to see its meaning and actions';
+  String get notice_gotIt => _ar ? 'فهمت' : 'Got it';
+
+  String get leaf_listenFromHere => _ar ? 'استماع من هنا' : 'Listen from here';
+  String get leaf_saveAyah => _ar ? 'حفظ الآية' : 'Save ayah';
+  String get leaf_sajda => _ar ? 'سجدة' : 'Sajda';
+  String mushaf_surahTitle(String surah) =>
+      _ar ? 'سورة $surah' : 'Surah $surah';
+  String mushaf_surahCaption(String place, String ayahs) =>
+      _ar ? '$place، $ayahs' : '$place, $ayahs';
+  String get mushaf_playWholePage =>
+      _ar ? 'استماع الصفحة كاملة' : 'Listen to the whole page';
+  String get menu_places => _ar ? 'أماكني' : 'My places';
+  String get menu_display => _ar ? 'العرض' : 'Display';
+  String get menu_searchHint =>
+      _ar ? 'اسم سورة أو رقم صفحة' : 'Surah name or page number';
+  String menu_pageResult(String page, String surah, String juz) =>
+      _ar ? 'صفحة $page، $surah، الجزء $juz' : 'Page $page, $surah, juzʼ $juz';
+  String get menu_go => _ar ? 'انتقال' : 'Go';
+  String get menu_pageRangeError =>
+      _ar ? 'اكتب رقمًا من ١ إلى ٦٠٤' : 'Enter a number from 1 to 604';
+  String get menu_youAreHere => _ar ? 'أنت هنا' : 'You are here';
+  String mushaf_pageNumber(String page) => _ar ? 'صفحة $page' : 'Page $page';
+  String get display_paper => _ar ? 'لون الورق' : 'Paper colour';
+  String get display_readingMode => _ar ? 'طريقة القراءة' : 'Reading mode';
+  String get display_keepScreenOn =>
+      _ar ? 'إبقاء الشاشة مضيئة' : 'Keep the screen on';
+  String get display_done => _ar ? 'تم' : 'Done';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

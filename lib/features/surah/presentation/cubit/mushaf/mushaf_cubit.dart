@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
+import '../../../domain/entities/ayah_bound_entity.dart';
 import '../../../domain/usecases/get_mushaf_page.dart';
 import '../../utils/mushaf_args.dart';
 import '../../utils/follow_playback.dart';
@@ -20,36 +21,73 @@ class MushafCubit extends Cubit<MushafState> {
        super(MushafState.initial(args)) {
     _notifier.addListener(_onPlayingAyahChanged);
     _onPlayingAyahChanged();
+    final page = playingPage;
+    if (page != null && page != state.currentPage) {
+      emit(state.copyWith(followPlayback: false));
+    }
     _loadPageAyahs(args.page);
   }
 
   final ValueNotifier<AyahIdentifier?> _notifier;
   final QuranPageService _pageService;
   final GetMushafPage _getMushafPage;
+  AyahIdentifier? _followTarget;
 
   @visibleForTesting
   ValueNotifier<AyahIdentifier?> get debugNotifier => _notifier;
 
+  AyahIdentifier? get playingTarget => _followTarget ?? state.playingAyah;
+
   int? get playingPage {
-    final playing = state.playingAyah;
+    final playing = playingTarget;
     if (playing == null) return null;
     return _pageService.getPageForAyah(playing.surah, playing.realAyah);
   }
 
   void setPage(int page, {required bool byUser}) {
+    if (page == state.currentPage) return;
+    if (byUser) {
+      _turnByUser(page);
+      return;
+    }
     emit(
-      byUser
-          ? state.copyWith(
-              currentPage: page,
-              pageAyahs: const [],
-              clearSelected: true,
-              followPlayback: followAfterManualTurn(
-                followPlayback: state.followPlayback,
-                newPage: page,
-                playingPage: playingPage,
-              ),
-            )
-          : state.copyWith(currentPage: page, pageAyahs: const []),
+      state.copyWith(
+        currentPage: page,
+        pageAyahs: const [],
+        clearJumpFrom: page == state.jumpFrom,
+      ),
+    );
+    _loadPageAyahs(page);
+  }
+
+  Future<List<AyahBoundEntity>> boundsFor(int page) async {
+    if (page == state.currentPage && state.pageAyahs.isNotEmpty) {
+      return state.pageAyahs;
+    }
+    final result = await _getMushafPage(page);
+    return result.fold((_) => const [], (entity) => entity.ayahs);
+  }
+
+  void jumpTo(int page) {
+    if (page == state.currentPage && state.jumpFrom == null) return;
+    final origin = state.jumpFrom ?? state.currentPage;
+    _turnByUser(page, origin: page == origin ? null : origin);
+  }
+
+  void _turnByUser(int page, {int? origin}) {
+    emit(
+      state.copyWith(
+        currentPage: page,
+        pageAyahs: const [],
+        clearSelected: true,
+        jumpFrom: origin,
+        clearJumpFrom: origin == null,
+        followPlayback: followAfterManualTurn(
+          followPlayback: state.followPlayback,
+          newPage: page,
+          playingPage: playingPage,
+        ),
+      ),
     );
     _loadPageAyahs(page);
   }
@@ -71,6 +109,10 @@ class MushafCubit extends Cubit<MushafState> {
     }
   }
 
+  void select(AyahIdentifier ayah) {
+    if (state.selectedAyah != ayah) emit(state.copyWith(selectedAyah: ayah));
+  }
+
   void clearSelection() {
     if (state.selectedAyah == null) return;
     emit(state.copyWith(clearSelected: true));
@@ -78,32 +120,17 @@ class MushafCubit extends Cubit<MushafState> {
 
   void resumeFollow() => emit(state.copyWith(followPlayback: true));
 
+  void followFrom(AyahIdentifier start) {
+    _followTarget = start;
+    emit(state.copyWith(followPlayback: true));
+  }
+
+  void cancelFollowTarget() => _followTarget = null;
+
   Future<void> reloadPageAyahs() => _loadPageAyahs(state.currentPage);
 
-  /// Publishes the normalized vertical center of the currently highlighted
-  /// ayah so the playback overlay can avoid covering it.
-  void setHighlightBounds(double centerY) {
-    if (state.selectedAyah == null) return;
-    if (state.highlightedAyahCenterY == centerY) return;
-    emit(state.copyWith(highlightedAyahCenterY: centerY));
-  }
-
-  /// Toggles the Mushaf chrome (app bar, bottom bar, etc.) visibility.
-  void toggleChrome() =>
-      emit(state.copyWith(chromeVisible: !state.chromeVisible));
-
-  /// Sets the Mushaf chrome visibility explicitly.
-  void setChrome(bool visible) => emit(state.copyWith(chromeVisible: visible));
-
-  /// Shrinks the overlay back to its FAB state. Also clears any active
-  /// highlight so the overlay's visibility check (`selectedAyah != null ||
-  /// isOverlayPinned`) goes false.
-  void unpinOverlay() {
-    if (!state.isOverlayPinned && state.selectedAyah == null) return;
-    emit(state.copyWith(isOverlayPinned: false, clearSelected: true));
-  }
-
   void _onPlayingAyahChanged() {
+    _followTarget = null;
     final next = _notifier.value;
     final prevPlaying = state.playingAyah;
     if (next == null) {

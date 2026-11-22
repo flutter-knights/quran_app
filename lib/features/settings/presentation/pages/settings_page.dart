@@ -17,7 +17,7 @@ import 'package:quran_app/core/widgets/design/surface_card.dart';
 import 'package:quran_app/features/notifications/presentation/utils/enum_localization.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/settings/presentation/pages/widgets/palette_picker_widget.dart';
-import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reading_settings_sheet.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/display_sheet.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -128,14 +128,14 @@ class SettingsPage extends StatelessWidget {
                             color: scheme.onSurface,
                             size: 20,
                           ),
-                          title: S.of(context).readingSettings,
+                          title: PendingS.of(context).menu_display,
                           subtitle: S.of(context).paper,
                           trailing: HugeIcon(
                             icon: forwardArrowIcon(context),
                             color: scheme.onSurfaceVariant,
                             size: 20,
                           ),
-                          onTap: () => ReadingSettingsSheet.show(context),
+                          onTap: () => DisplaySheet.show(context),
                         ),
                       ),
                       const SizedBox(height: 24),

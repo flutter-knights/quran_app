@@ -23,8 +23,8 @@ class QuranBrowseServiceImpl implements QuranBrowseService {
       return JuzBrowseEntry(
         number: n,
         firstPage: firstPageOfJuz(n),
-        firstSurahArabicName: quran.getSurahNameArabic(surahs.first),
-        lastSurahArabicName: quran.getSurahNameArabic(surahs.last),
+        firstSurah: surahs.first,
+        lastSurah: surahs.last,
       );
     });
   }

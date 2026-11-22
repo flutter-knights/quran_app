@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_state.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
@@ -11,16 +10,14 @@ import 'package:quran_app/generated/l10n.dart';
 import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../core/di/dependency_injection.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
-import '../../../../../quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import '../../../../domain/entities/ayah_bound_entity.dart';
 import '../../../../domain/entities/mushaf_page_entity.dart';
 import '../../../../domain/usecases/get_mushaf_page.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
-import 'ayah_action_popover.dart';
+import '../../../utils/reader_rules.dart';
 import 'ayah_highlight_painter.dart';
 import 'mushaf_page_ribbon.dart';
-import 'mushaf_printed_chrome.dart';
 
 class MushafPageView extends StatefulWidget {
   const MushafPageView({super.key, required this.pageNumber});
@@ -93,7 +90,7 @@ class _MushafPageViewState extends State<MushafPageView>
             snapshot.connectionState == ConnectionState.done) {
           final pendingS = PendingS.of(context);
           return AspectRatio(
-            aspectRatio: 1 / 1.82,
+            aspectRatio: mushafPageAspect,
             child: ColoredBox(
               color: paperColors.background,
               child: Center(
@@ -117,7 +114,7 @@ class _MushafPageViewState extends State<MushafPageView>
         }
         final entity = snapshot.data;
         return AspectRatio(
-          aspectRatio: 1 / 1.82,
+          aspectRatio: mushafPageAspect,
           child: LayoutBuilder(
             builder: (context, constraints) {
               return Stack(
@@ -171,22 +168,17 @@ class _MushafPageViewState extends State<MushafPageView>
                               _prevPlayingAyah != null) {
                             _controller.forward(from: 0);
                           }
-                          _publishHighlightBounds(
-                            context,
-                            _shownHighlightedAyah,
-                            entity.ayahs,
-                          );
                         }
                         return AnimatedBuilder(
                           animation: _controller,
                           builder: (_, _) => CustomPaint(
                             painter: AyahHighlightPainter(
                               ayahs: entity.ayahs,
-                              highlightedAyah: _shownHighlightedAyah,
-                              prevHighlightedAyah: _prevHighlightedAyah,
+                              selectedAyah: _shownHighlightedAyah,
+                              prevSelectedAyah: _prevHighlightedAyah,
                               playingAyah: _shownPlayingAyah,
                               prevPlayingAyah: _prevPlayingAyah,
-                              highlightColor: paperColors.accent,
+                              selectedColor: paperColors.accent,
                               playingColor: paperColors.ink,
                               animationValue: _controller.value,
                             ),
@@ -226,17 +218,6 @@ class _MushafPageViewState extends State<MushafPageView>
                       );
                     },
                   ),
-                  // Hide chrome in scroll mode — multiple pages are visible
-                  // simultaneously so per-page headers/numbers add clutter.
-                  if (_isPageMode(context, settings.readingMode))
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: MushafPrintedChrome(
-                          pageNumber: widget.pageNumber,
-                          colors: paperColors,
-                        ),
-                      ),
-                    ),
                 ],
               );
             },
@@ -244,38 +225,6 @@ class _MushafPageViewState extends State<MushafPageView>
         );
       },
     );
-  }
-
-  // Chrome (surah header + page number) is shown only in page-flip mode.
-  // Landscape always forces scroll mode (mirrors MushafPage logic).
-  bool _isPageMode(BuildContext context, MushafReadingMode readingMode) {
-    if (MediaQuery.of(context).orientation == Orientation.landscape) {
-      return false;
-    }
-    return readingMode == MushafReadingMode.page;
-  }
-
-  void _publishHighlightBounds(
-    BuildContext context,
-    AyahIdentifier? ayah,
-    List<AyahBoundEntity> ayahs,
-  ) {
-    if (ayah == null) return;
-    AyahBoundEntity? bound;
-    for (final b in ayahs) {
-      if (b.ayah == ayah) {
-        bound = b;
-        break;
-      }
-    }
-    if (bound == null || bound.lines.isEmpty) return;
-    final first = bound.lines.first;
-    final centerY = first.y + first.h / 2;
-    final cubit = context.read<MushafCubit>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      cubit.setHighlightBounds(centerY);
-    });
   }
 
   AyahIdentifier? _hitTest(
@@ -302,40 +251,7 @@ class _MushafPageViewState extends State<MushafPageView>
     List<AyahBoundEntity> ayahs,
   ) {
     final hit = _hitTest(local, c, ayahs);
-    if (hit == null) return;
-
-    // Find the ayah's bound entity to compute an anchor rect.
-    AyahBoundEntity? bound;
-    for (final b in ayahs) {
-      if (b.ayah == hit) {
-        bound = b;
-        break;
-      }
-    }
-    if (bound == null || bound.lines.isEmpty) return;
-
-    final line = bound.lines.first;
-
-    // Convert the normalized first-line rect to global coordinates.
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null) return;
-    final localTopLeft = Offset(line.x * c.maxWidth, line.y * c.maxHeight);
-    final localBottomRight = Offset(
-      (line.x + line.w) * c.maxWidth,
-      (line.y + line.h) * c.maxHeight,
-    );
-    final globalTopLeft = box.localToGlobal(localTopLeft);
-    final globalBottomRight = box.localToGlobal(localBottomRight);
-    final anchorGlobal = Rect.fromPoints(globalTopLeft, globalBottomRight);
-
-    final placement = popoverPlacement(verseCenterY: line.y + line.h / 2);
-
-    AyahActionPopover.show(
-      context,
-      hit,
-      anchorGlobal: anchorGlobal,
-      placement: placement,
-    );
+    if (hit != null) context.read<MushafCubit>().select(hit);
   }
 
   void _handleTap(
@@ -345,24 +261,8 @@ class _MushafPageViewState extends State<MushafPageView>
     List<AyahBoundEntity> ayahs,
   ) {
     final cubit = context.read<MushafCubit>();
-    if (!cubit.state.chromeVisible) {
-      cubit.setChrome(true);
-      return;
-    }
     final hit = _hitTest(local, c, ayahs);
-    if (hit != null) {
-      cubit.toggleSelection(
-        hit,
-      ); // opens the playback overlay via existing plumbing
-    } else {
-      cubit.setChrome(false);
-      // Also dismiss the mini-player when no audio is active, so the screen
-      // is completely clean while reading.
-      final p = context.read<PlaybackCubit>().state;
-      if (!p.isPlaying && !p.isPaused) {
-        cubit.unpinOverlay();
-      }
-    }
+    hit == null ? cubit.clearSelection() : cubit.toggleSelection(hit);
   }
 
   void _onRibbonTap(BuildContext context) {

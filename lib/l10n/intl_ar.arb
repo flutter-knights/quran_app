@@ -425,6 +425,29 @@
     "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "String" }, "page": { "type": "String" } }
   },
   "mushaf_returnToReciting": "العودة إلى الآية المتلوّة",
+  "player_untilSurahEnd": "{reciter}، حتى نهاية السورة",
+  "@player_untilSurahEnd": {
+    "placeholders": { "reciter": { "type": "String" } }
+  },
+  "player_untilPageEnd": "{reciter}، حتى نهاية الصفحة",
+  "@player_untilPageEnd": {
+    "placeholders": { "reciter": { "type": "String" } }
+  },
+  "player_previous": "السابقة",
+  "player_next": "التالية",
+  "player_resume": "متابعة",
+  "player_repeat": "التكرار: {value}",
+  "@player_repeat": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "player_repeatOnce": "مرة واحدة",
+  "player_repeatForever": "بلا توقف",
+  "player_repeatCounts": "الآية ×{ayah}، المقطع ×{passage}",
+  "@player_repeatCounts": {
+    "placeholders": { "ayah": { "type": "String" }, "passage": { "type": "String" } }
+  },
+  "player_optionsTitle": "خيارات التلاوة",
+  "mushaf_audioErrorHint": "تحقق من الاتصال بالإنترنت، ثم أعِد المحاولة",
   "playback_repeatEachAyah": "تكرار كل آية",
   "playback_repeatPassage": "تكرار المقطع",
   "playback_crossSurahRange": "من {from} إلى {to}",
@@ -446,5 +469,49 @@
   "surahDownload_progress": "جارٍ التنزيل {percent}٪",
   "@surahDownload_progress": {
     "placeholders": { "percent": { "type": "String" } }
-  }
+  },
+  "head_juzHizb": "الجزء {juz}، الحزب {hizb}",
+  "@head_juzHizb": {
+    "placeholders": { "juz": { "type": "String" }, "hizb": { "type": "String" } }
+  },
+  "foot_listen": "استماع",
+  "foot_menu": "القائمة",
+  "foot_previousPage": "الصفحة السابقة",
+  "foot_nextPage": "الصفحة التالية",
+  "notice_returnToPage": "العودة إلى صفحة {page}",
+  "@notice_returnToPage": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "notice_tapHint": "اضغط على أي آية لترى معناها وأزرارها",
+  "notice_gotIt": "فهمت",
+  "leaf_listenFromHere": "استماع من هنا",
+  "leaf_saveAyah": "حفظ الآية",
+  "leaf_sajda": "سجدة",
+  "mushaf_surahTitle": "سورة {surah}",
+  "@mushaf_surahTitle": {
+    "placeholders": { "surah": { "type": "String" } }
+  },
+  "mushaf_surahCaption": "{place}، {ayahs}",
+  "@mushaf_surahCaption": {
+    "placeholders": { "place": { "type": "String" }, "ayahs": { "type": "String" } }
+  },
+  "mushaf_playWholePage": "استماع الصفحة كاملة",
+  "menu_places": "أماكني",
+  "menu_display": "العرض",
+  "menu_searchHint": "اسم سورة أو رقم صفحة",
+  "menu_pageResult": "صفحة {page}، {surah}، الجزء {juz}",
+  "@menu_pageResult": {
+    "placeholders": { "page": { "type": "String" }, "surah": { "type": "String" }, "juz": { "type": "String" } }
+  },
+  "menu_go": "انتقال",
+  "menu_pageRangeError": "اكتب رقمًا من ١ إلى ٦٠٤",
+  "menu_youAreHere": "أنت هنا",
+  "mushaf_pageNumber": "صفحة {page}",
+  "@mushaf_pageNumber": {
+    "placeholders": { "page": { "type": "String" } }
+  },
+  "display_paper": "لون الورق",
+  "display_readingMode": "طريقة القراءة",
+  "display_keepScreenOn": "إبقاء الشاشة مضيئة",
+  "display_done": "تم"
 }
