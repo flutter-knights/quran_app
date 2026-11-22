@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper%20functions/locale_helpers.dart';
+import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -13,6 +14,18 @@ import 'package:quran_app/features/surah/presentation/utils/reader_rules.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 const _tapSize = ButtonStyle(minimumSize: WidgetStatePropertyAll(Size(0, 48)));
+
+ButtonStyle _paperButton(MushafPaperColors colors, {bool outlined = false}) =>
+    ButtonStyle(
+      foregroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.disabled)
+            ? colors.ink.withValues(alpha: 0.38)
+            : colors.ink,
+      ),
+      side: outlined
+          ? WidgetStatePropertyAll(BorderSide(color: colors.accent))
+          : null,
+    );
 
 class PlayerLeaf extends StatelessWidget {
   const PlayerLeaf({
@@ -35,102 +48,111 @@ class PlayerLeaf extends StatelessWidget {
     return Material(
       color: colors.leaf,
       shape: Border(top: BorderSide(color: colors.accent)),
-      child: BlocBuilder<PlaybackCubit, PlaybackState>(
-        buildWhen: (a, b) =>
-            a.isPlaying != b.isPlaying ||
-            a.isLoading != b.isLoading ||
-            a.currentAyah != b.currentAyah ||
-            a.requestedAyah != b.requestedAyah ||
-            a.error != b.error ||
-            a.rangeStart != b.rangeStart ||
-            a.rangeEnd != b.rangeEnd ||
-            a.reciter != b.reciter ||
-            a.eachAyahRepeat != b.eachAyahRepeat ||
-            a.rangeRepeat != b.rangeRepeat ||
-            a.infiniteRepeat != b.infiniteRepeat,
-        builder: (context, state) {
-          final cubit = context.read<PlaybackCubit>();
-          final origin = state.skipOrigin;
-          final name = origin == null
-              ? ''
-              : surahDisplayName(context, origin.surah);
-          final reciter = state.reciter.arabicName;
-          final subtitle = switch (playbackScope(
-            state.rangeStart,
-            state.rangeEnd,
-          )) {
-            PlaybackScope.surahEnd => pending.player_untilSurahEnd(reciter),
-            PlaybackScope.pageEnd => pending.player_untilPageEnd(reciter),
-            PlaybackScope.none => reciter,
-          };
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (state.isLoading)
-                const LinearProgressIndicator(
-                  key: ValueKey('player-loading'),
-                  minHeight: 2,
-                ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 12,
-                  children: [
-                    if (away != null)
-                      Wrap(
-                        spacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            pending.mushaf_nowReciting(
-                              surahDisplayName(context, away.ayah.surah),
-                              away.ayah.realAyah.toLocalized(context),
-                              away.page.toLocalized(context),
-                            ),
-                            style: TS.medium14.copyWith(color: colors.ink),
-                          ),
-                          FilledButton(
-                            key: const ValueKey('player-return'),
-                            style: _tapSize,
-                            onPressed: onReturnToPlaying,
-                            child: Text(pending.mushaf_returnToReciting),
-                          ),
-                        ],
-                      ),
-                    Column(
+      child: OutlinedButtonTheme(
+        data: OutlinedButtonThemeData(
+          style: _paperButton(colors, outlined: true),
+        ),
+        child: TextButtonTheme(
+          data: TextButtonThemeData(style: _paperButton(colors)),
+          child: BlocBuilder<PlaybackCubit, PlaybackState>(
+            buildWhen: (a, b) =>
+                a.isPlaying != b.isPlaying ||
+                a.isLoading != b.isLoading ||
+                a.currentAyah != b.currentAyah ||
+                a.requestedAyah != b.requestedAyah ||
+                a.error != b.error ||
+                a.rangeStart != b.rangeStart ||
+                a.rangeEnd != b.rangeEnd ||
+                a.reciter != b.reciter ||
+                a.eachAyahRepeat != b.eachAyahRepeat ||
+                a.rangeRepeat != b.rangeRepeat ||
+                a.infiniteRepeat != b.infiniteRepeat,
+            builder: (context, state) {
+              final cubit = context.read<PlaybackCubit>();
+              final origin = state.skipOrigin;
+              final name = origin == null
+                  ? ''
+                  : surahDisplayName(context, origin.surah);
+              final reciter = state.reciter.arabicName;
+              final subtitle = switch (playbackScope(
+                state.rangeStart,
+                state.rangeEnd,
+              )) {
+                PlaybackScope.surahEnd => pending.player_untilSurahEnd(reciter),
+                PlaybackScope.pageEnd => pending.player_untilPageEnd(reciter),
+                PlaybackScope.none => reciter,
+              };
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (state.isLoading)
+                    LinearProgressIndicator(
+                      key: const ValueKey('player-loading'),
+                      minHeight: 2,
+                      color: colors.accent,
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 12,
                       children: [
-                        Text(
-                          origin == null
-                              ? ''
-                              : pending.playback_mediaTitle(
-                                  name,
-                                  origin.realAyah.toLocalized(context),
+                        if (away != null)
+                          Wrap(
+                            spacing: 8,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                pending.mushaf_nowReciting(
+                                  surahDisplayName(context, away.ayah.surah),
+                                  away.ayah.realAyah.toLocalized(context),
+                                  away.page.toLocalized(context),
                                 ),
-                          style: TS.bold16.copyWith(color: colors.ink),
+                                style: TS.medium14.copyWith(color: colors.ink),
+                              ),
+                              FilledButton(
+                                key: const ValueKey('player-return'),
+                                style: _tapSize,
+                                onPressed: onReturnToPlaying,
+                                child: Text(pending.mushaf_returnToReciting),
+                              ),
+                            ],
+                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              origin == null
+                                  ? ''
+                                  : pending.playback_mediaTitle(
+                                      name,
+                                      origin.realAyah.toLocalized(context),
+                                    ),
+                              style: TS.bold16.copyWith(color: colors.ink),
+                            ),
+                            Text(
+                              subtitle,
+                              style: TS.medium14.copyWith(color: colors.ink2),
+                            ),
+                          ],
                         ),
-                        Text(
-                          subtitle,
-                          style: TS.medium14.copyWith(color: colors.ink2),
-                        ),
+                        if (state.error != null && origin != null)
+                          _error(context, pending, cubit, origin)
+                        else ...[
+                          _transport(context, pending, cubit, state),
+                          _actions(context, pending, cubit, state),
+                        ],
                       ],
                     ),
-                    if (state.error != null && origin != null)
-                      _error(context, pending, cubit, origin)
-                    else ...[
-                      _transport(context, pending, cubit, state),
-                      _actions(context, pending, cubit, state),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -189,7 +211,6 @@ class PlayerLeaf extends StatelessWidget {
     PlaybackCubit cubit,
     PlaybackState state,
   ) {
-    final rtl = Directionality.of(context) == TextDirection.rtl;
     return Row(
       spacing: 8,
       children: [
@@ -197,7 +218,7 @@ class PlayerLeaf extends StatelessWidget {
           child: TextButton.icon(
             key: const ValueKey('player-previous'),
             style: _tapSize,
-            icon: Icon(rtl ? Icons.skip_next : Icons.skip_previous),
+            icon: Icon(skipBackIcon(context)),
             label: _label(pending.player_previous),
             onPressed: state.canSkipPrevious
                 ? () {
@@ -229,7 +250,7 @@ class PlayerLeaf extends StatelessWidget {
           child: TextButton.icon(
             key: const ValueKey('player-next'),
             style: _tapSize,
-            icon: Icon(rtl ? Icons.skip_previous : Icons.skip_next),
+            icon: Icon(skipForwardIcon(context)),
             label: _label(pending.strip_next),
             onPressed: state.canSkipNext
                 ? () {
@@ -271,7 +292,11 @@ class PlayerLeaf extends StatelessWidget {
               PlaybackOptionsSheet.show(context, onNewPlay: onNewPlay),
         ),
         if (origin != null)
-          SurahDownloadButton(surah: origin.surah, labelled: true),
+          SurahDownloadButton(
+            surah: origin.surah,
+            labelled: true,
+            foreground: colors.ink,
+          ),
         TextButton.icon(
           key: const ValueKey('player-end'),
           style: _tapSize,

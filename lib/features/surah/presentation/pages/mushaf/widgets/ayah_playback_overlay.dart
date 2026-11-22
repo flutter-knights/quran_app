@@ -156,7 +156,12 @@ class _AyahPlaybackOverlayState extends State<AyahPlaybackOverlay> {
                               playbackState.requestedAyah ??
                               playbackState.currentAyah,
                           active: active,
-                          onTapInfo: () => _openOptionsSheet(stableCtx),
+                          onTapInfo: () => PlaybackOptionsSheet.show(
+                            stableCtx,
+                            onNewPlay: stableCtx
+                                .read<MushafCubit>()
+                                .resumeFollow,
+                          ),
                           onTapTune: () => _openOptionsSheet(stableCtx),
                           onDismiss: () =>
                               stableCtx.read<MushafCubit>().unpinOverlay(),

@@ -25,6 +25,7 @@ Before creating ANY widget, check this list. If a match exists, use it. A core w
 - **AppListSkeleton** (`count`), **HomeSkeleton**: loading skeletons, see `loading-states.md`.
 - **SplashBackdrop**, **SplashLoader**: the splash and landing brand backdrop and its three-dot loader.
 - **backArrowIcon(context)**, **forwardArrowIcon(context)** (`directional_icons.dart`): HugeIcons arrows that point the right way in RTL and LTR.
+- **skipBackIcon(context)**, **skipForwardIcon(context)** (`directional_icons.dart`): Material skip glyphs for previous/next transport buttons, mirrored in RTL.
 
 ## Other core widgets
 - **PrettierTap**: shrink-on-press tap wrapper (`child, onTap, shrinkPixels`). Use for custom tappables instead of a bare `GestureDetector`.

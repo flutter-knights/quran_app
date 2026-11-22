@@ -15,10 +15,12 @@ class SurahDownloadButton extends StatelessWidget {
     super.key,
     required this.surah,
     this.labelled = false,
+    this.foreground,
   });
 
   final int surah;
   final bool labelled;
+  final Color? foreground;
 
   @override
   Widget build(BuildContext context) =>
@@ -54,24 +56,20 @@ class SurahDownloadButton extends StatelessWidget {
     };
     final (child, tooltip, onTap) = switch (status) {
       SurahNotDownloaded() => (
-        Icon(Icons.download_for_offline_outlined, color: scheme.secondary),
+        Icon(
+          Icons.download_for_offline_outlined,
+          color: foreground ?? scheme.secondary,
+        ),
         pending.surahDownload_download,
         () => cubit.download(reciter, surah),
       ),
       SurahDownloading(:final progress) => (
-        Semantics(
-          label: pending.surahDownload_progress(percent),
-          child: SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(value: progress, strokeWidth: 2.5),
-          ),
-        ),
+        _spinner(progress, pending.surahDownload_progress(percent)),
         pending.surahDownload_cancel,
         () => cubit.cancel(reciter, surah),
       ),
       SurahDownloaded() => (
-        Icon(Icons.offline_pin, color: scheme.primary),
+        Icon(Icons.offline_pin, color: foreground ?? scheme.primary),
         pending.surahDownload_saved,
         () => _confirmDelete(context, cubit, reciter),
       ),
@@ -98,6 +96,19 @@ class SurahDownloadButton extends StatelessWidget {
       icon: child,
       onPressed: onTap,
     );
+  }
+
+  Widget _spinner(double progress, String label) {
+    final spinner = SizedBox(
+      width: 22,
+      height: 22,
+      child: CircularProgressIndicator(
+        value: progress,
+        strokeWidth: 2.5,
+        color: foreground,
+      ),
+    );
+    return labelled ? spinner : Semantics(label: label, child: spinner);
   }
 
   Future<void> _confirmDelete(

@@ -141,6 +141,17 @@ void main() {
       expect(downloads.cancels, [(Reciter.husary, 2)]);
     });
 
+    testWidgets('downloading: the percent is announced once', (tester) async {
+      final handle = tester.ensureSemantics();
+      await _pump(
+        tester,
+        _FakeDownloads({'husary:2': const SurahDownloading(.4)}),
+        labelled: true,
+      );
+      expect(find.bySemanticsLabel(RegExp('جارٍ التنزيل ٤٠٪')), findsOneWidget);
+      handle.dispose();
+    });
+
     testWidgets('downloaded: the saved label', (tester) async {
       await _pump(
         tester,

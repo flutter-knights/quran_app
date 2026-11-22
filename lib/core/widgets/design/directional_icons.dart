@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 /// Returns the "back" arrow that points toward the start of the reading
@@ -14,3 +14,13 @@ List<List<dynamic>> forwardArrowIcon(BuildContext context) =>
     Directionality.of(context) == TextDirection.rtl
         ? HugeIcons.strokeRoundedArrowLeft02
         : HugeIcons.strokeRoundedArrowRight02;
+
+IconData skipBackIcon(BuildContext context) =>
+    Directionality.of(context) == TextDirection.rtl
+        ? Icons.skip_next
+        : Icons.skip_previous;
+
+IconData skipForwardIcon(BuildContext context) =>
+    Directionality.of(context) == TextDirection.rtl
+        ? Icons.skip_previous
+        : Icons.skip_next;

@@ -69,7 +69,10 @@ Widget _host(
   ({AyahIdentifier ayah, int page})? away,
   double scale = 1,
   ValueNotifier<bool>? leafVisible,
+  MushafPaper paper = MushafPaper.cream,
+  ThemeData? theme,
 }) => MaterialApp(
+  theme: theme,
   locale: const Locale('ar'),
   localizationsDelegates: const [
     S.delegate,
@@ -96,7 +99,7 @@ Widget _host(
             valueListenable: leafVisible ?? ValueNotifier(true),
             builder: (context, visible, _) => visible
                 ? PlayerLeaf(
-                    colors: MushafPaper.cream.colors,
+                    colors: paper.colors,
                     onReturnToPlaying: () => calls.returned++,
                     onNewPlay: () => calls.newPlay++,
                     away: away,
@@ -116,6 +119,8 @@ Future<_FakePlayback> _pump(
   ({AyahIdentifier ayah, int page})? away,
   double scale = 1,
   ValueNotifier<bool>? leafVisible,
+  MushafPaper paper = MushafPaper.cream,
+  ThemeData? theme,
 }) async {
   final playback = _FakePlayback(state);
   await tester.pumpWidget(
@@ -125,6 +130,8 @@ Future<_FakePlayback> _pump(
       away: away,
       scale: scale,
       leafVisible: leafVisible,
+      paper: paper,
+      theme: theme,
     ),
   );
   return playback;
@@ -377,6 +384,73 @@ void main() {
     expect(tester.getCenter(_key('player-previous')).dx, greaterThan(180));
     expect(glyph('player-previous'), Icons.skip_next);
     expect(glyph('player-next'), Icons.skip_previous);
+  });
+
+  group('button colours follow the reading paper, not the app palette', () {
+    final playing = PlaybackState(
+      currentAyah: _a(2, 6),
+      rangeStart: _a(2, 5),
+      rangeEnd: _a(2, 10),
+      isPlaying: true,
+    );
+
+    Color? foreground(WidgetTester tester, String key) => IconTheme.of(
+      tester.element(
+        find.descendant(of: _key(key), matching: find.byType(Icon)),
+      ),
+    ).color;
+
+    testWidgets('night paper under a light palette', (tester) async {
+      await _pump(
+        tester,
+        playing,
+        paper: MushafPaper.night,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E5244)),
+        ),
+      );
+      final ink = MushafPaper.night.colors.ink;
+      expect(foreground(tester, 'player-previous'), ink);
+      expect(foreground(tester, 'player-next'), ink);
+      expect(foreground(tester, 'player-repeat'), ink);
+      expect(foreground(tester, 'player-end'), ink);
+    });
+
+    testWidgets(
+      'disabled skips keep ink at reduced alpha on cream under a dark palette',
+      (tester) async {
+        await _pump(
+          tester,
+          const PlaybackState(),
+          theme: ThemeData(brightness: Brightness.dark),
+        );
+        final ink = MushafPaper.cream.colors.ink;
+        final color = foreground(tester, 'player-previous')!;
+        expect(color.withValues(alpha: 1), ink);
+        expect(color.a, lessThan(1));
+      },
+    );
+
+    testWidgets('loading bar and download chip use paper colours', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        PlaybackState(currentAyah: _a(2, 6), isLoading: true),
+        paper: MushafPaper.night,
+      );
+      final colors = MushafPaper.night.colors;
+      expect(
+        tester.widget<LinearProgressIndicator>(_key('player-loading')).color,
+        colors.accent,
+      );
+      expect(
+        tester
+            .widget<SurahDownloadButton>(find.byType(SurahDownloadButton))
+            .foreground,
+        colors.ink,
+      );
+    });
   });
 
   testWidgets('the options sheet survives the leaf leaving the tree', (
