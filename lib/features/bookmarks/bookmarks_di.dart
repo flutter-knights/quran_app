@@ -24,7 +24,9 @@ import 'domain/usecases/save_place.dart';
 import 'domain/usecases/toggle_bookmark.dart';
 import 'domain/usecases/toggle_page_bookmark.dart';
 import 'presentation/cubit/bookmark_cubit.dart';
+import 'presentation/cubit/fasil_cubit.dart';
 import 'presentation/cubit/page_bookmark_cubit.dart';
+import 'presentation/cubit/saved_ayat_cubit.dart';
 
 void initBookmarks() {
   sl.registerLazySingleton<BookmarkLocalDataSource>(
@@ -97,5 +99,21 @@ void initBookmarks() {
   );
   sl.registerLazySingleton<MigratePlaces>(
     () => MigratePlaces(sl<PlacesRepository>()),
+  );
+  sl.registerLazySingleton<FasilCubit>(
+    () => FasilCubit(
+      getPlaces: sl<GetPlaces>(),
+      savePlace: sl<SavePlace>(),
+      removePlace: sl<RemovePlace>(),
+      pageService: sl<QuranPageService>(),
+    ),
+  );
+  sl.registerLazySingleton<SavedAyatCubit>(
+    () => SavedAyatCubit(
+      getPlaces: sl<GetPlaces>(),
+      savePlace: sl<SavePlace>(),
+      removePlace: sl<RemovePlace>(),
+      pageService: sl<QuranPageService>(),
+    ),
   );
 }
