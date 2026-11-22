@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:quran_app/core/errors/exceptions.dart';
 import 'package:quran/quran.dart' as quran;
+import 'package:quran_app/core/errors/exceptions.dart';
 import 'package:quran_app/features/bookmarks/data/datasources/local/place_migration.dart';
 import 'package:quran_app/features/bookmarks/data/models/place_record_model.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/place.dart';
@@ -123,6 +123,7 @@ void main() {
     late Box<List> ayahBookmarks;
     late Box<List> pageBookmarks;
     late PlaceMigration migration;
+    var clock = now;
 
     Future<void> seed({
       List<Object?> ayahs = const ['2:5'],
@@ -147,6 +148,7 @@ void main() {
     });
 
     setUp(() async {
+      clock = now;
       tempDir = await Directory.systemTemp.createTemp('place_migration_test_');
       Hive.init(tempDir.path);
       places = await Hive.openBox<PlaceRecordModel>('places');
@@ -160,7 +162,7 @@ void main() {
         pageBookmarks: pageBookmarks,
         firstAyahOfPage: (p) async => {106: a4176}[p],
         pageOf: pageOf,
-        now: () => now,
+        now: () => clock,
       );
     });
 
@@ -187,10 +189,21 @@ void main() {
     test('a run interrupted before the flag never duplicates', () async {
       await seed();
       await migration.run();
+      final firstIds = places.keys.toSet();
       await meta.delete('migratedV1');
       await places.put('r', readerRecord('r', 3, 8));
+      clock = now.add(const Duration(minutes: 1));
       await migration.run();
+      final secondIds = {
+        clock.microsecondsSinceEpoch.toString(),
+        clock
+            .subtract(const Duration(microseconds: 1))
+            .microsecondsSinceEpoch
+            .toString(),
+      };
       expect(places.length, 3);
+      expect(places.keys.toSet(), {...secondIds, 'r'});
+      expect(places.keys.toSet().intersection(firstIds), isEmpty);
       expect(places.values.where((r) => r.migrated).length, 2);
     });
 
@@ -199,16 +212,44 @@ void main() {
       () async {
         await seed();
         await migration.run();
+        final staleId = places.values
+            .firstWhere((r) => r.surah == 4 && r.ayah == 176)
+            .id;
         await meta.delete('migratedV1');
         final migrated = places.values.firstWhere((r) => r.ayah == 5);
         await places.delete(migrated.id);
         await places.put('r', readerRecord('r', 2, 5));
+        clock = now.add(const Duration(minutes: 1));
         await migration.run();
         final at25 = places.values.where((r) => r.surah == 2 && r.ayah == 5);
         expect(at25.length, 1);
         expect(at25.single.migrated, isFalse);
-        expect(places.values.any((r) => r.surah == 4 && r.ayah == 176), isTrue);
+        final at4176 = places.values.where(
+          (r) => r.surah == 4 && r.ayah == 176,
+        );
+        expect(at4176.length, 1);
+        expect(at4176.single.id, isNot(staleId));
+        expect(places.containsKey(staleId), isFalse);
         expect(places.length, 2);
+      },
+    );
+
+    test(
+      'a page that cannot be resolved throws and leaves the flag unset',
+      () async {
+        await seed();
+        final failing = PlaceMigration(
+          places: places,
+          meta: meta,
+          ayahBookmarks: ayahBookmarks,
+          pageBookmarks: pageBookmarks,
+          firstAyahOfPage: (_) async => throw CacheException('page'),
+          pageOf: pageOf,
+          now: () => now,
+        );
+        await expectLater(failing.run(), throwsA(isA<CacheException>()));
+        expect(meta.get('migratedV1'), isNull);
+        expect(places.length, 0);
       },
     );
 

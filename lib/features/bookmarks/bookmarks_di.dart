@@ -1,6 +1,7 @@
 import 'package:hive_ce/hive.dart';
 
 import '../../core/di/dependency_injection.dart';
+import '../../core/errors/exceptions.dart';
 import '../quran_playback/domain/services/quran_page_service.dart';
 import '../surah/domain/usecases/get_mushaf_page.dart';
 import 'data/datasources/local/bookmark_local_data_source.dart';
@@ -74,7 +75,9 @@ void initBookmarks() {
       ayahBookmarks: Hive.box<List>('ayah_bookmarks'),
       pageBookmarks: Hive.box<List>('page_bookmarks'),
       firstAyahOfPage: (page) async => (await sl<GetMushafPage>()(page)).fold(
-        (_) => null,
+        (_) => page >= 1 && page <= 604
+            ? throw CacheException('mushaf page $page failed to load')
+            : null,
         (e) => e.ayahs.where((b) => b.ayah.ayah > 0).firstOrNull?.ayah,
       ),
       pageOf: (ayah) =>

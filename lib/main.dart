@@ -59,7 +59,11 @@ class _AppLoaderState extends State<AppLoader> {
     await initHydratedCubit();
     await initHive();
     await initGetIt();
-    await sl<MigratePlaces>()();
+    try {
+      await sl<MigratePlaces>()();
+    } catch (e, st) {
+      debugPrint('MigratePlaces failed: $e\n$st');
+    }
     if (!mounted) return;
     setState(() => _ready = true);
 
