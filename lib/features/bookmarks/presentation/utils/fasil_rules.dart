@@ -16,7 +16,10 @@ FasilSlot chooserPreselect({
 }) {
   if (slots.isEmpty) return FasilSlot.wird;
   final entries = slots.entries.toList()
-    ..sort((a, b) => a.value.ayah.compareTo(b.value.ayah));
+    ..sort((a, b) {
+      final byAyah = a.value.ayah.compareTo(b.value.ayah);
+      return byAyah != 0 ? byAyah : a.key.index.compareTo(b.key.index);
+    });
   final onPage = entries.where((e) => e.value.page == page).toList();
   if (onPage.isNotEmpty) {
     final before = onPage.where((e) => e.value.ayah.compareTo(at) <= 0);

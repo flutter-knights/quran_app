@@ -21,13 +21,13 @@ String placeWhen(
   bool use24h = false,
 }) {
   final s = PendingS.forLanguage(localeCode);
-  final day = DateTime(at.year, at.month, at.day);
-  final today = DateTime(now.year, now.month, now.day);
-  final time = DateFormat(
-    use24h ? 'H:mm' : 'h:mm a',
-    localeCode,
-  ).format(at).toIndicNumerals(localeCode);
-  final text = switch (today.difference(day).inDays) {
+  final days = DateTime.utc(
+    now.year,
+    now.month,
+    now.day,
+  ).difference(DateTime.utc(at.year, at.month, at.day)).inDays;
+  final time = DateFormat(use24h ? 'H:mm' : 'h:mm a', localeCode).format(at);
+  final text = switch (days) {
     0 => s.places_today(time),
     1 => s.places_yesterday(time),
     _ => DateFormat(

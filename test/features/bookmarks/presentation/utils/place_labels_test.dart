@@ -29,6 +29,33 @@ void main() {
       );
     });
 
+    test('calendar days survive a daylight-saving change', () {
+      expect(
+        placeWhen(
+          DateTime(2026, 4, 24, 21),
+          now: DateTime(2026, 4, 25, 12),
+          localeCode: 'ar',
+        ),
+        'أمس ٩:٠٠ م',
+      );
+      expect(
+        placeWhen(
+          DateTime(2026, 4, 23, 21),
+          now: DateTime(2026, 4, 25, 12),
+          localeCode: 'ar',
+        ),
+        '٢٣ أبريل',
+      );
+      expect(
+        placeWhen(
+          DateTime(2026, 3, 8, 21),
+          now: DateTime(2026, 3, 9, 12),
+          localeCode: 'en',
+        ),
+        'Yesterday 9:00 PM',
+      );
+    });
+
     test('older this year', () {
       expect(
         placeWhen(DateTime(2026, 11, 14, 8), now: now, localeCode: 'ar'),

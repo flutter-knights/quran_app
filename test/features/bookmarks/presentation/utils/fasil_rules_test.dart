@@ -49,6 +49,23 @@ void main() {
       );
     });
 
+    test('two on one ayah: the later slot wins whatever the map order', () {
+      final wirdFirst = {
+        FasilSlot.wird: place(FasilSlot.wird, 3, 6),
+        FasilSlot.hifz: place(FasilSlot.hifz, 3, 6),
+      };
+      final hifzFirst = {
+        FasilSlot.hifz: place(FasilSlot.hifz, 3, 6),
+        FasilSlot.wird: place(FasilSlot.wird, 3, 6),
+      };
+      for (final slots in [wirdFirst, hifzFirst]) {
+        expect(
+          chooserPreselect(slots: slots, page: 50, at: at(3, 10)),
+          FasilSlot.hifz,
+        );
+      }
+    });
+
     test('else the nearest preceding', () {
       final slots = {
         FasilSlot.wird: place(FasilSlot.wird, 2, 5),
