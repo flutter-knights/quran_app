@@ -434,6 +434,7 @@
     "placeholders": { "reciter": { "type": "String" } }
   },
   "player_previous": "السابقة",
+  "player_next": "التالية",
   "player_resume": "متابعة",
   "player_repeat": "التكرار: {value}",
   "@player_repeat": {

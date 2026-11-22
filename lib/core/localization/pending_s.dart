@@ -221,6 +221,7 @@ class PendingS {
   String player_untilPageEnd(String reciter) =>
       _ar ? '$reciter، حتى نهاية الصفحة' : '$reciter, to the end of the page';
   String get player_previous => _ar ? 'السابقة' : 'Previous';
+  String get player_next => _ar ? 'التالية' : 'Next';
   String get player_resume => _ar ? 'متابعة' : 'Resume';
   String player_repeat(String value) =>
       _ar ? 'التكرار: $value' : 'Repeat: $value';

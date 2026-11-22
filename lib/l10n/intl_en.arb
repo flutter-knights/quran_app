@@ -450,6 +450,7 @@
     "placeholders": { "reciter": { "type": "String" } }
   },
   "player_previous": "Previous",
+  "player_next": "Next",
   "player_resume": "Resume",
   "player_repeat": "Repeat: {value}",
   "@player_repeat": {
