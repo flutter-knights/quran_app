@@ -64,22 +64,26 @@ class TafsirSection extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: muted,
             ),
-            TafsirFailed() => Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    s.tafsir_loadFailed,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TS.medium14.copyWith(color: ink),
+            TafsirFailed() => Semantics(
+              liveRegion: true,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      s.tafsir_loadFailed,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TS.medium14.copyWith(color: ink),
+                    ),
                   ),
-                ),
-                Flexible(child: retry),
-              ],
+                  Flexible(child: retry),
+                ],
+              ),
             ),
             _ => Skeletonizer(
               child: Text(
                 _placeholder,
+                textDirection: TextDirection.rtl,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: muted,

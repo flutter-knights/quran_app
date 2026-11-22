@@ -19,6 +19,9 @@ const _other = AyahIdentifier(surah: 3, ayah: 8);
 const _retry = ValueKey('tafsir-retry');
 final _colors = MushafPaper.cream.colors;
 final _style = _colors.paperButton();
+final _liveRegion = find.byWidgetPredicate(
+  (w) => w is Semantics && w.properties.liveRegion == true,
+);
 
 TafsirLoaded _loaded(AyahIdentifier ayah) => TafsirLoaded(
   ayah,
@@ -153,10 +156,40 @@ void main() {
 
     expect(find.text('تعذّر تحميل التفسير'), findsOneWidget);
     expect(find.byKey(_retry), findsOneWidget);
+    final row = find
+        .ancestor(
+          of: find.text('تعذّر تحميل التفسير'),
+          matching: find.byType(Row),
+        )
+        .first;
     expect(
-      find.ancestor(of: find.byKey(_retry), matching: find.byType(Row)),
-      findsWidgets,
+      find.descendant(of: row, matching: find.byKey(_retry)),
+      findsOneWidget,
     );
+    expect(_liveRegion, findsOneWidget);
+  });
+
+  testWidgets('full mode failure is a live region', (tester) async {
+    await tester.pumpWidget(_host(FakeTafsirCubit(const TafsirFailed(_ayah))));
+    await tester.pumpAndSettle();
+
+    expect(_liveRegion, findsOneWidget);
+  });
+
+  testWidgets('lead skeleton lays out right-to-left in English', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        FakeTafsirCubit(const TafsirLoading(_ayah)),
+        lead: true,
+        locale: 'en',
+      ),
+    );
+    await tester.pump();
+
+    final text = tester.widget<Text>(find.textContaining('تفسير مؤقت'));
+    expect(text.textDirection, TextDirection.rtl);
   });
 
   testWidgets('lead failure fits at 2x text in 360 px', (tester) async {
