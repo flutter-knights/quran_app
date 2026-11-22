@@ -77,20 +77,21 @@
   - `abstract class TafsirRepository { Future<Either<Failure, Tafsir>> getAyahTafsir({required int surah, required int ayah, required int page}); void cancelPending(); }`
   - `class GetAyahTafsir { GetAyahTafsir(this._repository); Future<Either<Failure, Tafsir>> call({required int surah, required int ayah, required int page}); void cancel(); }`
   - `abstract class TafsirRemoteDataSource { Future<List<Tafsir>> getPage(int page, {CancelToken? cancelToken}); Future<Tafsir> getAyah(int surah, int ayah, {CancelToken? cancelToken}); }` and `class TafsirRemoteDataSourceImpl implements TafsirRemoteDataSource { TafsirRemoteDataSourceImpl({required this.dio}); final Dio dio; }`. URLs: `https://api.alquran.cloud/v1/page/$page/ar.muyassar`, `https://api.alquran.cloud/v1/ayah/$surah:$ayah/ar.muyassar`. Each `dio.get(url, cancelToken: cancelToken, options: Options(connectTimeout: const Duration(seconds: 10), receiveTimeout: const Duration(seconds: 15)))` (reading 5). Parse in a private function (no `*_model.dart` file: `build.yaml` runs the Hive generator on that pattern).
-  - `class TafsirLocalDataSource { TafsirLocalDataSource({required this.box}); final Box<String> box; static String keyOf(int surah, int ayah) => 'muyassar:$surah:$ayah'; String? get(int surah, int ayah); Future<void> putAll(Iterable<Tafsir> items); }`; a failed write throws `CacheException`.
+  - `class TafsirLocalDataSource { TafsirLocalDataSource({required this.box}); final Box<String> box; static String keyOf(int surah, int ayah) => 'muyassar:$surah:$ayah'; String? get(int surah, int ayah); Future<void> putAll(Iterable<Tafsir> items); }`; a failed read or write throws `CacheException` (a failed read reaches the caller as `Left(CacheFailure)`, the only source of the repository's `on CacheException` arm; a failed write is swallowed by `_store`).
   - `class TafsirRepositoryImpl implements TafsirRepository { TafsirRepositoryImpl({required this.remote, required this.local}); }` per readings 1, 4 and 5: private `CancelToken? _token`, `int? _page`, `Future<List<Tafsir>>? _inFlight`. Shape of `getAyahTafsir`:
     ```dart
-    final cached = local.get(surah, ayah);
-    if (cached != null) return Right(Tafsir(surah: surah, ayah: ayah, text: cached));
-    if (_page != page) {
-      _token?.cancel();
-      _page = page;
-      _token = CancelToken();
-      _inFlight = null;
-    }
-    final token = _token!;
-    final future = _inFlight ??= _fetchPage(page, token);
+    Future<List<Tafsir>>? future;
     try {
+      final cached = local.get(surah, ayah);
+      if (cached != null) return Right(Tafsir(surah: surah, ayah: ayah, text: cached));
+      if (_page != page) {
+        _token?.cancel();
+        _page = page;
+        _token = CancelToken();
+        _inFlight = null;
+      }
+      final token = _token!;
+      future = _inFlight ??= _fetchPage(page, token);
       final items = await future;
       final hit = items.where((t) => t.surah == surah && t.ayah == ayah).firstOrNull;
       return Right(hit ?? await _fetchAyah(surah, ayah, token));
@@ -99,7 +100,7 @@
     } catch (e) {
       return Left(Failure.fromException(e));
     } finally {
-      if (identical(_inFlight, future)) _inFlight = null;
+      if (future != null && identical(_inFlight, future)) _inFlight = null;
     }
     ```
     `_fetchPage` reads the page with `token`, then `_store(items)` once, then returns the items; `_fetchAyah` reads one ayah with `token`, then `_store([t])`. `_store` swallows a `CacheException` (a failed write still returns the text). `cancelPending()`: `_token?.cancel(); _token = null; _page = null; _inFlight = null;`.
