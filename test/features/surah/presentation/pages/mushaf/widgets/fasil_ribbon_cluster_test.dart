@@ -3,11 +3,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
+import 'package:quran_app/features/bookmarks/presentation/utils/fasil_rules.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/fasil_ribbon_cluster.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 void main() {
+  const geometry = FasilGeometry(40);
+
   Future<void> pump(
     WidgetTester tester,
     Widget child, {
@@ -49,6 +52,7 @@ void main() {
               child: FasilRibbonCluster(
                 placed: const {},
                 paper: MushafPaper.sepia,
+                geometry: geometry,
                 onTap: () => taps += 100,
               ),
             ),
@@ -73,11 +77,12 @@ void main() {
       FasilRibbonCluster(
         placed: const {FasilSlot.wird: 'الورد', FasilSlot.muraja: 'المراجعة'},
         paper: MushafPaper.sepia,
+        geometry: geometry,
         onTap: () => taps++,
       ),
     );
     final cluster = find.byKey(const ValueKey('fasil-cluster'));
-    expect(tester.getSize(cluster), const Size(48, 56));
+    expect(tester.getSize(cluster), const Size(40, 56));
     expect(find.bySemanticsLabel('الفواصل: الورد، المراجعة'), findsOneWidget);
     expect(
       tester.getSemantics(find.bySemanticsLabel('الفواصل: الورد، المراجعة')),
@@ -92,30 +97,34 @@ void main() {
     handle.dispose();
   });
 
-  for (final direction in TextDirection.values) {
-    testWidgets('only placed ribbons are drawn, from the left in $direction', (
+  testWidgets('only placed ribbons are drawn, from the end edge', (
+    tester,
+  ) async {
+    await pump(
       tester,
-    ) async {
-      await pump(
-        tester,
-        FasilRibbonCluster(
-          placed: const {FasilSlot.wird: 'الورد', FasilSlot.muraja: 'المراجعة'},
-          paper: MushafPaper.sepia,
-          onTap: () {},
-        ),
-        direction: direction,
-      );
-      final cluster = find.byKey(const ValueKey('fasil-cluster'));
-      double x(String slot) =>
-          tester.getTopLeft(find.byKey(ValueKey('fasil-rib-$slot'))).dx -
-          tester.getTopLeft(cluster).dx;
-      expect(x('wird'), 4);
-      expect(x('muraja'), 32);
-      expect(find.byKey(const ValueKey('fasil-rib-hifz')), findsNothing);
-    });
-  }
+      FasilRibbonCluster(
+        placed: const {FasilSlot.wird: 'الورد', FasilSlot.muraja: 'المراجعة'},
+        paper: MushafPaper.sepia,
+        geometry: geometry,
+        onTap: () {},
+      ),
+    );
+    final cluster = find.byKey(const ValueKey('fasil-cluster'));
+    double x(String slot) =>
+        tester.getTopLeft(find.byKey(ValueKey('fasil-rib-$slot'))).dx -
+        tester.getTopLeft(cluster).dx;
+    expect(x('wird'), closeTo(1.6, 0.001));
+    expect(x('muraja'), closeTo(25.6, 0.001));
+    expect(
+      tester.getSize(find.byKey(const ValueKey('fasil-rib-wird'))).width,
+      closeTo(9.6, 0.001),
+    );
+    expect(find.byKey(const ValueKey('fasil-rib-hifz')), findsNothing);
+  });
 
-  testWidgets('the tail tab prints its name and is 48 by 88', (tester) async {
+  testWidgets('the tail tab prints its name and is margin wide by 88', (
+    tester,
+  ) async {
     var taps = 0;
     final handle = tester.ensureSemantics();
     await pump(
@@ -124,12 +133,13 @@ void main() {
         slot: FasilSlot.hifz,
         name: 'الحفظ',
         paper: MushafPaper.sepia,
+        geometry: geometry,
         onTap: () => taps++,
       ),
     );
     final tab = find.byKey(const ValueKey('fasil-tail-hifz'));
     expect(find.text('الحفظ'), findsOneWidget);
-    expect(tester.getSize(tab), const Size(48, 88));
+    expect(tester.getSize(tab), const Size(40, 88));
     expect(
       tester.getSemantics(find.bySemanticsLabel('الحفظ')),
       matchesSemantics(label: 'الحفظ', isButton: true, hasTapAction: true),
@@ -139,35 +149,40 @@ void main() {
     handle.dispose();
   });
 
-  for (final direction in TextDirection.values) {
-    testWidgets('the tail label sits under its ribbon in $direction', (
-      tester,
-    ) async {
-      for (final (slot, left) in [
-        (FasilSlot.wird, 0.0),
-        (FasilSlot.hifz, 8.0),
-        (FasilSlot.muraja, 22.0),
-      ]) {
-        await pump(
-          tester,
-          FasilTailTab(
-            slot: slot,
-            name: 'اسم',
-            paper: MushafPaper.sepia,
-            onTap: () {},
-          ),
-          direction: direction,
-        );
-        final tab = find.byKey(ValueKey('fasil-tail-${slot.name}'));
-        final label = find.descendant(
-          of: tab,
-          matching: find.byKey(const ValueKey('fasil-tail-label')),
-        );
-        expect(tester.getTopLeft(label).dx - tester.getTopLeft(tab).dx, left);
-        expect(tester.getSize(label).width, 22);
-      }
-    });
-  }
+  testWidgets('the tail label sits under its ribbon, inside the margin', (
+    tester,
+  ) async {
+    for (final (slot, left) in [
+      (FasilSlot.wird, 0.0),
+      (FasilSlot.hifz, 1.2),
+      (FasilSlot.muraja, 13.2),
+    ]) {
+      await pump(
+        tester,
+        FasilTailTab(
+          slot: slot,
+          name: 'اسم',
+          paper: MushafPaper.sepia,
+          geometry: geometry,
+          onTap: () {},
+        ),
+      );
+      final tab = find.byKey(ValueKey('fasil-tail-${slot.name}'));
+      final label = find.descendant(
+        of: tab,
+        matching: find.byKey(const ValueKey('fasil-tail-label')),
+      );
+      expect(
+        tester.getTopLeft(label).dx - tester.getTopLeft(tab).dx,
+        closeTo(left, 0.001),
+      );
+      expect(tester.getSize(label).width, 22);
+      expect(
+        tester.getTopRight(label).dx,
+        lessThanOrEqualTo(tester.getTopRight(tab).dx),
+      );
+    }
+  });
 
   testWidgets('a long name ellipsizes inside the tab', (tester) async {
     await pump(
@@ -176,13 +191,14 @@ void main() {
         slot: FasilSlot.wird,
         name: 'حفظ سورة البقرة كاملة',
         paper: MushafPaper.sepia,
+        geometry: geometry,
         onTap: () {},
       ),
     );
     expect(tester.takeException(), isNull);
     expect(
       tester.getSize(find.byKey(const ValueKey('fasil-tail-wird'))),
-      const Size(48, 88),
+      const Size(40, 88),
     );
   });
 
@@ -193,6 +209,7 @@ void main() {
         slot: FasilSlot.wird,
         name: 'الورد',
         paper: MushafPaper.sepia,
+        geometry: geometry,
         onTap: () {},
       ),
     );
@@ -213,8 +230,8 @@ void main() {
               onTap: () => taps++,
               child: const SizedBox.expand(),
             ),
-            Positioned(
-              left: 18,
+            PositionedDirectional(
+              end: 18,
               top: 0,
               width: 12,
               height: 200,
@@ -234,8 +251,8 @@ void main() {
         textDirection: TextDirection.rtl,
         child: Stack(
           children: [
-            Positioned(
-              left: 18,
+            PositionedDirectional(
+              end: 18,
               top: 0,
               width: 12,
               height: 200,
@@ -269,6 +286,7 @@ void main() {
         slot: FasilSlot.wird,
         name: 'الورد',
         paper: MushafPaper.sepia,
+        geometry: geometry,
         onTap: () {},
       ),
     );

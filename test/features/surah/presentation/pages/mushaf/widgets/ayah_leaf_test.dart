@@ -163,6 +163,19 @@ void main() {
     expect(saved.state.contains(ayah), isTrue);
   });
 
+  testWidgets('a save the cubit refuses without a failure shows nothing', (
+    tester,
+  ) async {
+    final saved = FakeSavedAyatCubit()..refuseSave = true;
+    addTearDown(saved.close);
+    await tester.pumpWidget(_host(saved, ayah, calls));
+    await tester.tap(find.byKey(const ValueKey('leaf-save')));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    expect(saved.saves.last, ayah);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
   testWidgets('a failed save shows the error', (tester) async {
     final saved = FakeSavedAyatCubit()..failSave = true;
     addTearDown(saved.close);

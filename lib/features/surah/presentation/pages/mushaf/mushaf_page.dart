@@ -484,7 +484,10 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     final result = await fawasil.move(slot, ayah);
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
-    if (result == null) return showPlaceWriteError(messenger);
+    if (result == null) {
+      if (fawasil.state.error != null) showPlaceWriteError(messenger);
+      return;
+    }
     final s = PendingS.current;
     final name = fasilName(context, slot, result.moved);
     final place = ayahPlace(context, ayah);

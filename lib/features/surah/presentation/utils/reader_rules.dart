@@ -6,6 +6,7 @@ import 'package:quran/quran.dart' as quran;
 
 import '../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../domain/entities/ayah_bound_entity.dart';
+import '../../domain/entities/normalized_rect.dart';
 
 const mushafPageAspect = 1536 / 2795;
 
@@ -53,6 +54,26 @@ double? lineBottomOf(List<AyahBoundEntity> ayahs, AyahIdentifier? ayah) {
     }
   }
   return null;
+}
+
+NormalizedRect? firstLineOf(List<AyahBoundEntity> ayahs, AyahIdentifier ayah) {
+  for (final b in ayahs) {
+    if (b.ayah == ayah && b.lines.isNotEmpty) return b.lines.first;
+  }
+  return null;
+}
+
+double? firstLineBottomOf(List<AyahBoundEntity> ayahs, AyahIdentifier ayah) {
+  final line = firstLineOf(ayahs, ayah);
+  return line == null ? null : line.y + line.h;
+}
+
+double? pageTextLeftOf(List<AyahBoundEntity> ayahs) {
+  final lefts = [
+    for (final b in ayahs)
+      for (final l in b.lines) l.x,
+  ];
+  return lefts.isEmpty ? null : lefts.reduce(math.min);
 }
 
 double? pageBottomOf(List<AyahBoundEntity> ayahs) {

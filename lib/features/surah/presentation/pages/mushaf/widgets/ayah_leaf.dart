@@ -218,7 +218,10 @@ class AyahLeaf extends StatelessWidget {
       return;
     }
     final place = await saved.save(ayah);
-    if (place == null) return showPlaceWriteError(messenger);
+    if (place == null) {
+      if (saved.state.error != null) showPlaceWriteError(messenger);
+      return;
+    }
     showPlaceNotice(
       messenger,
       s.savedAyat_saved(ayahText, surahText),

@@ -92,7 +92,10 @@ class FakeFasilCubit extends Cubit<FasilState> implements FasilCubit {
     AyahIdentifier ayah,
   ) async {
     moves.add((slot, ayah));
-    if (failMove) return null;
+    if (failMove) {
+      emit(state.copyWith(error: 'boom'));
+      return null;
+    }
     final previous = state.slots[slot];
     final moved = fasilPlace(slot, ayah);
     emit(state.copyWith(slots: {...state.slots, slot: moved}));
@@ -126,11 +129,16 @@ class FakeSavedAyatCubit extends Cubit<SavedAyatState>
   final restores = <Place>[];
   bool failRemove = false;
   bool failSave = false;
+  bool refuseSave = false;
 
   @override
   Future<Place?> save(AyahIdentifier ayah) async {
     saves.add(ayah);
-    if (failSave) return null;
+    if (refuseSave) return null;
+    if (failSave) {
+      emit(state.copyWith(error: 'boom'));
+      return null;
+    }
     final place = savedPlace(
       ayah,
       at: _defaultAt.add(Duration(minutes: saves.length)),

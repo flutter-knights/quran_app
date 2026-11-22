@@ -6,8 +6,33 @@ import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifie
 
 const fasilClusterHeight = 56.0;
 const fasilTailHeight = 88.0;
+const fasilDefaultTextLeft = 0.095;
+const fasilMaxTextLeft = 0.11;
 
-double fasilRibbonX(FasilSlot slot) => 4 + 14.0 * slot.index;
+class FasilGeometry {
+  const FasilGeometry(this.margin);
+
+  factory FasilGeometry.forPage({
+    required double pageWidth,
+    double? textLeft,
+  }) => FasilGeometry(
+    pageWidth * (textLeft ?? fasilDefaultTextLeft).clamp(0, fasilMaxTextLeft),
+  );
+
+  final double margin;
+
+  double get ribbonWidth => min(12, margin * 0.24);
+  double get labelWidth => min(22, margin);
+  double get _pitch => min(14, margin * 0.3);
+  double get _inset => min(4, margin * 0.04);
+
+  double ribbonOffset(FasilSlot slot) => _inset + _pitch * slot.index;
+
+  double labelOffset(FasilSlot slot) =>
+      max(0, ribbonOffset(slot) + ribbonWidth - labelWidth);
+}
+
+typedef FasilTail = ({Place place, double top});
 
 FasilSlot chooserPreselect({
   required Map<FasilSlot, Place> slots,
@@ -44,4 +69,28 @@ List<double> layoutTailTops(List<double> wanted, {required double pageHeight}) {
     }
   }
   return tops;
+}
+
+List<FasilTail> fasilTails({
+  required Iterable<Place> places,
+  required int page,
+  required double pageHeight,
+  required double? Function(AyahIdentifier ayah) firstLineBottom,
+}) {
+  final wanted =
+      [
+        for (final place in places)
+          if (place.page == page)
+            if (firstLineBottom(place.ayah) case final bottom?)
+              (place: place, top: bottom * pageHeight - fasilTailHeight),
+      ]..sort((a, b) {
+        final byTop = a.top.compareTo(b.top);
+        return byTop != 0
+            ? byTop
+            : a.place.slot!.index.compareTo(b.place.slot!.index);
+      });
+  final tops = layoutTailTops([
+    for (final w in wanted) w.top,
+  ], pageHeight: pageHeight);
+  return [for (final (i, w) in wanted.indexed) (place: w.place, top: tops[i])];
 }

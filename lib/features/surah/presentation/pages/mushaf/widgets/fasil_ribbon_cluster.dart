@@ -23,13 +23,13 @@ class _RibbonPainter extends CustomPainter {
     required this.color,
     this.stitch,
     this.end = _End.square,
-    this.shadow = true,
+    this.shadow,
   });
 
   final Color color;
   final Color? stitch;
   final _End end;
-  final bool shadow;
+  final Color? shadow;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -50,11 +50,12 @@ class _RibbonPainter extends CustomPainter {
         path.lineTo(0, h);
     }
     path.close();
-    if (shadow) {
+    final shadow = this.shadow;
+    if (shadow != null) {
       canvas.drawPath(
         path.shift(const Offset(0, 1)),
         Paint()
-          ..color = Colors.black.withValues(alpha: 0.20)
+          ..color = shadow
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
       );
     }
@@ -90,11 +91,13 @@ class FasilRibbonCluster extends StatelessWidget {
     super.key,
     required this.placed,
     required this.paper,
+    required this.geometry,
     required this.onTap,
   });
 
   final Map<FasilSlot, String> placed;
   final MushafPaper paper;
+  final FasilGeometry geometry;
   final VoidCallback onTap;
 
   @override
@@ -119,22 +122,23 @@ class FasilRibbonCluster extends StatelessWidget {
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
           child: SizedBox(
-            width: 48,
+            width: geometry.margin,
             height: fasilClusterHeight,
             child: Stack(
               children: [
                 for (final slot in placed.keys)
-                  Positioned(
+                  PositionedDirectional(
                     key: ValueKey('fasil-rib-${slot.name}'),
-                    left: fasilRibbonX(slot),
+                    end: geometry.ribbonOffset(slot),
                     top: 0,
-                    width: 12,
+                    width: geometry.ribbonWidth,
                     height: 44,
                     child: CustomPaint(
                       painter: _RibbonPainter(
                         color: paper.ribbon(slot),
                         stitch: _stitch(paper),
-                        end: slot.end,
+                        end: _End.notch,
+                        shadow: paper.ribbonShadow,
                       ),
                     ),
                   ),
@@ -153,12 +157,14 @@ class FasilTailTab extends StatelessWidget {
     required this.slot,
     required this.name,
     required this.paper,
+    required this.geometry,
     required this.onTap,
   });
 
   final FasilSlot slot;
   final String name;
   final MushafPaper paper;
+  final FasilGeometry geometry;
   final VoidCallback onTap;
 
   @override
@@ -173,26 +179,27 @@ class FasilTailTab extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: SizedBox(
           key: ValueKey('fasil-tail-${slot.name}'),
-          width: 48,
+          width: geometry.margin,
           height: fasilTailHeight,
           child: Stack(
             children: [
-              Positioned(
+              PositionedDirectional(
                 key: const ValueKey('fasil-tail-label'),
-                left: max(0, fasilRibbonX(slot) + 12 - 22),
+                end: geometry.labelOffset(slot),
                 top: 0,
                 bottom: 0,
-                width: 22,
+                width: geometry.labelWidth,
                 child: CustomPaint(
                   painter: _RibbonPainter(
                     color: paper.ribbon(slot),
                     end: slot.end,
+                    shadow: paper.ribbonShadow,
                   ),
-                  child: RotatedBox(
-                    quarterTurns: 1,
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 0, 14, 0),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 14),
+                    child: RotatedBox(
+                      quarterTurns: 1,
+                      child: Center(
                         child: Text(
                           name,
                           maxLines: 1,
@@ -232,7 +239,6 @@ class FasilStrip extends StatelessWidget {
         painter: _RibbonPainter(
           color: paper.ribbon(slot),
           stitch: _stitch(paper),
-          shadow: false,
         ),
       ),
     );

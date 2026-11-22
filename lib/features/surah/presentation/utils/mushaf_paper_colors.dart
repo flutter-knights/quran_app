@@ -28,6 +28,8 @@ extension MushafPaperX on MushafPaper {
 
   Color ribbon(FasilSlot slot) => fasilRibbon(slot, dark: isDark);
 
+  Color get ribbonShadow => const Color(0x33000000);
+
   MushafPaperColors get colors => switch (this) {
     MushafPaper.cream => const MushafPaperColors(
       background: Color(0xFFFDF7E8),
