@@ -7,10 +7,8 @@ import 'package:get_it/get_it.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/errors/failure.dart';
-import 'package:quran_app/features/bookmarks/domain/repositories/page_bookmark_repository.dart';
-import 'package:quran_app/features/bookmarks/domain/usecases/get_page_bookmarks.dart';
-import 'package:quran_app/features/bookmarks/domain/usecases/toggle_page_bookmark.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
@@ -26,6 +24,8 @@ import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_view.dart';
 import 'package:quran_app/features/surah/presentation/utils/reader_rules.dart';
 import 'package:quran_app/generated/l10n.dart';
+
+import '../../../../../bookmarks/place_fakes.dart';
 
 const _ayah = AyahIdentifier(surah: 2, ayah: 6);
 
@@ -82,13 +82,6 @@ class _StubMushafRepo implements MushafRepository {
       );
 }
 
-class _StubPageBookmarkRepo implements PageBookmarkRepository {
-  @override
-  Future<Either<Failure, Set<int>>> getAll() async => const Right(<int>{});
-  @override
-  Future<Either<Failure, bool>> toggle(int page) async => const Right(true);
-}
-
 void main() {
   final sl = GetIt.instance;
   late _FakeMushaf mushaf;
@@ -117,17 +110,13 @@ void main() {
             BlocProvider<SettingsCubit>.value(value: _FakeSettings()),
             BlocProvider<MushafCubit>.value(value: mushaf),
             BlocProvider<PlaybackCubit>.value(value: _FakePlayback()),
-            BlocProvider<PageBookmarkCubit>(
-              create: (_) => PageBookmarkCubit(
-                getPageBookmarks: GetPageBookmarks(_StubPageBookmarkRepo()),
-                togglePageBookmark: TogglePageBookmark(_StubPageBookmarkRepo()),
-              ),
-            ),
+            BlocProvider<FasilCubit>.value(value: FakeFasilCubit()),
+            BlocProvider<SavedAyatCubit>.value(value: FakeSavedAyatCubit()),
           ],
-          child: const Scaffold(
+          child: Scaffold(
             body: Align(
               alignment: Alignment.topLeft,
-              child: MushafPageView(pageNumber: 3),
+              child: MushafPageView(pageNumber: 3, onOpenFawasil: (_) {}),
             ),
           ),
         ),

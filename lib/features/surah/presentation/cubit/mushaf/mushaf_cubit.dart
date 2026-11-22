@@ -68,10 +68,16 @@ class MushafCubit extends Cubit<MushafState> {
     return result.fold((_) => const [], (entity) => entity.ayahs);
   }
 
-  void jumpTo(int page) {
+  void jumpTo(int page, {AyahIdentifier? focus}) {
+    final f = focus == null || focus.ayah == 0 ? null : focus;
+    if (page == state.currentPage && f != null) {
+      select(f);
+      return;
+    }
     if (page == state.currentPage && state.jumpFrom == null) return;
     final origin = state.jumpFrom ?? state.currentPage;
     _turnByUser(page, origin: page == origin ? null : origin);
+    if (f != null) emit(state.copyWith(selectedAyah: f));
   }
 
   void _turnByUser(int page, {int? origin}) {

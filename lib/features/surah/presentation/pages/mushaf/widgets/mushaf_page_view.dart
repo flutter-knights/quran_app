@@ -1,28 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
-import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_state.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/place.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/utils/fasil_rules.dart';
+import 'package:quran_app/features/bookmarks/presentation/utils/place_labels.dart';
+import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
-import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../../config/theme/typography_styles.dart';
 import '../../../../../../core/di/dependency_injection.dart';
 import '../../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../domain/entities/ayah_bound_entity.dart';
+import '../../../../domain/entities/normalized_rect.dart';
 import '../../../../domain/entities/mushaf_page_entity.dart';
 import '../../../../domain/usecases/get_mushaf_page.dart';
 import '../../../cubit/mushaf/mushaf_cubit.dart';
 import '../../../cubit/mushaf/mushaf_state.dart';
 import '../../../utils/reader_rules.dart';
 import 'ayah_highlight_painter.dart';
-import 'mushaf_page_ribbon.dart';
+import 'fasil_ribbon_cluster.dart';
 
 class MushafPageView extends StatefulWidget {
-  const MushafPageView({super.key, required this.pageNumber});
+  const MushafPageView({
+    super.key,
+    required this.pageNumber,
+    required this.onOpenFawasil,
+  });
 
   final int pageNumber;
+  final void Function(FasilSlot? slot) onOpenFawasil;
 
   @override
   State<MushafPageView> createState() => _MushafPageViewState();
@@ -204,20 +216,27 @@ class _MushafPageViewState extends State<MushafPageView>
                         ),
                       ),
                     ),
-                  BlocBuilder<PageBookmarkCubit, PageBookmarkState>(
-                    buildWhen: (a, b) =>
-                        a.contains(widget.pageNumber) !=
-                        b.contains(widget.pageNumber),
-                    builder: (context, pb) {
-                      if (!pb.contains(widget.pageNumber)) {
-                        return const SizedBox.shrink();
-                      }
-                      return MushafPageRibbon(
-                        color: paperColors.accent,
-                        onTap: () => _onRibbonTap(context),
-                      );
-                    },
-                  ),
+                  if (entity != null) ...[
+                    BlocSelector<SavedAyatCubit, SavedAyatState, List<Place>>(
+                      selector: (s) => s.items,
+                      builder: (context, items) => _savedDots(
+                        items,
+                        entity,
+                        constraints.maxHeight,
+                        paperColors.accent,
+                      ),
+                    ),
+                    BlocSelector<FasilCubit, FasilState, Map<FasilSlot, Place>>(
+                      selector: (s) => s.slots,
+                      builder: (context, slots) => _fasilLayer(
+                        context,
+                        slots,
+                        entity,
+                        constraints.maxHeight,
+                        settings.mushafPaper,
+                      ),
+                    ),
+                  ],
                 ],
               );
             },
@@ -265,21 +284,114 @@ class _MushafPageViewState extends State<MushafPageView>
     hit == null ? cubit.clearSelection() : cubit.toggleSelection(hit);
   }
 
-  void _onRibbonTap(BuildContext context) {
-    final cubit = context.read<PageBookmarkCubit>();
-    cubit.toggle(widget.pageNumber);
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          S.of(context).pageRemovedFromBookmarks,
-          style: TS.regular14,
-        ),
-        action: SnackBarAction(
-          label: S.of(context).undo,
-          onPressed: () => cubit.toggle(widget.pageNumber),
-        ),
+  NormalizedRect? _firstLine(MushafPageEntity entity, AyahIdentifier ayah) {
+    for (final b in entity.ayahs) {
+      if (b.ayah == ayah && b.lines.isNotEmpty) return b.lines.first;
+    }
+    return null;
+  }
+
+  Widget _savedDots(
+    List<Place> items,
+    MushafPageEntity entity,
+    double height,
+    Color color,
+  ) {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          for (final place in items)
+            if (place.page == widget.pageNumber)
+              if (_firstLine(entity, place.ayah) case final line?)
+                Positioned(
+                  key: ValueKey(
+                    'saved-dot-${place.ayah.surah}:${place.ayah.ayah}',
+                  ),
+                  right: 6,
+                  top: (line.y + line.h / 2) * height - 3,
+                  width: 6,
+                  height: 6,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _fasilLayer(
+    BuildContext context,
+    Map<FasilSlot, Place> slots,
+    MushafPageEntity entity,
+    double height,
+    MushafPaper paper,
+  ) {
+    final onPage =
+        [
+          for (final place in slots.values)
+            if (place.page == widget.pageNumber)
+              if (_firstLine(entity, place.ayah) case final line?)
+                (
+                  place: place,
+                  wanted: (line.y + line.h) * height - fasilTailHeight,
+                ),
+        ]..sort((a, b) {
+          final byTop = a.wanted.compareTo(b.wanted);
+          return byTop != 0
+              ? byTop
+              : a.place.slot!.index.compareTo(b.place.slot!.index);
+        });
+    final tops = layoutTailTops([
+      for (final e in onPage) e.wanted,
+    ], pageHeight: height);
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          for (var i = 0; i < onPage.length; i++)
+            Positioned(
+              left: fasilRibbonX(onPage[i].place.slot!),
+              top: 0,
+              width: 12,
+              height: tops[i],
+              child: FasilStrip(slot: onPage[i].place.slot!, paper: paper),
+            ),
+          for (var i = 0; i < onPage.length; i++)
+            Positioned(
+              left: 0,
+              top: tops[i],
+              width: 48,
+              height: fasilTailHeight,
+              child: FasilTailTab(
+                slot: onPage[i].place.slot!,
+                name: fasilName(
+                  context,
+                  onPage[i].place.slot!,
+                  onPage[i].place,
+                ),
+                paper: paper,
+                onTap: () => widget.onOpenFawasil(onPage[i].place.slot),
+              ),
+            ),
+          if (slots.isNotEmpty)
+            Positioned(
+              left: 0,
+              top: 0,
+              child: FasilRibbonCluster(
+                placed: {
+                  for (final e in slots.entries)
+                    e.key: fasilName(context, e.key, e.value),
+                },
+                paper: paper,
+                onTap: () => widget.onOpenFawasil(null),
+              ),
+            ),
+        ],
       ),
     );
   }

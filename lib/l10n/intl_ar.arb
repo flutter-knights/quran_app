@@ -552,5 +552,13 @@
   "fasil_clusterLabel": "الفواصل: {names}",
   "@fasil_clusterLabel": {
     "placeholders": { "names": { "type": "String" } }
+  },
+  "fasil_moved": "نُقل فاصل {name} إلى {place}",
+  "@fasil_moved": {
+    "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
+  },
+  "fasil_placed": "وُضع فاصل {name} عند {place}",
+  "@fasil_placed": {
+    "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
   }
 }

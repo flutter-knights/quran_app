@@ -315,6 +315,10 @@ class PendingS {
       _ar ? 'ضع $name هنا' : 'Place $name here';
   String fasil_clusterLabel(String names) =>
       _ar ? 'الفواصل: $names' : 'Markers: $names';
+  String fasil_moved(String name, String place) =>
+      _ar ? 'نُقل فاصل $name إلى $place' : 'Moved the $name marker to $place';
+  String fasil_placed(String name, String place) =>
+      _ar ? 'وُضع فاصل $name عند $place' : 'Placed the $name marker at $place';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

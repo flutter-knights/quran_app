@@ -568,5 +568,13 @@
   "fasil_clusterLabel": "Markers: {names}",
   "@fasil_clusterLabel": {
     "placeholders": { "names": { "type": "String" } }
+  },
+  "fasil_moved": "Moved the {name} marker to {place}",
+  "@fasil_moved": {
+    "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
+  },
+  "fasil_placed": "Placed the {name} marker at {place}",
+  "@fasil_placed": {
+    "placeholders": { "name": { "type": "String" }, "place": { "type": "String" } }
   }
 }

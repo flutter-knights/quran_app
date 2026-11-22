@@ -8,11 +8,17 @@ import 'package:quran/quran.dart' as quran;
 
 import '../../../../../config/router/app_router.dart';
 import '../../../../../config/router/now_playing_route.dart';
+import '../../../../../config/theme/typography_styles.dart';
 import '../../../../../core/constants/mushaf_reading_mode.dart';
 import '../../../../../core/di/dependency_injection.dart';
 import '../../../../../core/helper functions/locale_helpers.dart';
 import '../../../../../core/localization/pending_s.dart';
 import '../../../../../core/utils/screen_wake.dart';
+import '../../../../../generated/l10n.dart';
+import '../../../../bookmarks/domain/entities/fasil_slot.dart';
+import '../../../../bookmarks/presentation/cubit/fasil_cubit.dart';
+import '../../../../bookmarks/presentation/utils/fasil_rules.dart';
+import '../../../../bookmarks/presentation/utils/place_labels.dart';
 import '../../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../../quran_playback/domain/services/quran_meta_service.dart';
 import '../../../../quran_playback/domain/services/quran_page_service.dart';
@@ -33,6 +39,7 @@ import 'last_read_saver.dart';
 import 'page_turn_tracker.dart';
 import 'widgets/ayah_leaf.dart';
 import 'widgets/display_sheet.dart';
+import 'widgets/fasil_chooser.dart';
 import 'widgets/menu_sheet.dart';
 import 'widgets/mushaf_page_view.dart';
 import 'widgets/notice_chip.dart';
@@ -436,10 +443,70 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     _settingsCubit.markDownloadHintSeen();
   }
 
-  void _jumpInPlace(int page) {
+  Future<void> _openFawasil(FasilSlot? preselect) async {
+    final fawasil = context.read<FasilCubit>();
+    final state = _mushafCubit.state;
+    final selected = (state.selectedAyah?.ayah ?? 0) > 0
+        ? state.selectedAyah
+        : null;
+    final pre =
+        preselect ??
+        (selected == null
+            ? null
+            : chooserPreselect(
+                slots: fawasil.state.slots,
+                page: state.currentPage,
+                at: selected,
+              ));
+    final choice = await FasilChooser.show(
+      context,
+      slots: fawasil.state.slots,
+      selected: selected,
+      preselect: pre,
+    );
+    if (!mounted) return;
+    switch (choice) {
+      case FasilGo(:final place):
+        _jumpInPlace(place.page, focus: place.ayah);
+      case FasilMoveHere(:final slot):
+        await _moveFasil(fawasil, slot, selected!);
+      case null:
+        break;
+    }
+  }
+
+  Future<void> _moveFasil(
+    FasilCubit fawasil,
+    FasilSlot slot,
+    AyahIdentifier ayah,
+  ) async {
+    final result = await fawasil.move(slot, ayah);
+    if (!mounted || result == null) return;
+    final s = PendingS.current;
+    final name = fasilName(context, slot, result.moved);
+    final place = ayahPlace(context, ayah);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            result.previous == null
+                ? s.fasil_placed(name, place)
+                : s.fasil_moved(name, place),
+            style: TS.regular14,
+          ),
+          action: SnackBarAction(
+            label: S.current.undo,
+            onPressed: () => fawasil.restore(slot, result.previous),
+          ),
+        ),
+      );
+  }
+
+  void _jumpInPlace(int page, {AyahIdentifier? focus}) {
     _lastReadSaver.rearm();
     final turn = _turns.begin(page);
-    _mushafCubit.jumpTo(page);
+    _mushafCubit.jumpTo(page, focus: focus);
     if (_effectiveMode(context) == MushafReadingMode.page) {
       if (_pageController.hasClients) _pageController.jumpToPage(page - 1);
     } else {
@@ -657,7 +724,10 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
             itemExtent: _scrollPageHeight + _scrollPageGap,
             itemBuilder: (_, i) => Padding(
               padding: const EdgeInsets.only(bottom: _scrollPageGap),
-              child: MushafPageView(pageNumber: i + 1),
+              child: MushafPageView(
+                pageNumber: i + 1,
+                onOpenFawasil: _openFawasil,
+              ),
             ),
           ),
         ),
@@ -685,8 +755,12 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
           controller: _pageController,
           itemCount: 604,
           onPageChanged: (i) => _setPageFromView(i + 1),
-          itemBuilder: (_, i) =>
-              Center(child: MushafPageView(pageNumber: i + 1)),
+          itemBuilder: (_, i) => Center(
+            child: MushafPageView(
+              pageNumber: i + 1,
+              onOpenFawasil: _openFawasil,
+            ),
+          ),
         ),
       ),
     );

@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
+import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_state.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_meta_service.dart';
@@ -22,6 +24,7 @@ import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/reade
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/running_head.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 
+import '../../../../bookmarks/place_fakes.dart';
 import '../../../../notifications/presentation/alerts_test_harness.dart';
 import 'mushaf_page_harness.dart';
 
@@ -75,6 +78,7 @@ void main() {
     bool pushed = false,
     double textScale = 1.0,
     FakeSettings? settings,
+    FakeFasilCubit? fawasil,
   }) async {
     final mushaf = FakeMushaf(state ?? _state());
     addTearDown(mushaf.close);
@@ -84,6 +88,7 @@ void main() {
       mushaf: mushaf,
       playback: FakePlayback(playback),
       settings: settings,
+      fawasil: fawasil,
       pushed: pushed,
       textScale: textScale,
     );
@@ -349,9 +354,74 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('menu-go')));
     await tester.pumpAndSettle();
 
-    expect(mushaf.jumps, [120]);
+    expect(mushaf.jumps.map((j) => j.$1), [120]);
     expect(mushaf.state.currentPage, 120);
     expect(mushaf.setPages.where((c) => c.$2), isEmpty);
+  });
+
+  group('فواصل', () {
+    const imran6 = AyahIdentifier(surah: 3, ayah: 6);
+    const imran7 = AyahIdentifier(surah: 3, ayah: 7);
+
+    FakeFasilCubit seeded(Map<FasilSlot, AyahIdentifier> at) => FakeFasilCubit(
+      FasilState(
+        slots: {for (final e in at.entries) e.key: fasilPlace(e.key, e.value)},
+        loaded: true,
+      ),
+    );
+
+    testWidgets('انتقال in the chooser jumps in place with the ayah selected', (
+      tester,
+    ) async {
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(page: 2),
+        args: const MushafArgs(page: 2),
+        fawasil: seeded({FasilSlot.hifz: imran6}),
+      );
+
+      await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('fasil-go-hifz')));
+      await tester.pumpAndSettle();
+
+      expect(mushaf.jumps.last, (50, imran6));
+    });
+
+    testWidgets('moving a فاصل confirms and تراجع restores it', (tester) async {
+      final fawasil = seeded({FasilSlot.wird: _a5});
+      final previous = fawasil.state.slots[FasilSlot.wird];
+      final (mushaf, _) = await pump(tester, fawasil: fawasil);
+      mushaf.push(_state(selected: imran7));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('fasil-move-wird')));
+      await tester.pumpAndSettle();
+
+      expect(fawasil.moves.last, (FasilSlot.wird, imran7));
+      expect(find.text('نُقل فاصل الورد إلى آل عمران ٧'), findsOneWidget);
+
+      await tester.tap(find.text('تراجع'));
+      await tester.pumpAndSettle();
+
+      expect(fawasil.restores.last, (FasilSlot.wird, previous));
+    });
+
+    testWidgets('placing an unset فاصل says وُضع', (tester) async {
+      final fawasil = seeded({FasilSlot.hifz: imran6});
+      final (mushaf, _) = await pump(tester, fawasil: fawasil);
+      mushaf.push(_state(selected: _a5));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('fasil-cluster')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('fasil-move-wird')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('وُضع فاصل الورد عند البقرة ٥'), findsOneWidget);
+    });
   });
 
   testWidgets('menu display opens the display sheet', (tester) async {
@@ -472,7 +542,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('notice-chip')));
     await tester.pumpAndSettle();
 
-    expect(mushaf.jumps, [120, 7]);
+    expect(mushaf.jumps.map((j) => j.$1), [120, 7]);
     expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
   });
 

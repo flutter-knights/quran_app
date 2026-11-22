@@ -15,7 +15,9 @@ import 'package:quran_app/features/bookmarks/domain/usecases/get_page_bookmarks.
 import 'package:quran_app/features/bookmarks/domain/usecases/toggle_page_bookmark.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/bookmark_state.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/page_bookmark_cubit.dart';
+import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_meta_service.dart';
@@ -40,6 +42,8 @@ import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 import 'package:quran_app/generated/l10n.dart';
+
+import '../../../../bookmarks/place_fakes.dart';
 
 class FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
   FakeSettings({
@@ -107,7 +111,7 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   Future<List<AyahBoundEntity>> boundsFor(int page) async => state.pageAyahs;
 
   final setPages = <(int, bool)>[];
-  final jumps = <int>[];
+  final jumps = <(int, AyahIdentifier?)>[];
   final selects = <AyahIdentifier>[];
   final toggles = <AyahIdentifier>[];
   var clearCalls = 0;
@@ -132,8 +136,8 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   }
 
   @override
-  void jumpTo(int page) {
-    jumps.add(page);
+  void jumpTo(int page, {AyahIdentifier? focus}) {
+    jumps.add((page, focus));
     if (page == state.currentPage && state.jumpFrom == null) return;
     final origin = state.jumpFrom ?? state.currentPage;
     emit(
@@ -331,6 +335,8 @@ typedef MushafHarness = ({
   FakeDownloads downloads,
   FakeScreenWake wake,
   StubLastReadRepo repo,
+  FakeFasilCubit fawasil,
+  FakeSavedAyatCubit saved,
 });
 
 Future<MushafHarness> pumpMushafPage(
@@ -339,6 +345,8 @@ Future<MushafHarness> pumpMushafPage(
   required MushafCubit mushaf,
   FakePlayback? playback,
   FakeSettings? settings,
+  FakeFasilCubit? fawasil,
+  FakeSavedAyatCubit? saved,
   LastRead? stored,
   bool pushed = false,
   double textScale = 1.0,
@@ -353,6 +361,8 @@ Future<MushafHarness> pumpMushafPage(
     downloads: FakeDownloads(),
     wake: FakeScreenWake(),
     repo: StubLastReadRepo(stored),
+    fawasil: fawasil ?? FakeFasilCubit(),
+    saved: saved ?? FakeSavedAyatCubit(),
   );
   final pageBookmarks = PageBookmarkCubit(
     getPageBookmarks: GetPageBookmarks(_StubPageBookmarkRepo()),
@@ -360,6 +370,8 @@ Future<MushafHarness> pumpMushafPage(
   );
   final lastRead = LastReadCubit(repository: h.repo);
   addTearDown(pageBookmarks.close);
+  addTearDown(h.fawasil.close);
+  addTearDown(h.saved.close);
   addTearDown(lastRead.close);
   addTearDown(h.bookmarks.close);
   addTearDown(h.downloads.close);
@@ -374,6 +386,8 @@ Future<MushafHarness> pumpMushafPage(
       BlocProvider<LastReadCubit>.value(value: lastRead),
       BlocProvider<PageBookmarkCubit>.value(value: pageBookmarks),
       BlocProvider<BookmarkCubit>.value(value: h.bookmarks),
+      BlocProvider<FasilCubit>.value(value: h.fawasil),
+      BlocProvider<SavedAyatCubit>.value(value: h.saved),
       BlocProvider<SurahDownloadCubit>.value(value: h.downloads),
     ],
     child: child,
