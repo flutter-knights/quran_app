@@ -19,7 +19,7 @@ Check here before writing a helper. Keep these pure: no widgets, no feature impo
 - **`Duration.toDigitalClock()`** (`duration_helpers.dart`).
 
 ## Constants (`core/constants/`)
-- **`AssetsDir`**: `fontsDir`, `imagesDir`, `iconsDir`, `jsonDir`. Never hardcode an `assets/` path.
+- **`AssetsDir`**: `fontsDir`, `imagesDir`, `iconsDir`, `jsonDir`, `mushafPage(page)`. Never hardcode an `assets/` path.
 - **`DeviceSize`** on `BuildContext`: `context.height`, `context.width`, `context.aspectRatio`, `context.fontScaler`, `context.responsiveFont(size)`.
 - **`ColorPalette`**, **`MushafPaper`**, **`MushafReadingMode`**, **`LeafTapAction`**, **`PrayerName`**, **`HadithPagination`**.
 
