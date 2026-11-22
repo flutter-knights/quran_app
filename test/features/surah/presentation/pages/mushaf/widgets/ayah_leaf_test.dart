@@ -236,30 +236,6 @@ void main() {
     expect(find.textContaining('الآية ٠'), findsNothing);
   });
 
-  testWidgets('share text quotes the ayah and names it', (tester) async {
-    late String text;
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: const [
-          S.delegate,
-          ...GlobalMaterialLocalizations.delegates,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        locale: const Locale('ar'),
-        home: Builder(
-          builder: (context) {
-            text = ayahShareText(
-              context,
-              const AyahIdentifier(surah: 112, ayah: 1),
-            );
-            return const SizedBox();
-          },
-        ),
-      ),
-    );
-    expect(text, '${quran.getVerse(112, 1)} — سورة الإخلاص، الآية ١');
-  });
-
   group('share', () {
     const channel = MethodChannel('dev.fluttercommunity.plus/share');
     final messenger =

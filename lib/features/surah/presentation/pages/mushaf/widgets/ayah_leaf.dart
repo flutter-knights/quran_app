@@ -11,13 +11,11 @@ import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_state.dart';
 import 'package:quran_app/features/bookmarks/presentation/utils/place_notices.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_study_leaf.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/surah/presentation/utils/surah_caption.dart';
 import 'package:quran_app/generated/l10n.dart';
 import 'package:share_plus/share_plus.dart';
-
-String ayahShareText(BuildContext context, AyahIdentifier ayah) =>
-    '${quran.getVerse(ayah.surah, ayah.ayah)} — ${S.of(context).ayah_label(surahDisplayName(context, ayah.surah), ayah.ayah.toLocalized(context))}';
 
 class AyahLeaf extends StatelessWidget {
   const AyahLeaf({

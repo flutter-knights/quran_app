@@ -600,6 +600,12 @@
   "tafsir_bookCaption": "Loaded from the internet, then saved on the device",
   "tafsir_source": "Source: Al-Tafsir al-Muyassar, King Fahd Complex, via alquran.cloud",
   "tafsir_loadFailed": "Couldn't load the tafsir",
+  "tafsir_backToMushaf": "Back to the mushaf",
+  "tafsir_behind": "The mushaf behind you is on this ayah",
+  "tafsir_sectionTafsir": "Tafsir",
+  "tafsir_sectionTranslation": "Translation",
+  "tafsir_sectionWords": "Word meanings",
+  "tafsir_sectionNote": "My note",
   "savedAyat_saved": "Saved ayah {ayah} of {surah}",
   "@savedAyat_saved": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }

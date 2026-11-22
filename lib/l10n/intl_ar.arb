@@ -584,6 +584,12 @@
   "tafsir_bookCaption": "يُحمَّل من الإنترنت ثم يُحفظ على الجهاز",
   "tafsir_source": "المصدر: التفسير الميسر، مجمع الملك فهد، عبر alquran.cloud",
   "tafsir_loadFailed": "تعذّر تحميل التفسير",
+  "tafsir_backToMushaf": "العودة إلى المصحف",
+  "tafsir_behind": "المصحف خلفك على هذه الآية",
+  "tafsir_sectionTafsir": "التفسير",
+  "tafsir_sectionTranslation": "الترجمة",
+  "tafsir_sectionWords": "معاني الكلمات",
+  "tafsir_sectionNote": "ملاحظتي",
   "savedAyat_saved": "حُفظت الآية {ayah} من {surah}",
   "@savedAyat_saved": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }

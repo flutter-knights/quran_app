@@ -283,6 +283,15 @@ class PendingS {
       : 'Source: Al-Tafsir al-Muyassar, King Fahd Complex, via alquran.cloud';
   String get tafsir_loadFailed =>
       _ar ? 'تعذّر تحميل التفسير' : 'Couldn\'t load the tafsir';
+  String get tafsir_backToMushaf =>
+      _ar ? 'العودة إلى المصحف' : 'Back to the mushaf';
+  String get tafsir_behind => _ar
+      ? 'المصحف خلفك على هذه الآية'
+      : 'The mushaf behind you is on this ayah';
+  String get tafsir_sectionTafsir => _ar ? 'التفسير' : 'Tafsir';
+  String get tafsir_sectionTranslation => _ar ? 'الترجمة' : 'Translation';
+  String get tafsir_sectionWords => _ar ? 'معاني الكلمات' : 'Word meanings';
+  String get tafsir_sectionNote => _ar ? 'ملاحظتي' : 'My note';
   String get leaf_sajda => _ar ? 'سجدة' : 'Sajda';
   String mushaf_surahTitle(String surah) =>
       _ar ? 'سورة $surah' : 'Surah $surah';
