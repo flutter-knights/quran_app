@@ -273,6 +273,27 @@ class PendingS {
   String get leaf_listenFromHere => _ar ? 'استماع من هنا' : 'Listen from here';
   String get leaf_saveAyah => _ar ? 'حفظ الآية' : 'Save ayah';
   String get leaf_fasil => _ar ? 'فاصل' : 'Marker';
+  String get leaf_tafsir => _ar ? 'تفسير الآية' : 'Ayah tafsir';
+  String get tafsir_muyassar =>
+      _ar ? 'التفسير الميسر' : 'Al-Tafsir al-Muyassar';
+  String get tafsir_bookCaption => _ar
+      ? 'يُحمَّل من الإنترنت ثم يُحفظ على الجهاز'
+      : 'Loaded from the internet, then saved on the device';
+  String get tafsir_source => _ar
+      ? 'المصدر: التفسير الميسر، مجمع الملك فهد، عبر alquran.cloud'
+      : 'Source: Al-Tafsir al-Muyassar, King Fahd Complex, via alquran.cloud';
+  String get tafsir_loadFailed =>
+      _ar ? 'تعذّر تحميل التفسير' : 'Couldn\'t load the tafsir';
+  String get tafsir_backToMushaf =>
+      _ar ? 'العودة إلى المصحف' : 'Back to the mushaf';
+  String get tafsir_behind => _ar
+      ? 'المصحف خلفك على هذه الآية'
+      : 'The mushaf behind you is on this ayah';
+  String get tafsir_sectionTafsir => _ar ? 'التفسير' : 'Tafsir';
+  String get tafsir_sectionTranslation => _ar ? 'الترجمة' : 'Translation';
+  String get tafsir_sectionWords => _ar ? 'معاني الكلمات' : 'Word meanings';
+  String get tafsir_sectionNote => _ar ? 'ملاحظتي' : 'My note';
+  String get tafsir_sectionLater => _ar ? 'لاحقًا' : 'Later';
   String get leaf_sajda => _ar ? 'سجدة' : 'Sajda';
   String mushaf_surahTitle(String surah) =>
       _ar ? 'سورة $surah' : 'Surah $surah';
@@ -295,6 +316,10 @@ class PendingS {
   String get display_readingMode => _ar ? 'طريقة القراءة' : 'Reading mode';
   String get display_keepScreenOn =>
       _ar ? 'إبقاء الشاشة مضيئة' : 'Keep the screen on';
+  String get display_tapAction =>
+      _ar ? 'عند الضغط على الآية' : 'When you tap an ayah';
+  String get display_tapMeaning => _ar ? 'المعنى' : 'Meaning';
+  String get display_tapOptions => _ar ? 'الخيارات' : 'Options';
   String get display_done => _ar ? 'تم' : 'Done';
 
   String get fasil_wird => _ar ? 'الورد' : 'Wird';

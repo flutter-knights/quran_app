@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quran_app/core/constants/color_palette.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/utils/screen_wake.dart';
@@ -34,9 +35,11 @@ import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
+import 'package:quran_app/features/tafsir/presentation/cubit/tafsir_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../bookmarks/place_fakes.dart';
+import '../../../../tafsir/tafsir_fakes.dart';
 
 class FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
   FakeSettings({
@@ -44,6 +47,7 @@ class FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
     bool hintSeen = true,
     bool downloadHintSeen = true,
     bool keepScreenOn = true,
+    LeafTapAction tapAction = LeafTapAction.meaning,
   }) : super(
          SettingsState(
            SettingsModel(
@@ -54,6 +58,7 @@ class FakeSettings extends Cubit<SettingsState> implements SettingsCubit {
              hintSeen: hintSeen,
              downloadHintSeen: downloadHintSeen,
              keepScreenOn: keepScreenOn,
+             tapAction: tapAction,
            ),
          ),
        );
@@ -106,6 +111,7 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   final setPages = <(int, bool)>[];
   final jumps = <(int, AyahIdentifier?)>[];
   final selects = <AyahIdentifier>[];
+  final steps = <(AyahIdentifier, int)>[];
   final toggles = <AyahIdentifier>[];
   var clearCalls = 0;
   var resumeCalls = 0;
@@ -150,6 +156,20 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   }
 
   @override
+  void stepTo(AyahIdentifier ayah, {required int page}) {
+    steps.add((ayah, page));
+    emit(
+      page == state.currentPage
+          ? state.copyWith(selectedAyah: ayah)
+          : state.copyWith(
+              currentPage: page,
+              selectedAyah: ayah,
+              clearJumpFrom: true,
+            ),
+    );
+  }
+
+  @override
   void toggleSelection(AyahIdentifier ayah) {
     toggles.add(ayah);
     emit(
@@ -170,6 +190,11 @@ class FakeMushaf extends Cubit<MushafState> implements MushafCubit {
   void resumeFollow() {
     resumeCalls++;
     emit(state.copyWith(followPlayback: true));
+  }
+
+  @override
+  void stopFollow() {
+    if (state.followPlayback) emit(state.copyWith(followPlayback: false));
   }
 
   @override
@@ -309,6 +334,7 @@ typedef MushafHarness = ({
   StubLastReadRepo repo,
   FakeFasilCubit fawasil,
   FakeSavedAyatCubit saved,
+  FakeTafsirCubit tafsir,
 });
 
 Future<MushafHarness> pumpMushafPage(
@@ -319,6 +345,7 @@ Future<MushafHarness> pumpMushafPage(
   FakeSettings? settings,
   FakeFasilCubit? fawasil,
   FakeSavedAyatCubit? saved,
+  FakeTafsirCubit? tafsir,
   LastRead? stored,
   bool pushed = false,
   double textScale = 1.0,
@@ -334,10 +361,12 @@ Future<MushafHarness> pumpMushafPage(
     repo: StubLastReadRepo(stored),
     fawasil: fawasil ?? FakeFasilCubit(),
     saved: saved ?? FakeSavedAyatCubit(),
+    tafsir: tafsir ?? FakeTafsirCubit(),
   );
   final lastRead = LastReadCubit(repository: h.repo);
   addTearDown(h.fawasil.close);
   addTearDown(h.saved.close);
+  addTearDown(h.tafsir.close);
   addTearDown(lastRead.close);
   addTearDown(h.downloads.close);
   addTearDown(h.playback.close);
@@ -351,6 +380,7 @@ Future<MushafHarness> pumpMushafPage(
       BlocProvider<LastReadCubit>.value(value: lastRead),
       BlocProvider<FasilCubit>.value(value: h.fawasil),
       BlocProvider<SavedAyatCubit>.value(value: h.saved),
+      BlocProvider<TafsirCubit>.value(value: h.tafsir),
       BlocProvider<SurahDownloadCubit>.value(value: h.downloads),
     ],
     child: child,

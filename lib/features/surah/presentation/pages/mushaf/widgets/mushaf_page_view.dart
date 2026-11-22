@@ -8,6 +8,7 @@ import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_cubit
 import 'package:quran_app/features/bookmarks/presentation/cubit/saved_ayat_state.dart';
 import 'package:quran_app/features/bookmarks/presentation/utils/fasil_rules.dart';
 import 'package:quran_app/features/bookmarks/presentation/utils/place_labels.dart';
+import 'package:quran_app/core/constants/assets_dir.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
@@ -83,12 +84,10 @@ class _MushafPageViewState extends State<MushafPageView>
     super.dispose();
   }
 
-  String get _imagePath =>
-      'assets/mushaf/pages/page_${widget.pageNumber.toString().padLeft(3, '0')}.png';
+  String get _imagePath => AssetsDir.mushafPage(widget.pageNumber);
 
   // Accent layer: header frame + ayah-number rosettes, tinted separately.
-  String get _accentPath =>
-      'assets/mushaf/pages/page_${widget.pageNumber.toString().padLeft(3, '0')}_accent.png';
+  String get _accentPath => AssetsDir.mushafPageAccent(widget.pageNumber);
 
   @override
   Widget build(BuildContext context) {

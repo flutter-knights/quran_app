@@ -13,11 +13,8 @@ import 'package:quran_app/features/bookmarks/presentation/utils/place_notices.da
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/surah/presentation/utils/surah_caption.dart';
+import 'package:quran_app/features/tafsir/presentation/widgets/tafsir_section.dart';
 import 'package:quran_app/generated/l10n.dart';
-import 'package:share_plus/share_plus.dart';
-
-String ayahShareText(BuildContext context, AyahIdentifier ayah) =>
-    '${quran.getVerse(ayah.surah, ayah.ayah)} — ${S.of(context).ayah_label(surahDisplayName(context, ayah.surah), ayah.ayah.toLocalized(context))}';
 
 class AyahLeaf extends StatelessWidget {
   const AyahLeaf({
@@ -29,6 +26,8 @@ class AyahLeaf extends StatelessWidget {
     required this.onListenFromSurahStart,
     required this.onListenPage,
     required this.onFasil,
+    required this.onExpand,
+    required this.tafsirLead,
   });
 
   final AyahIdentifier ayah;
@@ -38,6 +37,8 @@ class AyahLeaf extends StatelessWidget {
   final VoidCallback onListenFromSurahStart;
   final VoidCallback onListenPage;
   final VoidCallback onFasil;
+  final VoidCallback onExpand;
+  final bool tafsirLead;
 
   bool get _isBanner => ayah.ayah == 0;
 
@@ -52,7 +53,9 @@ class AyahLeaf extends StatelessWidget {
         : s.playback_mediaTitle(name, ayah.ayah.toLocalized(context));
     return GestureDetector(
       onVerticalDragEnd: (details) {
-        if ((details.primaryVelocity ?? 0) > 300) onClose();
+        final velocity = details.primaryVelocity ?? 0;
+        if (velocity > 300) onClose();
+        if (!_isBanner && velocity < -300) onExpand();
       },
       child: Material(
         color: colors.leaf,
@@ -139,7 +142,7 @@ class AyahLeaf extends StatelessWidget {
                     ),
                   ],
                 )
-              else
+              else ...[
                 IntrinsicHeight(
                   child: Row(
                     children: [
@@ -151,6 +154,16 @@ class AyahLeaf extends StatelessWidget {
                           color: scheme.onPrimary,
                           fill: scheme.primary,
                           onTap: onListenFromHere,
+                        ),
+                      ),
+                      VerticalDivider(width: 1, color: colors.accent),
+                      Expanded(
+                        child: _Action(
+                          key: const ValueKey('leaf-tafsir'),
+                          icon: HugeIcons.strokeRoundedBookOpen01,
+                          label: s.leaf_tafsir,
+                          color: colors.ink,
+                          onTap: onExpand,
                         ),
                       ),
                       VerticalDivider(width: 1, color: colors.accent),
@@ -180,19 +193,20 @@ class AyahLeaf extends StatelessWidget {
                               ),
                             ),
                       ),
-                      VerticalDivider(width: 1, color: colors.accent),
-                      Expanded(
-                        child: _Action(
-                          key: const ValueKey('leaf-share'),
-                          icon: HugeIcons.strokeRoundedShare08,
-                          label: strings.share,
-                          color: colors.ink,
-                          onTap: () => _share(context),
-                        ),
-                      ),
                     ],
                   ),
                 ),
+                if (tafsirLead)
+                  TafsirSection(
+                    key: const ValueKey('tafsir-lead'),
+                    ayah: ayah,
+                    ink: colors.ink,
+                    mutedInk: colors.ink2,
+                    buttonStyle: colors.paperButton(),
+                    lead: true,
+                    onTap: onExpand,
+                  ),
+              ],
             ],
           ),
         ),
@@ -227,19 +241,6 @@ class AyahLeaf extends StatelessWidget {
       s.savedAyat_saved(ayahText, surahText),
       onUndo: () => saved.remove(place),
     );
-  }
-
-  Future<void> _share(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final failed = S.of(context).share_failed;
-    final text = ayahShareText(context, ayah);
-    try {
-      await SharePlus.instance.share(ShareParams(text: text));
-    } catch (_) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(failed, style: TS.regular14)),
-      );
-    }
   }
 }
 

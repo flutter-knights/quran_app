@@ -529,6 +529,9 @@
   "display_paper": "Paper colour",
   "display_readingMode": "Reading mode",
   "display_keepScreenOn": "Keep the screen on",
+  "display_tapAction": "When you tap an ayah",
+  "display_tapMeaning": "Meaning",
+  "display_tapOptions": "Options",
   "display_done": "Done",
   "fasil_wird": "Wird",
   "fasil_hifz": "Memorisation",
@@ -596,6 +599,18 @@
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
   },
   "leaf_fasil": "Marker",
+  "leaf_tafsir": "Ayah tafsir",
+  "tafsir_muyassar": "Al-Tafsir al-Muyassar",
+  "tafsir_bookCaption": "Loaded from the internet, then saved on the device",
+  "tafsir_source": "Source: Al-Tafsir al-Muyassar, King Fahd Complex, via alquran.cloud",
+  "tafsir_loadFailed": "Couldn't load the tafsir",
+  "tafsir_backToMushaf": "Back to the mushaf",
+  "tafsir_behind": "The mushaf behind you is on this ayah",
+  "tafsir_sectionTafsir": "Tafsir",
+  "tafsir_sectionTranslation": "Translation",
+  "tafsir_sectionWords": "Word meanings",
+  "tafsir_sectionNote": "My note",
+  "tafsir_sectionLater": "Later",
   "savedAyat_saved": "Saved ayah {ayah} of {surah}",
   "@savedAyat_saved": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }

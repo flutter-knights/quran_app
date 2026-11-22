@@ -3,7 +3,7 @@
 Guidance for Claude Code when working in this repository.
 
 `quran_app` is an Arabic-first Flutter app: the mushaf (page and scroll reading, reading papers,
-three named فواصل, saved ayat and the «أماكني» sheet), recitation playback, hadith books, search, prayer times with adhan notifications, and
+three named فواصل, saved ayat, the «أماكني» sheet and Tafsir al-Muyassar), recitation playback, hadith books, search, prayer times with adhan notifications, and
 settings.
 
 ## Build & Run Commands

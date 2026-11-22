@@ -29,4 +29,23 @@ void main() {
       expect(helper, contains('Duration(milliseconds: 200)'));
     });
   });
+
+  group('mushaf routes', () {
+    late String router;
+
+    setUpAll(() {
+      router = File('lib/config/router/app_router.dart').readAsStringSync();
+    });
+
+    test('both mushaf paths build the one scope that provides TafsirCubit', () {
+      for (final path in ['mushafPath', 'mushafImagePath']) {
+        final route = router.substring(router.indexOf('path: $path,'));
+        final body = route.substring(0, route.indexOf('GoRoute('));
+        expect(body, contains('_mushafScope(state)'));
+      }
+      final scope = router.substring(router.indexOf('Widget _mushafScope'));
+      expect(scope, contains('sl<MushafCubit>'));
+      expect(scope, contains('sl<TafsirCubit>'));
+    });
+  });
 }

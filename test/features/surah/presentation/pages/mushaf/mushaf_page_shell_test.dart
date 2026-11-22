@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:quran_app/core/constants/leaf_tap_action.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/helper%20functions/numeral_helpers.dart';
 import 'package:quran_app/core/constants/mushaf_reading_mode.dart';
@@ -23,6 +24,7 @@ import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_cubit.
 import 'package:quran_app/features/surah/presentation/cubit/mushaf/mushaf_state.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/mushaf_page.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_leaf.dart';
+import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_strip.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/display_sheet.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/mushaf_page_view.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/player_leaf.dart';
@@ -32,6 +34,7 @@ import 'package:quran_app/features/surah/presentation/utils/mushaf_args.dart';
 
 import '../../../../bookmarks/place_fakes.dart';
 import '../../../../notifications/presentation/alerts_test_harness.dart';
+import '../../../../tafsir/tafsir_fakes.dart';
 import 'mushaf_page_harness.dart';
 
 const _a5 = AyahIdentifier(surah: 2, ayah: 5);
@@ -41,6 +44,19 @@ const _end = AyahIdentifier(surah: 2, ayah: 286);
 class _SplitPageService implements QuranPageService {
   @override
   int getPageForAyah(int surah, int ayah) => surah == 3 ? 51 : 7;
+
+  @override
+  AyahIdentifier? getFirstAyahOfPage(int page) => null;
+}
+
+class _PageMap implements QuranPageService {
+  _PageMap(this.pages);
+
+  final Map<AyahIdentifier, int> pages;
+
+  @override
+  int getPageForAyah(int surah, int ayah) =>
+      pages[AyahIdentifier(surah: surah, ayah: ayah)] ?? 7;
 
   @override
   AyahIdentifier? getFirstAyahOfPage(int page) => null;
@@ -96,6 +112,7 @@ void main() {
     FakeSettings? settings,
     FakeFasilCubit? fawasil,
     FakeSavedAyatCubit? saved,
+    FakeTafsirCubit? tafsir,
     LastRead? stored,
   }) async {
     final mushaf = FakeMushaf(state ?? _state());
@@ -108,6 +125,7 @@ void main() {
       settings: settings,
       fawasil: fawasil,
       saved: saved,
+      tafsir: tafsir,
       stored: stored,
       pushed: pushed,
       textScale: textScale,
@@ -1008,6 +1026,335 @@ void main() {
     expect(find.byType(MushafPage), findsNothing);
   });
 
+  group('tafsir', () {
+    const next = AyahIdentifier(surah: 2, ayah: 7);
+
+    Future<void> openStudy(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('leaf-tafsir')));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> tapStep(WidgetTester tester, String key) async {
+      final finder = find.byKey(ValueKey(key));
+      await tester.ensureVisible(finder);
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('selecting an ayah loads its tafsir', (tester) async {
+      final (mushaf, h) = await pump(tester);
+
+      mushaf.select(_a6);
+      await tester.pumpAndSettle();
+
+      expect(h.tafsir.loads, [_a6]);
+    });
+
+    testWidgets('a jump arrival with focusAyah loads its tafsir', (
+      tester,
+    ) async {
+      final (_, h) = await pump(
+        tester,
+        state: _state(selected: _a6),
+        args: const MushafArgs(page: 7, focusAyah: _a6),
+      );
+
+      expect(h.tafsir.loads, [_a6]);
+    });
+
+    testWidgets('clearing the selection cancels the tafsir request', (
+      tester,
+    ) async {
+      final (mushaf, h) = await pump(tester, state: _state(selected: _a6));
+      expect(h.tafsir.cancels, 0);
+
+      mushaf.clearSelection();
+      await tester.pumpAndSettle();
+
+      expect(h.tafsir.cancels, 1);
+    });
+
+    testWidgets('تفسير الآية opens the full detent and العودة إلى المصحف '
+        'returns with the ayah still selected', (tester) async {
+      final (mushaf, _) = await pump(tester, state: _state(selected: _a6));
+      expect(find.byKey(const ValueKey('study-leaf')), findsNothing);
+
+      await openStudy(tester);
+      expect(find.byKey(const ValueKey('study-leaf')), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('study-back')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('study-leaf')), findsNothing);
+      expect(find.byKey(const ValueKey('leaf-tafsir')), findsOneWidget);
+      expect(mushaf.state.selectedAyah, _a6);
+    });
+
+    testWidgets('returning from the full detent leaves the page where it '
+        'was', (tester) async {
+      const low = AyahIdentifier(surah: 2, ayah: 20);
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(ayahs: [_bound(_a6), _bound(low, y: 0.9)]),
+      );
+      mushaf.select(low);
+      await tester.pumpAndSettle();
+      final before = slideOf(tester);
+      expect(before, lessThan(0));
+
+      await openStudy(tester);
+      await tester.tap(find.byKey(const ValueKey('study-back')));
+      await tester.pumpAndSettle();
+
+      expect(slideOf(tester), before);
+    });
+
+    testWidgets('system back collapses the full detent first, then closes', (
+      tester,
+    ) async {
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: _a6),
+        pushed: true,
+      );
+      await openStudy(tester);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('study-leaf')), findsNothing);
+      expect(mushaf.clearCalls, 0);
+      expect(mushaf.state.selectedAyah, _a6);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(mushaf.clearCalls, 1);
+      expect(find.byType(AyahLeaf), findsNothing);
+    });
+
+    testWidgets('الآية التالية keeps the full detent open and moves the '
+        'selection', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({}));
+      final (mushaf, h) = await pump(tester, state: _state(selected: _a6));
+      await openStudy(tester);
+
+      await tapStep(tester, 'study-next');
+
+      expect(mushaf.steps, [(next, 7)]);
+      expect(mushaf.state.selectedAyah, next);
+      expect(find.byKey(const ValueKey('study-leaf')), findsOneWidget);
+      expect(h.tafsir.loads.last, next);
+    });
+
+    testWidgets('stepping back onto the playing ayah on the same page '
+        'resumes follow', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({}));
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: _a6, playingAyah: _a5),
+      );
+      await openStudy(tester);
+      expect(mushaf.state.followPlayback, isFalse);
+
+      await tapStep(tester, 'study-previous');
+
+      expect(mushaf.state.selectedAyah, _a5);
+      expect(mushaf.state.followPlayback, isTrue);
+    });
+
+    testWidgets('الآية التالية on the last ayah of a page turns the page '
+        'behind', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({next: 8}));
+      final (mushaf, _) = await pump(tester, state: _state(selected: _a6));
+      await openStudy(tester);
+
+      await tapStep(tester, 'study-next');
+
+      expect(mushaf.steps.last, (next, 8));
+      expect(mushaf.state.currentPage, 8);
+      expect(
+        tester.widget<PageView>(find.byType(PageView)).controller!.page,
+        7,
+      );
+      expect(mushaf.state.jumpFrom, isNull);
+      expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
+      expect(find.byKey(const ValueKey('study-leaf')), findsOneWidget);
+    });
+
+    testWidgets('stepping to another ayah scrolls the full detent back to '
+        'the top', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({}));
+      await pump(tester, state: _state(selected: _a6), textScale: 2);
+      tester.view.physicalSize = const Size(360, 800);
+      await tester.pumpAndSettle();
+      await openStudy(tester);
+      double offset() => tester
+          .state<ScrollableState>(
+            find
+                .descendant(
+                  of: find.byKey(const ValueKey('study-leaf')),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          )
+          .position
+          .pixels;
+
+      await tester.ensureVisible(find.byKey(const ValueKey('study-next')));
+      await tester.pumpAndSettle();
+      expect(offset(), greaterThan(0));
+
+      await tester.tap(find.byKey(const ValueKey('study-next')));
+      await tester.pumpAndSettle();
+
+      expect(offset(), 0);
+    });
+
+    testWidgets('a step to another page counts as a manual turn for '
+        'last read', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({next: 8}));
+      final args = MushafArgs(page: 7, origin: MushafOrigin.jump);
+      final (_, h) = await pump(
+        tester,
+        state: _state(selected: _a6),
+        args: args,
+      );
+      await openStudy(tester);
+
+      await tapStep(tester, 'study-next');
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(h.repo.saved?.page, 8);
+    });
+
+    testWidgets("the strip shows the ayah's own page, not the current "
+        'page', (tester) async {
+      const own = AyahIdentifier(surah: 3, ayah: 9);
+      setUpMushafHarness(pageService: _PageMap({own: 51}));
+      await pump(
+        tester,
+        state: _state(page: 50, selected: own),
+        args: const MushafArgs(page: 50),
+      );
+
+      await openStudy(tester);
+
+      expect(tester.widget<AyahStrip>(find.byType(AyahStrip)).page, 51);
+    });
+
+    testWidgets('the selection moving to a surah start closes the full '
+        'detent and frees the compact leaf', (tester) async {
+      const end = AyahIdentifier(surah: 4, ayah: 176);
+      const basmala = AyahIdentifier(surah: 5, ayah: 0);
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: end, playingAyah: end),
+        pushed: true,
+      );
+      await openStudy(tester);
+      expect(find.byKey(const ValueKey('study-leaf')), findsOneWidget);
+
+      mushaf.push(
+        mushaf.state.copyWith(selectedAyah: basmala, playingAyah: basmala),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('study-leaf')), findsNothing);
+      expect(
+        find.ancestor(
+          of: find.byType(AyahLeaf),
+          matching: find.byWidgetPredicate(
+            (w) => w is ExcludeSemantics && w.excluding,
+          ),
+        ),
+        findsNothing,
+      );
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(mushaf.clearCalls, 1);
+    });
+
+    testWidgets('opening the full detent on an ayah other than the playing '
+        'one stops following', (tester) async {
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: _a6, playingAyah: _a5),
+      );
+      expect(mushaf.state.followPlayback, isTrue);
+
+      await openStudy(tester);
+
+      expect(mushaf.state.followPlayback, isFalse);
+    });
+
+    testWidgets('opening the full detent on the playing ayah keeps '
+        'following until a step leaves it', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({}));
+      final (mushaf, _) = await pump(
+        tester,
+        state: _state(selected: _a6, playingAyah: _a6),
+      );
+
+      await openStudy(tester);
+      expect(mushaf.state.followPlayback, isTrue);
+
+      await tapStep(tester, 'study-next');
+
+      expect(mushaf.state.selectedAyah, next);
+      expect(mushaf.state.followPlayback, isFalse);
+    });
+
+    testWidgets("the strip fills in from the page's ayat after a step "
+        'to another page', (tester) async {
+      setUpMushafHarness(pageService: _PageMap({next: 8}));
+      final (mushaf, _) = await pump(tester, state: _state(selected: _a6));
+      await openStudy(tester);
+
+      mushaf.push(
+        mushaf.state.copyWith(
+          currentPage: 8,
+          selectedAyah: next,
+          pageAyahs: const [],
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<AyahStrip>(find.byType(AyahStrip)).lines, isEmpty);
+
+      mushaf.push(mushaf.state.copyWith(pageAyahs: [_bound(next)]));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<AyahStrip>(find.byType(AyahStrip)).lines,
+        isNotEmpty,
+      );
+    });
+
+    testWidgets('with الخيارات the compact leaf has no tafsir line', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        state: _state(selected: _a6),
+        settings: FakeSettings(tapAction: LeafTapAction.options),
+      );
+
+      expect(find.byKey(const ValueKey('tafsir-lead')), findsNothing);
+      expect(find.byKey(const ValueKey('leaf-tafsir')), findsOneWidget);
+    });
+
+    testWidgets('the full detent fits at 2x text', (tester) async {
+      await pump(tester, state: _state(selected: _a6), textScale: 2);
+      tester.view.physicalSize = const Size(360, 800);
+      await tester.pumpAndSettle();
+
+      await openStudy(tester);
+
+      expect(find.byKey(const ValueKey('study-leaf')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('scroll mode', () {
     const high = AyahIdentifier(surah: 2, ayah: 6);
     const low = AyahIdentifier(surah: 2, ayah: 16);
@@ -1030,6 +1377,26 @@ void main() {
         .pixels;
 
     setUp(() => setUpMushafHarness(pageService: QuranPageServiceImpl()));
+
+    testWidgets('the notice chips hide behind the full detent', (tester) async {
+      await pump(
+        tester,
+        state: _state(
+          page: 3,
+          selected: high,
+          ayahs: bounds(),
+        ).copyWith(jumpFrom: 1),
+        args: const MushafArgs(page: 3),
+        settings: FakeSettings(mode: MushafReadingMode.scroll),
+      );
+      expect(find.byKey(const ValueKey('notice-chip')), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('leaf-tafsir')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('study-leaf')), findsOneWidget);
+      expect(find.byKey(const ValueKey('notice-chip')), findsNothing);
+    });
 
     testWidgets('the return chip sits below the scrolling pages', (
       tester,

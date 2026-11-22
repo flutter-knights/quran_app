@@ -51,4 +51,24 @@ void main() {
       );
     }
   });
+
+  test('paper buttons ripple in the paper ink, not the app palette', () {
+    for (final p in MushafPaper.values) {
+      final c = p.colors;
+      final overlay = c.paperButton().overlayColor!;
+      expect(
+        overlay.resolve({WidgetState.pressed}),
+        c.ink.withValues(alpha: 0.10),
+      );
+      expect(
+        overlay.resolve({WidgetState.focused}),
+        c.ink.withValues(alpha: 0.10),
+      );
+      expect(
+        overlay.resolve({WidgetState.hovered}),
+        c.ink.withValues(alpha: 0.08),
+      );
+      expect(overlay.resolve({}), isNull);
+    }
+  });
 }

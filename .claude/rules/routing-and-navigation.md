@@ -28,7 +28,7 @@ GoRouter, built once by `AppRouter.createRouter(initialLocation:)` in `lib/confi
 
 ## Where cubits are provided
 - **App-wide** cubits (`SettingsCubit`, `FasilCubit`, `SavedAyatCubit`, last read, playback, book and surah downloads (`DownloadBookCubit`, `SurahDownloadCubit`), `AlertsSyncCubit`) are provided once in `main.dart`'s `MultiBlocProvider`; read them anywhere with `context.read`.
-- **Route-scoped** cubits (factories) are created in the route's builder with `BlocProvider(create: (_) => sl<…>()..load())` or a `MultiBlocProvider` (`SurahCubit`, `SearchCubit`, `MushafCubit`). They close when the route pops.
+- **Route-scoped** cubits (factories) are created in the route's builder with `BlocProvider(create: (_) => sl<…>()..load())` or a `MultiBlocProvider` (`SurahCubit`, `SearchCubit`, `MushafCubit`, `TafsirCubit`; the mushaf routes provide `MushafCubit` and `TafsirCubit` in one `MultiBlocProvider`). They close when the route pops.
 - A lazy-singleton cubit handed to a screen uses `BlocProvider.value(value: sl<…>())`, never `create`: `create` closes the shared instance when the route pops. Don't re-provide an app-wide cubit in a route or page at all; `main.dart` already provides it above the router.
 
 ## Navigation calls

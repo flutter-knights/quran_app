@@ -513,6 +513,9 @@
   "display_paper": "لون الورق",
   "display_readingMode": "طريقة القراءة",
   "display_keepScreenOn": "إبقاء الشاشة مضيئة",
+  "display_tapAction": "عند الضغط على الآية",
+  "display_tapMeaning": "المعنى",
+  "display_tapOptions": "الخيارات",
   "display_done": "تم",
   "fasil_wird": "الورد",
   "fasil_hifz": "الحفظ",
@@ -580,6 +583,18 @@
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
   },
   "leaf_fasil": "فاصل",
+  "leaf_tafsir": "تفسير الآية",
+  "tafsir_muyassar": "التفسير الميسر",
+  "tafsir_bookCaption": "يُحمَّل من الإنترنت ثم يُحفظ على الجهاز",
+  "tafsir_source": "المصدر: التفسير الميسر، مجمع الملك فهد، عبر alquran.cloud",
+  "tafsir_loadFailed": "تعذّر تحميل التفسير",
+  "tafsir_backToMushaf": "العودة إلى المصحف",
+  "tafsir_behind": "المصحف خلفك على هذه الآية",
+  "tafsir_sectionTafsir": "التفسير",
+  "tafsir_sectionTranslation": "الترجمة",
+  "tafsir_sectionWords": "معاني الكلمات",
+  "tafsir_sectionNote": "ملاحظتي",
+  "tafsir_sectionLater": "لاحقًا",
   "savedAyat_saved": "حُفظت الآية {ayah} من {surah}",
   "@savedAyat_saved": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }

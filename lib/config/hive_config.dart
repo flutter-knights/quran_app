@@ -25,6 +25,7 @@ Future<void> initHive() async {
   Hive.registerAdapter(PlaceRecordModelAdapter());
   await Hive.openBox<PlaceRecordModel>('places');
   await Hive.openBox<bool>('places_meta');
+  await _openCacheBox<String>('tafsirCache');
   Hive.registerAdapter(LastReadHiveModelAdapter());
   await Hive.openBox<LastReadHiveModel>('last_read');
   await Hive.openBox('prayerConfig');

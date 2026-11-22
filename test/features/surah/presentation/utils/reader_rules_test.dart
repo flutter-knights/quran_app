@@ -160,4 +160,33 @@ void main() {
       expect(readerNotice(hintSeen: true), isNull);
     });
   });
+
+  group('adjacentAyah', () {
+    test('next stays in the surah', () {
+      expect(adjacentAyah(id(3, 7), 1), id(3, 8));
+    });
+
+    test('next crosses into the next surah', () {
+      expect(adjacentAyah(id(1, 7), 1), id(2, 1));
+    });
+
+    test('previous crosses back', () {
+      expect(adjacentAyah(id(2, 1), -1), id(1, 7));
+    });
+
+    test('nothing before 1:1 or after 114:6', () {
+      expect(adjacentAyah(id(1, 1), -1), isNull);
+      expect(adjacentAyah(id(114, 6), 1), isNull);
+    });
+
+    test('a banner steps as ayah 1', () {
+      expect(adjacentAyah(id(2, 0), 1), id(2, 2));
+      expect(adjacentAyah(id(2, 0), -1), id(1, 7));
+    });
+
+    test('only a single step is accepted', () {
+      expect(() => adjacentAyah(id(3, 7), 2), throwsAssertionError);
+      expect(() => adjacentAyah(id(3, 7), 0), throwsAssertionError);
+    });
+  });
 }
