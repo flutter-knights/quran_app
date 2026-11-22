@@ -80,6 +80,27 @@ class MushafCubit extends Cubit<MushafState> {
     if (f != null) emit(state.copyWith(selectedAyah: f));
   }
 
+  void stepTo(AyahIdentifier ayah, {required int page}) {
+    if (page == state.currentPage) {
+      select(ayah);
+      return;
+    }
+    emit(
+      state.copyWith(
+        currentPage: page,
+        pageAyahs: const [],
+        selectedAyah: ayah,
+        clearJumpFrom: true,
+        followPlayback: followAfterManualTurn(
+          followPlayback: state.followPlayback,
+          newPage: page,
+          playingPage: playingPage,
+        ),
+      ),
+    );
+    _loadPageAyahs(page);
+  }
+
   void _turnByUser(int page, {int? origin}) {
     emit(
       state.copyWith(

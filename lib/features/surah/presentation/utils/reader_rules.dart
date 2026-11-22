@@ -32,6 +32,19 @@ const mushafPageAspect = 1536 / 2795;
   );
 }
 
+AyahIdentifier? adjacentAyah(AyahIdentifier ayah, int delta) {
+  final next = ayah.realAyah + delta;
+  if (next >= 1 && next <= quran.getVerseCount(ayah.surah)) {
+    return AyahIdentifier(surah: ayah.surah, ayah: next);
+  }
+  final surah = ayah.surah + (delta > 0 ? 1 : -1);
+  if (surah < 1 || surah > 114) return null;
+  return AyahIdentifier(
+    surah: surah,
+    ayah: delta > 0 ? 1 : quran.getVerseCount(surah),
+  );
+}
+
 enum PlaybackScope { none, surahEnd, pageEnd }
 
 PlaybackScope playbackScope(AyahIdentifier? start, AyahIdentifier? end) {
