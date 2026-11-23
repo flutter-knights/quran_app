@@ -5,9 +5,12 @@ import '../../domain/entities/ayah_bound_entity.dart';
 import '../../domain/entities/normalized_rect.dart';
 import 'reader_rules.dart';
 
-const mushafGridTop = 1536 * 1.82 * 0.058;
-const mushafLineHeight = 1536 * 1.82 * (1 - 0.058 - 0.033) / 15;
-const mushafColumnWidth = (0.8975 - 0.1043) * 1536;
+const _renderHeight = mushafPageWidth * mushafRenderAspect;
+const _topMargin = 0.058;
+const _bottomMargin = 0.033;
+const mushafGridTop = _renderHeight * _topMargin;
+const mushafLineHeight = _renderHeight * (1 - _topMargin - _bottomMargin) / 15;
+const mushafColumnWidth = (0.8975 - 0.1043) * mushafPageWidth;
 const mushafOuterPad = 48.0;
 const mushafRosetteBleed = 28.0;
 
