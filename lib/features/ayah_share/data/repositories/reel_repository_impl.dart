@@ -213,6 +213,15 @@ class ReelRepositoryImpl implements ReelRepository {
   }
 
   @override
+  Future<void> discard(String path) async {
+    try {
+      final reels = '${(await _directory()).path}/ayah_share/reels';
+      final slot = File(path).parent;
+      if (slot.parent.path == reels) await _delete(slot);
+    } catch (_) {}
+  }
+
+  @override
   Future<void> cancel() async {
     _cancelledThrough = _count;
     for (final id in [..._running]) {

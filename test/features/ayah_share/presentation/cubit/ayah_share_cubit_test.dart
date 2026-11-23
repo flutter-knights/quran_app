@@ -1086,6 +1086,60 @@ void main() {
       await sharing;
     });
 
+    test('a reel that lands with a cancel is discarded', () async {
+      final c = await twoAyat();
+      compose.completer = Completer();
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+
+      compose.completer!.complete(const Right('/reels/late.mp4'));
+      c.cancelEncode();
+      await sharing;
+
+      expect(c.state.export, ShareExport.idle);
+      expect(c.state.reelPath, isNull);
+      expect(compose.discarded, ['/reels/late.mp4']);
+    });
+
+    test('a reel that lands after close is discarded', () async {
+      final c = await twoAyat();
+      compose.completer = Completer();
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+
+      compose.completer!.complete(const Right('/reels/late.mp4'));
+      await c.close();
+      await sharing;
+
+      expect(compose.discarded, ['/reels/late.mp4']);
+    });
+
+    test('a shared reel is discarded once the share sheet returns', () async {
+      for (final ok in [true, false]) {
+        compose.discarded.clear();
+        final c = await twoAyat();
+        await c.requestShare();
+        final path = c.state.reelPath!;
+
+        expect(compose.discarded, isEmpty);
+        c.shareFinished(ok: ok);
+
+        expect(compose.discarded, [path]);
+        expect(c.state.reelPath, isNull);
+      }
+    });
+
+    test('a share that returns after close still discards the reel', () async {
+      final c = await twoAyat();
+      await c.requestShare();
+      final path = c.state.reelPath!;
+
+      await c.close();
+      c.shareFinished(ok: true);
+
+      expect(compose.discarded, [path]);
+    });
+
     test('close cancels a running encode and releases the wake', () async {
       final c = await twoAyat();
       compose.completer = Completer();

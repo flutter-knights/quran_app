@@ -194,6 +194,7 @@ class FakeComposeAyahReel implements ComposeAyahReel {
   Completer<Either<Failure, String>>? completer;
   final progressCtrl = StreamController<double>.broadcast();
   var cancels = 0;
+  final discarded = <String>[];
 
   @override
   Future<Either<Failure, String>> call(ReelRequest request) {
@@ -213,6 +214,9 @@ class FakeComposeAyahReel implements ComposeAyahReel {
       pending.complete(const Left(ReelCancelledFailure()));
     }
   }
+
+  @override
+  Future<void> discard(String path) async => discarded.add(path);
 }
 
 typedef FakeAyahShare = ({

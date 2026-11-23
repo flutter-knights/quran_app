@@ -345,7 +345,12 @@ class AyahShareCubit extends Cubit<AyahShareState> {
         clips.add(ReelClip(frame: frame, audio: segment.audio));
       }
       final result = await _composeReel(ReelRequest(first: ayah, clips: clips));
-      if (stale()) return;
+      if (stale()) {
+        if (result.toOption().toNullable() case final path?) {
+          _composeReel.discard(path);
+        }
+        return;
+      }
       result.fold(
         (failure) => _settle(
           state.copyWith(
@@ -377,8 +382,15 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   }
 
   void shareFinished({required bool ok}) {
-    if (isClosed || state.export != ShareExport.sharing) return;
-    emit(state.copyWith(export: ok ? ShareExport.done : ShareExport.failed));
+    if (state.export != ShareExport.sharing) return;
+    if (state.reelPath case final path?) _composeReel.discard(path);
+    if (isClosed) return;
+    emit(
+      state.copyWith(
+        export: ok ? ShareExport.done : ShareExport.failed,
+        clearReelPath: true,
+      ),
+    );
     if (_composeDeferred) {
       _composeDeferred = false;
       _compose();

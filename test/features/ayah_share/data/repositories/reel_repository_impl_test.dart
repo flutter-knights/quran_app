@@ -457,6 +457,34 @@ void main() {
       expect(names, ['ayah_6_32-33.mp4']);
     });
 
+    test('discard deletes a finished reel and its slot', () async {
+      final path = (await repo.compose(request())).getOrElse(() => '');
+
+      await repo.discard(path);
+
+      expect(File(path).existsSync(), isFalse);
+      expect(root('reels/1').existsSync(), isFalse);
+    });
+
+    test('a late discard leaves the newer reel alone', () async {
+      final first = (await repo.compose(request())).getOrElse(() => '');
+      final second = (await repo.compose(request(32))).getOrElse(() => '');
+
+      await repo.discard(first);
+
+      expect(File(second).existsSync(), isTrue);
+    });
+
+    test('discard ignores a path outside the reels folder', () async {
+      final other = File('${temp.path}/keep/ayah_6_31.mp4')
+        ..createSync(recursive: true);
+
+      await repo.discard(other.path);
+      await repo.discard('${root('reels').path}/ayah_6_31.mp4');
+
+      expect(other.existsSync(), isTrue);
+    });
+
     test('audioDuration prefers the audio track', () async {
       editor.duration = const Duration(seconds: 7);
       editor.audioDuration = const Duration(seconds: 5);

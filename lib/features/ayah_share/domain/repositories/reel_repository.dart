@@ -8,4 +8,5 @@ abstract class ReelRepository {
   Future<Either<Failure, String>> compose(ReelRequest request);
   Stream<double> get progress;
   Future<void> cancel();
+  Future<void> discard(String path);
 }

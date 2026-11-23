@@ -15,4 +15,6 @@ class ComposeAyahReel {
   Stream<double> get progress => _reels.progress;
 
   Future<void> cancel() => _reels.cancel();
+
+  Future<void> discard(String path) => _reels.discard(path);
 }
