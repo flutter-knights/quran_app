@@ -23,13 +23,7 @@ List<NormalizedRect> pageRectsOf(int page) => [
   for (final entry in boundsOf(page)) ...entry.lines,
 ];
 
-List<NormalizedRect> linesOf(int surah, int ayah) {
-  final start = quran.getPageNumber(surah, ayah);
-  return [
-    for (final page in [start, start + 1])
-      if (page <= 604)
-        for (final entry in boundsOf(page))
-          if (entry.ayah.surah == surah && entry.ayah.ayah == ayah)
-            ...entry.lines,
-  ];
-}
+List<NormalizedRect> linesOf(int surah, int ayah) => [
+  for (final entry in boundsOf(quran.getPageNumber(surah, ayah)))
+    if (entry.ayah.surah == surah && entry.ayah.ayah == ayah) ...entry.lines,
+];

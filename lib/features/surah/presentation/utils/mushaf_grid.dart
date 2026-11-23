@@ -40,17 +40,14 @@ MushafLine headerSlot({
   required int startPage,
   required List<AyahBoundEntity> startPageBounds,
 }) {
-  AyahBoundEntity? anchor;
-  for (final ayah in [0, 1]) {
-    for (final entry in startPageBounds) {
-      if (entry.ayah.surah == surah && entry.ayah.ayah == ayah) {
-        anchor = entry;
-        break;
-      }
-    }
-    if (anchor != null) break;
-  }
-  final line = gridLineOf(anchor!.lines.first) - 1;
+  final anchor =
+      startPageBounds
+          .where((e) => e.ayah.surah == surah && e.ayah.ayah == 0)
+          .firstOrNull ??
+      startPageBounds.firstWhere(
+        (e) => e.ayah.surah == surah && e.ayah.ayah == 1,
+      );
+  final line = gridLineOf(anchor.lines.first) - 1;
   return line < 0
       ? (page: startPage - 1, line: 14)
       : (page: startPage, line: line);

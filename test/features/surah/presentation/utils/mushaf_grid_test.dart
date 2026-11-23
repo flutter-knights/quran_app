@@ -7,7 +7,24 @@ import 'package:quran_app/features/surah/presentation/utils/mushaf_grid.dart';
 import '../../mushaf_bounds_fixture.dart';
 
 const _pageTopSurahs = [
-  4, 10, 22, 23, 24, 26, 27, 32, 33, 37, 38, 45, 47, 53, 60, 64, 65, 80, //
+  4,
+  10,
+  22,
+  23,
+  24,
+  26,
+  27,
+  32,
+  33,
+  37,
+  38,
+  45,
+  47,
+  53,
+  60,
+  64,
+  65,
+  80,
 ];
 
 MushafLine _slot(int surah) {
@@ -45,6 +62,13 @@ void main() {
     expect(_slot(9), (page: 187, line: 0));
   });
 
+  test('a start page without the surah fails with a StateError', () {
+    expect(
+      () => headerSlot(surah: 2, startPage: 1, startPageBounds: boundsOf(1)),
+      throwsStateError,
+    );
+  });
+
   test('each header on page 602 belongs to its own surah', () {
     expect(_slot(106), (page: 602, line: 0));
     expect(_slot(107), (page: 602, line: 5));
@@ -56,7 +80,11 @@ void main() {
       final slot = _slot(surah);
       final start = quran.getPageNumber(surah, 1);
       expect(slot.line, inInclusiveRange(0, 14), reason: 'surah $surah');
-      expect(slot.page, _pageTopSurahs.contains(surah) ? start - 1 : start);
+      expect(
+        slot.page,
+        _pageTopSurahs.contains(surah) ? start - 1 : start,
+        reason: 'surah $surah',
+      );
     }
   });
 
