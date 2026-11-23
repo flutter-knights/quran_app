@@ -53,10 +53,11 @@ void main() {
       shared.add(call.arguments as Map<Object?, Object?>);
       return 'dev.fluttercommunity.plus/share/success';
     });
-    final temp = Directory.systemTemp.createTempSync().path;
+    final temp = Directory.systemTemp.createTempSync();
+    addTearDown(() => temp.deleteSync(recursive: true));
     messenger.setMockMethodCallHandler(
       _pathChannel,
-      (call) async => call.method == 'getTemporaryDirectory' ? temp : null,
+      (call) async => call.method == 'getTemporaryDirectory' ? temp.path : null,
     );
   });
 
@@ -520,8 +521,9 @@ void main() {
         tester.widget<IconButton>(find.byKey(ValueKey(key))).onPressed;
 
     String reelFile(String name) {
-      final file = File('${Directory.systemTemp.createTempSync().path}/$name');
-      file.createSync();
+      final dir = Directory.systemTemp.createTempSync();
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final file = File('${dir.path}/$name')..createSync();
       return file.path;
     }
 
