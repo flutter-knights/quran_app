@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/features/ayah_share/presentation/utils/share_card_layout.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_grid.dart';
 
 import '../../../surah/mushaf_bounds_fixture.dart';
@@ -119,7 +122,28 @@ void main() {
       expect(slice.dst.left + slice.dst.right, closeTo(1080, 1e-6));
     }
     expect(layout.headerScale, closeTo(0.6783, 1e-3));
+    expect(layout.headerScale, lessThanOrEqualTo(layout.scale));
     expect(layoutFor(4, 1).slices.first.page, 76);
+  });
+
+  test('a narrow header box is capped at the text scale', () {
+    final wide = layoutFor(6, 31);
+    final slot = headerSlot(
+      surah: 6,
+      startPage: 128,
+      startPageBounds: boundsOf(128),
+    );
+    final layout = shareCardLayout(
+      ayah: const AyahIdentifier(surah: 6, ayah: 31),
+      page: 131,
+      pageBounds: boundsOf(131),
+      startPage: 128,
+      startPageBounds: boundsOf(128),
+      header: (page: slot.page, box: const Rect.fromLTWH(0, 0, 600, 120)),
+    );
+    expect(layout.scale, wide.scale);
+    expect(layout.headerScale, layout.scale);
+    expect(layout.slices.first.dst.width, closeTo(600 * layout.scale, 1e-6));
   });
 
   test('shareCardFrame centres short content', () {
@@ -130,14 +154,24 @@ void main() {
   test('every ayah lays out', () {
     var maxRows = 0;
     for (var surah = 1; surah <= 114; surah++) {
+      final startPage = quran.getPageNumber(surah, 1);
+      final slot = headerSlot(
+        surah: surah,
+        startPage: startPage,
+        startPageBounds: boundsOf(startPage),
+      );
       for (var ayah = 1; ayah <= quran.getVerseCount(surah); ayah++) {
         final layout = layoutFor(surah, ayah);
-        expect(shareCardFrame(layout.textBottom).height, isNonNegative);
+        expect(layout.textBottom.isFinite, isTrue);
         expect(layout.scale.isFinite, isTrue);
+        expect(layout.headerScale.isFinite, isTrue);
+        expect(shareCardFrame(layout.textBottom).height, isPositive);
         if (layout.rows.length > maxRows) maxRows = layout.rows.length;
         final header = layout.slices.take(2).toList();
         expect(header.first.layer, ShareCardLayer.ink);
         expect(header.last.layer, ShareCardLayer.accent);
+        expect(header.first.dst.width, greaterThan(0));
+        expect(header.first.page, slot.page);
       }
     }
     expect(maxRows, 15);

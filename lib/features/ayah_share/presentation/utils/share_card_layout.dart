@@ -7,6 +7,7 @@ import '../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../surah/domain/entities/ayah_bound_entity.dart';
 import '../../../surah/domain/entities/normalized_rect.dart';
 import '../../../surah/presentation/utils/mushaf_grid.dart';
+import '../../../surah/presentation/utils/reader_rules.dart';
 
 const shareCardWidth = 1080.0;
 const shareCardMargin = 72.0;
@@ -23,7 +24,6 @@ const _basmalaGap = 0.45;
 const _minHeight = 0.62 * shareCardWidth;
 const _tailMax = 100.0;
 const _refit = 1.02;
-const _pageWidth = 1536.0;
 
 enum ShareCardLayer { ink, accent, basmala }
 
@@ -143,8 +143,8 @@ ShareCardLayout shareCardLayout({
         .lines
         .first;
     final src = rowSource(rect, (
-      left: rect.x * _pageWidth,
-      right: (rect.x + rect.w) * _pageWidth,
+      left: rect.x * mushafPageSize.width,
+      right: (rect.x + rect.w) * mushafPageSize.width,
       leftOpen: false,
       rightOpen: false,
     ));
