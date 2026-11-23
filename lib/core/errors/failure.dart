@@ -77,3 +77,7 @@ class PlatformNotSupportedFailure extends Failure {
 class UnknownNotificationFailure extends Failure {
   const UnknownNotificationFailure(super.message);
 }
+
+class ReelCancelledFailure extends Failure {
+  const ReelCancelledFailure() : super('cancelled');
+}

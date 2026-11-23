@@ -4,6 +4,7 @@ import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/ayah_share/ayah_share_di.dart';
+import 'package:quran_app/features/ayah_share/domain/usecases/compose_ayah_reel.dart';
 import 'package:quran_app/features/ayah_share/presentation/cubit/ayah_share_cubit.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
@@ -24,14 +25,18 @@ class _StubTafsirRepo implements TafsirRepository {
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
 
+void _registerDependencies() {
+  sl.registerLazySingleton(() => GetMushafPage(_StubMushafRepo()));
+  sl.registerLazySingleton<QuranPageService>(QuranPageServiceImpl.new);
+  sl.registerLazySingleton(() => GetAyahTafsir(_StubTafsirRepo()));
+  initAyahShare();
+}
+
 void main() {
   tearDown(sl.reset);
 
   test('initAyahShare builds a cubit on the paper it is given', () {
-    sl.registerLazySingleton(() => GetMushafPage(_StubMushafRepo()));
-    sl.registerLazySingleton<QuranPageService>(QuranPageServiceImpl.new);
-    sl.registerLazySingleton(() => GetAyahTafsir(_StubTafsirRepo()));
-    initAyahShare();
+    _registerDependencies();
 
     final cubit = sl<AyahShareCubit>(
       param1: const AyahIdentifier(surah: 6, ayah: 31),
@@ -41,5 +46,11 @@ void main() {
 
     expect(cubit.ayah, const AyahIdentifier(surah: 6, ayah: 31));
     expect(cubit.state.paper, MushafPaper.night);
+  });
+
+  test('the reel use case resolves without touching the plugin', () {
+    _registerDependencies();
+
+    expect(() => sl<ComposeAyahReel>(), returnsNormally);
   });
 }
