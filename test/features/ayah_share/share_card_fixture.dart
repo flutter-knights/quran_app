@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:quran/quran.dart' as quran;
+import 'package:quran_app/features/ayah_share/domain/entities/share_card_content.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/share_card_layout.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_grid.dart';
@@ -28,5 +29,17 @@ ShareCardLayout layoutFor(int surah, int ayah) {
     startPage: startPage,
     startPageBounds: startBounds,
     header: (page: slot.page, box: headerBoxFixture(slot.line)),
+  );
+}
+
+ShareCardContent contentFor(int surah, int ayah) {
+  final startPage = quran.getPageNumber(surah, 1);
+  final page = quran.getPageNumber(surah, ayah);
+  return ShareCardContent(
+    ayah: AyahIdentifier(surah: surah, ayah: ayah),
+    page: page,
+    pageBounds: boundsOf(page),
+    startPage: startPage,
+    startPageBounds: boundsOf(startPage),
   );
 }
