@@ -53,7 +53,9 @@ void main() {
     expect(last.coreLeft, closeTo(72, 0.5));
     expect(last.coreRight, closeTo(1008, 0.5));
     final lastRowInk = _body(layout)
-        .where((s) => s.layer == ShareCardLayer.ink && s.dst.top >= last.top)
+        .where(
+          (s) => s.layer == ShareCardLayer.ink && s.dst.center.dy > last.top,
+        )
         .toList();
     final leftmost = lastRowInk.reduce(
       (a, b) => a.dst.left <= b.dst.left ? a : b,
@@ -92,6 +94,33 @@ void main() {
     expect(basmala.dst.left + basmala.dst.right, closeTo(1080, 1e-6));
     expect(basmala.dst.width, closeTo(0.37 * (1080 - 2 * 72), 1e-6));
     expect(basmala.page, 128);
+  });
+
+  test('ink rows cut their whole line window and keep the row pitch', () {
+    final layout = layoutFor(6, 31);
+    final rects = linesOf(6, 31);
+    final ink = _body(
+      layout,
+    ).where((s) => s.layer == ShareCardLayer.ink).toList();
+    expect(ink, hasLength(3));
+    for (final (i, slice) in ink.indexed) {
+      final edges = rowEdges(rects[i], pageRectsOf(131));
+      final cell = rowSource(rects[i], edges);
+      expect(slice.line, gridLineOf(rects[i]));
+      expect(slice.src, lineInkSource(rects[i], edges));
+      expect(
+        slice.dst.top,
+        closeTo(
+          layout.rows[i].top + (slice.src.top - cell.top) * layout.scale,
+          1e-6,
+        ),
+      );
+      expect(slice.dst.height, closeTo(slice.src.height * layout.scale, 1e-6));
+    }
+    final others = layout.slices.where(
+      (s) => s.layer != ShareCardLayer.ink || layout.slices.indexOf(s) < 2,
+    );
+    expect(others.map((s) => s.line).toSet(), {null});
   });
 
   test("only the ayah's last line has an accent slice", () {

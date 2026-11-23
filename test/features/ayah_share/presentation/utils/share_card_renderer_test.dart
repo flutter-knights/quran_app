@@ -11,10 +11,12 @@ import 'package:quran_app/features/surah/presentation/utils/mushaf_grid.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/surah/presentation/utils/reader_rules.dart';
 
+import '../../../surah/mushaf_bounds_fixture.dart';
 import '../../share_card_fixture.dart';
 
 class _Pages {
   final paints = <String, ({Rect rect, int alpha})>{};
+  final blocks = <String, List<Rect>>{};
   final asked = <String>[];
   final images = <ui.Image>[];
 
@@ -28,6 +30,9 @@ class _Pages {
         paint.rect,
         Paint()..color = Color.fromARGB(paint.alpha, 255, 255, 255),
       );
+    }
+    for (final block in blocks[asset] ?? const <Rect>[]) {
+      canvas.drawRect(block, Paint()..color = const Color(0xFF000000));
     }
     final picture = recorder.endRecording();
     final image = await picture.toImage(1536, 2795);
@@ -163,6 +168,69 @@ void main() {
       );
       expect(pages.images, isNotEmpty);
       expect(pages.images.every((i) => i.debugDisposed), isTrue);
+    });
+  });
+
+  Future<int Function(int x, int y)> alphaOf(
+    ({ShareCardSlice slice, ui.Image image}) piece,
+  ) async {
+    final data = (await piece.image.toByteData())!;
+    final src = piece.slice.src;
+    return (x, y) => data.getUint8(
+      (((y - src.top).round()) * piece.image.width + (x - src.left).round()) *
+              4 +
+          3,
+    );
+  }
+
+  testWidgets('prepare keeps only the row line ink in each ink row', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final rect = linesOf(6, 31).first;
+      final line = gridLineOf(rect);
+      final band = gridBand(line);
+      final pages = _Pages()
+        ..blocks[AssetsDir.mushafPage(131)] = [
+          Rect.fromLTRB(400, band.top - 50.0, 420, band.top - 30.0),
+          Rect.fromLTRB(500, band.top - 15.0, 520, band.top + 40.0),
+        ];
+      final crops = await ShareCardRenderer(
+        loadImage: pages.load,
+      ).prepare(contentFor(6, 31));
+      final row = crops.pieces.firstWhere(
+        (p) => p.slice.page == 131 && p.slice.line == line,
+      );
+      final alpha = await alphaOf(row);
+      expect(alpha(410, band.top - 40), 0);
+      expect(alpha(510, band.top - 10), 255);
+      expect(alpha(510, band.top + 30), 255);
+      crops.dispose();
+    });
+  });
+
+  testWidgets('3:123 keeps the pause mark above its first row', (tester) async {
+    await tester.runAsync(() async {
+      final crops = await ShareCardRenderer().prepare(contentFor(3, 123));
+      final rect = linesOf(3, 123).first;
+      final cell = rowSource(rect, rowEdges(rect, pageRectsOf(66)));
+      final band = gridBand(gridLineOf(rect));
+      final row = crops.pieces.firstWhere(
+        (p) => p.slice.page == 66 && p.slice.layer == ShareCardLayer.ink,
+      );
+      final alpha = await alphaOf(row);
+      var above = 0;
+      var foreign = 0;
+      for (var x = cell.left.round(); x < cell.right; x++) {
+        for (var y = band.top - mushafInkMargin; y < cell.top; y++) {
+          if (alpha(x, y) == 0) continue;
+          if (y < band.top - 25) foreign++;
+          above++;
+        }
+      }
+      expect(above, greaterThan(100));
+      expect(foreign, 0);
+      crops.dispose();
     });
   });
 

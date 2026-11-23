@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -101,6 +102,28 @@ String _assetOf(ShareCardSlice slice) => slice.layer == ShareCardLayer.accent
     : AssetsDir.mushafPage(slice.page);
 
 Future<ByteData> _rgba(ui.Image image) async => (await image.toByteData())!;
+
+typedef _Cut = ({Rect src, int? line});
+
+Future<ui.Image> _keepLine(ui.Image cut, _Cut wanted) async {
+  final line = wanted.line;
+  if (line == null) return cut;
+  try {
+    final rgba = await _rgba(cut);
+    keepLineInk(rgba, cut.width, line: line, top: wanted.src.top.round());
+    final masked = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      rgba.buffer.asUint8List(),
+      cut.width,
+      cut.height,
+      ui.PixelFormat.rgba8888,
+      masked.complete,
+    );
+    return await masked.future;
+  } finally {
+    cut.dispose();
+  }
+}
 
 const shareCardTextWidth = (shareCardWidth - 2 * shareCardMargin) / 3;
 
@@ -225,12 +248,15 @@ class ShareCardRenderer {
 
     final inkAsset = AssetsDir.mushafPage(slot.page);
     final accentAsset = AssetsDir.mushafPageAccent(slot.page);
-    final wanted = {
-      inkAsset: [band],
-      accentAsset: [band],
+    final wanted = <String, List<_Cut>>{
+      inkAsset: [(src: band, line: null)],
+      accentAsset: [(src: band, line: null)],
     };
     for (final slice in layoutWith(band).slices.skip(2)) {
-      wanted.putIfAbsent(_assetOf(slice), () => []).add(slice.src);
+      wanted.putIfAbsent(_assetOf(slice), () => []).add((
+        src: slice.src,
+        line: slice.line,
+      ));
     }
 
     final owned = <ui.Image>[];
@@ -298,12 +324,12 @@ class ShareCardRenderer {
     }
   }
 
-  Future<List<ui.Image>> _cutPage(String asset, List<Rect> rects) async {
+  Future<List<ui.Image>> _cutPage(String asset, List<_Cut> wanted) async {
     final page = await _loadImage(asset);
     final cuts = <ui.Image>[];
     try {
-      for (final rect in rects) {
-        cuts.add(await _cut(page, rect));
+      for (final cut in wanted) {
+        cuts.add(await _keepLine(await _cut(page, cut.src), cut));
       }
       return cuts;
     } catch (_) {

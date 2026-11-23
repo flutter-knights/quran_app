@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui';
 
 import '../../domain/entities/ayah_bound_entity.dart';
@@ -13,6 +14,9 @@ const mushafLineHeight = _renderHeight * (1 - _topMargin - _bottomMargin) / 15;
 const mushafColumnWidth = (0.8975 - 0.1043) * mushafPageWidth;
 const mushafOuterPad = 48.0;
 const mushafRosetteBleed = 28.0;
+const mushafInkMargin = 60;
+const _riseLimit = 25;
+const _dropLimit = 10;
 
 typedef MushafLine = ({int page, int line});
 typedef RowEdges = ({double left, double right, bool leftOpen, bool rightOpen});
@@ -109,4 +113,127 @@ Rect accentSource(NormalizedRect rect, RowEdges edges) {
     edges.rightOpen ? src.right : src.right - mushafRosetteBleed,
     math.min(src.bottom, band.bottom.toDouble()),
   );
+}
+
+Rect lineInkSource(NormalizedRect rect, RowEdges edges) {
+  final src = rowSource(rect, edges);
+  final band = gridBand(gridLineOf(rect));
+  return Rect.fromLTRB(
+    src.left,
+    (band.top - mushafInkMargin).toDouble(),
+    src.right,
+    (band.bottom + mushafInkMargin).toDouble(),
+  );
+}
+
+void keepLineInk(
+  ByteData rgba,
+  int width, {
+  required int line,
+  required int top,
+}) {
+  final pixels = rgba.buffer.asUint32List(
+    rgba.offsetInBytes,
+    rgba.lengthInBytes ~/ 4,
+  );
+  final height = pixels.length ~/ width;
+  final band = gridBand(line);
+  final labels = Int32List(pixels.length);
+  final stack = Int32List(pixels.length);
+  final tops = <int>[];
+  final bottoms = <int>[];
+
+  for (var start = 0; start < pixels.length; start++) {
+    if (labels[start] != 0 || !_inked(pixels[start])) continue;
+    final id = tops.length + 1;
+    var maxY = 0;
+    var size = 0;
+    labels[start] = id;
+    stack[size++] = start;
+    while (size > 0) {
+      final i = stack[--size];
+      final y = i ~/ width;
+      final x = i - y * width;
+      if (y > maxY) maxY = y;
+      final left = x > 0 ? -1 : 0;
+      final right = x < width - 1 ? 1 : 0;
+      for (var ny = y > 0 ? y - 1 : y; ny <= y + 1 && ny < height; ny++) {
+        final row = ny * width + x;
+        for (var j = row + left; j <= row + right; j++) {
+          if (labels[j] == 0 && _inked(pixels[j])) {
+            labels[j] = id;
+            stack[size++] = j;
+          }
+        }
+      }
+    }
+    tops.add(start ~/ width + top);
+    bottoms.add(maxY + 1 + top);
+  }
+
+  List<bool> belowEdge(int edge) {
+    final below = <bool?>[
+      for (var c = 0; c < tops.length; c++)
+        tops[c] < edge - _riseLimit
+            ? false
+            : bottoms[c] > edge + _dropLimit
+            ? true
+            : null,
+    ];
+    return [
+      for (var c = 0; c < below.length; c++)
+        below[c] ?? _nearestSide(labels, width, c + 1, below),
+    ];
+  }
+
+  final underTop = belowEdge(band.top);
+  final underBottom = belowEdge(band.bottom);
+  for (var i = 0; i < pixels.length; i++) {
+    final c = labels[i] - 1;
+    if (c >= 0 && !(underTop[c] && !underBottom[c])) pixels[i] = 0;
+  }
+}
+
+bool _inked(int pixel) => pixel & 0xFF000000 != 0;
+
+void _forNeighbours(int i, int width, int height, void Function(int) visit) {
+  final y = i ~/ width;
+  final x = i - y * width;
+  final x0 = math.max(0, x - 1);
+  final x1 = math.min(width - 1, x + 1);
+  for (var ny = math.max(0, y - 1); ny <= math.min(height - 1, y + 1); ny++) {
+    for (var nx = x0; nx <= x1; nx++) {
+      visit(ny * width + nx);
+    }
+  }
+}
+
+bool _nearestSide(Int32List labels, int width, int id, List<bool?> below) {
+  final height = labels.length ~/ width;
+  final seen = Uint8List(labels.length);
+  var ring = <int>[];
+  for (var i = 0; i < labels.length; i++) {
+    if (labels[i] == id) {
+      seen[i] = 1;
+      ring.add(i);
+    }
+  }
+  while (ring.isNotEmpty) {
+    var under = 0;
+    var over = 0;
+    final next = <int>[];
+    for (final i in ring) {
+      _forNeighbours(i, width, height, (j) {
+        if (seen[j] == 1) return;
+        seen[j] = 1;
+        next.add(j);
+        final side = labels[j] == 0 ? null : below[labels[j] - 1];
+        if (side == true) under++;
+        if (side == false) over++;
+      });
+    }
+    if (under + over > 0) return under >= over;
+    ring = next;
+  }
+  return true;
 }

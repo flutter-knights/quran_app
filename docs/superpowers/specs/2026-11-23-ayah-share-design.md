@@ -87,9 +87,9 @@ Two pieces:
 Rules, in words (calibrated numbers in Appendix A):
 
 1. **Edges**: on each of the ayah's lines, if a neighbour rect on the same line overlaps, trust the narrower rect and clip the wider one at its edge. Outer edges (no neighbour on that side) get a small pad.
-2. **Source rows**: x from those edges; vertically one line height starting at the rect's own top (grid line 0: ending at the rect's bottom). This is the prototype's rule, rendered clean on all 6,236 ayat; switching ink to the grid band is untested, so it stays.
+2. **Source rows**: x from those edges. The row cell (placement, pitch, accent) is one line height starting at the rect's own top (grid line 0: ending at the rect's bottom). The ink is cut from the line's whole grid band plus a margin above and below, then masked to the line's own ink: marks rise above the rect top (3:123's «صلى» straddles it) and the next line's marks rise into the cell (under 2:136's last row), so a plain rectangle either clips a mark or draws a foreign tip. Ownership is per connected ink component: one that starts well above the band edge belongs to the line above, one that reaches well below it to the line below, and a small mark floating between takes the side of its nearest decided neighbour. Checked against per-line renders of all 604 pages: no own pixel dropped, no foreign pixel kept.
 3. **Rosette-only tail**: a last line whose core width (the clipped rect width before the outer pad) is under the tail threshold moves onto the left end of the previous row. If the widest row then exceeds the column width (`COL`) by more than the tolerance, the whole card's text scale shrinks to fit that row.
-4. **Accent** (rosettes) is drawn only on the ayah's last row, with its source clamped to that line's grid band (so rosettes of neighbouring lines never leak). An interior left edge (a neighbour follows) extends the accent crop to keep the ayah's own rosette bleed; an interior right edge clears the foreign sliver. Body ink is never extended.
+4. **Accent** (rosettes) is drawn only on the ayah's last row, with its source clamped to that line's grid band (so rosettes of neighbouring lines never leak). An interior left edge (a neighbour follows) extends the accent crop to keep the ayah's own rosette bleed; an interior right edge clears the foreign sliver. Body ink is never extended sideways.
 5. **Stacking**: rows stack at one row pitch with no extra gap, right-aligned to the right margin (a partial first or last fragment stays right-aligned, reading as a continuing RTL paragraph). A single-row ayah is centred. On pages 1–2 (centred layout) every row is centred.
 6. **Header**: the header slot's band, padded, tightened at runtime to the alpha bounding box of max(ink, accent) (the renderer measures it), scaled no larger than the text scale and centred. **Basmala** (skipped for surahs 1 and 9): the basmala unit's rect, ink only, slightly smaller, centred, at an opacity normalised from the crop's peak alpha.
 7. **Height**: top and bottom padding, a minimum height, content centred vertically when shorter. With header and basmala: 1 row → 628, clamped to the 670 minimum; 3 rows 888; 15 rows 2450.
@@ -264,7 +264,7 @@ All in page px unless marked card px. `W = 1080`, margin `M = 72` (card px).
 |---|---|
 | Text scale | `s = (W − 2M)/COL ≈ 0.768`; row pitch `p = LH·s ≈ 130.1` card px |
 | Outer edge pad (rule 1) | 48 |
-| Source rows (rule 2) | `[y, y+LH]`; grid line 0: `[y+h−LH, y+h]` |
+| Source rows (rule 2) | cell `[y, y+LH]`, grid line 0 `[y+h−LH, y+h]`; ink `[band.top−60, band.bottom+60]` masked by `keepLineInk` (alpha > 0, 8-connected components; starts > 25 above a band edge → line above, ends > 10 below it → line below, otherwise the nearest decided component) |
 | Rosette tail (rule 3) | core width < 100; refit when the widest row > 1.02·`COL`, then `s = (W−2M)/widest` |
 | Accent interior edges (rule 4) | extend 28 left; clear the rightmost 28 |
 | Header band (rule 6) | `[floor(TOP+idx·LH)−3, floor(TOP+(idx+1)·LH)+3]`, bbox at alpha > 8; scale `hs = min(s, (W−112)/bboxWidth)`; top padding 72; gap after `0.55·p` |
