@@ -52,6 +52,20 @@ _Pages _headerPages() =>
     _Pages()
       ..paints[AssetsDir.mushafPage(128)] = (rect: _headerRect(6), alpha: 255);
 
+_Pages _fixturePages() {
+  final content = contentFor(6, 1);
+  final slot = headerSlot(
+    surah: 6,
+    startPage: content.startPage,
+    startPageBounds: content.startPageBounds,
+  );
+  return _Pages()
+    ..paints[AssetsDir.mushafPage(128)] = (
+      rect: headerBoxFixture(slot.line),
+      alpha: 255,
+    );
+}
+
 Future<ui.Image> _decode(Uint8List bytes) async {
   final codec = await ui.instantiateImageCodec(bytes);
   final frame = await codec.getNextFrame();
@@ -99,9 +113,67 @@ void main() {
         expect(pages.images, isNotEmpty);
         expect(pages.images.every((i) => i.debugDisposed), isTrue);
         crops.dispose();
+
+        final previous = _Pages();
+        final header = await ShareCardRenderer(
+          loadImage: previous.load,
+        ).prepare(contentFor(4, 1));
+        expect(previous.asked.toSet(), {
+          AssetsDir.mushafPage(76),
+          AssetsDir.mushafPageAccent(76),
+          AssetsDir.mushafPage(77),
+          AssetsDir.mushafPageAccent(77),
+        });
+        header.dispose();
       });
     },
   );
+
+  testWidgets('prepare decodes each page once', (tester) async {
+    await tester.runAsync(() async {
+      final split = _Pages();
+      final crops = await ShareCardRenderer(
+        loadImage: split.load,
+      ).prepare(contentFor(6, 31));
+      expect(split.asked, hasLength(4));
+      expect(split.asked.toSet(), hasLength(4));
+      crops.dispose();
+
+      final single = _Pages();
+      final one = await ShareCardRenderer(
+        loadImage: single.load,
+      ).prepare(contentFor(6, 1));
+      expect(single.asked, hasLength(2));
+      one.dispose();
+    });
+  });
+
+  testWidgets('prepare disposes every page when a load fails', (tester) async {
+    await tester.runAsync(() async {
+      final pages = _Pages();
+      final failing = AssetsDir.mushafPageAccent(131);
+      final renderer = ShareCardRenderer(
+        loadImage: (asset) => asset == failing
+            ? Future.error(StateError('boom'))
+            : pages.load(asset),
+      );
+      await expectLater(
+        renderer.prepare(contentFor(6, 31)),
+        throwsA(isA<StateError>()),
+      );
+      expect(pages.images, isNotEmpty);
+      expect(pages.images.every((i) => i.debugDisposed), isTrue);
+    });
+  });
+
+  testWidgets('loadAssetImage decodes a bundled page', (tester) async {
+    await tester.runAsync(() async {
+      final image = await loadAssetImage(AssetsDir.mushafPage(1));
+      expect(image.width, 1536);
+      expect(image.height, 2795);
+      image.dispose();
+    });
+  });
 
   testWidgets('prepare trims the header to its inked box', (tester) async {
     await tester.runAsync(() async {
@@ -147,12 +219,13 @@ void main() {
     tester,
   ) async {
     await tester.runAsync(() async {
-      final renderer = ShareCardRenderer(loadImage: _Pages().load);
+      final renderer = ShareCardRenderer(loadImage: _fixturePages().load);
       final crops = await renderer.prepare(contentFor(6, 31));
       final image = await _decode(
         await renderer.compose(crops, colors: MushafPaper.cream.colors),
       );
       expect(image.width, 1080);
+      expect(image.height, 888);
       expect(image.height, shareCardFrame(crops.layout.textBottom).height);
       image.dispose();
       crops.dispose();
@@ -197,28 +270,85 @@ void main() {
     });
   });
 
-  testWidgets('the tafsir makes the card taller', (tester) async {
+  testWidgets('the tafsir block draws its rule, diamond and text', (
+    tester,
+  ) async {
     await tester.runAsync(() async {
       final renderer = ShareCardRenderer(loadImage: _Pages().load);
       final crops = await renderer.prepare(contentFor(6, 31));
+      final colors = MushafPaper.cream.colors;
       final plain = await _decode(
-        await renderer.compose(crops, colors: MushafPaper.cream.colors),
+        await renderer.compose(crops, colors: colors),
       );
       final withTafsir = await _decode(
-        await renderer.compose(
-          crops,
-          colors: MushafPaper.cream.colors,
-          tafsir: 'كلمة ' * 40,
-        ),
+        await renderer.compose(crops, colors: colors, tafsir: 'كلمة ' * 40),
       );
       expect(withTafsir.height, greaterThan(plain.height));
-      plain.dispose();
+      final plainRaw = (await plain.toByteData())!;
+      final tafsirRaw = (await withTafsir.toByteData())!;
+
+      List<int> pixel(ByteData raw, ui.Image image, int x, int y) {
+        final i = (y * image.width + x) * 4;
+        return [for (var c = 0; c < 4; c++) raw.getUint8(i + c)];
+      }
+
+      List<int> over(Color fore, int alpha) {
+        final back = colors.background.toARGB32();
+        final top = fore.toARGB32();
+        return [
+          for (final shift in [16, 8, 0])
+            (((back >> shift) & 0xFF) * (255 - alpha) +
+                    ((top >> shift) & 0xFF) * alpha) ~/
+                255,
+          0xFF,
+        ];
+      }
+
+      bool near(List<int> got, List<int> want) => [
+        for (final (i, c) in want.indexed) (got[i] - c).abs() <= 2,
+      ].every((ok) => ok);
+
+      final tafsirTop =
+          crops.layout.textBottom + shareCardTafsirGap * crops.layout.pitch;
+      final rows = [tafsirTop.floor() - 1, tafsirTop.floor()];
+      final background = over(colors.background, 0);
+      final rule = over(colors.accent, 150);
+      final diamond = over(colors.accent, 200);
+
+      for (final (x, want) in [(300, rule), (540, diamond)]) {
+        expect(
+          rows.any((y) => near(pixel(tafsirRaw, withTafsir, x, y), want)),
+          isTrue,
+          reason: 'x=$x expected $want',
+        );
+        for (final y in rows) {
+          expect(y, lessThan(plain.height));
+          expect(pixel(plainRaw, plain, x, y), background);
+        }
+      }
+
+      final accent = over(colors.accent, 255);
+      final ink2 = over(colors.ink2, 255);
+      var heading = false;
+      var body = false;
+      for (var y = rows.last + 36; y < withTafsir.height; y++) {
+        for (var x = 0; x < withTafsir.width; x++) {
+          final got = pixel(tafsirRaw, withTafsir, x, y);
+          heading = heading || near(got, accent);
+          body = body || near(got, ink2);
+        }
+      }
+      expect(heading, isTrue);
+      expect(body, isTrue);
       withTafsir.dispose();
+      plain.dispose();
       crops.dispose();
     });
   });
 
-  testWidgets('a very long card is scaled to 4096 px high', (tester) async {
+  testWidgets('a very long card is scaled to 4096 px high and stays opaque', (
+    tester,
+  ) async {
     await tester.runAsync(() async {
       final renderer = ShareCardRenderer(loadImage: _Pages().load);
       final crops = await renderer.prepare(contentFor(2, 282));
@@ -231,8 +361,23 @@ void main() {
       );
       expect(image.height, 4096);
       expect(image.width, lessThan(1080));
+      final raw = (await image.toByteData())!;
+      for (var y = 0; y < image.height; y++) {
+        final edge = (y * image.width + image.width - 1) * 4 + 3;
+        expect(raw.getUint8(edge), 0xFF);
+      }
       image.dispose();
       crops.dispose();
+    });
+  });
+
+  testWidgets('dispose is idempotent', (tester) async {
+    await tester.runAsync(() async {
+      final crops = await ShareCardRenderer(
+        loadImage: _Pages().load,
+      ).prepare(contentFor(6, 31));
+      crops.dispose();
+      expect(crops.dispose, returnsNormally);
     });
   });
 

@@ -15,11 +15,13 @@ import 'share_card_layout.dart';
 typedef ShareImageLoader = Future<ui.Image> Function(String asset);
 
 Future<ui.Image> loadAssetImage(String asset) async {
-  final data = await rootBundle.load(asset);
-  final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
-  final frame = await codec.getNextFrame();
-  codec.dispose();
-  return frame.image;
+  final buffer = await ui.ImmutableBuffer.fromAsset(asset);
+  final codec = await ui.instantiateImageCodecFromBuffer(buffer);
+  try {
+    return (await codec.getNextFrame()).image;
+  } finally {
+    codec.dispose();
+  }
 }
 
 Rect? alphaBounds(List<ByteData> layers, int width, int height) {
@@ -67,8 +69,11 @@ class ShareCardCrops {
   final ShareCardLayout layout;
   final List<({ShareCardSlice slice, ui.Image image})> pieces;
   final double basmalaOpacity;
+  var _disposed = false;
 
   void dispose() {
+    if (_disposed) return;
+    _disposed = true;
     for (final piece in pieces) {
       piece.image.dispose();
     }
@@ -91,6 +96,10 @@ Future<ui.Image> _cut(ui.Image source, Rect src) {
   return image;
 }
 
+String _assetOf(ShareCardSlice slice) => slice.layer == ShareCardLayer.accent
+    ? AssetsDir.mushafPageAccent(slice.page)
+    : AssetsDir.mushafPage(slice.page);
+
 Future<ByteData> _rgba(ui.Image image) async => (await image.toByteData())!;
 
 class ShareCardRenderer {
@@ -106,75 +115,106 @@ class ShareCardRenderer {
       startPageBounds: content.startPageBounds,
     );
     final band = headerBand(slot.line);
-    final inkBand = await _cutPage(AssetsDir.mushafPage(slot.page), [band]);
-    final accentBand = await _cutPage(AssetsDir.mushafPageAccent(slot.page), [
-      band,
-    ]);
-    final width = band.width.round();
-    final height = band.height.round();
-    final box =
-        alphaBounds(
-          [await _rgba(inkBand.single), await _rgba(accentBand.single)],
-          width,
-          height,
-        ) ??
-        Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
-    final headerInk = await _cut(inkBand.single, box);
-    final headerAccent = await _cut(accentBand.single, box);
-    inkBand.single.dispose();
-    accentBand.single.dispose();
-
-    final layout = shareCardLayout(
+    ShareCardLayout layoutWith(Rect header) => shareCardLayout(
       ayah: content.ayah,
       page: content.page,
       pageBounds: content.pageBounds,
       startPage: content.startPage,
       startPageBounds: content.startPageBounds,
-      header: (page: slot.page, box: box.shift(band.topLeft)),
+      header: (page: slot.page, box: header),
     );
 
-    final images = <int, ui.Image>{0: headerInk, 1: headerAccent};
-    final byAsset = <String, List<int>>{};
-    for (var i = 2; i < layout.slices.length; i++) {
-      final slice = layout.slices[i];
-      final asset = slice.layer == ShareCardLayer.accent
-          ? AssetsDir.mushafPageAccent(slice.page)
-          : AssetsDir.mushafPage(slice.page);
-      byAsset.putIfAbsent(asset, () => []).add(i);
-    }
-    for (final MapEntry(key: asset, value: indices) in byAsset.entries) {
-      final cuts = await _cutPage(asset, [
-        for (final i in indices) layout.slices[i].src,
-      ]);
-      for (final (n, i) in indices.indexed) {
-        images[i] = cuts[n];
-      }
+    final inkAsset = AssetsDir.mushafPage(slot.page);
+    final accentAsset = AssetsDir.mushafPageAccent(slot.page);
+    final wanted = <String, List<Rect>>{
+      inkAsset: [band],
+      accentAsset: [band],
+    };
+    for (final slice in layoutWith(band).slices.skip(2)) {
+      wanted.putIfAbsent(_assetOf(slice), () => []).add(slice.src);
     }
 
-    final pieces = [
-      for (final (i, slice) in layout.slices.indexed)
-        (slice: slice, image: images[i]!),
-    ];
-    var basmalaOpacity = shareCardBasmalaOpacity;
-    for (final piece in pieces) {
-      if (piece.slice.layer != ShareCardLayer.basmala) continue;
-      final peak = peakAlpha(await _rgba(piece.image));
-      if (peak > 0) {
-        basmalaOpacity = math.min(1, shareCardBasmalaOpacity * 255 / peak);
+    final owned = <ui.Image>[];
+    try {
+      final cuts = <String, List<ui.Image>>{};
+      for (final MapEntry(key: asset, value: rects) in wanted.entries) {
+        final cut = await _cutPage(asset, rects);
+        cuts[asset] = cut;
+        owned.addAll(cut);
       }
+
+      final inkBand = cuts[inkAsset]!.first;
+      final accentBand = cuts[accentAsset]!.first;
+      final width = band.width.round();
+      final height = band.height.round();
+      final box =
+          alphaBounds(
+            [await _rgba(inkBand), await _rgba(accentBand)],
+            width,
+            height,
+          ) ??
+          Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
+      final headerInk = await _cut(inkBand, box);
+      owned.add(headerInk);
+      final headerAccent = await _cut(accentBand, box);
+      owned.add(headerAccent);
+      inkBand.dispose();
+      accentBand.dispose();
+      owned
+        ..remove(inkBand)
+        ..remove(accentBand);
+
+      final layout = layoutWith(box.shift(band.topLeft));
+      final next = {inkAsset: 1, accentAsset: 1};
+      ui.Image imageFor(int i, ShareCardSlice slice) {
+        if (i < 2) return i == 0 ? headerInk : headerAccent;
+        final asset = _assetOf(slice);
+        final n = next[asset] ?? 0;
+        next[asset] = n + 1;
+        return cuts[asset]![n];
+      }
+
+      final pieces = [
+        for (final (i, slice) in layout.slices.indexed)
+          (slice: slice, image: imageFor(i, slice)),
+      ];
+      var basmalaOpacity = shareCardBasmalaOpacity;
+      for (final piece in pieces) {
+        if (piece.slice.layer != ShareCardLayer.basmala) continue;
+        final peak = peakAlpha(await _rgba(piece.image));
+        if (peak > 0) {
+          basmalaOpacity = math.min(1, shareCardBasmalaOpacity * 255 / peak);
+        }
+      }
+      return ShareCardCrops(
+        layout: layout,
+        pieces: pieces,
+        basmalaOpacity: basmalaOpacity,
+      );
+    } catch (_) {
+      for (final image in owned) {
+        image.dispose();
+      }
+      rethrow;
     }
-    return ShareCardCrops(
-      layout: layout,
-      pieces: pieces,
-      basmalaOpacity: basmalaOpacity,
-    );
   }
 
   Future<List<ui.Image>> _cutPage(String asset, List<Rect> rects) async {
     final page = await _loadImage(asset);
-    final cuts = [for (final rect in rects) await _cut(page, rect)];
-    page.dispose();
-    return cuts;
+    final cuts = <ui.Image>[];
+    try {
+      for (final rect in rects) {
+        cuts.add(await _cut(page, rect));
+      }
+      return cuts;
+    } catch (_) {
+      for (final cut in cuts) {
+        cut.dispose();
+      }
+      rethrow;
+    } finally {
+      page.dispose();
+    }
   }
 
   Future<Uint8List> compose(
@@ -187,98 +227,103 @@ class ShareCardRenderer {
     final tafsirTop = layout.textBottom + shareCardTafsirGap * layout.pitch;
     TextPainter? heading;
     TextPainter? body;
-    var contentBottom = layout.textBottom;
-    if (tafsir != null) {
-      heading = TextPainter(
-        text: TextSpan(
-          text: PendingS.forLanguage('ar').tafsir_muyassar,
-          style: TS.bold14.copyWith(color: colors.accent),
-        ),
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.rtl,
-      )..layout(minWidth: textWidth, maxWidth: textWidth);
-      body = TextPainter(
-        text: TextSpan(
-          text: tafsir,
-          style: tafsirBodyStyle(tafsir).copyWith(color: colors.ink2),
-        ),
-        textAlign: TextAlign.right,
-        textDirection: TextDirection.rtl,
-      )..layout(minWidth: textWidth, maxWidth: textWidth);
-      contentBottom = tafsirTop + 36 + 3 * (heading.height + 8 + body.height);
-    }
-    final frame = shareCardFrame(contentBottom);
-    final k = frame.height > shareCardMaxHeight
-        ? shareCardMaxHeight / frame.height
-        : 1.0;
+    ui.Picture? picture;
+    ui.Image? rendered;
+    try {
+      var contentBottom = layout.textBottom;
+      if (tafsir != null) {
+        final head = TextPainter(
+          text: TextSpan(
+            text: PendingS.forLanguage('ar').tafsir_muyassar,
+            style: TS.bold14.copyWith(color: colors.accent),
+          ),
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.rtl,
+        );
+        heading = head..layout(minWidth: textWidth, maxWidth: textWidth);
+        final text = TextPainter(
+          text: TextSpan(
+            text: tafsir,
+            style: tafsirBodyStyle(tafsir).copyWith(color: colors.ink2),
+          ),
+          textAlign: TextAlign.right,
+          textDirection: TextDirection.rtl,
+        );
+        body = text..layout(minWidth: textWidth, maxWidth: textWidth);
+        contentBottom = tafsirTop + 36 + 3 * (head.height + 8 + text.height);
+      }
+      final frame = shareCardFrame(contentBottom);
+      final k = frame.height > shareCardMaxHeight
+          ? shareCardMaxHeight / frame.height
+          : 1.0;
 
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder)..scale(k);
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, shareCardWidth, frame.height.toDouble()),
-      Paint()..color = colors.background,
-    );
-    canvas.translate(0, frame.dy);
-    for (final (:slice, :image) in crops.pieces) {
-      final tint = switch (slice.layer) {
-        ShareCardLayer.ink => colors.ink,
-        ShareCardLayer.accent => colors.accent,
-        ShareCardLayer.basmala => colors.ink.withValues(
-          alpha: crops.basmalaOpacity,
-        ),
-      };
-      canvas.drawImageRect(
-        image,
-        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
-        slice.dst,
-        Paint()
-          ..filterQuality = FilterQuality.high
-          ..colorFilter = ColorFilter.mode(tint, BlendMode.srcIn),
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder)
+        ..drawPaint(Paint()..color = colors.background)
+        ..scale(k)
+        ..translate(0, frame.dy);
+      for (final (:slice, :image) in crops.pieces) {
+        final tint = switch (slice.layer) {
+          ShareCardLayer.ink => colors.ink,
+          ShareCardLayer.accent => colors.accent,
+          ShareCardLayer.basmala => colors.ink.withValues(
+            alpha: crops.basmalaOpacity,
+          ),
+        };
+        canvas.drawImageRect(
+          image,
+          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+          slice.dst,
+          Paint()
+            ..filterQuality = FilterQuality.high
+            ..colorFilter = ColorFilter.mode(tint, BlendMode.srcIn),
+        );
+      }
+      if (heading != null && body != null) {
+        final line = Paint()
+          ..color = colors.accent.withAlpha(150)
+          ..strokeWidth = 2;
+        const center = shareCardWidth / 2;
+        const inset = shareCardMargin + 120;
+        canvas
+          ..drawLine(
+            Offset(inset, tafsirTop),
+            Offset(center - 22, tafsirTop),
+            line,
+          )
+          ..drawLine(
+            Offset(center + 22, tafsirTop),
+            Offset(shareCardWidth - inset, tafsirTop),
+            line,
+          )
+          ..drawPath(
+            Path()
+              ..moveTo(center, tafsirTop - 9)
+              ..lineTo(center + 9, tafsirTop)
+              ..lineTo(center, tafsirTop + 9)
+              ..lineTo(center - 9, tafsirTop)
+              ..close(),
+            Paint()..color = colors.accent.withAlpha(200),
+          )
+          ..save()
+          ..translate(shareCardMargin, tafsirTop + 36)
+          ..scale(3);
+        heading.paint(canvas, Offset.zero);
+        body.paint(canvas, Offset(0, heading.height + 8));
+        canvas.restore();
+      }
+      picture = recorder.endRecording();
+      rendered = await picture.toImage(
+        (shareCardWidth * k).round(),
+        (frame.height * k).round(),
       );
+      final png = (await rendered.toByteData(format: ui.ImageByteFormat.png))!;
+      return png.buffer.asUint8List();
+    } finally {
+      heading?.dispose();
+      body?.dispose();
+      picture?.dispose();
+      rendered?.dispose();
     }
-    if (heading != null && body != null) {
-      final line = Paint()
-        ..color = colors.accent.withAlpha(150)
-        ..strokeWidth = 2;
-      const center = shareCardWidth / 2;
-      const inset = shareCardMargin + 120;
-      canvas
-        ..drawLine(
-          Offset(inset, tafsirTop),
-          Offset(center - 22, tafsirTop),
-          line,
-        )
-        ..drawLine(
-          Offset(center + 22, tafsirTop),
-          Offset(shareCardWidth - inset, tafsirTop),
-          line,
-        )
-        ..drawPath(
-          Path()
-            ..moveTo(center, tafsirTop - 9)
-            ..lineTo(center + 9, tafsirTop)
-            ..lineTo(center, tafsirTop + 9)
-            ..lineTo(center - 9, tafsirTop)
-            ..close(),
-          Paint()..color = colors.accent.withAlpha(200),
-        )
-        ..save()
-        ..translate(shareCardMargin, tafsirTop + 36)
-        ..scale(3);
-      heading.paint(canvas, Offset.zero);
-      body.paint(canvas, Offset(0, heading.height + 8));
-      canvas.restore();
-    }
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(
-      (shareCardWidth * k).round(),
-      (frame.height * k).round(),
-    );
-    picture.dispose();
-    final png = (await image.toByteData(format: ui.ImageByteFormat.png))!;
-    image.dispose();
-    heading?.dispose();
-    body?.dispose();
-    return png.buffer.asUint8List();
   }
 }
