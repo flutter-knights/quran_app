@@ -73,11 +73,18 @@ void main() {
   });
 
   test('an ayah missing from its bounds is a failure', () async {
-    final result = await _build(_FakeMushafRepo(empty: true))(
-      const AyahIdentifier(surah: 2, ayah: 3),
-    );
+    final repo = _FakeMushafRepo(empty: true);
 
-    expect(result.isLeft(), isTrue);
+    final result = await _build(repo)(const AyahIdentifier(surah: 2, ayah: 3));
+
+    expect(
+      result.fold(
+        (f) => f is NotFoundFailure && f.message == '2:3',
+        (_) => false,
+      ),
+      isTrue,
+    );
+    expect(repo.pages, [QuranPageServiceImpl().getPageForAyah(2, 3)]);
   });
 
   test('a bounds failure is returned as is', () async {

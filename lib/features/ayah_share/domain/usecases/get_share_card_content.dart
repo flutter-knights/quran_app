@@ -20,25 +20,23 @@ class GetShareCardContent {
     final page = _pageService.getPageForAyah(ayah.surah, ayah.ayah);
     final startPage = _pageService.getPageForAyah(ayah.surah, 1);
     final pageResult = await _getMushafPage(page);
-    final startResult = startPage == page
-        ? pageResult
-        : await _getMushafPage(startPage);
 
-    return pageResult.flatMap(
-      (pageEntity) => startResult.flatMap((startEntity) {
-        if (!pageEntity.ayahs.any((bound) => bound.ayah == ayah)) {
-          return Left(NotFoundFailure('${ayah.surah}:${ayah.ayah}'));
-        }
-        return Right(
-          ShareCardContent(
-            ayah: ayah,
-            page: page,
-            pageBounds: pageEntity.ayahs,
-            startPage: startPage,
-            startPageBounds: startEntity.ayahs,
-          ),
-        );
-      }),
-    );
+    return pageResult.fold(Left.new, (pageEntity) async {
+      if (!pageEntity.ayahs.any((bound) => bound.ayah == ayah)) {
+        return Left(NotFoundFailure('${ayah.surah}:${ayah.ayah}'));
+      }
+      final startResult = startPage == page
+          ? pageResult
+          : await _getMushafPage(startPage);
+      return startResult.map(
+        (startEntity) => ShareCardContent(
+          ayah: ayah,
+          page: page,
+          pageBounds: pageEntity.ayahs,
+          startPage: startPage,
+          startPageBounds: startEntity.ayahs,
+        ),
+      );
+    });
   }
 }

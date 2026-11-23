@@ -11,6 +11,12 @@ void main() {
     expect(tafsir.body, 'أبتدئ قراءة القرآن باسم الله مستعينا به');
   });
 
+  test('body strips the introduction after a leading space or BOM', () {
+    const tafsir = Tafsir(surah: 1, ayah: 1, text: '\u{FEFF}  $_intro');
+
+    expect(tafsir.body, 'أبتدئ قراءة القرآن باسم الله مستعينا به');
+  });
+
   test('body is the text for any other ayah', () {
     const tafsir = Tafsir(surah: 2, ayah: 1, text: _intro);
 

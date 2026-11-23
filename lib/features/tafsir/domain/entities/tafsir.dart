@@ -14,11 +14,12 @@ class Tafsir extends Equatable {
   final String book;
 
   String get body {
-    if (surah != 1 || ayah != 1 || !text.startsWith('سورة الفاتحة')) {
+    final trimmed = text.trimLeft();
+    if (surah != 1 || ayah != 1 || !trimmed.startsWith('سورة الفاتحة')) {
       return text;
     }
-    final stop = text.indexOf('. ');
-    return stop == -1 ? text : text.substring(stop + 2).trim();
+    final stop = trimmed.indexOf('. ');
+    return stop == -1 ? text : trimmed.substring(stop + 2).trim();
   }
 
   @override
