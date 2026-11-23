@@ -364,6 +364,12 @@ class PendingS {
       _ar ? 'أُزيلت الآية $ayah من $surah' : 'Removed ayah $ayah of $surah';
   String savedAyat_saved(String ayah, String surah) =>
       _ar ? 'حُفظت الآية $ayah من $surah' : 'Saved ayah $ayah of $surah';
+  String get ayahShare_title => _ar ? 'مشاركة الآية' : 'Share ayah';
+  String get ayahShare_addTafsir =>
+      _ar ? 'إضافة التفسير الميسر' : 'Add Al-Tafsir al-Muyassar';
+  String get ayahShare_textOnly => _ar ? 'نص فقط' : 'Text only';
+  String get ayahShare_renderFailed =>
+      _ar ? 'تعذّر تجهيز الصورة' : 'Couldn\'t prepare the image';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

@@ -614,5 +614,9 @@
   "savedAyat_saved": "Saved ayah {ayah} of {surah}",
   "@savedAyat_saved": {
     "placeholders": { "ayah": { "type": "String" }, "surah": { "type": "String" } }
-  }
+  },
+  "ayahShare_title": "Share ayah",
+  "ayahShare_addTafsir": "Add Al-Tafsir al-Muyassar",
+  "ayahShare_textOnly": "Text only",
+  "ayahShare_renderFailed": "Couldn't prepare the image"
 }
