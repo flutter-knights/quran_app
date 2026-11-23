@@ -31,6 +31,14 @@ void main() {
     return PaintingBinding.instance.imageCache.containsKey(key);
   }
 
+  testWidgets('the preview keeps the card size before the PNG decodes', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host(Uint8List.fromList(onePixelPng)));
+
+    expect(tester.getSize(find.byType(ShareCardPreview)), const Size(300, 300));
+  });
+
   testWidgets(
     'a new card evicts the previous decode and dispose evicts the last',
     (tester) async {

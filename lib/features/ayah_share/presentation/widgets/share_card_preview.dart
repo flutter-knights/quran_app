@@ -8,6 +8,11 @@ import '../../../../core/constants/mushaf_paper.dart';
 import '../../../surah/presentation/utils/mushaf_paper_colors.dart';
 import '../utils/share_card_layout.dart';
 
+double _pngAspectRatio(Uint8List png) {
+  final header = ByteData.sublistView(png);
+  return header.getUint32(16) / header.getUint32(20);
+}
+
 class ShareCardPreview extends StatefulWidget {
   const ShareCardPreview({
     super.key,
@@ -78,23 +83,30 @@ class _ShareCardPreviewState extends State<ShareCardPreview> {
         borderRadius: _radius,
         child: Stack(
           children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final cacheWidth =
-                    (constraints.maxWidth *
-                            MediaQuery.devicePixelRatioOf(context))
-                        .round();
-                _cacheWidth = cacheWidth;
-                return Image.memory(
-                  bytes,
-                  key: const ValueKey('share-preview-image'),
-                  gaplessPlayback: true,
-                  width: double.infinity,
-                  fit: BoxFit.fitWidth,
-                  cacheWidth: cacheWidth,
-                  semanticLabel: widget.semanticLabel,
-                );
-              },
+            AspectRatio(
+              aspectRatio: _pngAspectRatio(bytes),
+              child: ColoredBox(
+                color: widget.paper.colors.background,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final cacheWidth =
+                        (constraints.maxWidth *
+                                MediaQuery.devicePixelRatioOf(context))
+                            .round();
+                    _cacheWidth = cacheWidth;
+                    return Image.memory(
+                      bytes,
+                      key: const ValueKey('share-preview-image'),
+                      gaplessPlayback: true,
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth,
+                      alignment: Alignment.topCenter,
+                      cacheWidth: cacheWidth,
+                      semanticLabel: widget.semanticLabel,
+                    );
+                  },
+                ),
+              ),
             ),
             if (widget.progress)
               const PositionedDirectional(
