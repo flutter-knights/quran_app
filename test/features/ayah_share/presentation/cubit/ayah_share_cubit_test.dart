@@ -6,7 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/ayah_share/presentation/cubit/ayah_share_cubit.dart';
+import 'package:quran_app/features/ayah_share/presentation/utils/ayah_share_text.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/tafsir/domain/entities/tafsir.dart';
 
@@ -26,6 +28,8 @@ void main() {
   late FakeGetShareCardContent content;
   late FakeShareCardRenderer renderer;
   late FakeGetAyahTafsir getTafsir;
+  late FakePrepareAyahAudio audio;
+  late FakeReelFramePainter painter;
   late AyahShareCubit cubit;
   late List<AyahShareState> states;
 
@@ -33,12 +37,16 @@ void main() {
     content = FakeGetShareCardContent()..result = Right(contentFor(1, 1));
     renderer = FakeShareCardRenderer();
     getTafsir = FakeGetAyahTafsir();
+    audio = FakePrepareAyahAudio();
+    painter = FakeReelFramePainter();
     cubit = AyahShareCubit(
       ayah: ayah,
       paper: MushafPaper.cream,
       getContent: content,
       renderer: renderer,
       getTafsir: getTafsir,
+      prepareAudio: audio,
+      framePainter: painter,
     );
     states = [];
     cubit.stream.listen(states.add);
@@ -409,5 +417,287 @@ void main() {
 
     expect(renderer.crops.single.disposed, 1);
     expect(renderer.composeCalls, isEmpty);
+  });
+
+  group('reel', () {
+    Future<AyahShareCubit> reelCubit(AyahIdentifier a) async {
+      content.result = null;
+      final c = AyahShareCubit(
+        ayah: a,
+        paper: MushafPaper.cream,
+        getContent: content,
+        renderer: renderer,
+        getTafsir: getTafsir,
+        prepareAudio: audio,
+        framePainter: painter,
+      );
+      states = [];
+      c.stream.listen(states.add);
+      addTearDown(c.close);
+      await c.load();
+      await pumpEventQueue();
+      return c;
+    }
+
+    test(
+      'choosing the reel prepares the start ayah and previews its first frame',
+      () async {
+        final c = await reelCubit(ayah);
+
+        await c.selectReel(Reciter.alafasy);
+
+        expect(c.state.format, ShareFormat.reel);
+        expect(c.state.reelCount, 1);
+        expect(c.state.reciter, Reciter.alafasy);
+        expect(painter.calls, hasLength(1));
+        expect(
+          painter.calls.single.footer,
+          reelFooter(Reciter.alafasy, ayah, 1),
+        );
+        expect(c.state.renderId, 2);
+        expect(c.state.export, ShareExport.idle);
+      },
+    );
+
+    test('an audio failure returns to the image with an audio issue', () async {
+      final c = await reelCubit(ayah);
+      audio.failing.add(ayah);
+
+      await c.selectReel(Reciter.alafasy);
+
+      expect(c.state.format, ShareFormat.image);
+      expect(c.state.reelIssue, ReelIssue.audioFailed);
+      expect(c.state.export, ShareExport.idle);
+      expect(c.state.cardBytes, isNotNull);
+      expect(painter.calls, isEmpty);
+    });
+
+    test(
+      'adding an ayah prepares the next one and widens the footer range',
+      () async {
+        final c = await reelCubit(ayah);
+        await c.selectReel(Reciter.alafasy);
+
+        await c.addAyah();
+
+        expect(c.state.reelCount, 2);
+        expect(audio.requests.last, const AyahIdentifier(surah: 1, ayah: 2));
+        expect(painter.calls.last.footer, endsWith('–٢'));
+        expect(c.state.export, ShareExport.idle);
+      },
+    );
+
+    test('a failing «+» raises the audio issue each time', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      audio.failing.add(const AyahIdentifier(surah: 1, ayah: 2));
+      await pumpEventQueue();
+      states.clear();
+
+      await c.addAyah();
+      await c.addAyah();
+      await pumpEventQueue();
+
+      expect(states.map((s) => s.reelIssue), [
+        ReelIssue.none,
+        ReelIssue.audioFailed,
+        ReelIssue.none,
+        ReelIssue.audioFailed,
+      ]);
+      expect(c.state.reelCount, 1);
+    });
+
+    test('«+» prepares only once on a double tap', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      final before = audio.requests.length;
+      audio.gate = Completer();
+
+      final first = c.addAyah();
+      final second = c.addAyah();
+      audio.gate!.complete();
+      await Future.wait([first, second]);
+
+      expect(audio.requests.length, before + 1);
+      expect(c.state.reelCount, 2);
+    });
+
+    test('«+» is disabled at the surah end', () async {
+      final c = await reelCubit(const AyahIdentifier(surah: 112, ayah: 4));
+
+      await c.selectReel(Reciter.alafasy);
+
+      expect(c.state.reelCount, 1);
+      expect(c.state.canAddAyah, isFalse);
+    });
+
+    test('«+» is disabled at ten ayat', () async {
+      final c = await reelCubit(const AyahIdentifier(surah: 2, ayah: 1));
+      for (var i = 1; i <= 10; i++) {
+        audio.durations[AyahIdentifier(surah: 2, ayah: i)] = const Duration(
+          seconds: 3,
+        );
+      }
+      await c.selectReel(Reciter.alafasy);
+
+      for (var i = 0; i < 9; i++) {
+        await c.addAyah();
+      }
+
+      expect(c.state.reelCount, 10);
+      expect(c.state.canAddAyah, isFalse);
+    });
+
+    test('a start ayah over 60 s is allowed alone and blocks «+»', () async {
+      final c = await reelCubit(ayah);
+      audio.durations[ayah] = const Duration(seconds: 75);
+
+      await c.selectReel(Reciter.alafasy);
+
+      expect(c.state.reelCount, 1);
+      expect(c.state.reelOverLimit, isTrue);
+      expect(c.state.canAddAyah, isFalse);
+    });
+
+    test('an ayah that would pass 60 s is not added', () async {
+      final c = await reelCubit(ayah);
+      audio.durations[ayah] = const Duration(seconds: 40);
+      audio.durations[const AyahIdentifier(surah: 1, ayah: 2)] = const Duration(
+        seconds: 25,
+      );
+      await c.selectReel(Reciter.alafasy);
+
+      await c.addAyah();
+
+      expect(c.state.reelCount, 1);
+      expect(c.state.reelCapped, isTrue);
+      expect(c.state.canAddAyah, isFalse);
+      expect(renderer.crops.last.disposed, 1);
+      expect(c.state.export, ShareExport.idle);
+    });
+
+    test('removing an ayah disposes its crops and reopens «+»', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      await c.addAyah();
+      expect(c.state.canRemoveAyah, isTrue);
+
+      c.removeAyah();
+      await pumpEventQueue();
+
+      expect(c.state.reelCount, 1);
+      expect(c.state.canRemoveAyah, isFalse);
+      expect(c.state.canAddAyah, isTrue);
+      expect(renderer.crops.last.disposed, 1);
+      expect(painter.calls.last.footer, reelFooter(Reciter.alafasy, ayah, 1));
+    });
+
+    test('back to the image recomposes the card from the same crops', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      final prepared = renderer.prepareCount;
+      final composed = renderer.composeCalls.length;
+
+      c.selectImage();
+      await pumpEventQueue();
+
+      expect(c.state.format, ShareFormat.image);
+      expect(renderer.prepareCount, prepared);
+      expect(renderer.composeCalls, hasLength(composed + 1));
+      expect(c.state.reelCount, 1);
+    });
+
+    test('another reciter drops the old segments', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      await c.addAyah();
+      c.selectImage();
+      await pumpEventQueue();
+
+      await c.selectReel(Reciter.husary);
+
+      expect(c.state.reciter, Reciter.husary);
+      expect(c.state.reelCount, 1);
+      expect(renderer.crops.last.disposed, 1);
+      expect(audio.requests.where((a) => a == ayah), hasLength(2));
+    });
+
+    test('close disposes every segment crop', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      await c.addAyah();
+
+      await c.close();
+
+      expect(renderer.crops, hasLength(2));
+      expect(renderer.crops.map((crops) => crops.disposed), [1, 1]);
+    });
+
+    test('a tafsir landing mid-prepare keeps preparing', () async {
+      final c = await reelCubit(ayah);
+      c.setIncludeTafsir(true);
+      await pumpEventQueue();
+      audio.gate = Completer();
+      final composed = renderer.composeCalls.length;
+      final selecting = c.selectReel(Reciter.alafasy);
+      await pumpEventQueue();
+
+      getTafsir.completers.single.complete(const Right(intro));
+      await pumpEventQueue();
+
+      expect(c.state.export, ShareExport.preparing);
+      expect(c.state.canAddAyah, isFalse);
+      expect(renderer.composeCalls, hasLength(composed));
+      expect(painter.calls, isEmpty);
+
+      audio.gate!.complete();
+      await selecting;
+
+      expect(painter.calls, hasLength(1));
+      expect(painter.calls.single.tafsir, intro.body);
+      expect(c.state.export, ShareExport.idle);
+    });
+
+    test(
+      'an audio failure after a deferred tafsir composes the image card',
+      () async {
+        final c = await reelCubit(ayah);
+        c.setIncludeTafsir(true);
+        await pumpEventQueue();
+        audio.gate = Completer();
+        audio.failing.add(ayah);
+        final selecting = c.selectReel(Reciter.alafasy);
+        await pumpEventQueue();
+        getTafsir.completers.single.complete(const Right(intro));
+        await pumpEventQueue();
+
+        audio.gate!.complete();
+        await selecting;
+        await pumpEventQueue();
+
+        expect(c.state.format, ShareFormat.image);
+        expect(c.state.reelIssue, ReelIssue.audioFailed);
+        expect(renderer.composeCalls.last.tafsir, intro.body);
+        expect(painter.calls, isEmpty);
+      },
+    );
+
+    test('a paper change during the prepare is ignored', () async {
+      final c = await reelCubit(ayah);
+      audio.gate = Completer();
+      final selecting = c.selectReel(Reciter.alafasy);
+      await pumpEventQueue();
+
+      c.setPaper(MushafPaper.night);
+      c.setIncludeTafsir(true);
+      c.selectImage();
+
+      expect(c.state.paper, MushafPaper.cream);
+      expect(c.state.includeTafsir, isFalse);
+      expect(c.state.format, ShareFormat.reel);
+
+      audio.gate!.complete();
+      await selecting;
+    });
   });
 }

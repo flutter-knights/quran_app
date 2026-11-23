@@ -7,6 +7,7 @@ import 'package:quran_app/features/ayah_share/ayah_share_di.dart';
 import 'package:quran_app/features/ayah_share/domain/usecases/compose_ayah_reel.dart';
 import 'package:quran_app/features/ayah_share/presentation/cubit/ayah_share_cubit.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/quran_playback/domain/repositories/quran_playback_repo.dart';
 import 'package:quran_app/features/quran_playback/domain/services/quran_page_service.dart';
 import 'package:quran_app/features/surah/domain/entities/mushaf_page_entity.dart';
 import 'package:quran_app/features/surah/domain/repositories/mushaf_repo.dart';
@@ -25,7 +26,13 @@ class _StubTafsirRepo implements TafsirRepository {
   dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
 }
 
+class _StubPlaybackRepo implements QuranPlaybackRepo {
+  @override
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}
+
 void _registerDependencies() {
+  sl.registerLazySingleton<QuranPlaybackRepo>(_StubPlaybackRepo.new);
   sl.registerLazySingleton(() => GetMushafPage(_StubMushafRepo()));
   sl.registerLazySingleton<QuranPageService>(QuranPageServiceImpl.new);
   sl.registerLazySingleton(() => GetAyahTafsir(_StubTafsirRepo()));

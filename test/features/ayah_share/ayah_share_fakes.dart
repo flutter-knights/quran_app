@@ -8,11 +8,15 @@ import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/ayah_share/presentation/cubit/ayah_share_cubit.dart';
+import 'package:quran_app/features/ayah_share/domain/entities/reel_request.dart';
 import 'package:quran_app/features/ayah_share/domain/entities/share_card_content.dart';
 import 'package:quran_app/features/ayah_share/domain/usecases/get_share_card_content.dart';
+import 'package:quran_app/features/ayah_share/domain/usecases/prepare_ayah_audio.dart';
+import 'package:quran_app/features/ayah_share/presentation/utils/reel_frame_painter.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/share_card_layout.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/share_card_renderer.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/tafsir/domain/entities/tafsir.dart';
 import 'package:quran_app/features/tafsir/domain/usecases/get_ayah_tafsir.dart';
@@ -125,21 +129,74 @@ class FakeGetAyahTafsir implements GetAyahTafsir {
   }
 }
 
+class FakePrepareAyahAudio implements PrepareAyahAudio {
+  final durations = <AyahIdentifier, Duration>{};
+  final failing = <AyahIdentifier>{};
+  final requests = <AyahIdentifier>[];
+  Completer<void>? gate;
+
+  @override
+  Future<Either<Failure, List<ReelAudio>>> call(
+    AyahIdentifier ayah,
+    Reciter reciter,
+  ) async {
+    requests.add(ayah);
+    await gate?.future;
+    if (failing.contains(ayah)) return const Left(NetworkFailure('offline'));
+    return Right([
+      if (ayah.ayah == 1 && ayah.surah != 1 && ayah.surah != 9)
+        const ReelAudio(path: '/a/1_1.mp3', duration: Duration(seconds: 6)),
+      ReelAudio(
+        path: '/a/${ayah.surah}_${ayah.ayah}.mp3',
+        duration: durations[ayah] ?? const Duration(seconds: 5),
+      ),
+    ]);
+  }
+}
+
+typedef PaintCall = ({
+  ShareCardCrops crops,
+  MushafPaperColors colors,
+  String footer,
+  String? tafsir,
+});
+
+class FakeReelFramePainter implements ReelFramePainter {
+  final calls = <PaintCall>[];
+
+  @override
+  Future<Uint8List> paint(
+    ShareCardCrops crops, {
+    required MushafPaperColors colors,
+    required String footer,
+    String? tafsir,
+  }) async {
+    calls.add((crops: crops, colors: colors, footer: footer, tafsir: tafsir));
+    return Uint8List.fromList(onePixelPng);
+  }
+}
+
 typedef FakeAyahShare = ({
   FakeGetShareCardContent content,
   FakeShareCardRenderer renderer,
   FakeGetAyahTafsir tafsir,
+  FakePrepareAyahAudio prepareAudio,
+  FakeReelFramePainter framePainter,
 });
 
 FakeAyahShare registerFakeAyahShare({
   FakeGetShareCardContent? content,
   FakeShareCardRenderer? renderer,
   FakeGetAyahTafsir? tafsir,
+  FakePrepareAyahAudio? prepareAudio,
+  FakeReelFramePainter? framePainter,
 }) {
   final fakes = (
     content: content ?? FakeGetShareCardContent(),
     renderer: renderer ?? FakeShareCardRenderer(),
     tafsir: tafsir ?? FakeGetAyahTafsir(),
+    prepareAudio: prepareAudio ?? FakePrepareAyahAudio(),
+    framePainter: framePainter ?? FakeReelFramePainter(),
   );
   sl.registerFactoryParam<AyahShareCubit, AyahIdentifier, MushafPaper>(
     (ayah, paper) => AyahShareCubit(
@@ -148,6 +205,8 @@ FakeAyahShare registerFakeAyahShare({
       getContent: fakes.content,
       renderer: fakes.renderer,
       getTafsir: fakes.tafsir,
+      prepareAudio: fakes.prepareAudio,
+      framePainter: fakes.framePainter,
     ),
   );
   return fakes;
