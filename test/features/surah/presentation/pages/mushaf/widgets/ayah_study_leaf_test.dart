@@ -1,14 +1,14 @@
 import 'dart:ui' show SemanticsFlags, Tristate;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/widgets/design/directional_icons.dart';
+import 'package:quran_app/features/ayah_share/presentation/widgets/ayah_share_sheet.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_strip.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_study_leaf.dart';
@@ -16,6 +16,7 @@ import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.
 import 'package:quran_app/features/tafsir/presentation/cubit/tafsir_cubit.dart';
 import 'package:quran_app/generated/l10n.dart';
 
+import '../../../../../ayah_share/ayah_share_fakes.dart';
 import '../../../../../tafsir/tafsir_fakes.dart';
 
 const _ayah = AyahIdentifier(surah: 3, ayah: 7);
@@ -277,61 +278,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('share text quotes the ayah and names it', (tester) async {
-    late String text;
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: const [
-          S.delegate,
-          ...GlobalMaterialLocalizations.delegates,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        locale: const Locale('ar'),
-        home: Builder(
-          builder: (context) {
-            text = ayahShareText(
-              context,
-              const AyahIdentifier(surah: 112, ayah: 1),
-            );
-            return const SizedBox();
-          },
-        ),
-      ),
-    );
-    expect(text, '${quran.getVerse(112, 1)} — سورة الإخلاص، الآية ١');
-  });
-
-  group('share', () {
-    const channel = MethodChannel('dev.fluttercommunity.plus/share');
-    final messenger =
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-
-    tearDown(() => messenger.setMockMethodCallHandler(channel, null));
-
-    testWidgets('hands the quoted ayah to the share sheet', (tester) async {
-      Object? arguments;
-      messenger.setMockMethodCallHandler(channel, (call) async {
-        arguments = call.arguments;
-        return 'dev.fluttercommunity.plus/share/success';
-      });
-      await tester.pumpWidget(_host(cubit, calls));
-      await tester.tap(find.byKey(const ValueKey('study-share')));
-      await tester.pumpAndSettle();
-      expect((arguments as Map)['text'], contains(quran.getVerse(3, 7)));
-      expect(find.byType(SnackBar), findsNothing);
-    });
-
-    testWidgets('a failing share sheet shows the fallback message', (
-      tester,
-    ) async {
-      messenger.setMockMethodCallHandler(
-        channel,
-        (call) async => throw PlatformException(code: 'unavailable'),
-      );
-      await tester.pumpWidget(_host(cubit, calls));
-      await tester.tap(find.byKey(const ValueKey('study-share')));
-      await tester.pumpAndSettle();
-      expect(find.text('تعذّر فتح نافذة المشاركة'), findsOneWidget);
-    });
+  testWidgets('the share button opens the share sheet', (tester) async {
+    final fakes = registerFakeAyahShare();
+    addTearDown(sl.reset);
+    await tester.pumpWidget(_host(cubit, calls));
+    await tester.tap(find.byKey(const ValueKey('study-share')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AyahShareSheet), findsOneWidget);
+    expect(fakes.content.requests, [_ayah]);
   });
 }

@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/config/theme/typography_styles.dart';
 import 'package:quran_app/core/helper functions/locale_helpers.dart';
 import 'package:quran_app/core/localization/pending_s.dart';
 import 'package:quran_app/core/widgets/design/app_status_badge.dart';
 import 'package:quran_app/core/widgets/design/directional_icons.dart';
+import 'package:quran_app/features/ayah_share/presentation/widgets/ayah_share_sheet.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/surah/domain/entities/normalized_rect.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_strip.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/tafsir/presentation/widgets/tafsir_section.dart';
 import 'package:quran_app/generated/l10n.dart';
-import 'package:share_plus/share_plus.dart';
-
-String ayahShareText(BuildContext context, AyahIdentifier ayah) =>
-    '${quran.getVerse(ayah.surah, ayah.ayah)} — ${S.of(context).ayah_label(surahDisplayName(context, ayah.surah), ayah.ayah.toLocalized(context))}';
 
 class AyahStudyLeaf extends StatelessWidget {
   const AyahStudyLeaf({
@@ -93,7 +89,8 @@ class AyahStudyLeaf extends StatelessWidget {
                         child: TextButton.icon(
                           key: const ValueKey('study-share'),
                           style: colors.paperButton(),
-                          onPressed: () => _share(context),
+                          onPressed: () =>
+                              AyahShareSheet.show(context, ayah: ayah),
                           icon: const HugeIcon(
                             icon: HugeIcons.strokeRoundedShare08,
                             size: 18,
@@ -202,19 +199,6 @@ class AyahStudyLeaf extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _share(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final failed = S.of(context).share_failed;
-    final text = ayahShareText(context, ayah);
-    try {
-      await SharePlus.instance.share(ShareParams(text: text));
-    } catch (_) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(failed, style: TS.regular14)),
-      );
-    }
   }
 }
 

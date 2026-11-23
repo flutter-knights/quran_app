@@ -4,6 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:quran_app/core/di/dependency_injection.dart';
+import 'package:quran_app/features/ayah_share/presentation/widgets/ayah_share_sheet.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_state.dart';
@@ -17,6 +19,7 @@ import 'package:quran_app/features/surah/presentation/cubit/last_read/last_read_
 import 'package:quran_app/generated/l10n.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../../ayah_share/ayah_share_fakes.dart';
 import '../../../../surah/presentation/pages/mushaf/mushaf_page_harness.dart';
 import '../../../place_fakes.dart';
 
@@ -332,6 +335,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(saved.restores.last, place);
+  });
+
+  testWidgets('sharing a saved row opens the share sheet over أماكني', (
+    tester,
+  ) async {
+    registerFakeAyahShare();
+    addTearDown(sl.reset);
+    await open(
+      tester,
+      savedAyat: SavedAyatState(loaded: true, items: [savedPlace(_fatiha)]),
+    );
+
+    await tester.tap(
+      find.descendant(
+        of: key('places-saved-2:5'),
+        matching: find.byType(IconButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(key('place-share'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AyahShareSheet), findsOneWidget);
+    expect(find.byType(PlacesSheet), findsOneWidget);
   });
 
   testWidgets('the removal notice leaves by itself', (tester) async {

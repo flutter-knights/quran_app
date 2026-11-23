@@ -9,6 +9,7 @@ import 'package:quran_app/core/widgets/design/app_section_header.dart';
 import 'package:quran_app/core/widgets/design/app_status_badge.dart';
 import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/core/widgets/design/surface_card.dart';
+import 'package:quran_app/features/ayah_share/presentation/widgets/ayah_share_sheet.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/fasil_slot.dart';
 import 'package:quran_app/features/bookmarks/domain/entities/place.dart';
 import 'package:quran_app/features/bookmarks/presentation/cubit/fasil_cubit.dart';
@@ -370,7 +371,10 @@ class _SavedRow extends StatelessWidget {
                 ],
               ),
             ),
-            PlaceRowMenu(onRemove: () => _remove(context)),
+            PlaceRowMenu(
+              onShare: () => AyahShareSheet.show(context, ayah: ayah),
+              onRemove: () => _remove(context),
+            ),
             HugeIcon(
               icon: forwardArrowIcon(context),
               color: scheme.onSurfaceVariant,
