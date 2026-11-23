@@ -12,8 +12,13 @@ import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/widgets/design/action_buttons_row.dart';
+import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
+import 'package:quran_app/features/ayah_share/presentation/cubit/ayah_share_cubit.dart';
 import 'package:quran_app/features/ayah_share/presentation/widgets/ayah_share_sheet.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
+import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
+import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_state.dart';
 import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/tafsir/domain/entities/tafsir.dart';
@@ -65,12 +70,17 @@ void main() {
     Locale locale = const Locale('ar'),
     double textScale = 1,
   }) async {
-    tester.view.physicalSize = const Size(360, 800);
+    tester.view.physicalSize = const Size(360, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      BlocProvider<SettingsCubit>.value(
-        value: settings,
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<SettingsCubit>.value(value: settings),
+          BlocProvider<PlaybackCubit>.value(
+            value: FakePlayback(const PlaybackState(reciter: Reciter.husary)),
+          ),
+        ],
         child: MaterialApp(
           localizationsDelegates: const [
             S.delegate,
@@ -407,6 +417,14 @@ void main() {
         isNull,
       );
       expect(onPressed(tester, shareButton()), isNull);
+      expect(
+        tester
+            .widget<AppSegmentedSelector<ShareFormat>>(
+              find.byKey(const ValueKey('share-format')),
+            )
+            .enabled,
+        isFalse,
+      );
     }
 
     testWidgets('while loading', (tester) async {
@@ -441,5 +459,256 @@ void main() {
 
     expect(find.byKey(const ValueKey('share-tafsir-retry')), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+  group('reel mode', () {
+    const start = AyahIdentifier(surah: 6, ayah: 31);
+
+    Future<void> tapKey(WidgetTester tester, String key) async {
+      final finder = find.byKey(ValueKey(key));
+      await tester.ensureVisible(finder);
+      await tester.tap(finder);
+      await tester.pump();
+    }
+
+    Future<void> chooseReel(WidgetTester tester, {String? label}) async {
+      final finder = find.text(label ?? 'مقطع بالتلاوة');
+      await tester.ensureVisible(finder);
+      await tester.tap(finder);
+      await tester.pump();
+      await pumpUntil(tester, () => fakes.framePainter.calls.isNotEmpty);
+    }
+
+    Future<void> addAyah(WidgetTester tester, int count) async {
+      await tapKey(tester, 'reel-plus');
+      await pumpUntil(tester, () => fakes.framePainter.calls.length >= count);
+    }
+
+    String countText(WidgetTester tester) =>
+        tester.widget<Text>(find.byKey(const ValueKey('reel-count'))).data!;
+
+    VoidCallback? iconPressed(WidgetTester tester, String key) =>
+        tester.widget<IconButton>(find.byKey(ValueKey(key))).onPressed;
+
+    String reelFile(String name) {
+      final file = File('${Directory.systemTemp.createTempSync().path}/$name');
+      file.createSync();
+      return file.path;
+    }
+
+    Future<void> startEncode(WidgetTester tester) async {
+      fakes.composeReel.completer = Completer<Either<Failure, String>>();
+      await chooseReel(tester);
+      await addAyah(tester, 2);
+      await tester.ensureVisible(shareButton());
+      await tester.tap(shareButton());
+      await pumpUntil(
+        tester,
+        () => find.byKey(const ValueKey('reel-encoding')).evaluate().isNotEmpty,
+      );
+    }
+
+    testWidgets('the selector offers صورة and مقطع بالتلاوة, image first', (
+      tester,
+    ) async {
+      await open(tester);
+
+      final selector = tester.widget<AppSegmentedSelector<ShareFormat>>(
+        find.byKey(const ValueKey('share-format')),
+      );
+      expect(selector.options.map((o) => o.label), ['صورة', 'مقطع بالتلاوة']);
+      expect(selector.selected, ShareFormat.image);
+      expect(selector.enabled, isTrue);
+      expect(find.byKey(const ValueKey('reel-plus')), findsNothing);
+    });
+
+    testWidgets('choosing the reel shows the stepper and the reciter', (
+      tester,
+    ) async {
+      await open(tester);
+      await chooseReel(tester);
+
+      expect(find.text('بصوت ${Reciter.husary.arabicName}'), findsOneWidget);
+      expect(countText(tester), '١');
+      expect(iconPressed(tester, 'reel-minus'), isNull);
+      expect(iconPressed(tester, 'reel-plus'), isNotNull);
+      expect(fakes.prepareAudio.requests, [start]);
+    });
+
+    testWidgets('«+» adds an ayah and «−» removes it', (tester) async {
+      await open(tester);
+      await chooseReel(tester);
+      await addAyah(tester, 2);
+
+      expect(countText(tester), '٢');
+
+      await tapKey(tester, 'reel-minus');
+      await tester.pump();
+
+      expect(countText(tester), '١');
+    });
+
+    testWidgets('a start ayah over 60 s shows the trim caption and no «+»', (
+      tester,
+    ) async {
+      fakes.prepareAudio.durations[start] = const Duration(seconds: 75);
+      await open(tester);
+      await chooseReel(tester);
+
+      expect(
+        find.text('قد تقصّ بعض التطبيقات المقاطع الأطول من ٦٠ ثانية'),
+        findsOneWidget,
+      );
+      expect(iconPressed(tester, 'reel-plus'), isNull);
+    });
+
+    testWidgets(
+      'share encodes with progress, then shares the MP4 with the range label',
+      (tester) async {
+        await open(tester);
+        await startEncode(tester);
+
+        expect(fakes.composeReel.requests.single.clips, hasLength(2));
+        fakes.composeReel.progressCtrl.add(0.5);
+        await tester.pump();
+        expect(
+          tester
+              .widget<LinearProgressIndicator>(
+                find.descendant(
+                  of: find.byKey(const ValueKey('reel-encoding')),
+                  matching: find.byType(LinearProgressIndicator),
+                ),
+              )
+              .value,
+          0.5,
+        );
+        expect(find.text('جارٍ تجهيز المقطع'), findsOneWidget);
+
+        final path = reelFile('ayah_6_31-32.mp4');
+        fakes.composeReel.completer!.complete(Right(path));
+        await pumpUntil(tester, () => shared.isNotEmpty);
+
+        final args = shared.single;
+        expect((args['paths'] as List).single, endsWith('ayah_6_31-32.mp4'));
+        expect(args['mimeTypes'], ['video/mp4']);
+        expect(
+          args['text'],
+          'سورة ${quran.getSurahNameArabic(6)}، الآيات ٣١–٣٢',
+        );
+      },
+    );
+
+    testWidgets('in English a reel shares the English range label', (
+      tester,
+    ) async {
+      await open(tester, locale: const Locale('en'));
+      fakes.composeReel.completer = Completer<Either<Failure, String>>();
+      await chooseReel(tester, label: 'Recitation clip');
+      await addAyah(tester, 2);
+      await tester.ensureVisible(find.widgetWithText(ActionBtn, 'Share'));
+      await tester.tap(find.widgetWithText(ActionBtn, 'Share'));
+      await pumpUntil(tester, () => fakes.composeReel.requests.isNotEmpty);
+      final path = reelFile('ayah_6_31-32.mp4');
+      fakes.composeReel.completer!.complete(Right(path));
+      await pumpUntil(tester, () => shared.isNotEmpty);
+
+      expect(
+        shared.single['text'],
+        'Surah ${quran.getSurahName(6)}, Ayat 31–32',
+      );
+    });
+
+    testWidgets('cancel stops the encode without a message', (tester) async {
+      await open(tester);
+      await startEncode(tester);
+
+      await tapKey(tester, 'reel-cancel');
+      await pumpUntil(
+        tester,
+        () => find.byKey(const ValueKey('reel-encoding')).evaluate().isEmpty,
+      );
+
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(fakes.composeReel.cancels, 1);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(onPressed(tester, shareButton()), isNotNull);
+    });
+
+    testWidgets('an encode failure shows the message with a retry', (
+      tester,
+    ) async {
+      await open(tester);
+      await startEncode(tester);
+      fakes.composeReel.completer!.complete(const Left(UnknownFailure('x')));
+      await pumpUntil(
+        tester,
+        () => find.byKey(const ValueKey('reel-retry')).evaluate().isNotEmpty,
+      );
+
+      expect(find.text('تعذّر تجهيز المقطع'), findsOneWidget);
+
+      fakes.composeReel.completer = Completer<Either<Failure, String>>();
+      await tapKey(tester, 'reel-retry');
+      await pumpUntil(tester, () => fakes.composeReel.requests.length == 2);
+
+      expect(fakes.composeReel.requests, hasLength(2));
+    });
+
+    testWidgets('an audio failure shows the SnackBar and keeps the image', (
+      tester,
+    ) async {
+      fakes.prepareAudio.failing.add(start);
+      await open(tester);
+      await tester.ensureVisible(find.text('مقطع بالتلاوة'));
+      await tester.tap(find.text('مقطع بالتلاوة'));
+      await pumpUntil(
+        tester,
+        () => find.byType(SnackBar).evaluate().isNotEmpty,
+      );
+
+      expect(find.text('تعذّر تحميل التلاوة'), findsOneWidget);
+      expect(
+        tester
+            .widget<AppSegmentedSelector<ShareFormat>>(
+              find.byKey(const ValueKey('share-format')),
+            )
+            .selected,
+        ShareFormat.image,
+      );
+      expect(onPressed(tester, shareButton()), isNotNull);
+    });
+
+    testWidgets('the audio SnackBar shows once', (tester) async {
+      fakes.prepareAudio.failing.add(start);
+      await open(tester);
+      await tester.ensureVisible(find.text('مقطع بالتلاوة'));
+      await tester.tap(find.text('مقطع بالتلاوة'));
+      await pumpUntil(
+        tester,
+        () => find.byType(SnackBar).evaluate().isNotEmpty,
+      );
+      ScaffoldMessenger.of(
+        tester.element(find.byType(SnackBar)),
+      ).removeCurrentSnackBar();
+      await tester.pump();
+
+      await tester.ensureVisible(shareButton());
+      await tester.tap(shareButton());
+      await pumpUntil(tester, () => shared.isNotEmpty);
+
+      expect(find.text('تعذّر تحميل التلاوة'), findsNothing);
+    });
+
+    testWidgets(
+      'fits at 2x text in 360 px in reel mode with the trim caption',
+      (tester) async {
+        fakes.prepareAudio.durations[start] = const Duration(seconds: 75);
+        await open(tester, textScale: 2);
+        await chooseReel(tester);
+
+        expect(find.byKey(const ValueKey('reel-plus')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }

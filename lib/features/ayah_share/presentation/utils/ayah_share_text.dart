@@ -21,6 +21,15 @@ String ayahLabel(BuildContext context, AyahIdentifier ayah, S s) =>
       ayah.ayah.toLocalized(context),
     );
 
+String reelShareLabel(BuildContext context, AyahIdentifier first, int count) =>
+    count == 1
+    ? ayahLabel(context, first, S.current)
+    : PendingS.current.ayah_range_label(
+        surahDisplayName(context, first.surah),
+        first.ayah.toLocalized(context),
+        (first.ayah + count - 1).toLocalized(context),
+      );
+
 String ayahShareText(BuildContext context, AyahIdentifier ayah) =>
     '${ayahVerseText(ayah)} — ${ayahLabel(context, ayah, S.of(context))}';
 

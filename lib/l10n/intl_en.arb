@@ -618,5 +618,22 @@
   "ayahShare_title": "Share ayah",
   "ayahShare_addTafsir": "Add Al-Tafsir al-Muyassar",
   "ayahShare_textOnly": "Text only",
-  "ayahShare_renderFailed": "Couldn't prepare the image"
+  "ayahShare_renderFailed": "Couldn't prepare the image",
+  "ayahShare_image": "Image",
+  "ayahShare_reel": "Recitation clip",
+  "ayahShare_ayahCount": "Number of ayat",
+  "ayahShare_addAyah": "Add an ayah",
+  "ayahShare_removeAyah": "Remove an ayah",
+  "ayahShare_recitedBy": "Recited by {reciter}",
+  "@ayahShare_recitedBy": {
+    "placeholders": { "reciter": { "type": "String" } }
+  },
+  "ayahShare_longClip": "Some apps may trim clips longer than 60 seconds",
+  "ayahShare_encoding": "Preparing the clip",
+  "ayahShare_encodeFailed": "Couldn't prepare the clip",
+  "ayahShare_audioFailed": "Couldn't load the recitation",
+  "ayah_range_label": "Surah {surah}, Ayat {from}–{to}",
+  "@ayah_range_label": {
+    "placeholders": { "surah": { "type": "String" }, "from": { "type": "String" }, "to": { "type": "String" } }
+  }
 }

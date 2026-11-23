@@ -602,5 +602,22 @@
   "ayahShare_title": "مشاركة الآية",
   "ayahShare_addTafsir": "إضافة التفسير الميسر",
   "ayahShare_textOnly": "نص فقط",
-  "ayahShare_renderFailed": "تعذّر تجهيز الصورة"
+  "ayahShare_renderFailed": "تعذّر تجهيز الصورة",
+  "ayahShare_image": "صورة",
+  "ayahShare_reel": "مقطع بالتلاوة",
+  "ayahShare_ayahCount": "عدد الآيات",
+  "ayahShare_addAyah": "إضافة آية",
+  "ayahShare_removeAyah": "حذف آية",
+  "ayahShare_recitedBy": "بصوت {reciter}",
+  "@ayahShare_recitedBy": {
+    "placeholders": { "reciter": { "type": "String" } }
+  },
+  "ayahShare_longClip": "قد تقصّ بعض التطبيقات المقاطع الأطول من ٦٠ ثانية",
+  "ayahShare_encoding": "جارٍ تجهيز المقطع",
+  "ayahShare_encodeFailed": "تعذّر تجهيز المقطع",
+  "ayahShare_audioFailed": "تعذّر تحميل التلاوة",
+  "ayah_range_label": "سورة {surah}، الآيات {from}–{to}",
+  "@ayah_range_label": {
+    "placeholders": { "surah": { "type": "String" }, "from": { "type": "String" }, "to": { "type": "String" } }
+  }
 }

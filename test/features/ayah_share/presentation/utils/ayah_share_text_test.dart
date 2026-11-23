@@ -72,6 +72,34 @@ void main() {
     expect(text, '$verse112 — سورة الإخلاص، الآية ١');
   });
 
+  testWidgets('reelShareLabel names one ayah or the range', (tester) async {
+    late String one;
+    late String plain;
+    late String range;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ar'),
+        localizationsDelegates: const [
+          S.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        home: Builder(
+          builder: (context) {
+            const first = AyahIdentifier(surah: 2, ayah: 255);
+            one = reelShareLabel(context, first, 1);
+            range = reelShareLabel(context, first, 3);
+            plain = ayahLabel(context, first, S.of(context));
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(one, plain);
+    expect(range, 'سورة ${quran.getSurahNameArabic(2)}، الآيات ٢٥٥–٢٥٧');
+  });
+
   test('the reel footer credits the reciter with Arabic digits', () {
     expect(
       reelFooter(Reciter.alafasy, const AyahIdentifier(surah: 6, ayah: 31), 1),
