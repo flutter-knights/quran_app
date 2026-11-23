@@ -6,6 +6,7 @@ import 'domain/repositories/reel_repository.dart';
 import 'domain/usecases/compose_ayah_reel.dart';
 import 'domain/usecases/get_share_card_content.dart';
 import 'presentation/cubit/ayah_share_cubit.dart';
+import 'presentation/utils/reel_frame_painter.dart';
 import 'presentation/utils/share_card_renderer.dart';
 
 void initAyahShare() {
@@ -13,6 +14,7 @@ void initAyahShare() {
     () => GetShareCardContent(getMushafPage: sl(), pageService: sl()),
   );
   sl.registerLazySingleton(() => ShareCardRenderer());
+  sl.registerLazySingleton(() => ReelFramePainter());
   sl.registerLazySingleton<ReelRepository>(ReelRepositoryImpl.new);
   sl.registerLazySingleton(() => ComposeAyahReel(sl()));
   sl.registerFactoryParam<AyahShareCubit, AyahIdentifier, MushafPaper>(

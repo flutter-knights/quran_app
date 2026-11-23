@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/features/ayah_share/presentation/utils/ayah_share_text.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/generated/l10n.dart';
 
 void main() {
@@ -69,5 +70,16 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(text, '$verse112 — سورة الإخلاص، الآية ١');
+  });
+
+  test('the reel footer credits the reciter with Arabic digits', () {
+    expect(
+      reelFooter(Reciter.alafasy, const AyahIdentifier(surah: 6, ayah: 31), 1),
+      '${Reciter.alafasy.arabicName} · سورة ${quran.getSurahNameArabic(6)} ٣١',
+    );
+    expect(
+      reelFooter(Reciter.alafasy, const AyahIdentifier(surah: 2, ayah: 255), 3),
+      endsWith('٢٥٥–٢٥٧'),
+    );
   });
 }

@@ -102,6 +102,96 @@ String _assetOf(ShareCardSlice slice) => slice.layer == ShareCardLayer.accent
 
 Future<ByteData> _rgba(ui.Image image) async => (await image.toByteData())!;
 
+const shareCardTextWidth = (shareCardWidth - 2 * shareCardMargin) / 3;
+
+void paintCardPieces(
+  Canvas canvas,
+  ShareCardCrops crops,
+  MushafPaperColors colors,
+) {
+  for (final (:slice, :image) in crops.pieces) {
+    final tint = switch (slice.layer) {
+      ShareCardLayer.ink => colors.ink,
+      ShareCardLayer.accent => colors.accent,
+      ShareCardLayer.basmala => colors.ink.withValues(
+        alpha: crops.basmalaOpacity,
+      ),
+    };
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      slice.dst,
+      Paint()
+        ..filterQuality = FilterQuality.high
+        ..colorFilter = ColorFilter.mode(tint, BlendMode.srcIn),
+    );
+  }
+}
+
+TextPainter layoutTafsirHeading(MushafPaperColors colors) => TextPainter(
+  text: TextSpan(
+    text: PendingS.forLanguage('ar').tafsir_muyassar,
+    style: TS.bold14.copyWith(color: colors.accent),
+  ),
+  textAlign: TextAlign.center,
+  textDirection: TextDirection.rtl,
+)..layout(minWidth: shareCardTextWidth, maxWidth: shareCardTextWidth);
+
+({TextPainter heading, TextPainter body}) layoutTafsirBlock(
+  String body,
+  MushafPaperColors colors,
+  TextStyle style,
+) {
+  final heading = layoutTafsirHeading(colors);
+  final text = TextPainter(
+    text: TextSpan(
+      text: body,
+      style: style.copyWith(color: colors.ink2),
+    ),
+    textAlign: TextAlign.right,
+    textDirection: TextDirection.rtl,
+  )..layout(minWidth: shareCardTextWidth, maxWidth: shareCardTextWidth);
+  return (heading: heading, body: text);
+}
+
+double tafsirBlockHeight(({TextPainter heading, TextPainter body}) block) =>
+    36 + 3 * (block.heading.height + 8 + block.body.height);
+
+void paintTafsirBlock(
+  Canvas canvas,
+  double top,
+  ({TextPainter heading, TextPainter body}) block,
+  MushafPaperColors colors,
+) {
+  final line = Paint()
+    ..color = colors.accent.withAlpha(150)
+    ..strokeWidth = 2;
+  const center = shareCardWidth / 2;
+  const inset = shareCardMargin + 120;
+  canvas
+    ..drawLine(Offset(inset, top), Offset(center - 22, top), line)
+    ..drawLine(
+      Offset(center + 22, top),
+      Offset(shareCardWidth - inset, top),
+      line,
+    )
+    ..drawPath(
+      Path()
+        ..moveTo(center, top - 9)
+        ..lineTo(center + 9, top)
+        ..lineTo(center, top + 9)
+        ..lineTo(center - 9, top)
+        ..close(),
+      Paint()..color = colors.accent.withAlpha(200),
+    )
+    ..save()
+    ..translate(shareCardMargin, top + 36)
+    ..scale(3);
+  block.heading.paint(canvas, Offset.zero);
+  block.body.paint(canvas, Offset(0, block.heading.height + 8));
+  canvas.restore();
+}
+
 class ShareCardRenderer {
   ShareCardRenderer({ShareImageLoader loadImage = loadAssetImage})
     : _loadImage = loadImage;
@@ -223,34 +313,15 @@ class ShareCardRenderer {
     String? tafsir,
   }) async {
     final layout = crops.layout;
-    const textWidth = (shareCardWidth - 2 * shareCardMargin) / 3;
     final tafsirTop = layout.textBottom + shareCardTafsirGap * layout.pitch;
-    TextPainter? heading;
-    TextPainter? body;
+    ({TextPainter heading, TextPainter body})? block;
     ui.Picture? picture;
     ui.Image? rendered;
     try {
       var contentBottom = layout.textBottom;
       if (tafsir != null) {
-        final head = TextPainter(
-          text: TextSpan(
-            text: PendingS.forLanguage('ar').tafsir_muyassar,
-            style: TS.bold14.copyWith(color: colors.accent),
-          ),
-          textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
-        );
-        heading = head..layout(minWidth: textWidth, maxWidth: textWidth);
-        final text = TextPainter(
-          text: TextSpan(
-            text: tafsir,
-            style: tafsirBodyStyle(tafsir).copyWith(color: colors.ink2),
-          ),
-          textAlign: TextAlign.right,
-          textDirection: TextDirection.rtl,
-        );
-        body = text..layout(minWidth: textWidth, maxWidth: textWidth);
-        contentBottom = tafsirTop + 36 + 3 * (head.height + 8 + text.height);
+        block = layoutTafsirBlock(tafsir, colors, tafsirBodyStyle(tafsir));
+        contentBottom = tafsirTop + tafsirBlockHeight(block);
       }
       final frame = shareCardFrame(contentBottom);
       final k = frame.height > shareCardMaxHeight
@@ -262,56 +333,8 @@ class ShareCardRenderer {
         ..drawPaint(Paint()..color = colors.background)
         ..scale(k)
         ..translate(0, frame.dy);
-      for (final (:slice, :image) in crops.pieces) {
-        final tint = switch (slice.layer) {
-          ShareCardLayer.ink => colors.ink,
-          ShareCardLayer.accent => colors.accent,
-          ShareCardLayer.basmala => colors.ink.withValues(
-            alpha: crops.basmalaOpacity,
-          ),
-        };
-        canvas.drawImageRect(
-          image,
-          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
-          slice.dst,
-          Paint()
-            ..filterQuality = FilterQuality.high
-            ..colorFilter = ColorFilter.mode(tint, BlendMode.srcIn),
-        );
-      }
-      if (heading != null && body != null) {
-        final line = Paint()
-          ..color = colors.accent.withAlpha(150)
-          ..strokeWidth = 2;
-        const center = shareCardWidth / 2;
-        const inset = shareCardMargin + 120;
-        canvas
-          ..drawLine(
-            Offset(inset, tafsirTop),
-            Offset(center - 22, tafsirTop),
-            line,
-          )
-          ..drawLine(
-            Offset(center + 22, tafsirTop),
-            Offset(shareCardWidth - inset, tafsirTop),
-            line,
-          )
-          ..drawPath(
-            Path()
-              ..moveTo(center, tafsirTop - 9)
-              ..lineTo(center + 9, tafsirTop)
-              ..lineTo(center, tafsirTop + 9)
-              ..lineTo(center - 9, tafsirTop)
-              ..close(),
-            Paint()..color = colors.accent.withAlpha(200),
-          )
-          ..save()
-          ..translate(shareCardMargin, tafsirTop + 36)
-          ..scale(3);
-        heading.paint(canvas, Offset.zero);
-        body.paint(canvas, Offset(0, heading.height + 8));
-        canvas.restore();
-      }
+      paintCardPieces(canvas, crops, colors);
+      if (block != null) paintTafsirBlock(canvas, tafsirTop, block, colors);
       picture = recorder.endRecording();
       rendered = await picture.toImage(
         (shareCardWidth * k).round(),
@@ -320,8 +343,8 @@ class ShareCardRenderer {
       final png = (await rendered.toByteData(format: ui.ImageByteFormat.png))!;
       return png.buffer.asUint8List();
     } finally {
-      heading?.dispose();
-      body?.dispose();
+      block?.heading.dispose();
+      block?.body.dispose();
       picture?.dispose();
       rendered?.dispose();
     }

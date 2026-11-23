@@ -2,8 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:quran/quran.dart' as quran;
 
 import '../../../../core/helper functions/locale_helpers.dart';
+import '../../../../core/helper functions/numeral_helpers.dart';
 import '../../../../generated/l10n.dart';
 import '../../../quran_playback/domain/entities/ayah_identifier.dart';
+import '../../../quran_playback/domain/entities/reciter.dart';
 
 String ayahVerseText(AyahIdentifier ayah) {
   final verse = quran.getVerse(ayah.surah, ayah.ayah);
@@ -20,3 +22,9 @@ String ayahLabel(BuildContext context, AyahIdentifier ayah, S s) =>
 
 String ayahShareText(BuildContext context, AyahIdentifier ayah) =>
     '${ayahVerseText(ayah)} — ${ayahLabel(context, ayah, S.of(context))}';
+
+String reelFooter(Reciter reciter, AyahIdentifier first, int count) {
+  final last = first.ayah + count - 1;
+  final range = count == 1 ? '${first.ayah}' : '${first.ayah}–$last';
+  return '${reciter.arabicName} · سورة ${quran.getSurahNameArabic(first.surah)} ${range.toIndicNumerals('ar')}';
+}
