@@ -269,6 +269,7 @@ class _MushafPageState extends State<MushafPage> with WidgetsBindingObserver {
     for (final n in [page - 1, page + 1]) {
       if (n < 1 || n > 604) continue;
       precacheImage(AssetImage(AssetsDir.mushafPage(n)), context);
+      precacheImage(AssetImage(AssetsDir.mushafPageAccent(n)), context);
     }
   }
 

@@ -70,7 +70,7 @@ const String _headerPlaceholder = '​\n';
 // Downward nudge so the surah name sits vertically centred in the frame.
 const double _nameDyOffset = 12;
 const double _frameHeightFraction = 0.885;
-const double _basmalaScale = 0.8;
+const double _basmalaScale = 0.75;
 const double _basmalaAlpha = 0.6;
 
 // Both layers are colourless alpha masks. `_opaque` = paint into the mask;
@@ -302,7 +302,7 @@ Future<void> _renderPage(int pageNumber) async {
           text: h.name,
           style: TextStyle(
             fontFamily: _headerFontFamily,
-            fontSize: fontSize * 1.4,
+            fontSize: fontSize * 1.3,
             color: _opaque,
             locale: const Locale('ar'),
           ),
