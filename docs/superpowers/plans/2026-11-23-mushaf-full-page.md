@@ -31,6 +31,8 @@
 - **Switching the setting while a page is open.** Changing «مقاس الصفحة» or auto-hide mid-read must keep the same page and selection and not throw from a stale `PageController`. Task 2's display-sheet test and Task 5's shell test switch the setting with a page open.
 - **Leaf/notice slide with a taller page.** In immersive mode the last lines sit under the foot handle or the leaf; `leafSlide` must measure from the box, not the page. Task 4 tests `leafSlide` with a crop.
 - **Old saved brightness.** A user who saved 0.6 must come back clamped to 0.7, not crash or reset to 1.0. Task 6 tests the model read.
+- **Ribbon hit areas over the text (final mockup audit).** In the cropped phases the 48 px فواصل cluster and tail hit areas reach 8–19 px into the text column. A tap there must still select the verse. Task 3 adds a test that taps the first verse line at the column's end edge, under the cluster's hit box, and expects the ayah selected; the ribbon hit box is the lane plus 8 px of slop, not a 48 px square.
+- **Foot over line 15 and header under the head rule (final mockup audit).** While the phase-2 foot shows it covers line 15, and in both phases the slot-0 frame sits 3.6 px under the head's double rule. Task 5's foot shows only while a leaf or playback is active or after the handle tap, and Task 3 keeps 6 px of paper between the head rule and the box (the box starts 6 px lower; the pitch drops to ≈ 42.9 px).
 
 ---
 
