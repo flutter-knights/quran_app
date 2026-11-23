@@ -58,28 +58,31 @@ class ActionBtn extends StatelessWidget {
         ? scheme.primary
         : scheme.onSurface.withValues(alpha: 0.12);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onPressed,
-        child: Container(
-          height: 44,
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: border),
-          ),
-          padding: const EdgeInsetsDirectional.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (final w
-                  in iconTrailing
-                      ? [_label(fg), const SizedBox(width: 6), _icon(fg)]
-                      : [_icon(fg), const SizedBox(width: 6), _label(fg)])
-                w,
-            ],
+    return Opacity(
+      opacity: onPressed == null ? 0.38 : 1,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onPressed,
+          child: Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: border),
+            ),
+            padding: const EdgeInsetsDirectional.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (final w
+                    in iconTrailing
+                        ? [_label(fg), const SizedBox(width: 6), _icon(fg)]
+                        : [_icon(fg), const SizedBox(width: 6), _label(fg)])
+                  w,
+              ],
+            ),
           ),
         ),
       ),
