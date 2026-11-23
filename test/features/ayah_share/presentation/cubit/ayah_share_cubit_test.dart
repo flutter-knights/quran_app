@@ -939,6 +939,24 @@ void main() {
       expect(c.state.export, ShareExport.sharing);
     });
 
+    test('changing the reel clears an encode failure', () async {
+      for (final change in <void Function(AyahShareCubit)>[
+        (c) => c.removeAyah(),
+        (c) => c.setPaper(MushafPaper.night),
+        (c) => c.setIncludeTafsir(true),
+      ]) {
+        final c = await twoAyat();
+        compose.completer = Completer()
+          ..complete(const Left(UnknownFailure('x')));
+        await c.requestShare();
+        expect(c.state.reelIssue, ReelIssue.encodeFailed);
+
+        change(c);
+
+        expect(c.state.reelIssue, ReelIssue.none);
+      }
+    });
+
     test('the screen stays awake only while encoding', () async {
       final c = await twoAyat();
 

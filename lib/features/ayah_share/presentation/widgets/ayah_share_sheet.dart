@@ -9,9 +9,9 @@ import '../../../../config/theme/color_scheme.dart';
 import '../../../../config/theme/typography_styles.dart';
 import '../../../../core/constants/mushaf_paper.dart';
 import '../../../../core/di/dependency_injection.dart';
+import '../../../../core/helper functions/locale_helpers.dart';
 import '../../../../core/localization/pending_s.dart';
 import '../../../../core/widgets/design/action_buttons_row.dart';
-import '../../../../core/helper functions/locale_helpers.dart';
 import '../../../../core/widgets/design/app_segmented_selector.dart';
 import '../../../../core/widgets/design/app_settings_tile.dart';
 import '../../../../generated/l10n.dart';
@@ -491,50 +491,53 @@ class _ReelProgress extends StatelessWidget {
       ),
       builder: (context, selected) {
         final (encoding, value, failed) = selected;
-        if (encoding) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              key: const ValueKey('reel-encoding'),
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 8,
-              children: [
-                Row(
+        if (!encoding && !failed) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: encoding
+              ? Column(
+                  key: const ValueKey('reel-encoding'),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 8,
                   children: [
-                    Expanded(
-                      child: Text(
-                        s.ayahShare_encoding,
-                        style: TS.medium14.copyWith(
-                          color: context.colorScheme.onSurface,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            s.ayahShare_encoding,
+                            style: TS.medium14.copyWith(
+                              color: context.colorScheme.onSurface,
+                            ),
+                          ),
                         ),
+                        TextButton(
+                          key: const ValueKey('reel-cancel'),
+                          onPressed: cubit.cancelEncode,
+                          child: Text(s.places_cancel, style: TS.medium14),
+                        ),
+                      ],
+                    ),
+                    LinearProgressIndicator(value: value),
+                  ],
+                )
+              : Column(
+                  children: [
+                    Text(
+                      s.ayahShare_encodeFailed,
+                      style: TS.medium14.copyWith(
+                        color: context.colorScheme.onSurface,
                       ),
                     ),
-                    TextButton(
-                      key: const ValueKey('reel-cancel'),
-                      onPressed: cubit.cancelEncode,
-                      child: Text(s.places_cancel, style: TS.medium14),
+                    TextButton.icon(
+                      key: const ValueKey('reel-retry'),
+                      icon: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedRefresh,
+                      ),
+                      label: Text(s.mushaf_retry, style: TS.medium14),
+                      onPressed: cubit.requestShare,
                     ),
                   ],
                 ),
-                LinearProgressIndicator(value: value),
-              ],
-            ),
-          );
-        }
-        if (!failed) return const SizedBox.shrink();
-        return Column(
-          children: [
-            Text(
-              s.ayahShare_encodeFailed,
-              style: TS.medium14.copyWith(color: context.colorScheme.onSurface),
-            ),
-            TextButton.icon(
-              key: const ValueKey('reel-retry'),
-              icon: const HugeIcon(icon: HugeIcons.strokeRoundedRefresh),
-              label: Text(s.mushaf_retry, style: TS.medium14),
-              onPressed: cubit.requestShare,
-            ),
-          ],
         );
       },
     );

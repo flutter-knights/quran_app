@@ -85,6 +85,7 @@ class FakeShareCardRenderer implements ShareCardRenderer {
   final composeCompleters = <Completer<Uint8List>>[];
   final composeCalls = <ComposeCall>[];
   final crops = <CountingCrops>[];
+  final outputs = <Uint8List>[];
 
   @override
   Future<ShareCardCrops> prepare(ShareCardContent content) {
@@ -108,7 +109,9 @@ class FakeShareCardRenderer implements ShareCardRenderer {
     if (failCompose || (failComposeWithTafsir && tafsir != null)) {
       return Future.error(StateError('compose'));
     }
-    return Future.value(Uint8List.fromList(onePixelPng));
+    final bytes = Uint8List.fromList(onePixelPng);
+    outputs.add(bytes);
+    return Future.value(bytes);
   }
 }
 
@@ -166,6 +169,7 @@ typedef PaintCall = ({
 
 class FakeReelFramePainter implements ReelFramePainter {
   final calls = <PaintCall>[];
+  final outputs = <Uint8List>[];
   var throwing = false;
   Completer<void>? gate;
 
@@ -179,7 +183,9 @@ class FakeReelFramePainter implements ReelFramePainter {
     calls.add((crops: crops, colors: colors, footer: footer, tafsir: tafsir));
     await gate?.future;
     if (throwing) throw StateError('paint');
-    return Uint8List.fromList(onePixelPng);
+    final bytes = Uint8List.fromList(onePixelPng);
+    outputs.add(bytes);
+    return bytes;
   }
 }
 

@@ -15,6 +15,8 @@ import 'package:quran_app/core/widgets/design/action_buttons_row.dart';
 import 'package:quran_app/core/widgets/design/app_segmented_selector.dart';
 import 'package:quran_app/features/ayah_share/presentation/cubit/ayah_share_cubit.dart';
 import 'package:quran_app/features/ayah_share/presentation/widgets/ayah_share_sheet.dart';
+import 'package:quran_app/features/ayah_share/presentation/widgets/paper_swatches.dart';
+import 'package:quran_app/features/ayah_share/presentation/widgets/share_card_preview.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/quran_playback/presentation/cubit/playback/playback_cubit.dart';
@@ -70,7 +72,7 @@ void main() {
     Locale locale = const Locale('ar'),
     double textScale = 1,
   }) async {
-    tester.view.physicalSize = const Size(360, 1000);
+    tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -123,6 +125,12 @@ void main() {
 
   final skeletons = find.byWidgetPredicate((w) => w is Skeletonizer);
 
+  Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.pump();
+    await tester.tap(finder);
+  }
+
   Finder shareButton() => find.widgetWithText(ActionBtn, 'مشاركة');
 
   Finder textButton() => find.byKey(const ValueKey('share-text'));
@@ -155,7 +163,7 @@ void main() {
     tester,
   ) async {
     await open(tester);
-    await tester.tap(find.byKey(const ValueKey('share-tafsir')));
+    await tapVisible(tester, find.byKey(const ValueKey('share-tafsir')));
     await tester.pump();
 
     expect(fakes.tafsir.completers, hasLength(1));
@@ -176,7 +184,7 @@ void main() {
     tester,
   ) async {
     await open(tester);
-    await tester.tap(find.byKey(const ValueKey('share-tafsir')));
+    await tapVisible(tester, find.byKey(const ValueKey('share-tafsir')));
     await tester.pump();
     fakes.tafsir.completers.single.complete(
       const Left(NotFoundFailure('6:31')),
@@ -188,6 +196,9 @@ void main() {
       tester.widget<Switch>(find.byKey(const ValueKey('share-tafsir'))).value,
       isFalse,
     );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('share-tafsir-retry')),
+    );
     await tester.tap(find.byKey(const ValueKey('share-tafsir-retry')));
     await tester.pump();
 
@@ -196,7 +207,7 @@ void main() {
 
   testWidgets('a paper swatch recomposes on that paper', (tester) async {
     await open(tester);
-    await tester.tap(find.byKey(const ValueKey('share-paper-night')));
+    await tapVisible(tester, find.byKey(const ValueKey('share-paper-night')));
     await tester.pump();
     await tester.pump();
 
@@ -235,7 +246,7 @@ void main() {
     tester,
   ) async {
     await open(tester);
-    await tester.tap(shareButton());
+    await tapVisible(tester, shareButton());
     await pumpUntil(tester, () => shared.isNotEmpty);
 
     final args = shared.single;
@@ -247,7 +258,7 @@ void main() {
 
   testWidgets('in English the share text is the English label', (tester) async {
     await open(tester, locale: const Locale('en'));
-    await tester.tap(find.widgetWithText(ActionBtn, 'Share'));
+    await tapVisible(tester, find.widgetWithText(ActionBtn, 'Share'));
     await pumpUntil(tester, () => shared.isNotEmpty);
 
     expect(shared.single['text'], 'Surah ${quran.getSurahName(6)}, Ayah 31');
@@ -258,7 +269,7 @@ void main() {
   ) async {
     await open(tester);
     shareThrows = true;
-    await tester.tap(shareButton());
+    await tapVisible(tester, shareButton());
     await pumpUntil(
       tester,
       () => find.text(_shareFailed).evaluate().isNotEmpty,
@@ -276,7 +287,7 @@ void main() {
 
   testWidgets('text only shares the verse without the basmala', (tester) async {
     await open(tester, ayah: const AyahIdentifier(surah: 2, ayah: 1));
-    await tester.tap(textButton());
+    await tapVisible(tester, textButton());
     await pumpUntil(tester, () => shared.isNotEmpty);
 
     final text = shared.single['text'] as String;
@@ -289,7 +300,7 @@ void main() {
   ) async {
     await open(tester);
     shareThrows = true;
-    await tester.tap(textButton());
+    await tapVisible(tester, textButton());
     await pumpUntil(
       tester,
       () => find.text(_shareFailed).evaluate().isNotEmpty,
@@ -309,7 +320,7 @@ void main() {
     await open(tester);
     final held = Completer<Uint8List>();
     fakes.renderer.composeCompleters.add(held);
-    await tester.tap(find.byKey(const ValueKey('share-paper-night')));
+    await tapVisible(tester, find.byKey(const ValueKey('share-paper-night')));
     await tester.pump();
 
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
@@ -351,7 +362,7 @@ void main() {
   ) async {
     await open(tester);
     fakes.renderer.failCompose = true;
-    await tester.tap(find.byKey(const ValueKey('share-paper-night')));
+    await tapVisible(tester, find.byKey(const ValueKey('share-paper-night')));
     await tester.pump();
     await tester.pump();
     expect(find.text('تعذّر تجهيز الصورة'), findsOneWidget);
@@ -384,16 +395,16 @@ void main() {
       return 'dev.fluttercommunity.plus/share/success';
     });
     await open(tester);
-    await tester.tap(textButton());
+    await tapVisible(tester, textButton());
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-    await tester.tap(textButton());
+    await tapVisible(tester, textButton());
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     expect(calls, 1);
 
     release.complete();
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pump();
-    await tester.tap(textButton());
+    await tapVisible(tester, textButton());
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     expect(calls, 2);
   });
@@ -449,8 +460,7 @@ void main() {
     tester,
   ) async {
     await open(tester, textScale: 2);
-    await tester.ensureVisible(find.byKey(const ValueKey('share-tafsir')));
-    await tester.tap(find.byKey(const ValueKey('share-tafsir')));
+    await tapVisible(tester, find.byKey(const ValueKey('share-tafsir')));
     await tester.pump();
     fakes.tafsir.completers.single.complete(
       const Left(NotFoundFailure('6:31')),
@@ -460,6 +470,7 @@ void main() {
     expect(find.byKey(const ValueKey('share-tafsir-retry')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
   group('reel mode', () {
     const start = AyahIdentifier(surah: 6, ayah: 31);
 
@@ -496,7 +507,7 @@ void main() {
     }
 
     Future<void> startEncode(WidgetTester tester) async {
-      fakes.composeReel.completer = Completer<Either<Failure, String>>();
+      fakes.composeReel.completer = Completer();
       await chooseReel(tester);
       await addAyah(tester, 2);
       await tester.ensureVisible(shareButton());
@@ -601,7 +612,7 @@ void main() {
       tester,
     ) async {
       await open(tester, locale: const Locale('en'));
-      fakes.composeReel.completer = Completer<Either<Failure, String>>();
+      fakes.composeReel.completer = Completer();
       await chooseReel(tester, label: 'Recitation clip');
       await addAyah(tester, 2);
       await tester.ensureVisible(find.widgetWithText(ActionBtn, 'Share'));
@@ -647,11 +658,72 @@ void main() {
 
       expect(find.text('تعذّر تجهيز المقطع'), findsOneWidget);
 
-      fakes.composeReel.completer = Completer<Either<Failure, String>>();
+      fakes.composeReel.completer = Completer();
       await tapKey(tester, 'reel-retry');
       await pumpUntil(tester, () => fakes.composeReel.requests.length == 2);
 
       expect(fakes.composeReel.requests, hasLength(2));
+    });
+
+    testWidgets('changing the reel hides the encode failure row', (
+      tester,
+    ) async {
+      await open(tester);
+      await startEncode(tester);
+      fakes.composeReel.completer!.complete(const Left(UnknownFailure('x')));
+      await pumpUntil(
+        tester,
+        () => find.byKey(const ValueKey('reel-retry')).evaluate().isNotEmpty,
+      );
+
+      await tapKey(tester, 'reel-minus');
+
+      expect(find.byKey(const ValueKey('reel-retry')), findsNothing);
+      expect(find.text('تعذّر تجهيز المقطع'), findsNothing);
+    });
+
+    testWidgets(
+      'the preview shows the frame in reel mode and the card in image',
+      (tester) async {
+        await open(tester);
+        final cardBytes = fakes.renderer.outputs.last;
+        Uint8List? previewBytes() => tester
+            .widget<ShareCardPreview>(find.byType(ShareCardPreview))
+            .bytes;
+
+        expect(previewBytes(), same(cardBytes));
+
+        await chooseReel(tester);
+        await pumpUntil(tester, () => previewBytes() != cardBytes);
+
+        expect(previewBytes(), same(fakes.framePainter.outputs.last));
+
+        await tester.ensureVisible(find.text('صورة'));
+        await tester.tap(find.text('صورة'));
+        await tester.pump();
+        await pumpUntil(tester, () => fakes.renderer.outputs.length >= 2);
+
+        expect(previewBytes(), same(fakes.renderer.outputs.last));
+      },
+    );
+
+    testWidgets('the swatches and the tafsir switch are off while encoding', (
+      tester,
+    ) async {
+      await open(tester);
+      await startEncode(tester);
+
+      expect(find.byKey(const ValueKey('reel-encoding')), findsOneWidget);
+      expect(
+        tester.widget<PaperSwatches>(find.byType(PaperSwatches)).enabled,
+        isFalse,
+      );
+      expect(
+        tester
+            .widget<Switch>(find.byKey(const ValueKey('share-tafsir')))
+            .onChanged,
+        isNull,
+      );
     });
 
     testWidgets('an audio failure shows the SnackBar and keeps the image', (
@@ -707,6 +779,10 @@ void main() {
         await chooseReel(tester);
 
         expect(find.byKey(const ValueKey('reel-plus')), findsOneWidget);
+        expect(
+          find.text('قد تقصّ بعض التطبيقات المقاطع الأطول من ٦٠ ثانية'),
+          findsOneWidget,
+        );
         expect(tester.takeException(), isNull);
       },
     );

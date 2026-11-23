@@ -93,7 +93,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
 
   void setPaper(MushafPaper paper) {
     if (paper == state.paper || state.reelWorking) return;
-    emit(state.copyWith(paper: paper));
+    emit(state.copyWith(paper: paper, reelIssue: ReelIssue.none));
     _compose();
   }
 
@@ -104,7 +104,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       return;
     }
     if (on) {
-      emit(state.copyWith(includeTafsir: true));
+      emit(state.copyWith(includeTafsir: true, reelIssue: ReelIssue.none));
       if (state.tafsirStatus == ShareTafsirStatus.ready) {
         _compose();
       } else {
@@ -117,6 +117,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
     emit(
       state.copyWith(
         includeTafsir: false,
+        reelIssue: ReelIssue.none,
         tafsirStatus: state.tafsirStatus == ShareTafsirStatus.loading
             ? ShareTafsirStatus.idle
             : null,
@@ -237,6 +238,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       state.copyWith(
         reelSegments: state.reelSegments.sublist(0, state.reelCount - 1),
         reelCapped: false,
+        reelIssue: ReelIssue.none,
       ),
     );
     _compose();
