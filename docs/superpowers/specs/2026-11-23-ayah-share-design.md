@@ -211,5 +211,5 @@ Exact widget composition of the sheet, swatch visuals, copy wording (Arabic firs
 ## 9. Follow-ups (not in this build)
 
 - Apply the overlap-aware edges and accent rules to `AyahStrip` (it probably shows the same rosette slivers).
-- A bounds `header` unit emitted by the generator would replace the runtime bbox scan.
+- The surah-header regeneration (other session) plans an optional `"headers": [{"surah","x","y","w","h"}]` array in regenerated bounds JSON. Once it lands on `main`, read it when present and keep the grid + bbox scan as the fallback.
 - Pass `sharePositionOrigin` in `HadithView._onShare` too.
