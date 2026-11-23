@@ -340,7 +340,7 @@ void main() {
   testWidgets('sharing a saved row opens the share sheet over أماكني', (
     tester,
   ) async {
-    registerFakeAyahShare();
+    final fakes = registerFakeAyahShare();
     addTearDown(sl.reset);
     await open(
       tester,
@@ -359,6 +359,7 @@ void main() {
 
     expect(find.byType(AyahShareSheet), findsOneWidget);
     expect(find.byType(PlacesSheet), findsOneWidget);
+    expect(fakes.content.requests, [_fatiha]);
   });
 
   testWidgets('the removal notice leaves by itself', (tester) async {
