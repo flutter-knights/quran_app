@@ -174,12 +174,14 @@ ShareCardLayout shareCardLayout({
         .firstWhere((b) => b.ayah.surah == ayah.surah && b.ayah.ayah == 0)
         .lines
         .first;
-    final src = rowSource(rect, (
+    final edges = (
       left: rect.x * mushafPageSize.width,
       right: (rect.x + rect.w) * mushafPageSize.width,
       leftOpen: false,
       rightOpen: false,
-    ));
+    );
+    final cell = rowSource(rect, edges);
+    final src = lineInkSource(rect, edges);
     final bs =
         _basmalaWidth * (shareCardWidth - 2 * shareCardMargin) / src.width;
     slices.add(
@@ -189,10 +191,11 @@ ShareCardLayout shareCardLayout({
         src: src,
         dst: Rect.fromLTWH(
           (shareCardWidth - src.width * bs) / 2,
-          y,
+          y + (src.top - cell.top) * bs,
           src.width * bs,
           src.height * bs,
         ),
+        line: gridLineOf(rect),
       ),
     );
     y += mushafLineHeight * bs + _basmalaGap * pitch;

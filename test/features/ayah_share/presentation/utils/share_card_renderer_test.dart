@@ -209,6 +209,20 @@ void main() {
     });
   });
 
+  testWidgets('the basmala opacity ignores the next line ink', (tester) async {
+    await tester.runAsync(() async {
+      for (final surah in [6, 8, 66]) {
+        final crops = await ShareCardRenderer().prepare(contentFor(surah, 1));
+        expect(
+          crops.basmalaOpacity,
+          closeTo(0.42 * 255 / 153, 0.01),
+          reason: 'surah $surah',
+        );
+        crops.dispose();
+      }
+    });
+  });
+
   testWidgets('3:123 keeps the pause mark above its first row', (tester) async {
     await tester.runAsync(() async {
       final crops = await ShareCardRenderer().prepare(contentFor(3, 123));

@@ -94,6 +94,15 @@ void main() {
     expect(basmala.dst.left + basmala.dst.right, closeTo(1080, 1e-6));
     expect(basmala.dst.width, closeTo(0.37 * (1080 - 2 * 72), 1e-6));
     expect(basmala.page, 128);
+    final rect = boundsOf(
+      128,
+    ).firstWhere((b) => b.ayah.surah == 6 && b.ayah.ayah == 0).lines.first;
+    final band = gridBand(gridLineOf(rect));
+    expect(basmala.line, gridLineOf(rect));
+    expect(basmala.src.top, band.top - mushafInkMargin);
+    expect(basmala.src.bottom, band.bottom + mushafInkMargin);
+    final bs = basmala.dst.width / basmala.src.width;
+    expect(basmala.dst.height, closeTo(basmala.src.height * bs, 1e-6));
   });
 
   test('ink rows cut their whole line window and keep the row pitch', () {
@@ -118,7 +127,9 @@ void main() {
       expect(slice.dst.height, closeTo(slice.src.height * layout.scale, 1e-6));
     }
     final others = layout.slices.where(
-      (s) => s.layer != ShareCardLayer.ink || layout.slices.indexOf(s) < 2,
+      (s) =>
+          s.layer == ShareCardLayer.accent ||
+          (s.layer == ShareCardLayer.ink && layout.slices.indexOf(s) < 2),
     );
     expect(others.map((s) => s.line).toSet(), {null});
   });
