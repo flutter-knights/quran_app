@@ -8,7 +8,9 @@ import 'package:quran_app/generated/l10n.dart';
 
 void main() {
   final verse112 = quran.getVerse(112, 1).split(' ').skip(4).join(' ');
-  final basmalaWord = quran.getVerse(1, 1).split(' ').first;
+  final basmalaWords = quran.getVerse(2, 1).split(' ').take(4);
+  final basmalaPrefix = basmalaWords.join(' ');
+  final basmalaWord = basmalaWords.first;
 
   test('2:1 drops the basmala', () {
     expect(ayahVerseText(const AyahIdentifier(surah: 2, ayah: 1)), 'الم');
@@ -32,10 +34,14 @@ void main() {
   test('no verse 1 keeps the basmala', () {
     for (var surah = 2; surah <= 114; surah++) {
       if (surah == 9) continue;
+      final raw = quran.getVerse(surah, 1);
+      final text = ayahVerseText(AyahIdentifier(surah: surah, ayah: 1));
+      expect(raw, startsWith(basmalaPrefix), reason: 'surah $surah raw');
+      expect(text, isNot(startsWith(basmalaWord)), reason: 'surah $surah');
       expect(
-        ayahVerseText(AyahIdentifier(surah: surah, ayah: 1)),
-        isNot(startsWith(basmalaWord)),
-        reason: 'surah $surah',
+        text,
+        raw.split(' ').skip(4).join(' '),
+        reason: 'surah $surah rest',
       );
     }
   });

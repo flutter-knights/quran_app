@@ -403,11 +403,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   (`Couldn\'t` escaped in `pending_s.dart`.)
 
 - [ ] **Step 1: Write the failing tests**
-  Expected verse strings come from the package, never typed: `final verse112 = quran.getVerse(112, 1).split(' ').skip(4).join(' ');` and `final basmalaWord = quran.getVerse(1, 1).split(' ').first;`.
+  Expected verse strings come from the package, never typed: `final verse112 = quran.getVerse(112, 1).split(' ').skip(4).join(' ');` `final basmalaPrefix = quran.getVerse(2, 1).split(' ').take(4).join(' ');` and `final basmalaWord = basmalaPrefix.split(' ').first;` (never `quran.getVerse(1, 1)`: it is the Uthmani spelling, which no surah 2–114 verse 1 starts with).
   - `'2:1 drops the basmala'`: `ayahVerseText(2:1)` == `'الم'` (no marks; code points U+0627 U+0644 U+0645, verified equal to the package).
   - `'112:1 drops the basmala'`: == `verse112`.
   - `'1:1 and 9:1 stay whole'`: equal `quran.getVerse(1, 1)` and `quran.getVerse(9, 1)`.
-  - `'no verse 1 keeps the basmala'`: for surahs 2–114 except 9, `ayahVerseText` does not start with `basmalaWord`.
+  - `'no verse 1 keeps the basmala'`: for surahs 2–114 except 9, the raw `quran.getVerse(surah, 1)` starts with `basmalaPrefix` (real precondition), and `ayahVerseText` does not start with `basmalaWord` and equals `raw.split(' ').skip(4).join(' ')`.
   - `'ayahShareText quotes the verse and names it'` (widget, `Locale('ar')`): 112:1 → `'$verse112 — سورة الإخلاص، الآية ١'`.
   - `'initAyahShare builds a cubit on the reader paper'` (`ayah_share_di_test.dart`, after the `qibla_di_test.dart` pattern): register `GetMushafPage` over a stub repo, `sl.registerLazySingleton<QuranPageService>(QuranPageServiceImpl.new)`, `GetAyahTafsir` over a stub repo, and as `SettingsCubit` a night-paper settings fake declared in the test file, `class _NightSettings extends FakeSettings { _NightSettings() { emit(SettingsState(state.settingsModel.copyWith(mushafPaper: MushafPaper.night))); } }` (a subclass, because `emit` is protected and cannot be cascaded from outside; `FakeSettings` from `mushaf_page_harness.dart` defaults to cream, which is also the likeliest accidental default); `initAyahShare()`; `final cubit = sl<AyahShareCubit>(param1: const AyahIdentifier(surah: 6, ayah: 31))`, `addTearDown(cubit.close)` → `ayah` 6:31, `state.paper` night; `tearDown(sl.reset)`.
 
@@ -465,7 +465,7 @@ Listener (`BlocListener`, `listenWhen: (a, b) => a.export != b.export`), placed 
   - `'share hands the PNG with its name and the ayah label'`: channel args `paths` single ends with `ayah_6_31.png`, `mimeTypes` `['image/png']`, `text` `'سورة الأنعام، الآية ٣١'`, `originWidth` > 0.
   - `'in English the share text is the English label'`: `Locale('en')` → `text` == `'Surah ${quran.getSurahName(6)}, Ayah 31'`.
   - `'a failing share shows the message above the sheet'`: channel throws `PlatformException` → `تعذّر فتح نافذة المشاركة` found, and its `SnackBar` has a `BottomSheet` ancestor.
-  - `'text only shares the verse without the basmala'`: `open(tester, ayah: const AyahIdentifier(surah: 2, ayah: 1))`, tap `share-text` → `text` starts with `'الم — '` and does not contain `quran.getVerse(1, 1).split(' ').first`.
+  - `'text only shares the verse without the basmala'`: `open(tester, ayah: const AyahIdentifier(surah: 2, ayah: 1))`, tap `share-text` → `text` starts with `'الم — '` and does not contain `quran.getVerse(2, 1).split(' ').first` (the Simple-spelling basmala word, not the Uthmani one from 1:1).
   - `'a failing text share shows the message above the sheet'`: channel throws `PlatformException`, tap `share-text` → `تعذّر فتح نافذة المشاركة` found, and its `SnackBar` has a `BottomSheet` ancestor.
   - `'buttons are disabled during a recompose'`: after the first card, queue a held compose and tap `share-paper-night` → the `ActionBtn` under `share-text` and `find.widgetWithText(ActionBtn, 'مشاركة')` both have null `onPressed` (pump, no settle: the progress bar shows); complete it → both enabled.
   - `'إغلاق closes the sheet'`: tap the `إغلاق` button, settle → no `AyahShareSheet`.
