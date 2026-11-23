@@ -305,6 +305,7 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
                         title: s.ayahShare_addTafsir,
                         subtitle: failed ? s.tafsir_loadFailed : null,
                         enabled: ready,
+                        toggled: includeTafsir,
                         onTap: () => cubit.setIncludeTafsir(!includeTafsir),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -318,10 +319,14 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
                                 ),
                                 onPressed: ready ? cubit.retryTafsir : null,
                               ),
-                            Switch(
-                              key: const ValueKey('share-tafsir'),
-                              value: includeTafsir,
-                              onChanged: ready ? cubit.setIncludeTafsir : null,
+                            ExcludeSemantics(
+                              child: Switch(
+                                key: const ValueKey('share-tafsir'),
+                                value: includeTafsir,
+                                onChanged: ready
+                                    ? cubit.setIncludeTafsir
+                                    : null,
+                              ),
                             ),
                           ],
                         ),

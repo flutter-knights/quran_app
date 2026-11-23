@@ -180,6 +180,24 @@ void main() {
     expect(find.byType(LinearProgressIndicator), findsNothing);
   });
 
+  testWidgets('the tafsir switch is announced by the tile title', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await open(tester);
+    final tafsir = find.byKey(const ValueKey('share-tafsir'));
+
+    expect(
+      tester.getSemantics(tafsir),
+      containsSemantics(
+        label: 'إضافة التفسير الميسر',
+        hasToggledState: true,
+        isToggled: false,
+      ),
+    );
+    handle.dispose();
+  });
+
   testWidgets('a tafsir failure shows the message with a retry', (
     tester,
   ) async {

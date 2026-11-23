@@ -42,4 +42,34 @@ void main() {
     );
     expect(opacity.opacity, 0.38);
   });
+
+  testWidgets('a toggled tile is one labelled toggle node', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pump(
+      tester,
+      AppSettingsTile(
+        title: 'Title',
+        toggled: true,
+        onTap: () {},
+        trailing: ExcludeSemantics(
+          child: Switch(
+            key: const ValueKey('s'),
+            value: true,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    expect(
+      tester.getSemantics(find.byKey(const ValueKey('s'))),
+      containsSemantics(
+        label: 'Title',
+        hasToggledState: true,
+        isToggled: true,
+        hasTapAction: true,
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 1));
+    handle.dispose();
+  });
 }
