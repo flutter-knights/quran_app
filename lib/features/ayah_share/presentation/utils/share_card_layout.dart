@@ -121,8 +121,11 @@ ShareCardLayout shareCardLayout({
   var y = _topPad;
 
   final box = header.box;
+  final headerWidth = header.page <= 2 && page > 2
+      ? mushafColumnWidth
+      : box.width;
   final headerScale = math.min(
-    scale,
+    headerWidth * scale / box.width,
     (shareCardWidth - 2 * _headerMargin) / box.width,
   );
   final headerDst = Rect.fromLTWH(

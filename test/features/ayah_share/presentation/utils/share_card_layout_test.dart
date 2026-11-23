@@ -25,10 +25,10 @@ void main() {
     }
   });
 
-  test('2:282 stacks fifteen rows at height 2465', () {
+  test('2:282 stacks fifteen rows at height 2461', () {
     final layout = layoutFor(2, 282);
     expect(layout.rows, hasLength(15));
-    expect(_height(layout), closeTo(2465, 1));
+    expect(_height(layout), closeTo(2461, 1));
   });
 
   test('16:127 carries its rosette tail on the previous row and refits', () {
@@ -141,6 +141,25 @@ void main() {
     expect(layout.scale, wide.scale);
     expect(layout.headerScale, layout.scale);
     expect(layout.slices.first.dst.width, closeTo(600 * layout.scale, 1e-6));
+  });
+
+  test('a page 1–2 header over a full-width page spans the text column', () {
+    final narrow = Rect.fromLTWH(305, headerBand(0).top + 4, 925, 150);
+    ShareCardLayout layout(int ayah) => shareCardLayout(
+      ayah: AyahIdentifier(surah: 2, ayah: ayah),
+      page: quran.getPageNumber(2, ayah),
+      pageBounds: boundsOf(quran.getPageNumber(2, ayah)),
+      startPage: 2,
+      startPageBounds: boundsOf(2),
+      header: (page: 2, box: narrow),
+    );
+    final far = layout(255);
+    expect(
+      far.slices.first.dst.width,
+      closeTo(mushafColumnWidth * far.scale, 1e-6),
+    );
+    final near = layout(2);
+    expect(near.slices.first.dst.width, closeTo(925 * near.scale, 1e-6));
   });
 
   test('shareCardFrame centres short content', () {
