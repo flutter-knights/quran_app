@@ -40,8 +40,10 @@ void main() {
       'ios/Runner.xcodeproj/project.pbxproj',
     ).readAsStringSync();
 
-    expect(strings, contains('NSPhotoLibraryUsageDescription'));
-    expect(strings, contains('NSPhotoLibraryAddUsageDescription'));
+    expect(strings.trim().split('\n'), [
+      '"NSPhotoLibraryUsageDescription" = "يُستخدم فقط إذا اخترت حفظ مقطع آية شاركته.";',
+      '"NSPhotoLibraryAddUsageDescription" = "يُستخدم فقط لحفظ صورة آية أو مقطعها الذي شاركته في صورك.";',
+    ]);
     expect(project, contains('ar.lproj/InfoPlist.strings'));
     expect(project, matches(RegExp(r'knownRegions = \([^)]*\bar,[^)]*\);')));
   });
