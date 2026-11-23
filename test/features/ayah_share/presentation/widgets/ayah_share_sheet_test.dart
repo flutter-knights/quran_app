@@ -189,7 +189,7 @@ void main() {
 
     expect(
       tester.getSemantics(tafsir),
-      containsSemantics(
+      isSemantics(
         label: 'إضافة التفسير الميسر',
         hasToggledState: true,
         isToggled: false,

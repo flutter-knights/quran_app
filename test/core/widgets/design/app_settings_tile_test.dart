@@ -62,7 +62,7 @@ void main() {
     );
     expect(
       tester.getSemantics(find.byKey(const ValueKey('s'))),
-      containsSemantics(
+      isSemantics(
         label: 'Title',
         hasToggledState: true,
         isToggled: true,
