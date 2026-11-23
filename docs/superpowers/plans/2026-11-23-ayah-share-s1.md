@@ -8,7 +8,9 @@
 
 **Tech Stack:** Flutter 3.47.8 (global, no FVM), `dart:ui` (`PictureRecorder`, `drawImageRect`, `toByteData`), flutter_bloc + bloc_test, equatable, dartz, dio `CancelToken`, share_plus 13 (`ShareParams`, `XFile.fromData`, `fileNameOverrides`), skeletonizer 3, hugeicons 4, the vendored `quran` package.
 
-**Spec:** `docs/superpowers/specs/2026-11-23-ayah-share-design.md`: D1–D3, D6–D9, D11, §2, §3 in full, §5 seams 1–6, §6 (S1 parts), Appendix A. Prototype the layout rules are ported from: `/private/tmp/claude-501/-Users-sameh-Documents-flutter-projects-quran-app/ea8deb78-9e2e-41bc-b4f2-1bd29185fb03/scratchpad/recon/card_proto.py` (`edges`, `line_src`, `grid_band`, `header_source`, `header_box`, `line_items`, `compose`); reference look: `…/images/3.png`, prototype renders `…/scratchpad/recon/card_*.png`. Where spec and plan disagree the spec wins, except the **Deliberate readings** below.
+**Spec:** `docs/superpowers/specs/2026-11-23-ayah-share-design.md`: D1–D3, D6–D9, D11, §2, §3 in full, §5 seams 1–6, §6 (S1 parts), Appendix A. Where spec and plan disagree the spec wins, except the **Deliberate readings** below.
+
+**The plan and spec are self-contained.** The layout rules were ported from a Python prototype (`card_proto.py`: `edges`, `line_src`, `grid_band`, `header_source`, `header_box`, `line_items`, `compose`) that lived in a session scratchpad and may no longer exist. Its names appear below for orientation only and are non-normative: every rule an implementer needs is restated in this plan, and the numbers in the tests are the acceptance criteria.
 
 ## Global Constraints
 
@@ -23,8 +25,9 @@
 - Loading: skeleton for the first card, slim `LinearProgressIndicator` only over a visible preview. A visible skeleton or progress bar never settles: tests `pump()` instead of `pumpAndSettle()` while one shows.
 - Never run `test/tools/generate_mushaf_assets_test.dart` with `GENERATE_MUSHAF_ASSETS=true`; never modify `assets/mushaf/**`. No iOS build in S1.
 - Every task formats exactly the `.dart` paths in its `git add` line with `dart format <paths>` (never a directory, `.`, `lib`, `test` or `lib/generated/**`).
-- Every task's verify step ends with `flutter test` and `flutter analyze --no-fatal-infos`: 0 errors, 0 warnings, ≤ 69 infos; all tests pass, 1 skipped. Running totals from 1660: Task 1 → 1671, 2 → 1681, 3 → 1689, 4 → 1701, 5 → 1716, 6 → 1722, 7 → 1733, 8 → 1733. If the start differs, keep the deltas.
-- Test fixtures read real bounds from disk (`File('assets/mushaf/bounds/page_NNN.json')` through `MushafPageModel.fromJson`, as `mushaf_page_view_margin_test.dart` does); page numbers come from `quran.getPageNumber`. No golden tests.
+- Every task's verify step ends with `flutter test` and `flutter analyze --no-fatal-infos`: 0 errors, 0 warnings, ≤ 69 infos; all tests pass, 1 skipped. Running totals from 1660: Task 1 → 1671, 2 → 1681, 3 → 1690, 4 → 1702, 5 → 1721, 6 → 1727, 7 → 1741, 8 → 1741. If the start differs, keep the deltas.
+- Test fixtures read real bounds from disk: `MushafPageModel.fromJson(jsonDecode(File('assets/mushaf/bounds/page_${page.toString().padLeft(3, '0')}.json').readAsStringSync()))`, as `test/features/surah/presentation/cubit/mushaf_image/mushaf_image_cubit_test.dart:48` does (file names are the page zero-padded to three digits); page numbers come from `quran.getPageNumber`. No golden tests.
+- Never hand-type diacritised Quran text in a test: build expected verse strings from the `quran` package (`quran.getVerse`), since a typed literal can differ in mark order (shadda/fatha) from the bundled text.
 
 ## Deliberate readings (the plan governs here)
 
@@ -39,6 +42,8 @@
 9. **Text share stays a callback.** «نص فقط» shares from the button's `onPressed` with a try/catch SnackBar (a side effect in a callback, as today's study leaf does); only the image share goes through cubit state. Both buttons are disabled while `busy` (§3.5).
 10. **Ayah 0 never reaches the sheet without a guard.** The study layer opens only for `ayah != 0` (`mushaf_page.dart:1166`), `SavedAyatCubit.save` rejects ayah 0, and `place_migration.dart` / `first_ayah_of_page.dart` never produce it, so no entry point needs its own check.
 11. **`feature-widgets.md` names S1's edges only.** The spec's exception line also lists `Reciter`, S2 audio and `PlaybackCubit.state.reciter` (S2 adds them with the reel); S1 adds `enum_localization.dart` (`MushafPaper.localized`) for the swatch labels.
+12. **Tafsir text width is 312 logical px, not 360.** The tafsir heading and body lay out at `(1080 − 2·72) / 3 = 312` logical px inside `canvas.scale(3)` (the 360 logical canvas minus 2 × 24 margin), so their side margins equal the 72 px card margin (§3.4). §3.2's "logical width of 360" is the canvas width, not the text width.
+13. **`PaperSwatches` is new, not `_PaperTile` promoted.** `display_sheet.dart`'s private `_PaperTile` has the same semantics but is a 54 px tall labelled tile; the share sheet needs round 36 px dots in 48 px targets (§3.5 item 4) with the label only in semantics. Nothing moves to core; merging the two is a possible follow-up, not S1 work.
 
 ## Review Focus
 
@@ -142,9 +147,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces (card px, width 1080):
   - Constants: `shareCardWidth = 1080.0`, `shareCardMargin = 72.0`, `shareCardMaxHeight = 4096.0`, `shareCardTafsirGap = 0.55`, `shareCardBasmalaOpacity = 0.42`; private: top pad 72, bottom pad 80, header margin 56, header gap .55, basmala scale .78, basmala gap .45, min height `0.62 * 1080`, tail max 100, refit 1.02.
   - `enum ShareCardLayer { ink, accent, basmala }` (`basmala` reads the ink asset and is drawn faded).
-  - `class ShareCardSlice extends Equatable { const ShareCardSlice({required this.layer, required this.page, required this.src, required this.dst}); final ShareCardLayer layer; final int page; final Rect src; final Rect dst; }`
-  - `typedef ShareCardRow = ({double coreLeft, double coreRight, double top});` (the row's text extent without pads, merged tail included).
-  - `class ShareCardLayout { final List<ShareCardSlice> slices; final List<ShareCardRow> rows; final double scale; final double headerScale; final double textBottom; final bool mergedTail; double get pitch => mushafLineHeight * scale; }` with a const constructor; `slices` in draw order: header ink, header accent, basmala (if any), then rows.
+  - `class ShareCardSlice extends Equatable { const ShareCardSlice({required this.layer, required this.page, required this.src, required this.dst}); final ShareCardLayer layer; final int page; final Rect src; final Rect dst; @override List<Object> get props => [layer, page, src, dst]; }`
+  - `typedef ShareCardRow = ({double coreLeft, double coreRight, double top});` (the row's text extent in card px without pads; on the row that carries a merged tail, `coreLeft` is the tail's left edge, so `coreRight − coreLeft = w_i` below).
+  - `class ShareCardLayout { const ShareCardLayout({required this.slices, required this.rows, required this.scale, required this.headerScale, required this.textBottom, required this.mergedTail}); final List<ShareCardSlice> slices; final List<ShareCardRow> rows; final double scale; final double headerScale; final double textBottom; final bool mergedTail; double get pitch => mushafLineHeight * scale; }`; `slices` in draw order: header ink, header accent, basmala (if any), then each row in order as ink, then (last row only) tail ink, then the accent slice.
   - `ShareCardLayout shareCardLayout({required AyahIdentifier ayah, required int page, required List<AyahBoundEntity> pageBounds, required int startPage, required List<AyahBoundEntity> startPageBounds, required ({int page, Rect box}) header})`; slices are top-anchored (no vertical centring).
   - `({int height, double dy}) shareCardFrame(double contentBottom)`: `content = contentBottom + 80`, `height = max(content, 0.62 * 1080).round()`, `dy = (height − content) / 2`.
   - Test fixture: `ShareCardLayout layoutFor(int surah, int ayah)` building the args from `boundsOf` / `quran.getPageNumber` / `headerSlot`, with the header box `headerBoxFixture(line) = Rect.fromLTRB(54, headerBand(line).top + 4, 1481, headerBand(line).top + 172)` (today's measured frame: line 0 → `54, 163, 1481, 331`).
@@ -175,14 +180,14 @@ final scale =
 Placement:
 - `y = 72`. Header: `hs = min(scale, 968 / box.width)`; dst `Rect.fromLTWH((1080 − box.width·hs) / 2, y, box.width·hs, box.height·hs)` for an ink and an accent slice with `src = box`, `page = header.page`; `y += box.height·hs + 0.55·pitch`.
 - Basmala unless surah is 1 or 9: the `(surah, 0)` rect in `startPageBounds`, `src = rowSource(rect, (left: x·1536, right: (x+w)·1536, leftOpen: false, rightOpen: false))` (raw rect, no edges, no pad); `bs = 0.78·scale`; dst centred at `y`, size `src.size · bs`; layer `basmala`, page `startPage`; `y += LH·bs + 0.45·pitch`.
-- Row i at `top = y + i·pitch`; `centred = page <= 2 || rows == 1`; `w = (core + (tail?.core ?? 0))·scale`; `right = centred ? (1080 + w) / 2 : 1080 − 72`; `coreLeft = right − core·scale`; a merged tail sits at `coreLeft − tail.core·scale`.
-- Each piece maps page px to card px by `x ↦ coreLeftCard + (x − (src.left + (leftOpen ? 48 : 0)))·scale`, `y ↦ top + (y − src.top)·scale`. Ink slice: `src` → mapped dst. The ayah's last rect (the tail when merged) also gets an accent slice: `accentSource(rect, edges)` → mapped dst. No other accent.
+- Row i at `top = y + i·pitch`; `centred = page <= 2 || rows == 1`; `w_i = (core_i + (i == rows − 1 ? tail?.core ?? 0 : 0))·scale` (the tail widens only the row that carries it); `right_i = centred ? (1080 + w_i) / 2 : 1080 − 72`; the piece's own `pieceLeft_i = right_i − core_i·scale`; the merged tail's `tailLeft = pieceLeft_last − tail.core·scale`. The row record is `(coreLeft: right_i − w_i, coreRight: right_i, top: top)`, so on the tail row `coreLeft == tailLeft`.
+- Each piece maps page px to card px by `x ↦ leftCard + (x − (src.left + (leftOpen ? 48 : 0)))·scale`, `y ↦ top + (y − src.top)·scale`, with `leftCard = pieceLeft_i` for a row piece and `tailLeft` for the tail (its own `src` and `leftOpen`). Ink slice: `src` → mapped dst. The ayah's last rect (the tail when merged) also gets an accent slice: `accentSource(rect, edges)` → mapped dst. No other accent.
 - `textBottom = y + rows·pitch`.
 
 - [ ] **Step 1: Write the failing tests** (`share_card_layout_test.dart`; heights read `shareCardFrame(layout.textBottom).height`)
   - `'6:31 lays out three right-aligned rows at height 888'`: 3 rows, `scale` closeTo 0.7682 (1e-3), height 888 (±1), every `row.coreRight` closeTo 1008 (0.5).
   - `'2:282 stacks fifteen rows at height 2450'`.
-  - `'16:127 carries its rosette tail on the previous row and refits'`: 2 rows, `mergedTail` true, `scale` closeTo 0.737 (1e-3), height 738 (±1); the one accent slice sits in the last row (`dst.top >= rows.last.top`, `dst.bottom <= rows.last.top + pitch + 1`) at its left end (`dst.left < rows.last.coreLeft`, `dst.right < rows.last.coreLeft + 0.2 * (rows.last.coreRight - rows.last.coreLeft)`).
+  - `'16:127 carries its rosette tail on the previous row and refits'`: 2 rows, `mergedTail` true, `scale` closeTo 0.737 (1e-3), height 738 (±1); the one accent slice sits in the last row (`dst.top >= rows.last.top`, `dst.bottom <= rows.last.top + pitch + 1`) at its left end (`dst.left < rows.last.coreLeft`, `dst.right < rows.last.coreLeft + 0.2 * (rows.last.coreRight - rows.last.coreLeft)`); the tail widens the row: `rows.last.coreLeft` closeTo 72 and `rows.last.coreRight` closeTo 1008 (0.5) (tail excluded would give ≈ 113), and the leftmost last-row ink slice (the tail, `leftOpen` false on page 281) has `dst.left` closeTo `rows.last.coreLeft` (0.5).
   - `'a one-row ayah is centred at the minimum height'`: 108:1 → 1 row, `(coreLeft + coreRight) / 2` closeTo 540 (0.5), height 670.
   - `'pages 1 and 2 centre every row'`: 2:2 → 2 rows, each centred on 540; 1:1 → height 670.
   - `'surahs 1 and 9 have no basmala'`: no `basmala` slice for 1:1 and 9:1; 6:31 has one, centred (`dst.left + dst.right` closeTo 1080), `dst.width` closeTo `src.width · 0.78 · scale`, `page` 128.
@@ -219,23 +224,23 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: `GetMushafPage`, `MushafRepository`, `MushafPageEntity`, `AyahBoundEntity`, `QuranPageService`, `NotFoundFailure`.
 - Produces:
-  - `class ShareCardContent extends Equatable { const ShareCardContent({required this.ayah, required this.page, required this.pageBounds, required this.startPage, required this.startPageBounds}); final AyahIdentifier ayah; final int page; final List<AyahBoundEntity> pageBounds; final int startPage; final List<AyahBoundEntity> startPageBounds; }`
-  - `class GetShareCardContent { GetShareCardContent({required GetMushafPage getMushafPage, required QuranPageService pageService}); Future<Either<Failure, ShareCardContent>> call(AyahIdentifier ayah); }`: `page = getPageForAyah(s, a)`, `startPage = getPageForAyah(s, 1)`; fetches `page`, and `startPage` only when it differs; an ayah absent from its page's bounds → `Left(NotFoundFailure('${s}:${a}'))`; a repository `Left` passes through.
-  - `Tafsir.body`: for 1:1 whose text starts with «سورة الفاتحة», everything after the first `'. '`, trimmed; otherwise `text`. (`TafsirSection` keeps `text`.)
+  - `class ShareCardContent extends Equatable { const ShareCardContent({required this.ayah, required this.page, required this.pageBounds, required this.startPage, required this.startPageBounds}); final AyahIdentifier ayah; final int page; final List<AyahBoundEntity> pageBounds; final int startPage; final List<AyahBoundEntity> startPageBounds; @override List<Object> get props => [ayah, page, pageBounds, startPage, startPageBounds]; }`
+  - `class GetShareCardContent { GetShareCardContent({required GetMushafPage getMushafPage, required QuranPageService pageService}); Future<Either<Failure, ShareCardContent>> call(AyahIdentifier ayah); }`: `page = getPageForAyah(ayah.surah, ayah.ayah)`, `startPage = getPageForAyah(ayah.surah, 1)`; fetches `page`, and `startPage` only when it differs; an ayah absent from its page's bounds → `Left(NotFoundFailure('${ayah.surah}:${ayah.ayah}'))` (braces needed for the property access; a plain local would be `'$s:$a'`, never `'${s}:${a}'`, which trips `unnecessary_brace_in_string_interps`); a repository `Left` passes through as the same instance.
+  - `Tafsir.body`: for 1:1 whose text starts with «سورة الفاتحة» and whose `indexOf('. ')` is not −1, everything after the first `'. '`, trimmed; in every other case (including no `'. '`), `text`. (`TafsirSection` keeps `text`.)
 
 - [ ] **Step 1: Write the failing tests** (a `_FakeMushafRepo implements MushafRepository` that serves `boundsOf(page)` and records `pages`; `QuranPageServiceImpl`)
   - `'returns the ayah page and the surah start page'`: 6:31 → `page` 131, `startPage` 128, both bounds lists non-empty, `pages` == `[131, 128]`.
   - `'fetches a page once when the ayah is on the start page'`: 112:1 → `pages` == `[604]`, `startPageBounds` identical to `pageBounds`.
   - `'page 1 works'`: 1:1 → `page` 1, `startPage` 1.
   - `'an ayah missing from its bounds is a failure'`: repo serves an empty page → `isLeft`.
-  - `'a bounds failure is returned as is'`: repo `Left(CacheFailure('x'))` → the same `Left`.
-  - `tafsir_test.dart`: `'body drops the Al-Fatiha introduction'` with the fixture `'سورة الفاتحة سميت هذه السورة بالفاتحة؛ لأنه يفتتح بها القرآن العظيم، وتسمى المثاني؛ لأنها تقرأ في كل ركعة، ولها أسماء أخر. أبتدئ قراءة القرآن باسم الله مستعينا به'` → body starts with `'أبتدئ قراءة القرآن باسم الله مستعينا به'`; `'body is the text for any other ayah'` (the same text on 2:1 stays whole); `'1:1 without the introduction stays whole'`.
+  - `'a bounds failure is returned as is'`: `const failure = CacheFailure('x');` the repo returns `Left(failure)` → `result.fold((f) => identical(f, failure), (_) => false)` is true (`Failure` has no value equality, so two `Left(CacheFailure('x'))` are never `==`).
+  - `tafsir_test.dart`: `'body drops the Al-Fatiha introduction'` with the fixture `'سورة الفاتحة سميت هذه السورة بالفاتحة؛ لأنه يفتتح بها القرآن العظيم، وتسمى المثاني؛ لأنها تقرأ في كل ركعة، ولها أسماء أخر. أبتدئ قراءة القرآن باسم الله مستعينا به'` → body starts with `'أبتدئ قراءة القرآن باسم الله مستعينا به'`; `'body is the text for any other ayah'` (the same text on 2:1 stays whole); `'1:1 without the introduction stays whole'`; `'1:1 with the introduction but no full stop stays whole'` (`'سورة الفاتحة سميت هذه السورة بالفاتحة'` → body == text).
 
 - [ ] **Step 2: Run** `flutter test test/features/ayah_share/domain test/features/tafsir/domain`. Expected: FAIL.
 
 - [ ] **Step 3: Implement** the entity, use case and getter.
 
-- [ ] **Step 4: Verify** the scoped tests, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +8 → 1689.
+- [ ] **Step 4: Verify** the scoped tests, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +9 → 1690.
 
 - [ ] **Step 5: Format and commit**
 
@@ -276,6 +281,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 `compose`: if `tafsir != null`, lay out two `TextPainter`s at logical width `(1080 − 2·72) / 3 = 312`: heading `TS.bold14` in `colors.accent`, centred; body `tafsirBodyStyle(tafsir)` in `colors.ink2`, `TextAlign.right`, `TextDirection.rtl`; block height `heading + 8 + body` (logical). `tafsirTop = textBottom + 0.55·pitch`; `contentBottom = tafsir == null ? textBottom : tafsirTop + 36 + 3·block`. `frame = shareCardFrame(contentBottom)`; `k = frame.height > 4096 ? 4096 / frame.height : 1`. Record: `scale(k)`; paper background over `1080 × height`; `translate(0, dy)`; each piece `drawImageRect(image, full, slice.dst, Paint()..filterQuality = FilterQuality.high..colorFilter = ColorFilter.mode(c, BlendMode.srcIn))` with `c` = `ink`, `accent`, or `ink.withValues(alpha: basmalaOpacity)`; then the rule (2 px lines from `72 + 120` to `540 − 22` and `540 + 22` to `1080 − 72 − 120` at `tafsirTop`, `accent` alpha 150/255) and the diamond (half-diagonal 9, alpha 200/255); then `save/translate(72, tafsirTop + 36)/scale(3)`, paint heading and body, `restore`. `toImage((1080·k).round(), (height·k).round())` → PNG bytes; dispose image and painters. No page decode.
 
 - [ ] **Step 1: Write the failing tests** (pixel work inside `tester.runAsync`; the loader paints synthetic 1536×2795 pages with `PictureRecorder` and keeps every image it returns and every asset it was asked for; content from `contentFor`; never assert tafsir pixel heights, tests do not render Cairo)
+
+  Synthetic loader contract: every asset is a fully transparent 1536×2795 page unless the test names it below. The header-trim and night tests paint only `mushafPage(128)`, opaque, inside the given rect; every `mushafPageAccent(n)` stays transparent (so the header accent drawn over the ink's dst adds nothing). The basmala test paints only `mushafPage(128)`, at alpha 128, inside 6:0's `rowSource` rect (raw rect, both edges closed). All other tests use the all-transparent loader.
   - `'alphaBounds finds the inked box'`: an 8×4 RGBA buffer with alpha 9 at (2,1) and (5,2) → `Rect.fromLTRB(2, 1, 6, 3)`; alpha 8 only → null.
   - `'alphaBounds takes the max over layers'`: ink empty, accent inked → the accent box.
   - `'tafsirBodyStyle steps down past 600 characters'`: 600 chars → `fontSize` 14, 601 → 12, both `height` 1.8.
@@ -293,7 +300,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 - [ ] **Step 3: Implement** `share_card_renderer.dart`.
 
-- [ ] **Step 4: Verify** the scoped test, then `flutter test test/config/theme/typography_ratchet_test.dart`, `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +12 → 1701; ratchet unchanged.
+- [ ] **Step 4: Verify** the scoped test, then `flutter test test/config/theme/typography_ratchet_test.dart`, `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +12 → 1702; ratchet unchanged.
 
 - [ ] **Step 5: Format and commit**
 
@@ -323,12 +330,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 Behaviour:
 - `load()`: dispose old crops; emit `status: loading`; content → `Left` emits `failed`; `prepare` (try/catch) → failure emits `failed`; a crops result arriving after `close()` is disposed and dropped; then `_compose()`.
-- `_compose()`: `gen = ++_renderGeneration`; emit `export: rendering` when a card is already showing; `bytes = await renderer.compose(crops, colors: paper.colors, tafsir: includeTafsir && tafsirStatus == ready ? tafsir : null)`; return if closed or `gen != _renderGeneration`; emit `status: ready, cardBytes: bytes, renderId: renderId + 1, export: idle`; an exception emits `status: failed, export: idle`. Remember whether this card carried the tafsir.
+- `_compose()`: if `export == sharing`, set `_composeDeferred = true` and return (no generation bump, no emit: a recompose never runs while the OS share is open, so `export` stays `sharing` and `busy` stays true). Otherwise `gen = ++_renderGeneration`; emit `export: rendering` when a card is already showing; `bytes = await renderer.compose(crops, colors: paper.colors, tafsir: includeTafsir && tafsirStatus == ready ? tafsir : null)`; return if closed or `gen != _renderGeneration`; emit `status: ready, cardBytes: bytes, renderId: renderId + 1, export: idle`. On exception: return if closed or `gen != _renderGeneration`; else emit `status: failed, export: idle`. Every generation bump is followed by its own compose, so a superseded `rendering` is always settled by the newer one.
 - `setPaper`: same paper → nothing; else emit and `_compose()`.
-- `setIncludeTafsir(true)`: emit `includeTafsir: true`; tafsir ready → `_compose()`; else `_loadTafsir()`. `setIncludeTafsir(false)`: cancel and drop the token; emit `includeTafsir: false` (and `tafsirStatus: idle` if it was loading); recompose only if the shown card carried the tafsir.
-- `_loadTafsir()`: new `CancelToken` (old one cancelled); emit `tafsirStatus: loading`; await `getTafsir(surah, ayah, page: content.page, cancelToken: token)`; return if closed or `token` is no longer current; `Left` → `includeTafsir: false, tafsirStatus: failed`; `Right(t)` → `tafsir: t.body, tafsirStatus: ready`, then `_compose()` if still on. `retryTafsir()` = `setIncludeTafsir(true)`.
+- Guard: `setIncludeTafsir` and `retryTafsir` return at once while `state.status != ShareCardStatus.ready` (ready implies content and crops exist; the sheet also disables the switch and the retry button then, see Task 7).
+- `setIncludeTafsir(true)`: emit `includeTafsir: true`; tafsir ready → `_compose()`; else `_loadTafsir()`. `setIncludeTafsir(false)`: cancel and drop the token; emit `includeTafsir: false` (and `tafsirStatus: idle` if it was loading); if `tafsirStatus == ready`, `_compose()` (the shown card or the in-flight compose may carry the tafsir; the generation bump drops an in-flight tafsir compose).
+- `_loadTafsir()`: new `CancelToken` (old one cancelled); emit `tafsirStatus: loading`; await `getTafsir(surah: ayah.surah, ayah: ayah.ayah, page: _content.page, cancelToken: token)`; return if closed or `token` is no longer current; `Left` → `includeTafsir: false, tafsirStatus: failed`; `Right(t)` → `tafsir: t.body, tafsirStatus: ready`, then `_compose()` if still on. `retryTafsir()` = `setIncludeTafsir(true)`.
 - `requestShare()`: only when `status == ready`, `cardBytes != null` and `!busy` → `export: sharing`. Tafsir loading does not block it.
-- `shareFinished(ok:)` → `export: ok ? done : failed`.
+- `shareFinished(ok:)`: `if (isClosed) return;` then only when `export == sharing`: emit `export: ok ? done : failed`; then, if `_composeDeferred`, clear it and `_compose()`. Any other export value is left alone.
 - `close()`: cancel the token, dispose crops, `super.close()`.
 
 - [ ] **Step 1: Write the failing tests** (`bloc_test` or plain `test`; `cardBytes` is outside `props`, so assert `renderId` and read `cubit.state.cardBytes`)
@@ -336,7 +344,7 @@ Behaviour:
   - `'a content failure emits failed'`.
   - `'a render failure emits failed and load recovers'`: `failCompose` then clear and `load()` → `ready`.
   - `'a paper change recomposes without preparing again'`: `setPaper(night)` → prepare count 1, compose count 2 with night colours, `renderId` 2.
-  - `'a stale compose never replaces a newer one'`: queue two compose completers, `setPaper(sepia)` then `setPaper(night)`; complete night's, then sepia's → final `paper` night, `cardBytes` equals night's bytes, `renderId` 2 (sepia's late result dropped).
+  - `'a stale compose never replaces a newer one'`: queue two compose completers, `setPaper(sepia)` then `setPaper(night)`; complete night's, then sepia's → final `paper` night, `cardBytes` equals night's bytes, `renderId` 2 (sepia's late result dropped); then `setPaper(sepia)` and `setPaper(night)` again with completers, complete night's, then sepia's with an error → `status` stays `ready`, `export` idle (a stale failure is dropped too).
   - `'turning the tafsir on loads it once and recomposes with its body'`: Fatiha 1:1 fixture → compose receives the body; switching off and on again makes no second tafsir call.
   - `'while the tafsir loads the plain card stays shareable'`: switch on (pending) → `progress` true, `busy` false; `requestShare()` → `export: sharing`.
   - `'turning the tafsir off mid-load cancels it and never emits failed'`: the recorded token `isCancelled`; completing it with `Left` emits nothing; `tafsirStatus` idle.
@@ -345,6 +353,10 @@ Behaviour:
   - `'share is ignored while a recompose runs'`: compose pending after `setPaper` → `requestShare()` leaves `export: rendering`.
   - `'a second share request while sharing is ignored'`: `requestShare()` twice → one transition to `sharing`.
   - `'shareFinished reports done or failed'`.
+  - `'tafsir toggles before the card is ready are ignored'`: prepare held by a completer → `setIncludeTafsir(true)` and `retryTafsir()` → no tafsir call, no throw, `includeTafsir` false.
+  - `'a tafsir that lands mid-share waits for the share to finish'`: ready, switch on (tafsir pending), `requestShare()`, complete the tafsir → no new compose, `export` sharing, `busy` true, a second `requestShare()` changes nothing; `shareFinished(ok: true)` → `export` done, then a compose with the body runs and `renderId` rises by 1.
+  - `'shareFinished outside a share is ignored'`: compose pending after `setPaper` (`export` rendering) → `shareFinished(ok: true)` leaves `export` rendering.
+  - `'turning the tafsir off while its compose is pending shows the plain card'`: tafsir completes, its compose held by a completer, `setIncludeTafsir(false)`, complete the held compose → the last recorded compose has `tafsir == null`, `cardBytes` comes from it, and `renderId` is 2 (first card, then the plain recompose; the superseded tafsir compose never counts).
   - `'close disposes the crops and cancels the tafsir'`.
   - `'crops that arrive after close are disposed'`: prepare pending, `close()`, complete prepare → its crops disposed, no emit, no compose.
 
@@ -352,7 +364,7 @@ Behaviour:
 
 - [ ] **Step 3: Implement** the cubit and state.
 
-- [ ] **Step 4: Verify** the scoped test, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +15 → 1716.
+- [ ] **Step 4: Verify** the scoped test, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +19 → 1721.
 
 - [ ] **Step 5: Format and commit**
 
@@ -391,18 +403,19 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   (`Couldn\'t` escaped in `pending_s.dart`.)
 
 - [ ] **Step 1: Write the failing tests**
-  - `'2:1 drops the basmala'`: `ayahVerseText(2:1)` == `'الم'`.
-  - `'112:1 drops the basmala'`: == `'قُلْ هُوَ اللَّهُ أَحَدٌ'`.
+  Expected verse strings come from the package, never typed: `final verse112 = quran.getVerse(112, 1).split(' ').skip(4).join(' ');` and `final basmalaWord = quran.getVerse(1, 1).split(' ').first;`.
+  - `'2:1 drops the basmala'`: `ayahVerseText(2:1)` == `'الم'` (no marks; code points U+0627 U+0644 U+0645, verified equal to the package).
+  - `'112:1 drops the basmala'`: == `verse112`.
   - `'1:1 and 9:1 stay whole'`: equal `quran.getVerse(1, 1)` and `quran.getVerse(9, 1)`.
-  - `'no verse 1 keeps the basmala'`: for surahs 2–114 except 9, `ayahVerseText` does not start with `'بِسْمِ'`.
-  - `'ayahShareText quotes the verse and names it'` (widget, `Locale('ar')`): 112:1 → `'قُلْ هُوَ اللَّهُ أَحَدٌ — سورة الإخلاص، الآية ١'`.
-  - `'initAyahShare builds a cubit on the reader paper'` (`ayah_share_di_test.dart`, after the `qibla_di_test.dart` pattern): register `GetMushafPage` over a stub repo, `QuranPageServiceImpl`, `GetAyahTafsir` over a stub repo and `FakeSettings` (`mushaf_page_harness.dart`) as `SettingsCubit`; `initAyahShare()`; `sl<AyahShareCubit>(param1: const AyahIdentifier(surah: 6, ayah: 31))` → `ayah` 6:31, `state.paper` cream; `tearDown(sl.reset)`.
+  - `'no verse 1 keeps the basmala'`: for surahs 2–114 except 9, `ayahVerseText` does not start with `basmalaWord`.
+  - `'ayahShareText quotes the verse and names it'` (widget, `Locale('ar')`): 112:1 → `'$verse112 — سورة الإخلاص، الآية ١'`.
+  - `'initAyahShare builds a cubit on the reader paper'` (`ayah_share_di_test.dart`, after the `qibla_di_test.dart` pattern): register `GetMushafPage` over a stub repo, `sl.registerLazySingleton<QuranPageService>(QuranPageServiceImpl.new)`, `GetAyahTafsir` over a stub repo, and as `SettingsCubit` a night-paper settings fake declared in the test file, `class _NightSettings extends FakeSettings { _NightSettings() { emit(SettingsState(state.settingsModel.copyWith(mushafPaper: MushafPaper.night))); } }` (a subclass, because `emit` is protected and cannot be cascaded from outside; `FakeSettings` from `mushaf_page_harness.dart` defaults to cream, which is also the likeliest accidental default); `initAyahShare()`; `final cubit = sl<AyahShareCubit>(param1: const AyahIdentifier(surah: 6, ayah: 31))`, `addTearDown(cubit.close)` → `ayah` 6:31, `state.paper` night; `tearDown(sl.reset)`.
 
 - [ ] **Step 2: Run** `flutter test test/features/ayah_share/presentation/utils/ayah_share_text_test.dart test/features/ayah_share/ayah_share_di_test.dart`. Expected: FAIL.
 
 - [ ] **Step 3: Implement** the util, the DI file and call, the four strings in both ARBs and `PendingS`.
 
-- [ ] **Step 4: Verify** the scoped tests and `flutter test test/core/localization/pending_s_test.dart`, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +6 → 1722.
+- [ ] **Step 4: Verify** the scoped tests and `flutter test test/core/localization/pending_s_test.dart`, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +6 → 1727.
 
 - [ ] **Step 5: Format and commit**
 
@@ -426,24 +439,25 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: `AyahShareCubit` / `AyahShareState` (Task 5), `ayahShareText`, strings, DI (Task 6); core `ActionButtonsRow`, `ActionBtn.primary`, `ActionBtn`, `AppSettingsTile`; `MushafPaperX`, `MushafPaperLocalization.localized` (`surah/presentation/utils/enum_localization.dart`); `context.cardShadow()`.
 - Produces:
-  - `class AyahShareSheet extends StatefulWidget { const AyahShareSheet({super.key, required this.ayah, required this.controller}); static Future<void> show(BuildContext context, {required AyahIdentifier ayah}); }`. `show` = `showModalBottomSheet<void>(isScrollControlled: true, showDragHandle: true, useSafeArea: true, backgroundColor: context.colorScheme.surface, builder: (_) => BlocProvider(create: (_) => sl<AyahShareCubit>(param1: ayah)..load(), child: DraggableScrollableSheet(expand: false, initialChildSize: 0.85, builder: (_, c) => AyahShareSheet(ayah: ayah, controller: c))))`. The state holds `final _shareKey = GlobalKey();`.
+  - `class AyahShareSheet extends StatefulWidget { const AyahShareSheet({super.key, required this.ayah, required this.controller}); static Future<void> show(BuildContext context, {required AyahIdentifier ayah}); }`. `show` = `showModalBottomSheet<void>(isScrollControlled: true, showDragHandle: true, useSafeArea: true, backgroundColor: context.colorScheme.surface, builder: (_) => BlocProvider(create: (_) => sl<AyahShareCubit>(param1: ayah)..load(), child: DraggableScrollableSheet(expand: false, initialChildSize: 0.85, builder: (_, c) => AyahShareSheet(ayah: ayah, controller: c))))`. The state holds `final _shareKey = GlobalKey();` and `final _textKey = GlobalKey();`, and one helper `Rect? _originOf(GlobalKey key)` (the key's `RenderBox`, `localToGlobal(Offset.zero) & size`, null if unmounted) used by both shares.
   - `class ShareCardPreview extends StatelessWidget { const ShareCardPreview({super.key, required this.bytes, required this.paper, required this.progress, required this.semanticLabel}); }`: `bytes == null` → `Skeletonizer(child: Skeleton.leaf(child: AspectRatio(aspectRatio: 1080 / 888, child: DecoratedBox(paper background, radius 12))))`; else a `DecoratedBox(boxShadow: context.cardShadow())` around `ClipRRect` + `Image.memory(bytes, key: const ValueKey('share-preview-image'), gaplessPlayback: true, width: double.infinity, fit: BoxFit.fitWidth, semanticLabel: …)`, with `LinearProgressIndicator(minHeight: 2)` on top while `progress`.
   - `class PaperSwatches extends StatelessWidget { const PaperSwatches({super.key, required this.selected, required this.onSelected, this.enabled = true}); final MushafPaper selected; final ValueChanged<MushafPaper> onSelected; final bool enabled; }`: a `Wrap` of six 48×48 targets keyed `share-paper-<name>`, each a 36 px circle in `paper.colors.background` with a 1 px `paper.colors.ink` ring, the selected one inside a 2 px `context.colorScheme.primary` ring; `Semantics(button: true, selected:, label: paper.localized(context))`.
   - Test helper (in `ayah_share_fakes.dart`): `typedef FakeAyahShare = ({FakeGetShareCardContent content, FakeShareCardRenderer renderer, FakeGetAyahTafsir tafsir});` and `FakeAyahShare registerFakeAyahShare({FakeGetShareCardContent? content, FakeShareCardRenderer? renderer, FakeGetAyahTafsir? tafsir, MushafPaper paper = MushafPaper.cream})`, which defaults each fake (content: a `Right` with empty bounds for the requested ayah), registers `sl.registerFactoryParam<AyahShareCubit, AyahIdentifier, void>((ayah, _) => AyahShareCubit(ayah: ayah, paper: paper, getContent: content, renderer: renderer, getTafsir: tafsir))` and returns the three fakes; callers add `addTearDown(sl.reset)`.
 
 Sheet body: `ScaffoldMessenger(child: Scaffold(backgroundColor: Colors.transparent, body: <listener>(child: ListView(controller, padding 16, children: …))))`, top to bottom:
-1. Row: `ayahShare_title` (`TS.bold16`) and a `TextButton` `S.playback_close`.
-2. `status == failed` → `ayahShare_renderFailed` (`TS.medium14`) + `TextButton.icon` (`HugeIcons.strokeRoundedRefresh`, `mushaf_retry`, key `share-retry`) calling `load()`; otherwise `ShareCardPreview` (`semanticLabel` = `ayah_label`) through a `BlocSelector` on `(renderId, paper, progress)` that reads `state.cardBytes`.
-3. `AppSettingsTile(title: ayahShare_addTafsir, subtitle: tafsirStatus == failed ? tafsir_loadFailed : null, enabled: status == ready, onTap: toggle, trailing: Row[if failed IconButton(key: 'share-tafsir-retry', tooltip: mushaf_retry, refresh icon, onPressed: retryTafsir), Switch(key: 'share-tafsir', value: includeTafsir, onChanged: setIncludeTafsir)])`.
-4. `display_paper` label (`TS.medium14`) and `PaperSwatches(selected: paper, onSelected: setPaper, enabled: status == ready)`.
-5. `ActionButtonsRow(children: [ActionBtn.primary(key: _shareKey, icon: HugeIcon(HugeIcons.strokeRoundedShare08), label: S.share, onPressed: status == ready && !busy ? requestShare : null), ActionBtn(key: ValueKey('share-text'), icon: HugeIcon(HugeIcons.strokeRoundedText), label: ayahShare_textOnly, onPressed: busy ? null : _shareText)])`.
+Each item rebuilds through its own `BlocSelector<AyahShareCubit, AyahShareState, …>` (`state-management-patterns.md`); the record types below are the selected values, and a builder that needs a field outside its record reads `context.read<AyahShareCubit>().state`.
+1. Row: `ayahShare_title` (`TS.bold16`) and a `TextButton` `S.playback_close` with `onPressed: () => Navigator.of(context).pop()`. No selector.
+2. Selector on `(ShareCardStatus, int, MushafPaper, bool)` = `(status, renderId, paper, progress)`; the builder reads `context.read<AyahShareCubit>().state.cardBytes`. `status == failed` → `ayahShare_renderFailed` (`TS.medium14`) + `TextButton.icon(key: const ValueKey('share-retry'), icon: const HugeIcon(icon: HugeIcons.strokeRoundedRefresh), label: Text(mushaf_retry), onPressed: cubit.load)`; otherwise `ShareCardPreview` (`semanticLabel` = `ayah_label`).
+3. Selector on `(status, includeTafsir, tafsirStatus)`: `AppSettingsTile(title: ayahShare_addTafsir, subtitle: tafsirStatus == failed ? tafsir_loadFailed : null, enabled: status == ready, onTap: toggle, trailing: Row[if failed IconButton(key: const ValueKey('share-tafsir-retry'), tooltip: mushaf_retry, icon: const HugeIcon(icon: HugeIcons.strokeRoundedRefresh), onPressed: status == ready ? cubit.retryTafsir : null), Switch(key: const ValueKey('share-tafsir'), value: includeTafsir, onChanged: status == ready ? cubit.setIncludeTafsir : null)])`. `AppSettingsTile.enabled` only dims the row and drops the tile's own `onTap` (`app_settings_tile.dart:62-69`); the trailing controls stay live unless their own callbacks are null, hence the explicit guards (the cubit guards too, Task 5).
+4. Selector on `(status, paper)`: `display_paper` label (`TS.medium14`) and `PaperSwatches(selected: paper, onSelected: cubit.setPaper, enabled: status == ready)`.
+5. Selector on `(status, busy)`: `ActionButtonsRow(children: [ActionBtn.primary(key: _shareKey, icon: const HugeIcon(icon: HugeIcons.strokeRoundedShare08), label: S.share, onPressed: status == ready && !busy ? cubit.requestShare : null), KeyedSubtree(key: _textKey, child: ActionBtn(key: const ValueKey('share-text'), icon: const HugeIcon(icon: HugeIcons.strokeRoundedText), label: ayahShare_textOnly, onPressed: busy ? null : _shareText))])`. Tests find the primary button by `find.widgetWithText(ActionBtn, S.share)` (it carries only the GlobalKey) and the text button by `ValueKey('share-text')`.
 
 Listener (`BlocListener`, `listenWhen: (a, b) => a.export != b.export`), placed under the inner `Scaffold` so SnackBars land in the sheet's messenger:
-- `sharing` → `SharePlus.instance.share(ShareParams(files: [XFile.fromData(state.cardBytes!, mimeType: 'image/png')], fileNameOverrides: ['ayah_${s}_${a}.png'], text: S.current.ayah_label(surahDisplayName(context, s), a.toLocalized(context)), sharePositionOrigin: origin))` where `origin` is `_shareKey`'s `RenderBox` (`localToGlobal(Offset.zero) & size`, null if unmounted); then `shareFinished(ok: true)`, or `ok: false` on any throw.
+- `sharing` → before any await capture `final cubit = context.read<AyahShareCubit>();`, the bytes, the label text `S.current.ayah_label(surahDisplayName(context, ayah.surah), ayah.ayah.toLocalized(context))` and `_originOf(_shareKey)`; then `await SharePlus.instance.share(ShareParams(files: [XFile.fromData(bytes, mimeType: 'image/png')], fileNameOverrides: ['ayah_${ayah.surah}_${ayah.ayah}.png'], text: label, sharePositionOrigin: origin))`; then `cubit.shareFinished(ok: true)`, or `ok: false` on any throw (`shareFinished` itself returns when the cubit is closed, so a sheet dismissed during the OS share never emits after close, and `context` is never read after the await).
 - `failed` → `SnackBar(content: Text(S.current.share_failed, style: TS.regular14))`.
-- `_shareText`: `SharePlus.instance.share(ShareParams(text: ayahShareText(context, ayah), sharePositionOrigin: origin of the tapped button))` in a try/catch that shows the same SnackBar.
+- `_shareText`: before the await capture `final messenger = ScaffoldMessenger.of(_textKey.currentContext!)` (the button's context sits under the sheet's inner `ScaffoldMessenger`; the State's own `context` is above it and would put the SnackBar behind the sheet), `final text = ayahShareText(context, ayah)` and `final origin = _originOf(_textKey)`; then `SharePlus.instance.share(ShareParams(text: text, sharePositionOrigin: origin))` in a try/catch that shows the same SnackBar through `messenger`.
 
-- [ ] **Step 1: Write the failing tests** (`ayah_share_sheet_test.dart`: `MaterialApp` with `S.delegate` + `GlobalMaterialLocalizations.delegates`, `Locale('ar')`, 360×800 view, a button that calls `AyahShareSheet.show(context, ayah: const AyahIdentifier(surah: 6, ayah: 31))`; `registerFakeAyahShare` per test; share channel `MethodChannel('dev.fluttercommunity.plus/share')` mock recording arguments; `MethodChannel('plugins.flutter.io/path_provider')` mock answering `getTemporaryDirectory` with `Directory.systemTemp.createTempSync().path`; the image share writes a real temp file through several real I/O awaits, so after tapping «مشاركة» drive it inside `tester.runAsync` with a bounded loop (at most 50 rounds) that alternates `await tester.pump()` with `await Future<void>.delayed(const Duration(milliseconds: 20))` until the share mock has recorded a call (or, for the failing share, until the SnackBar is found), then `pump()` once more outside; assert on widgets and channel arguments, never on decoded pixels)
+- [ ] **Step 1: Write the failing tests** (`ayah_share_sheet_test.dart`: one harness `Future<void> open(WidgetTester tester, {AyahIdentifier ayah = const AyahIdentifier(surah: 6, ayah: 31), Locale locale = const Locale('ar'), double textScale = 1})` that pumps a `MaterialApp` with `S.delegate` + `GlobalMaterialLocalizations.delegates`, `locale`, a `MediaQuery` `TextScaler.linear(textScale)`, a 360×800 view and a button that calls `AyahShareSheet.show(context, ayah: ayah)`, then taps it; the 2:1, English and 2x tests pass their own arguments; `registerFakeAyahShare` per test; share channel `MethodChannel('dev.fluttercommunity.plus/share')` mock recording arguments; `MethodChannel('plugins.flutter.io/path_provider')` mock answering `getTemporaryDirectory` with `Directory.systemTemp.createTempSync().path`; the image share writes a real temp file through several real I/O awaits, so after tapping «مشاركة» drive it inside `tester.runAsync` with a bounded loop (at most 50 rounds) that alternates `await tester.pump()` with `await Future<void>.delayed(const Duration(milliseconds: 20))` until the share mock has recorded a call (or, for the failing share, until the SnackBar is found), then `pump()` once more outside; assert on widgets and channel arguments, never on decoded pixels)
   - `'opens with a skeleton, then the card preview'`: prepare held by a completer → `Skeletonizer` shown (pump, no settle); complete → `share-preview-image` shows `MemoryImage` with the fake bytes.
   - `'the tafsir switch loads it and keeps the plain card shareable'`: tafsir held → `LinearProgressIndicator` shown, the share button enabled; complete → compose received the body, progress gone.
   - `'a tafsir failure shows the message with a retry'`: `Left` → `تعذّر تحميل التفسير` and `share-tafsir-retry`; tap it → a second tafsir call.
@@ -451,16 +465,19 @@ Listener (`BlocListener`, `listenWhen: (a, b) => a.export != b.export`), placed 
   - `'share hands the PNG with its name and the ayah label'`: channel args `paths` single ends with `ayah_6_31.png`, `mimeTypes` `['image/png']`, `text` `'سورة الأنعام، الآية ٣١'`, `originWidth` > 0.
   - `'in English the share text is the English label'`: `Locale('en')` → `text` == `'Surah ${quran.getSurahName(6)}, Ayah 31'`.
   - `'a failing share shows the message above the sheet'`: channel throws `PlatformException` → `تعذّر فتح نافذة المشاركة` found, and its `SnackBar` has a `BottomSheet` ancestor.
-  - `'text only shares the verse without the basmala'`: open for 2:1, tap `share-text` → `text` starts with `'الم — '` and contains no `'بِسْمِ'`.
+  - `'text only shares the verse without the basmala'`: `open(tester, ayah: const AyahIdentifier(surah: 2, ayah: 1))`, tap `share-text` → `text` starts with `'الم — '` and does not contain `quran.getVerse(1, 1).split(' ').first`.
+  - `'a failing text share shows the message above the sheet'`: channel throws `PlatformException`, tap `share-text` → `تعذّر فتح نافذة المشاركة` found, and its `SnackBar` has a `BottomSheet` ancestor.
+  - `'buttons are disabled during a recompose'`: after the first card, queue a held compose and tap `share-paper-night` → the `ActionBtn` under `share-text` and `find.widgetWithText(ActionBtn, 'مشاركة')` both have null `onPressed` (pump, no settle: the progress bar shows); complete it → both enabled.
+  - `'إغلاق closes the sheet'`: tap the `إغلاق` button, settle → no `AyahShareSheet`.
   - `'a render failure shows retry'`: `failCompose` → `تعذّر تجهيز الصورة`; clear it, tap `share-retry` → preview image.
-  - `'fits at 2x text in 360 px'`: `TextScaler.linear(2)` → `tester.takeException()` null.
+  - `'fits at 2x text in 360 px'`: `open(tester, textScale: 2)` → `tester.takeException()` null.
   - `paper_swatches_test.dart` `'six 48 px swatches, the selected one announced selected'`: six `share-paper-*` keys, each ≥ 48×48, `sepia` semantics flagged selected, tap `cream` → `onSelected(cream)`.
 
 - [ ] **Step 2: Run** `flutter test test/features/ayah_share/presentation/widgets`. Expected: FAIL.
 
 - [ ] **Step 3: Implement** the three widgets and the test helper.
 
-- [ ] **Step 4: Verify** the scoped tests, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +11 → 1733.
+- [ ] **Step 4: Verify** the scoped tests, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; +14 → 1741.
 
 - [ ] **Step 5: Format and commit**
 
@@ -489,20 +506,21 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 `feature-widgets.md` edits (wording from spec §5):
 - The "no pages" sentence becomes: "`quran_playback`, `tafsir` and `ayah_share` have no pages, so their widgets sit in `presentation/widgets/`."
-- New exception bullet after the `bookmarks` one: "`ayah_share` exports `AyahShareSheet` (opened by `surah`'s study leaf and `bookmarks`' saved rows; it takes the ayah by constructor). Deliberate two-way coupling: `ayah_share` reads `surah`'s mushaf domain (`GetMushafPage`, `AyahBoundEntity`, `NormalizedRect`), `mushaf_paper_colors.dart` (`MushafPaperX` for the card and swatches), `enum_localization.dart` (`MushafPaper.localized` for the swatch labels) and `mushaf_grid.dart`; it also reads `tafsir`'s domain (`GetAyahTafsir`, `Tafsir`) and `quran_playback`'s domain (`QuranPageService`), and `SettingsCubit` for the paper."
+- The surah↔bookmarks coupling sub-bullet (the one starting "Deliberate two-way coupling: `surah` reads `bookmarks`") ends with "Don't add more."; reword that last sentence to "Besides `ayah_share` below, don't add more."
+- Insert a new sub-bullet directly after that surah↔bookmarks sub-bullet (still under "Don't import a feature widget into another feature"; the file has no separate `bookmarks` bullet, the exports share one "Exception:" sub-bullet): "`ayah_share` exports `AyahShareSheet` (opened by `surah`'s study leaf and `bookmarks`' saved rows; it takes the ayah by constructor). Deliberate two-way coupling: `ayah_share` reads `surah`'s mushaf domain (`GetMushafPage`, `AyahBoundEntity`, `NormalizedRect`), `mushaf_paper_colors.dart` (`MushafPaperX` for the card and swatches), `enum_localization.dart` (`MushafPaper.localized` for the swatch labels) and `mushaf_grid.dart`; it also reads `tafsir`'s domain (`GetAyahTafsir`, `Tafsir`) and `quran_playback`'s domain (`QuranPageService`), and `SettingsCubit` for the paper."
 - `surah` utils list gains "`mushaf_grid.dart` (`gridLineOf`, `gridBand`, `headerBand`, `headerSlot`, `rowEdges`, `rowSource`, `accentSource`: the page grid and the one place that corrects the bounds' overlap and rosette defects)".
 - New utils bullet: "`ayah_share`: `share_card_layout.dart` (`shareCardLayout`, `shareCardFrame`: bounds → card slices and height), `share_card_renderer.dart` (`ShareCardRenderer`: crops once per ayah, composes PNG bytes per paper/tafsir), `ayah_share_text.dart` (`ayahVerseText`, `ayahShareText`: the verse without the repeated basmala)."
 
 - [ ] **Step 1: Rewrite the tests that pin the old behaviour, add the new ones**
   - `ayah_study_leaf_test.dart`: delete `'share text quotes the ayah and names it'` (moved to Task 6) and the `share` group's two tests; add `'the share button opens the share sheet'`: `registerFakeAyahShare()` + `addTearDown(sl.reset)`, tap `study-share`, `pumpAndSettle` → `find.byType(AyahShareSheet)` one, fake content `requests` == `[_ayah]`. Remove imports left unused (`quran`, `services`).
   - `place_row_menu_test.dart`: pump `PlaceRowMenu(onShare: () => shared++, onRemove: () => removed++)`; add `'مشاركة calls onShare'` (open, tap `place-share`, `shared` 1, menu closed).
-  - `places_sheet_test.dart`: add `'sharing a saved row opens the share sheet over أماكني'`: `registerFakeAyahShare()`, saved place 2:5, open the row menu, tap `place-share`, settle → `AyahShareSheet` and `PlacesSheet` both found.
+  - `places_sheet_test.dart`: add `'sharing a saved row opens the share sheet over أماكني'`: `registerFakeAyahShare()`, saved place 2:5, open the row menu, tap `place-share`, settle → `AyahShareSheet` and `PlacesSheet` both found. This also covers the Bookmarks page entry point (D6): `bookmarks_page.dart` and `places_sheet.dart` both render saved rows through `PlacesGroups`' single `_SavedRow`, which is the only place `onShare` is wired, so no `bookmarks_page_test.dart` change is needed.
 
 - [ ] **Step 2: Run** `flutter test test/features/surah/presentation/pages/mushaf/widgets/ayah_study_leaf_test.dart test/features/bookmarks/presentation/pages/widgets`. Expected: FAIL (no `onShare`, the share button still shares text).
 
 - [ ] **Step 3: Implement** the three code changes and the `feature-widgets.md` edits. `grep -rn "ayahShareText" lib test` finds only `ayah_share` files.
 
-- [ ] **Step 4: Verify** the scoped tests, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; net 0 → 1733.
+- [ ] **Step 4: Verify** the scoped tests, then `flutter test`, `flutter analyze --no-fatal-infos`. Expected: PASS; net 0 (−3 removed, +3 added) → 1741.
 
 - [ ] **Step 5: Format and commit**
 
