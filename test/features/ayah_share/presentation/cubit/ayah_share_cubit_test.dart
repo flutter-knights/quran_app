@@ -838,6 +838,10 @@ void main() {
         request.clips.map((clip) => clip.audio),
         c.state.reelSegments.map((segment) => segment.audio),
       );
+      expect(
+        painter.calls[painted + 1].crops,
+        isNot(same(painter.calls[painted].crops)),
+      );
     });
 
     test('the basmala leads the first clip of a reel from ayah 1', () async {
@@ -849,6 +853,21 @@ void main() {
         compose.requests.single.clips.first.audio.first.path,
         '/a/1_1.mp3',
       );
+    });
+
+    test('a new encode clears the previous reel path', () async {
+      final c = await twoAyat();
+      await c.requestShare();
+      expect(c.state.reelPath, isNotNull);
+      c.shareFinished(ok: true);
+      compose.completer = Completer();
+
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+
+      expect(c.state.reelPath, isNull);
+      compose.completer!.complete(const Right('/reels/x.mp4'));
+      await sharing;
     });
 
     test('encode progress is mirrored into the state', () async {
@@ -949,6 +968,11 @@ void main() {
         await pumpEventQueue();
 
         expect(getTafsir.completers, hasLength(2));
+        expect(getTafsir.requests.last, (
+          surah: 2,
+          ayah: 256,
+          page: c.state.reelSegments[1].content.page,
+        ));
         getTafsir.completers.last.complete(const Left(ServerFailure('x')));
         await sharing;
 
@@ -991,6 +1015,38 @@ void main() {
       await sharing;
 
       expect(compose.cancels, 1);
+      expect(wake.calls, [true, false]);
+      expect(states.where((s) => s.export == ShareExport.sharing), isEmpty);
+    });
+
+    test(
+      'a painter that throws settles with encodeFailed and frees the wake',
+      () async {
+        final c = await twoAyat();
+        painter.throwing = true;
+
+        await c.requestShare();
+
+        expect(c.state.export, ShareExport.idle);
+        expect(c.state.reelIssue, ReelIssue.encodeFailed);
+        expect(compose.requests, isEmpty);
+        expect(wake.calls, [true, false]);
+      },
+    );
+
+    test('a throw after cancel is not reported as a failure', () async {
+      final c = await twoAyat();
+      painter.gate = Completer();
+      painter.throwing = true;
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+
+      c.cancelEncode();
+      painter.gate!.complete();
+      await sharing;
+
+      expect(c.state.export, ShareExport.idle);
+      expect(c.state.reelIssue, ReelIssue.none);
       expect(wake.calls, [true, false]);
     });
 

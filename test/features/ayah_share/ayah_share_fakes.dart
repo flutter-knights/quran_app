@@ -115,6 +115,7 @@ class FakeShareCardRenderer implements ShareCardRenderer {
 class FakeGetAyahTafsir implements GetAyahTafsir {
   final completers = <Completer<Either<Failure, Tafsir>>>[];
   final tokens = <CancelToken>[];
+  final requests = <({int surah, int ayah, int page})>[];
 
   @override
   Future<Either<Failure, Tafsir>> call({
@@ -123,6 +124,7 @@ class FakeGetAyahTafsir implements GetAyahTafsir {
     required int page,
     required CancelToken cancelToken,
   }) {
+    requests.add((surah: surah, ayah: ayah, page: page));
     tokens.add(cancelToken);
     final completer = Completer<Either<Failure, Tafsir>>();
     completers.add(completer);
@@ -164,6 +166,8 @@ typedef PaintCall = ({
 
 class FakeReelFramePainter implements ReelFramePainter {
   final calls = <PaintCall>[];
+  var throwing = false;
+  Completer<void>? gate;
 
   @override
   Future<Uint8List> paint(
@@ -173,6 +177,8 @@ class FakeReelFramePainter implements ReelFramePainter {
     String? tafsir,
   }) async {
     calls.add((crops: crops, colors: colors, footer: footer, tafsir: tafsir));
+    await gate?.future;
+    if (throwing) throw StateError('paint');
     return Uint8List.fromList(onePixelPng);
   }
 }

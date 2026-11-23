@@ -96,6 +96,7 @@ final class AyahShareState extends Equatable {
     ReelIssue? reelIssue,
     double? encodeProgress,
     String? reelPath,
+    bool clearReelPath = false,
   }) => AyahShareState(
     paper: paper ?? this.paper,
     status: status ?? this.status,
@@ -111,7 +112,7 @@ final class AyahShareState extends Equatable {
     reelCapped: reelCapped ?? this.reelCapped,
     reelIssue: reelIssue ?? this.reelIssue,
     encodeProgress: encodeProgress ?? this.encodeProgress,
-    reelPath: reelPath ?? this.reelPath,
+    reelPath: clearReelPath ? null : reelPath ?? this.reelPath,
   );
 
   @override

@@ -245,7 +245,8 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   Future<void> requestShare() async {
     if (state.status != ShareCardStatus.ready ||
         state.cardBytes == null ||
-        state.busy) {
+        state.busy ||
+        (state.format == ShareFormat.reel && state.reelSegments.isEmpty)) {
       return;
     }
     if (state.format == ShareFormat.image) {
@@ -270,6 +271,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
         export: ShareExport.encoding,
         encodeProgress: 0,
         reelIssue: ReelIssue.none,
+        clearReelPath: true,
       ),
     );
     final withTafsir =
@@ -343,7 +345,9 @@ class AyahShareCubit extends Cubit<AyahShareState> {
         state.copyWith(
           export: ShareExport.idle,
           encodeProgress: 0,
-          reelIssue: ReelIssue.encodeFailed,
+          reelIssue: generation == _encodeGeneration
+              ? ReelIssue.encodeFailed
+              : ReelIssue.none,
         ),
       );
     } finally {
