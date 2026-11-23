@@ -31,6 +31,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 	</dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Used only to save a shared ayah image to your photos.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs access to your location to calculate accurate prayer times for your area, even when the app is closed.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
