@@ -6,17 +6,18 @@
 // Both PNGs are colourless alpha masks (RGB is black); the app tints them at
 // runtime with two srcIn Image layers — body -> colorScheme.onSurface, accent
 // -> colorScheme.secondary — so the pages adapt to light/dark themes.
-//   - BODY  : verse text + surah NAME + basmala + oval metadata (label+number)
-//   - ACCENT: the ornamental header FRAME glyph + the ayah-number rosettes
+//   - BODY  : verse text + surah NAME + basmala (at 0.8 size, 60% alpha)
+//   - ACCENT: the ornamental header frame (paintSurahFrame) + the ayah-number rosettes
 //
 // Pipeline per page:
 //   original TTF -> FontLoader -> ONE split-span list -> body & accent painters
 //   (identical geometry) -> Picture -> PNG; getBoxesForSelection -> bounds JSON.
 //
-// The header decoration is the QCF2BSML glyph 0xf2 (an ornamental band with two
-// side ovals), scaled to fill the header line; the surah name is centred in it
-// and the two ovals carry "ترتيبها <surah#>" and "آياتها <verse count>" in the
-// UthmanTN naskh font. (Earlier versions overlaid assets/images/header.png.)
+// The header decoration is drawn by paintSurahFrame
+// (lib/features/surah/presentation/utils/surah_frame.dart) across the page's
+// text column, 0.885 of a line tall; the surah name is centred in it.
+// (Earlier versions stretched the QCF2BSML glyph 0xf2, and before that
+// overlaid assets/images/header.png.)
 //
 // Rosette colouring: the ayah-end rosette is the last non-newline glyph of each
 // verse; it is split into its own span so the accent layer can carry it while
@@ -43,12 +44,13 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran/quran.dart' as quran;
+import 'package:quran_app/features/surah/presentation/utils/surah_frame.dart';
 import 'mushaf_page_builder.dart';
 
 const double _renderWidth = 1536;
@@ -63,23 +65,13 @@ const String _outputPagesDir = 'assets/mushaf/pages';
 const String _outputBoundsDir = 'assets/mushaf/bounds';
 const String _headerFontFamily = 'QCF_P000';
 const String _headerFontPath = 'assets/QCF2BSMLfonts/QCF2BSML.ttf';
-const String _metaFontFamily = 'UthmanMeta';
-const String _metaFontPath = 'assets/QCF2BSMLfonts/UthmanTN1B Ver10.otf';
 const String _basmalaText = '!"#\n';
 const String _headerPlaceholder = '​\n';
-// QCF2BSML 0xf2: the ornamental surah-header frame band (replaces header.png).
-const String _frameGlyph = 'ò';
 // Downward nudge so the surah name sits vertically centred in the frame.
 const double _nameDyOffset = 12;
-// Oval centres (manually picked) as fractions of frame width / header-band height,
-// and a downward nudge for the label+number block within the oval.
-const double _ovalLeftX = 0.2055;
-const double _ovalRightX = 0.7918;
-// Frame fills this fraction of the page width, centred. Narrower than 100%
-// so it doesn't overhang the text content on either side.
-const double _frameWidthFraction = 0.93;
-const double _ovalY = 0.4831;
-const double _ovalBlockDy = 8;
+const double _frameHeightFraction = 0.885;
+const double _basmalaScale = 0.8;
+const double _basmalaAlpha = 0.6;
 
 // Both layers are colourless alpha masks. `_opaque` = paint into the mask;
 // `_clear` = reserve layout space but paint nothing.
@@ -88,25 +80,6 @@ const Color _clear = Color(0x00000000);
 
 const double _horizontalSnapTolerancePx = 60;
 const double _verticalSnapTolerancePx = 6;
-
-const List<String> _arabicDigits = [
-  '٠',
-  '١',
-  '٢',
-  '٣',
-  '٤',
-  '٥',
-  '٦',
-  '٧',
-  '٨',
-  '٩',
-];
-String _arabicNumber(int n) =>
-    n.toString().split('').map((d) => _arabicDigits[int.parse(d)]).join();
-
-// Frame-glyph ink bounds: identical for every page (same header font + size),
-// so measure once and cache.
-Rect? _frameInk;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -122,7 +95,6 @@ void main() {
 
   setUpAll(() async {
     await _loadFontFromTtf(_headerFontFamily, _headerFontPath);
-    await _loadFontFromTtf(_metaFontFamily, _metaFontPath);
     Directory(_outputPagesDir).createSync(recursive: true);
     Directory(_outputBoundsDir).createSync(recursive: true);
   });
@@ -192,6 +164,7 @@ Future<void> _renderPage(int pageNumber) async {
   // Highlight units = ayahs + basmalas. Basmalas use ayah=0.
   final units = <({int surah, int ayah, int start, int end})>[];
   final headerPlaceholders = <({int lineIndex, String name, int surah})>[];
+  final basmalaLines = <int>[];
   var cursor = 0;
   var lineIndex = 0;
   var atLineStart = true;
@@ -209,7 +182,7 @@ Future<void> _renderPage(int pageNumber) async {
         name: page.surahNames[surahCounter],
         surah: i < page.ayahIdentifiers.length
             ? page.ayahIdentifiers[i].surah
-            : -1,
+            : page.ayahIdentifiers.last.surah + 1,
       ));
       add(_headerPlaceholder, 'body');
       lineIndex += '\n'.allMatches(_headerPlaceholder).length;
@@ -221,6 +194,7 @@ Future<void> _renderPage(int pageNumber) async {
           ? page.ayahIdentifiers[i].surah
           : -1;
       final start = cursor;
+      basmalaLines.add(lineIndex);
       add(_basmalaText, 'basmala');
       lineIndex += '\n'.allMatches(_basmalaText).length;
       atLineStart = _basmalaText.endsWith('\n');
@@ -272,7 +246,7 @@ Future<void> _renderPage(int pageNumber) async {
 
   final bodyPainter = layeredPainter(const {
     'body': _opaque,
-    'basmala': _opaque,
+    'basmala': _clear,
     'rosette': _clear,
   });
   final accentPainter = layeredPainter(const {
@@ -290,27 +264,35 @@ Future<void> _renderPage(int pageNumber) async {
         '${page.surahHeadersIndexes.length} headers)',
   );
 
-  // Frame glyph geometry: map its ink rect onto the full header box.
-  final framePainter = TextPainter(
-    text: TextSpan(
-      text: _frameGlyph,
-      style: TextStyle(
-        fontFamily: _headerFontFamily,
-        fontSize: fontSize,
-        color: _opaque,
-      ),
-    ),
+  var columnLeft = double.infinity;
+  var columnRight = double.negativeInfinity;
+  for (final u in units) {
+    if (u.ayah == 0) continue;
+    for (final b in bodyPainter.getBoxesForSelection(
+      TextSelection(baseOffset: u.start, extentOffset: u.end),
+    )) {
+      if (b.left < columnLeft) columnLeft = b.left;
+      if (b.right > columnRight) columnRight = b.right;
+    }
+  }
+  final frameHalfWidth = math.max(
+    _renderWidth / 2 - columnLeft,
+    columnRight - _renderWidth / 2,
+  );
+  final frameHeight = lineHeight * _frameHeightFraction;
+  Rect frameRect(int lineIndex) => Rect.fromLTWH(
+    _renderWidth / 2 - frameHalfWidth,
+    topMargin + lineIndex * lineHeight + (lineHeight - frameHeight) / 2,
+    frameHalfWidth * 2,
+    frameHeight,
+  );
+  final basmalaPainter = TextPainter(
+    text: TextSpan(text: _basmalaText.trim(), style: basmala(_opaque)),
     textDirection: TextDirection.rtl,
     textAlign: TextAlign.center,
   )..layout(minWidth: _renderWidth, maxWidth: _renderWidth);
-  _frameInk ??= await _measureInk(framePainter);
-  final ink = _frameInk!;
-  final frameWidth = _renderWidth * _frameWidthFraction;
-  final frameOffsetX = (_renderWidth - frameWidth) / 2;
-  final frameSx = frameWidth / ink.width;
-  final frameSy = lineHeight / ink.height;
 
-  // ---- BODY layer: painter + surah name + oval metadata ----
+  // ---- BODY layer: painter + surah name + basmala ----
   final bodyImage = await _toImage(pageHeight, (canvas) {
     bodyPainter.paint(canvas, Offset(0, topMargin));
     for (final h in headerPlaceholders) {
@@ -335,25 +317,19 @@ Future<void> _renderPage(int pageNumber) async {
           headerY + (lineHeight - namePainter.height) / 2 + _nameDyOffset,
         ),
       );
-      if (h.surah > 0) {
-        final cy = headerY + _ovalY * lineHeight;
-        _ovalMeta(
-          canvas,
-          'ترتيبها',
-          _arabicNumber(h.surah),
-          frameOffsetX + _ovalRightX * frameWidth,
-          cy,
-          fontSize,
-        );
-        _ovalMeta(
-          canvas,
-          'آياتها',
-          _arabicNumber(quran.getVerseCount(h.surah)),
-          frameOffsetX + _ovalLeftX * frameWidth,
-          cy,
-          fontSize,
-        );
-      }
+    }
+    for (final line in basmalaLines) {
+      final top = topMargin + line * lineHeight;
+      final center = Offset(_renderWidth / 2, top + lineHeight / 2);
+      canvas.saveLayer(
+        Rect.fromLTWH(0, top, _renderWidth, lineHeight),
+        Paint()..color = _opaque.withValues(alpha: _basmalaAlpha),
+      );
+      canvas.translate(center.dx, center.dy);
+      canvas.scale(_basmalaScale);
+      canvas.translate(-center.dx, -center.dy);
+      basmalaPainter.paint(canvas, Offset(0, top));
+      canvas.restore();
     }
   });
 
@@ -361,13 +337,7 @@ Future<void> _renderPage(int pageNumber) async {
   final accentImage = await _toImage(pageHeight, (canvas) {
     accentPainter.paint(canvas, Offset(0, topMargin));
     for (final h in headerPlaceholders) {
-      final headerY = topMargin + h.lineIndex * lineHeight;
-      canvas.save();
-      canvas.translate(frameOffsetX, headerY);
-      canvas.scale(frameSx, frameSy);
-      canvas.translate(-ink.left, -ink.top);
-      framePainter.paint(canvas, Offset.zero);
-      canvas.restore();
+      paintSurahFrame(canvas, frameRect(h.lineIndex), _opaque);
     }
   });
 
@@ -412,9 +382,9 @@ Future<void> _renderPage(int pageNumber) async {
       final corrected = boxes
           .map(
             (b) => ui.TextBox.fromLTRBD(
-              b.left,
+              _renderWidth / 2 - (_renderWidth / 2 - b.left) * _basmalaScale,
               b.top,
-              _renderWidth - b.left,
+              _renderWidth / 2 + (_renderWidth / 2 - b.left) * _basmalaScale,
               b.bottom,
               b.direction,
             ),
@@ -452,71 +422,24 @@ Future<void> _renderPage(int pageNumber) async {
   expect(bounds, isNotEmpty, reason: 'page $pageNumber has no units');
 
   final jsonFile = File('$_outputBoundsDir/page_$pad.json');
+  double norm(double v, double of) => double.parse((v / of).toStringAsFixed(5));
   await jsonFile.writeAsString(
-    jsonEncode({'page': pageNumber, 'ayahs': bounds}),
-  );
-}
-
-// Stacked Arabic label (small) above a number, centred at (cx, cy) and nudged
-// down by `_ovalBlockDy`. `height: 1.0` keeps the two lines tight.
-void _ovalMeta(
-  Canvas canvas,
-  String label,
-  String number,
-  double cx,
-  double cy,
-  double fontSize,
-) {
-  TextPainter line(String t, double size) => TextPainter(
-    text: TextSpan(
-      text: t,
-      style: TextStyle(
-        fontFamily: _metaFontFamily,
-        fontSize: size,
-        height: 1.0,
-        color: _opaque,
-        locale: const Locale('ar'),
-      ),
-    ),
-    textDirection: TextDirection.rtl,
-    textAlign: TextAlign.center,
-  )..layout();
-  final lp = line(label, fontSize * 0.30 + 2);
-  final np = line(number, fontSize * 0.36 + 2);
-  const gap = 8.0;
-  final total = lp.height + gap + np.height;
-  var y = cy - total / 2 + _ovalBlockDy;
-  lp.paint(canvas, Offset(cx - lp.width / 2, y));
-  y += lp.height + gap;
-  np.paint(canvas, Offset(cx - np.width / 2, y));
-}
-
-// Tight ink bounds (alpha>0) of a painter drawn at origin in renderWidth space.
-Future<Rect> _measureInk(TextPainter p) async {
-  final w = _renderWidth.toInt();
-  final h = p.height.ceil();
-  final rec = ui.PictureRecorder();
-  p.paint(Canvas(rec), Offset.zero);
-  final img = await rec.endRecording().toImage(w, h);
-  final data = (await img.toByteData(
-    format: ui.ImageByteFormat.rawRgba,
-  ))!.buffer.asUint8List();
-  var minX = w, minY = h, maxX = -1, maxY = -1;
-  for (var y = 0; y < h; y++) {
-    for (var x = 0; x < w; x++) {
-      if (data[(y * w + x) * 4 + 3] != 0) {
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-    }
-  }
-  return Rect.fromLTRB(
-    minX.toDouble(),
-    minY.toDouble(),
-    (maxX + 1).toDouble(),
-    (maxY + 1).toDouble(),
+    jsonEncode({
+      'page': pageNumber,
+      'ayahs': bounds,
+      if (headerPlaceholders.isNotEmpty)
+        'headers': [
+          for (final h in headerPlaceholders)
+            if (frameRect(h.lineIndex) case final r)
+              {
+                'surah': h.surah,
+                'x': norm(r.left, _renderWidth),
+                'y': norm(r.top, pageHeight),
+                'w': norm(r.width, _renderWidth),
+                'h': norm(r.height, pageHeight),
+              },
+        ],
+    }),
   );
 }
 
