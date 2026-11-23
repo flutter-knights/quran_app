@@ -208,6 +208,19 @@ void main() {
       }
     });
 
+    test('a card shorter than one step still gets a frame', () {
+      final android = reelPlan(_request(0.05, 3), ios: false);
+      final ios = reelPlan(_request(0.3, 5), ios: true);
+
+      expect(android.frames.map((f) => f.clip), [0, 1]);
+      expect(android.frames.first.duration, const Duration(milliseconds: 200));
+      expect(ios.frames.map((f) => f.clip), [0, 1, 1, 1, 1, 1]);
+      expect(
+        ios.frames.map((f) => f.duration),
+        everyElement(const Duration(seconds: 1)),
+      );
+    });
+
     test('audio tracks start at the exact offsets, basmala first', () {
       final plan = reelPlan(_fractional(), ios: false);
 
@@ -254,7 +267,7 @@ void main() {
         final result = await repo.compose(request());
 
         final path = result.getOrElse(() => '');
-        expect(path, endsWith('reels/ayah_6_31-32.mp4'));
+        expect(path, endsWith('reels/1/ayah_6_31-32.mp4'));
         expect(File(path).existsSync(), isTrue);
         final pass1 = editor.recorded[0] as StopMotionRenderData;
         expect(editor.framesExisted, isTrue);
@@ -262,7 +275,19 @@ void main() {
         expect(pass1.frameRate, 5);
         expect(pass1.resolution, const Size(1080, 1920));
         expect(pass1.fit, StopMotionFit.cover);
+        final plan = reelPlan(request(), ios: false);
+        expect(
+          pass1.frames.map((f) => f.duration),
+          plan.frames.map((f) => f.duration),
+        );
+        expect(pass1.frames.map((f) => f.image.file!.path), [
+          for (final frame in plan.frames) endsWith('frame_${frame.clip}.png'),
+        ]);
         final pass2 = editor.recorded[1] as VideoRenderData;
+        expect(
+          pass2.videoSegments!.single.video.file!.path,
+          endsWith('silent.mp4'),
+        );
         expect(pass2.audioTracks.map((t) => t.path), ['/a0.mp3', '/a1.mp3']);
         expect(pass2.audioTracks.map((t) => t.startTime), [
           Duration.zero,
@@ -333,21 +358,67 @@ void main() {
       expect(root('work/1').existsSync(), isFalse);
     });
 
-    test('cancel while idle does not throw', () async {
+    test('a cancel landing as pass 2 finishes still cancels', () async {
+      editor.pass2Gate = Completer();
+      final done = repo.compose(request());
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(editor.pass2Calls, 1);
+
       await repo.cancel();
-      await repo.compose(request());
+      editor.pass2Gate!.complete();
+      final result = await done;
+
+      expect(result.fold((f) => f, (_) => null), isA<ReelCancelledFailure>());
+      expect(root('reels').listSync(), isEmpty);
+      expect(root('work/1').existsSync(), isFalse);
+    });
+
+    test('cancel while idle does not poison the next compose', () async {
+      await repo.cancel();
+      expect((await repo.compose(request())).isRight(), isTrue);
       await repo.cancel();
 
       expect(editor.cancelled, isEmpty);
+    });
+
+    test('a compose after a cancelled one succeeds', () async {
+      editor.pass1Gate = Completer();
+      final first = repo.compose(request());
+      await editor.pass1Started.future;
+      await repo.cancel();
+      editor.pass1Gate!.complete();
+      expect((await first).isLeft(), isTrue);
+
+      final second = await repo.compose(request());
+
+      expect(second.isRight(), isTrue);
+      expect(File(second.getOrElse(() => '')).existsSync(), isTrue);
+    });
+
+    test('a late unwind of a cancelled compose keeps the newer reel', () async {
+      final gate = Completer<void>();
+      editor.pass1Gate = gate;
+      final first = repo.compose(request());
+      await editor.pass1Started.future;
+      await repo.cancel();
+      editor.pass1Gate = null;
+      final second = await repo.compose(request());
+
+      gate.complete();
+      await first;
+
+      expect(second.isRight(), isTrue);
+      expect(File(second.getOrElse(() => '')).existsSync(), isTrue);
     });
 
     test('a new compose deletes the previous reel', () async {
       await repo.compose(request());
       await repo.compose(request(32));
 
-      final names = root(
-        'reels',
-      ).listSync().map((e) => e.uri.pathSegments.last);
+      final names = root('reels')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .map((e) => e.uri.pathSegments.last);
       expect(names, ['ayah_6_32-33.mp4']);
     });
 

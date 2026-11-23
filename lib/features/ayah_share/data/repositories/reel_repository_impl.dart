@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:dartz/dartz.dart';
@@ -38,13 +39,17 @@ ReelPlan reelPlan(
               _microsPerSecond)
           .round();
 
-  final bounds = [
-    for (var i = 0; i < clips.length; i++) snap(offsets[i]),
-    ios && iosStep == 1
+  final stepMicros = (step * _microsPerSecond).round();
+  final bounds = <int>[];
+  for (var i = 0; i <= clips.length; i++) {
+    final raw = i < clips.length
+        ? snap(offsets[i])
+        : ios && iosStep == 1
         ? (offsets.last.inMicroseconds / _microsPerSecond).ceil() *
               _microsPerSecond
-        : snap(offsets.last),
-  ];
+        : snap(offsets.last);
+    bounds.add(i == 0 ? raw : max(raw, bounds.last + stepMicros));
+  }
 
   final frames = <ReelFrame>[];
   for (var i = 0; i < clips.length; i++) {
@@ -106,23 +111,24 @@ class ReelRepositoryImpl implements ReelRepository {
       final metadata = await _editor.getMetadata(EditorVideo.file(File(path)));
       return Right(metadata.audioDuration ?? metadata.duration);
     } catch (e) {
-      return Left(UnknownFailure('$e'));
+      return Left(Failure.fromException(e));
     }
   }
 
   @override
   Future<Either<Failure, String>> compose(ReelRequest request) async {
     final n = ++_count;
-    File? output;
+    Directory? slot;
     Directory? work;
     try {
       final root = Directory('${(await _directory()).path}/ayah_share');
       final reels = Directory('${root.path}/reels');
       work = Directory('${root.path}/work/$n');
-      output = File('${reels.path}/${request.fileName}');
+      slot = Directory('${reels.path}/$n');
+      final output = File('${slot.path}/${request.fileName}');
       await _delete(reels);
       await work.create(recursive: true);
-      await reels.create();
+      await slot.create(recursive: true);
 
       final plan = reelPlan(request, ios: _ios);
       for (var i = 0; i < request.clips.length; i++) {
@@ -167,15 +173,16 @@ class ReelRepositoryImpl implements ReelRepository {
       await _pass(
         audioData.id,
         0.5,
-        () => _editor.renderVideoToFile(output!.path, audioData),
+        () => _editor.renderVideoToFile(output.path, audioData),
       );
+      if (_cancelled(n)) throw const RenderCanceledException();
       return Right(output.path);
     } on RenderCanceledException {
-      await _delete(output);
+      await _delete(slot);
       return const Left(ReelCancelledFailure());
     } catch (e) {
-      await _delete(output);
-      return Left(UnknownFailure('$e'));
+      await _delete(slot);
+      return Left(Failure.fromException(e));
     } finally {
       await _delete(work);
     }
