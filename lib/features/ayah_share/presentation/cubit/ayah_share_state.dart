@@ -25,6 +25,8 @@ final class AyahShareState extends Equatable {
     this.reelSegments = const [],
     this.reelCapped = false,
     this.reelIssue = ReelIssue.none,
+    this.encodeProgress = 0,
+    this.reelPath,
   });
 
   final MushafPaper paper;
@@ -40,6 +42,8 @@ final class AyahShareState extends Equatable {
   final List<ReelSegment> reelSegments;
   final bool reelCapped;
   final ReelIssue reelIssue;
+  final double encodeProgress;
+  final String? reelPath;
 
   bool get reelWorking =>
       export == ShareExport.preparing || export == ShareExport.encoding;
@@ -90,6 +94,8 @@ final class AyahShareState extends Equatable {
     List<ReelSegment>? reelSegments,
     bool? reelCapped,
     ReelIssue? reelIssue,
+    double? encodeProgress,
+    String? reelPath,
   }) => AyahShareState(
     paper: paper ?? this.paper,
     status: status ?? this.status,
@@ -104,6 +110,8 @@ final class AyahShareState extends Equatable {
     reelSegments: reelSegments ?? this.reelSegments,
     reelCapped: reelCapped ?? this.reelCapped,
     reelIssue: reelIssue ?? this.reelIssue,
+    encodeProgress: encodeProgress ?? this.encodeProgress,
+    reelPath: reelPath ?? this.reelPath,
   );
 
   @override
@@ -120,5 +128,7 @@ final class AyahShareState extends Equatable {
     reelSegments,
     reelCapped,
     reelIssue,
+    encodeProgress,
+    reelPath,
   ];
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -6,12 +7,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/quran.dart' as quran;
 
 import '../../../../core/constants/mushaf_paper.dart';
+import '../../../../core/errors/failure.dart';
+import '../../../../core/utils/screen_wake.dart';
 import '../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../quran_playback/domain/entities/reciter.dart';
 import '../../../surah/presentation/utils/mushaf_paper_colors.dart';
 import '../../../tafsir/domain/usecases/get_ayah_tafsir.dart';
+import '../../domain/entities/reel_request.dart';
 import '../../domain/entities/reel_segment.dart';
 import '../../domain/entities/share_card_content.dart';
+import '../../domain/usecases/compose_ayah_reel.dart';
 import '../../domain/usecases/get_share_card_content.dart';
 import '../../domain/usecases/prepare_ayah_audio.dart';
 import '../utils/ayah_share_text.dart';
@@ -29,11 +34,15 @@ class AyahShareCubit extends Cubit<AyahShareState> {
     required GetAyahTafsir getTafsir,
     required PrepareAyahAudio prepareAudio,
     required ReelFramePainter framePainter,
+    required ComposeAyahReel composeReel,
+    ScreenWake screenWake = const ScreenWake(),
   }) : _getContent = getContent,
        _renderer = renderer,
        _getTafsir = getTafsir,
        _prepareAudio = prepareAudio,
        _framePainter = framePainter,
+       _composeReel = composeReel,
+       _wake = screenWake,
        super(AyahShareState(paper: paper));
 
   final AyahIdentifier ayah;
@@ -42,10 +51,14 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   final GetAyahTafsir _getTafsir;
   final PrepareAyahAudio _prepareAudio;
   final ReelFramePainter _framePainter;
+  final ComposeAyahReel _composeReel;
+  final ScreenWake _wake;
   final _segmentCrops = <AyahIdentifier, ShareCardCrops>{};
   ShareCardContent? _content;
   ShareCardCrops? _crops;
   CancelToken? _token;
+  CancelToken? _reelToken;
+  var _encodeGeneration = 0;
   var _renderGeneration = 0;
   var _composeDeferred = false;
 
@@ -229,13 +242,114 @@ class AyahShareCubit extends Cubit<AyahShareState> {
     _compose();
   }
 
-  void requestShare() {
+  Future<void> requestShare() async {
     if (state.status != ShareCardStatus.ready ||
         state.cardBytes == null ||
         state.busy) {
       return;
     }
-    emit(state.copyWith(export: ShareExport.sharing));
+    if (state.format == ShareFormat.image) {
+      emit(state.copyWith(export: ShareExport.sharing));
+      return;
+    }
+    await _encode();
+  }
+
+  void cancelEncode() {
+    if (state.export != ShareExport.encoding) return;
+    _encodeGeneration++;
+    _reelToken?.cancel();
+    _reelToken = null;
+    _composeReel.cancel();
+  }
+
+  Future<void> _encode() async {
+    final generation = ++_encodeGeneration;
+    emit(
+      state.copyWith(
+        export: ShareExport.encoding,
+        encodeProgress: 0,
+        reelIssue: ReelIssue.none,
+      ),
+    );
+    final withTafsir =
+        state.includeTafsir && state.tafsirStatus == ShareTafsirStatus.ready;
+    StreamSubscription<double>? progress;
+    bool stale() {
+      if (isClosed) return true;
+      if (generation == _encodeGeneration) return false;
+      _settle(
+        state.copyWith(
+          export: ShareExport.idle,
+          encodeProgress: 0,
+          reelIssue: ReelIssue.none,
+        ),
+      );
+      return true;
+    }
+
+    try {
+      progress = _composeReel.progress.listen((value) {
+        if (isClosed) return;
+        emit(state.copyWith(encodeProgress: value));
+      });
+      await _wake.hold(this, on: true);
+      if (stale()) return;
+      final clips = <ReelClip>[];
+      for (var i = 0; i < state.reelCount; i++) {
+        final segment = state.reelSegments[i];
+        final String? tafsir;
+        if (!withTafsir) {
+          tafsir = null;
+        } else if (i == 0) {
+          tafsir = state.tafsir;
+        } else {
+          final result = await _getTafsir(
+            surah: segment.ayah.surah,
+            ayah: segment.ayah.ayah,
+            page: segment.content.page,
+            cancelToken: _reelToken ??= CancelToken(),
+          );
+          if (stale()) return;
+          tafsir = result.fold((_) => null, (t) => t.body);
+        }
+        final frame = await _framePainter.paint(
+          i == 0 ? _crops! : _segmentCrops[segment.ayah]!,
+          colors: state.paper.colors,
+          footer: reelFooter(state.reciter!, ayah, state.reelCount),
+          tafsir: tafsir,
+        );
+        if (stale()) return;
+        clips.add(ReelClip(frame: frame, audio: segment.audio));
+      }
+      final result = await _composeReel(ReelRequest(first: ayah, clips: clips));
+      if (stale()) return;
+      result.fold(
+        (failure) => _settle(
+          state.copyWith(
+            export: ShareExport.idle,
+            encodeProgress: 0,
+            reelIssue: failure is ReelCancelledFailure
+                ? ReelIssue.none
+                : ReelIssue.encodeFailed,
+          ),
+        ),
+        (path) =>
+            emit(state.copyWith(export: ShareExport.sharing, reelPath: path)),
+      );
+    } catch (_) {
+      if (isClosed) return;
+      _settle(
+        state.copyWith(
+          export: ShareExport.idle,
+          encodeProgress: 0,
+          reelIssue: ReelIssue.encodeFailed,
+        ),
+      );
+    } finally {
+      await progress?.cancel();
+      await _wake.hold(this, on: false);
+    }
   }
 
   void shareFinished({required bool ok}) {
@@ -348,6 +462,8 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   @override
   Future<void> close() {
     _token?.cancel();
+    _reelToken?.cancel();
+    _composeReel.cancel();
     _crops?.dispose();
     _disposeSegmentCrops();
     return super.close();

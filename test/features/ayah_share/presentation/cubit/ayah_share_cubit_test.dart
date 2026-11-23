@@ -12,6 +12,7 @@ import 'package:quran_app/features/quran_playback/domain/entities/reciter.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/tafsir/domain/entities/tafsir.dart';
 
+import '../../../surah/presentation/pages/mushaf/mushaf_page_harness.dart';
 import '../../ayah_share_fakes.dart';
 import '../../share_card_fixture.dart';
 
@@ -30,6 +31,8 @@ void main() {
   late FakeGetAyahTafsir getTafsir;
   late FakePrepareAyahAudio audio;
   late FakeReelFramePainter painter;
+  late FakeComposeAyahReel compose;
+  late FakeScreenWake wake;
   late AyahShareCubit cubit;
   late List<AyahShareState> states;
 
@@ -39,6 +42,8 @@ void main() {
     getTafsir = FakeGetAyahTafsir();
     audio = FakePrepareAyahAudio();
     painter = FakeReelFramePainter();
+    compose = FakeComposeAyahReel();
+    wake = FakeScreenWake();
     cubit = AyahShareCubit(
       ayah: ayah,
       paper: MushafPaper.cream,
@@ -47,6 +52,8 @@ void main() {
       getTafsir: getTafsir,
       prepareAudio: audio,
       framePainter: painter,
+      composeReel: compose,
+      screenWake: wake,
     );
     states = [];
     cubit.stream.listen(states.add);
@@ -430,6 +437,8 @@ void main() {
         getTafsir: getTafsir,
         prepareAudio: audio,
         framePainter: painter,
+        composeReel: compose,
+        screenWake: wake,
       );
       states = [];
       c.stream.listen(states.add);
@@ -780,6 +789,242 @@ void main() {
 
       audio.gate!.complete();
       await selecting;
+    });
+  });
+
+  group('encode', () {
+    const start = AyahIdentifier(surah: 2, ayah: 255);
+
+    Future<AyahShareCubit> reelCubit(AyahIdentifier a) async {
+      content.result = null;
+      final c = AyahShareCubit(
+        ayah: a,
+        paper: MushafPaper.cream,
+        getContent: content,
+        renderer: renderer,
+        getTafsir: getTafsir,
+        prepareAudio: audio,
+        framePainter: painter,
+        composeReel: compose,
+        screenWake: wake,
+      );
+      states = [];
+      c.stream.listen(states.add);
+      addTearDown(c.close);
+      await c.load();
+      await pumpEventQueue();
+      await c.selectReel(Reciter.alafasy);
+      return c;
+    }
+
+    Future<AyahShareCubit> twoAyat() async {
+      final c = await reelCubit(start);
+      await c.addAyah();
+      return c;
+    }
+
+    test('share paints every segment and sends one request', () async {
+      final c = await twoAyat();
+      final painted = painter.calls.length;
+
+      await c.requestShare();
+
+      expect(painter.calls, hasLength(painted + 2));
+      expect(compose.requests, hasLength(1));
+      final request = compose.requests.single;
+      expect(request.first, start);
+      expect(request.clips, hasLength(2));
+      expect(
+        request.clips.map((clip) => clip.audio),
+        c.state.reelSegments.map((segment) => segment.audio),
+      );
+    });
+
+    test('the basmala leads the first clip of a reel from ayah 1', () async {
+      final c = await reelCubit(const AyahIdentifier(surah: 2, ayah: 1));
+
+      await c.requestShare();
+
+      expect(
+        compose.requests.single.clips.first.audio.first.path,
+        '/a/1_1.mp3',
+      );
+    });
+
+    test('encode progress is mirrored into the state', () async {
+      final c = await twoAyat();
+      compose.completer = Completer();
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+
+      compose.progressCtrl.add(0.4);
+      await pumpEventQueue();
+
+      expect(c.state.encodeProgress, 0.4);
+      compose.completer!.complete(const Right('/reels/x.mp4'));
+      await sharing;
+    });
+
+    test('a finished encode hands the path to the share listener', () async {
+      final c = await twoAyat();
+
+      await c.requestShare();
+
+      expect(c.state.export, ShareExport.sharing);
+      expect(c.state.reelPath, '/reels/ayah_2_255-256.mp4');
+
+      c.shareFinished(ok: true);
+
+      expect(c.state.export, ShareExport.done);
+    });
+
+    test('cancel waits for the render to stop, then frees share', () async {
+      final c = await twoAyat();
+      compose.completer = Completer();
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+
+      c.cancelEncode();
+
+      expect(compose.cancels, 1);
+      expect(c.state.export, ShareExport.encoding);
+      expect(c.state.canAddAyah, isFalse);
+
+      await sharing;
+      await pumpEventQueue();
+
+      expect(c.state.export, ShareExport.idle);
+      expect(c.state.reelIssue, ReelIssue.none);
+      expect(wake.calls, [true, false]);
+
+      compose.completer = null;
+      await c.requestShare();
+
+      expect(compose.requests, hasLength(2));
+    });
+
+    test('an encode failure raises encodeFailed and share retries', () async {
+      final c = await twoAyat();
+      compose.completer = Completer()
+        ..complete(const Left(UnknownFailure('x')));
+
+      await c.requestShare();
+
+      expect(c.state.export, ShareExport.idle);
+      expect(c.state.reelIssue, ReelIssue.encodeFailed);
+
+      compose.completer = null;
+      await c.requestShare();
+
+      expect(compose.requests, hasLength(2));
+      expect(c.state.export, ShareExport.sharing);
+    });
+
+    test('the screen stays awake only while encoding', () async {
+      final c = await twoAyat();
+
+      await c.requestShare();
+
+      expect(wake.calls, [true, false]);
+
+      c.shareFinished(ok: true);
+      compose.completer = Completer()
+        ..complete(const Left(UnknownFailure('x')));
+      await c.requestShare();
+
+      expect(wake.calls, [true, false, true, false]);
+    });
+
+    test(
+      'with the tafsir on each later ayah loads its own and a failure draws it without',
+      () async {
+        final c = await twoAyat();
+        c.setIncludeTafsir(true);
+        await pumpEventQueue();
+        getTafsir.completers.single.complete(const Right(intro));
+        await pumpEventQueue();
+        final painted = painter.calls.length;
+
+        final sharing = c.requestShare();
+        await pumpEventQueue();
+
+        expect(getTafsir.completers, hasLength(2));
+        getTafsir.completers.last.complete(const Left(ServerFailure('x')));
+        await sharing;
+
+        final encoded = painter.calls.sublist(painted);
+        expect(encoded.map((call) => call.tafsir), [intro.body, isNull]);
+        expect(c.state.export, ShareExport.sharing);
+      },
+    );
+
+    test('toggles are ignored while encoding', () async {
+      final c = await twoAyat();
+      compose.completer = Completer();
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+      final composed = renderer.composeCalls.length;
+
+      c.setPaper(MushafPaper.night);
+      c.setIncludeTafsir(true);
+      c.selectImage();
+      await c.addAyah();
+
+      expect(c.state.paper, MushafPaper.cream);
+      expect(c.state.includeTafsir, isFalse);
+      expect(c.state.format, ShareFormat.reel);
+      expect(c.state.reelCount, 2);
+      expect(c.state.export, ShareExport.encoding);
+      expect(renderer.composeCalls, hasLength(composed));
+
+      compose.completer!.complete(const Right('/reels/x.mp4'));
+      await sharing;
+    });
+
+    test('close cancels a running encode and releases the wake', () async {
+      final c = await twoAyat();
+      compose.completer = Completer();
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+
+      await c.close();
+      await sharing;
+
+      expect(compose.cancels, 1);
+      expect(wake.calls, [true, false]);
+    });
+
+    test('a tafsir landing mid-encode does not leave encoding', () async {
+      final c = await twoAyat();
+      c.setIncludeTafsir(true);
+      await pumpEventQueue();
+      compose.completer = Completer();
+      final painted = painter.calls.length;
+      final composed = renderer.composeCalls.length;
+      final sharing = c.requestShare();
+      await pumpEventQueue();
+
+      getTafsir.completers.single.complete(const Right(intro));
+      await pumpEventQueue();
+
+      expect(c.state.export, ShareExport.encoding);
+      expect(renderer.composeCalls, hasLength(composed));
+      expect(painter.calls, hasLength(painted + 2));
+      expect(painter.calls.sublist(painted).map((call) => call.tafsir), [
+        isNull,
+        isNull,
+      ]);
+
+      compose.completer!.complete(const Right('/reels/x.mp4'));
+      await sharing;
+
+      expect(c.state.export, ShareExport.sharing);
+
+      c.shareFinished(ok: true);
+      await pumpEventQueue();
+
+      expect(painter.calls, hasLength(painted + 3));
+      expect(painter.calls.last.tafsir, intro.body);
     });
   });
 }

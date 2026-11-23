@@ -10,6 +10,7 @@ import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/features/ayah_share/presentation/cubit/ayah_share_cubit.dart';
 import 'package:quran_app/features/ayah_share/domain/entities/reel_request.dart';
 import 'package:quran_app/features/ayah_share/domain/entities/share_card_content.dart';
+import 'package:quran_app/features/ayah_share/domain/usecases/compose_ayah_reel.dart';
 import 'package:quran_app/features/ayah_share/domain/usecases/get_share_card_content.dart';
 import 'package:quran_app/features/ayah_share/domain/usecases/prepare_ayah_audio.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/reel_frame_painter.dart';
@@ -176,12 +177,39 @@ class FakeReelFramePainter implements ReelFramePainter {
   }
 }
 
+class FakeComposeAyahReel implements ComposeAyahReel {
+  final requests = <ReelRequest>[];
+  Completer<Either<Failure, String>>? completer;
+  final progressCtrl = StreamController<double>.broadcast();
+  var cancels = 0;
+
+  @override
+  Future<Either<Failure, String>> call(ReelRequest request) {
+    requests.add(request);
+    return completer?.future ??
+        Future.value(Right('/reels/${request.fileName}'));
+  }
+
+  @override
+  Stream<double> get progress => progressCtrl.stream;
+
+  @override
+  Future<void> cancel() async {
+    cancels++;
+    final pending = completer;
+    if (pending != null && !pending.isCompleted) {
+      pending.complete(const Left(ReelCancelledFailure()));
+    }
+  }
+}
+
 typedef FakeAyahShare = ({
   FakeGetShareCardContent content,
   FakeShareCardRenderer renderer,
   FakeGetAyahTafsir tafsir,
   FakePrepareAyahAudio prepareAudio,
   FakeReelFramePainter framePainter,
+  FakeComposeAyahReel composeReel,
 });
 
 FakeAyahShare registerFakeAyahShare({
@@ -190,6 +218,7 @@ FakeAyahShare registerFakeAyahShare({
   FakeGetAyahTafsir? tafsir,
   FakePrepareAyahAudio? prepareAudio,
   FakeReelFramePainter? framePainter,
+  FakeComposeAyahReel? composeReel,
 }) {
   final fakes = (
     content: content ?? FakeGetShareCardContent(),
@@ -197,6 +226,7 @@ FakeAyahShare registerFakeAyahShare({
     tafsir: tafsir ?? FakeGetAyahTafsir(),
     prepareAudio: prepareAudio ?? FakePrepareAyahAudio(),
     framePainter: framePainter ?? FakeReelFramePainter(),
+    composeReel: composeReel ?? FakeComposeAyahReel(),
   );
   sl.registerFactoryParam<AyahShareCubit, AyahIdentifier, MushafPaper>(
     (ayah, paper) => AyahShareCubit(
@@ -207,6 +237,7 @@ FakeAyahShare registerFakeAyahShare({
       getTafsir: fakes.tafsir,
       prepareAudio: fakes.prepareAudio,
       framePainter: fakes.framePainter,
+      composeReel: fakes.composeReel,
     ),
   );
   return fakes;

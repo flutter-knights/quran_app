@@ -28,6 +28,7 @@ void initAyahShare() {
       getTafsir: sl(),
       prepareAudio: sl(),
       framePainter: sl(),
+      composeReel: sl(),
     ),
   );
 }
