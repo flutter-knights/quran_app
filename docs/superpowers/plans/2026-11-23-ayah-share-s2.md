@@ -26,7 +26,7 @@
 - Never run `test/tools/generate_mushaf_assets_test.dart` with `GENERATE_MUSHAF_ASSETS=true`, and never modify `assets/mushaf/**`.
 - Disk is tight (8.9 GB free at planning time, `build/` holds 5.2 GB). Only Task 1 (one Android debug build) and Task 2 (one iOS simulator run) build. Run `flutter clean` before the iOS build. After every build, run `df -h .`, and run `flutter clean` again if less than 5 GB is free.
 - Every task formats exactly the `.dart` paths in its `git add` line with `dart format <paths>`. Never format a directory, `.`, `lib`, `test` or `lib/generated/**`.
-- Every task's verify step ends with `flutter test` and `flutter analyze --no-fatal-infos`: 0 errors, 0 warnings, ≤ 69 infos, all tests passing and 1 skipped. Running totals from 1771: Task 1 → 1774, 2 → 1787, 3 → 1797, 4 → 1814, 5 → 1824, 6 → 1835. If the start differs, keep the deltas.
+- Every task's verify step ends with `flutter test` and `flutter analyze --no-fatal-infos`: 0 errors, 0 warnings, ≤ 69 infos, all tests passing and 1 skipped. Running totals from 1771: Task 1 → 1774, 2 → 1787, 3 → 1797, 4 → 1815, 5 → 1825, 6 → 1836. If the start differs, keep the deltas.
 - Test fixtures read real bounds from disk through `test/features/ayah_share/share_card_fixture.dart` (`layoutFor`, `contentFor`). Expected surah names and verses come from the `quran` package, never typed literals. No golden tests.
 
 ## Deliberate readings (the plan governs here)
@@ -42,7 +42,7 @@
 9. **Tafsir cut fallback.** §4.1 cuts at the last full sentence that fits. If no full sentence fits but three or more lines do, the cut falls back to the last whole word that fits, followed by « …».
 10. **Audio and content failures on «+»** both raise `ReelIssue.audioFailed` (the «تعذّر تحميل التلاوة» SnackBar). The bundled bounds never fail in practice.
 11. **iOS step.** The spike already shows fractional per-sample durations on iOS: `ios_t6_fps5_silent.mp4` is 45.508 s = 6.031 + 39.478, with the card switch between 5.9 s and 6.1 s, and `t7_repeat` is 39 × 1 s + 0.478 s. What remains unverified is a sub-second remainder followed by another card. Task 2 keeps the spec's simulator check for exactly that case, with `reelIosStep = 1 / 30` and the tested `1.0` fallback.
-12. **Encoding blocks every toggle.** `setPaper`, `setIncludeTafsir`, `selectImage`, `addAyah` and `removeAyah` return while `busy`. The sheet disables the selector, swatches, switch and stepper while `busy`.
+12. **Reel work blocks every toggle, a recompose does not.** A new state getter `reelWorking` (`export == preparing || export == encoding`) guards `setPaper`, `setIncludeTafsir` and `selectImage`, and the sheet disables the swatches and switch on it. They are not guarded on `busy`: `busy` includes `rendering`, which every recompose emits, and S1's «a stale compose never replaces a newer one» (`ayah_share_cubit_test.dart:159`) pins two paper taps in a row. The new selector and stepper use `busy`, through `canAddAyah` / `canRemoveAyah` and `enabled: ready && !busy`.
 13. **Tests that pin S1 shapes are rewritten on purpose:**
     - `registerFakeAyahShare` and the cubit construction in `ayah_share_fakes.dart`, which the study-leaf and places tests use;
     - `ayah_share_di_test.dart`, which must register a `QuranPlaybackRepo` stub;
@@ -65,10 +65,10 @@
 ### Task 1: Package and platform (seam 7, part 1)
 
 **Files:**
-- Modify: `pubspec.yaml` (`pro_video_editor: 2.54.0` after `path_provider` in `dependencies`), `pubspec.lock` (only the `pro_video_editor` entry; its other dependencies are already locked), `ios/Podfile.lock`, `ios/Runner/Info.plist`, `ios/Runner.xcodeproj/project.pbxproj`
+- Modify: `pubspec.yaml` (`pro_video_editor: 2.54.0` after `path_provider` in `dependencies`), `pubspec.lock` (`pro_video_editor` and, if pub moves them, its own dependencies), `ios/Podfile.lock`, `ios/Runner/Info.plist`, `ios/Runner.xcodeproj/project.pbxproj`
 - Create: `ios/Runner/ar.lproj/InfoPlist.strings`
 - Modify only if Step 5 finds a plugin-added media permission: `android/app/src/main/AndroidManifest.xml`
-- Test: `test/features/ayah_share/reel_platform_test.dart`
+- Create (test): `test/features/ayah_share/reel_platform_test.dart`
 
 **Interfaces:**
 - Produces: the `pro_video_editor` package for Task 2. No Dart API.
@@ -80,7 +80,7 @@
 
 - [ ] **Step 2: Run** `flutter test test/features/ayah_share/reel_platform_test.dart`. Expected: FAIL (3).
 
-- [ ] **Step 3: Pin the package.** Add `  pro_video_editor: 2.54.0` to `pubspec.yaml`, run `flutter pub get`, then `git diff pubspec.lock`. Expected: only a `pro_video_editor` block is added. If anything else changed, revert those hunks and do not stage them.
+- [ ] **Step 3: Pin the package.** Add `  pro_video_editor: 2.54.0` to `pubspec.yaml`, run `flutter pub get`, then `git diff pubspec.lock`. Expected: a `pro_video_editor` block, plus at most new or bumped entries for its own dependencies (`http`, `mime`, `web`, `plugin_platform_interface`, `path_provider`). Revert any other hunk and do not stage it.
 
 - [ ] **Step 4: iOS config**
   - `Info.plist`: add `NSPhotoLibraryUsageDescription` with "Used only if you choose to save a shared ayah video." right after the `NSPhotoLibraryAddUsageDescription` pair.
@@ -124,7 +124,8 @@ Add `android/app/src/main/AndroidManifest.xml` to `git add` only if Step 5 chang
 **Files:**
 - Create: `lib/features/ayah_share/domain/entities/reel_request.dart`, `lib/features/ayah_share/domain/repositories/reel_repository.dart`, `lib/features/ayah_share/domain/usecases/compose_ayah_reel.dart`, `lib/features/ayah_share/data/repositories/reel_repository_impl.dart`
 - Modify: `lib/core/errors/failure.dart` (add `ReelCancelledFailure`), `lib/features/ayah_share/ayah_share_di.dart`
-- Test: `test/features/ayah_share/domain/entities/reel_request_test.dart`, `test/features/ayah_share/data/repositories/reel_repository_impl_test.dart`, `test/features/ayah_share/ayah_share_di_test.dart` (add one test)
+- Create (tests): `test/features/ayah_share/domain/entities/reel_request_test.dart`, `test/features/ayah_share/data/repositories/reel_repository_impl_test.dart`
+- Modify (test): `test/features/ayah_share/ayah_share_di_test.dart` (add one test)
 
 **Interfaces:**
 - Produces:
@@ -193,9 +194,15 @@ Test fake (in the impl test): `class _FakeEditor extends ProVideoEditor`.
 - [ ] **Step 5: iOS simulator check** (the one iOS build in S2; spec §4.3 "seam 7 first checks"). It covers the remainder frame and `ar.lproj`.
   - Run `flutter clean`, then `df -h .`.
   - Create an **untracked, temporary** `lib/reel_probe_main.dart`. It calls `WidgetsFlutterBinding.ensureInitialized()`, paints two solid 1080×1920 PNGs (red, then blue) with `PictureRecorder`, and writes two silent WAVs (44-byte RIFF header, 8 kHz mono 16-bit, zero samples) of 1.4 s and 2.3 s to `getTemporaryDirectory()`. It then measures them with `ReelRepositoryImpl().audioDuration`, composes `ReelRequest(first: 1:1, clips: [red + 1.4 s, blue + 2.3 s])` and `debugPrint('REEL_PROBE $path')`.
-  - Boot a simulator and run the probe: `xcrun simctl boot "iPhone 17 Pro"`, then `flutter run -d "iPhone 17 Pro" -t lib/reel_probe_main.dart`.
-  - Inspect the reel with `<scratchpad>/tools/mp4probe <path> <scratchpad>/probe 1.30 1.37 1.43 1.50 3.60`. Expected: duration 3.7 s ± 1/30, the frames at ≤ 1.37 s red and ≥ 1.43 s blue.
-  - Check the bundled strings: `test -f build/ios/iphonesimulator/Runner.app/ar.lproj/InfoPlist.strings`.
+  - Build, install and launch without `flutter run` (which never returns):
+    - `flutter build ios --simulator --debug -t lib/reel_probe_main.dart`
+    - `xcrun simctl boot "iPhone 17 Pro"`
+    - `xcrun simctl install booted build/ios/iphonesimulator/Runner.app`
+    - `xcrun simctl launch booted com.example.quranApp`
+    - after ~20 s, `xcrun simctl spawn booted log show --last 3m --predicate 'eventMessage CONTAINS "REEL_PROBE"' --style compact` for the path (the spike's `ios_log2.txt` used the same query).
+  - A probe that throws (for example, metadata on the WAV) is a probe bug, not a failed remainder check. Fix the probe, for instance with an AAC file written by the plugin, and rerun.
+  - Inspect the reel with `/private/tmp/claude-501/-Users-sameh-Documents-flutter-projects-quran-app/ea8deb78-9e2e-41bc-b4f2-1bd29185fb03/scratchpad/tools/mp4probe <path> <outDir> 1.30 1.37 1.43 1.50 3.60`. Expected: duration 3.7 s ± 1/30, the frames at ≤ 1.37 s red and ≥ 1.43 s blue.
+  - Check the bundled strings: `test -f build/ios/iphonesimulator/Runner.app/ar.lproj/InfoPlist.strings`. If it is missing, fix the Task 1 pbxproj entries and add `ios/Runner.xcodeproj/project.pbxproj` to this task's `git add`.
   - **If the switch is off by more than 1/30 s or the remainder frame collapses,** set `const reelIosStep = 1.0;`. The fallback branch is already tested. Note it in the commit body.
   - Delete `lib/reel_probe_main.dart` and confirm that `git status --short lib` does not list it. Run `df -h .`, then `flutter clean` if less than 5 GB is free.
 
@@ -218,7 +225,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Files:**
 - Create: `lib/features/ayah_share/presentation/utils/reel_frame_painter.dart`
 - Modify: `lib/features/ayah_share/presentation/utils/share_card_renderer.dart` (extract the paint steps; behaviour unchanged), `lib/features/ayah_share/presentation/utils/ayah_share_text.dart` (add `reelFooter`), `lib/features/ayah_share/ayah_share_di.dart`
-- Test: `test/features/ayah_share/presentation/utils/reel_frame_painter_test.dart`, `test/features/ayah_share/presentation/utils/ayah_share_text_test.dart` (add one)
+- Create (test): `test/features/ayah_share/presentation/utils/reel_frame_painter_test.dart`
+- Modify (test): `test/features/ayah_share/presentation/utils/ayah_share_text_test.dart` (add one)
 
 **Interfaces:**
 - Consumes: `ShareCardCrops`, `ShareCardLayout` (`textBottom`, `pitch`), `shareCardWidth`, `shareCardMargin`, `shareCardTafsirGap`, `MushafPaperColors`, `Reciter.arabicName`.
@@ -295,7 +303,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Files:**
 - Create: `lib/features/ayah_share/domain/entities/reel_segment.dart`, `lib/features/ayah_share/domain/usecases/prepare_ayah_audio.dart`
 - Modify: `lib/features/ayah_share/presentation/cubit/ayah_share_cubit.dart`, `lib/features/ayah_share/presentation/cubit/ayah_share_state.dart`, `lib/features/ayah_share/ayah_share_di.dart`
-- Test: `test/features/ayah_share/domain/usecases/prepare_ayah_audio_test.dart`, `test/features/ayah_share/presentation/cubit/ayah_share_cubit_test.dart` (rewrite `setUp`, add a `reel` group), `test/features/ayah_share/ayah_share_fakes.dart` (new fakes, rewrite `registerFakeAyahShare`), `test/features/ayah_share/ayah_share_di_test.dart` (register a `QuranPlaybackRepo` stub)
+- Create (test): `test/features/ayah_share/domain/usecases/prepare_ayah_audio_test.dart`
+- Modify (tests): `test/features/ayah_share/presentation/cubit/ayah_share_cubit_test.dart` (rewrite `setUp`, add a `reel` group), `test/features/ayah_share/ayah_share_fakes.dart` (new fakes, rewrite `registerFakeAyahShare`), `test/features/ayah_share/ayah_share_di_test.dart` (register a `QuranPlaybackRepo` stub)
 
 **Interfaces:**
 - Consumes: `QuranPlaybackRepo.prepareAyahAudio({required AyahIdentifier ayah, required Reciter reciter})`, `ReelRepository.audioDuration`, `ReelAudio` (Task 2), `ReelFramePainter.paint` and `reelFooter` (Task 3).
@@ -317,7 +326,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - `Future<void> selectReel(Reciter reciter)`, `void selectImage()`, `Future<void> addAyah()`, `void removeAyah()`.
     - Private: `final _segmentCrops = <AyahIdentifier, ShareCardCrops>{}`. Segment 0 uses `_crops`. All of them are disposed in `close()`, on a reciter reset, and on `removeAyah` for the removed one.
     - `_compose()` branches on `format`. Reel calls `_framePainter.paint(_crops!, colors: state.paper.colors, footer: reelFooter(state.reciter!, ayah, state.reelCount), tafsir: withTafsir ? state.tafsir : null)`.
-    - `setPaper`, `setIncludeTafsir`, `selectImage`, `addAyah` and `removeAyah` return while `busy` (Deliberate reading 12).
+    - `bool get reelWorking => export == ShareExport.preparing || export == ShareExport.encoding;`. `setPaper`, `setIncludeTafsir` and `selectImage` return while `reelWorking` (Deliberate reading 12). `addAyah` and `removeAyah` are guarded by `canAddAyah` / `canRemoveAyah`.
   - Fakes:
     - `FakePrepareAyahAudio` holds `Map<AyahIdentifier, Duration> durations` (default 5 s), `Set<AyahIdentifier> failing`, `List<AyahIdentifier> requests` and an optional `Completer` gate. It returns `[ReelAudio('/a/<s>_<a>.mp3', d)]`, with basmala `('/a/1_1.mp3', 6 s)` first for ayah 1.
     - `FakeReelFramePainter` records `(crops, colors, footer, tafsir)` and returns `onePixelPng`.
@@ -333,7 +342,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 5. `await _compose()`.
 
 `addAyah()`:
-1. Guard `canAddAyah`, then emit `preparing`. `next` is the last ayah + 1.
+1. Guard `canAddAyah`, then emit `export: preparing, reelIssue: none`, so a second failure fires the listener again. `next` is the last ayah + 1.
 2. Audio, then content, then `_renderer.prepare` (catching exceptions). After each await, if the cubit is closed, dispose what it holds and return.
 3. Any failure → emit `export: idle, reelIssue: audioFailed`.
 4. If `reelDuration + segment.duration > reelMaxDuration`, dispose the crops and emit `reelCapped: true, export: idle`.
@@ -350,6 +359,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - `'choosing the reel prepares the start ayah and previews its first frame'`: `format` reel, one segment, the painter called once with footer `reelFooter(Reciter.alafasy, ayah, 1)`, `renderId` incremented.
     - `'an audio failure returns to the image with an audio issue'`: `format` image, `reelIssue` audioFailed, `cardBytes` non-null.
     - `'adding an ayah prepares the next one and widens the footer range'`: 2 segments, and the last painter footer ends with `–٢` (start 1:1 in this test's cubit).
+    - `'a failing «+» raises the audio issue each time'`: with 1:2 in `failing`, two `addAyah()` calls → the emitted `reelIssue` values are `none, audioFailed, none, audioFailed`, and `reelCount` stays 1.
     - `'«+» prepares only once on a double tap'`: with the gate open, `addAyah(); addAyah();` → `requests` grows by one.
     - `'«+» is disabled at the surah end'`: a cubit on 112:4 → `canAddAyah` false.
     - `'«+» is disabled at ten ayat'`: a cubit on 2:1 with 3 s durations, after 9 adds → `reelCount` 10 and `canAddAyah` false.
@@ -367,7 +377,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `sl.registerLazySingleton(() => PrepareAyahAudio(playback: sl(), reels: sl()));`
   - pass `prepareAudio: sl(), framePainter: sl()` to the cubit factory.
 
-- [ ] **Step 4: Verify** `flutter test test/features/ayah_share test/features/surah/presentation/pages/mushaf/widgets/ayah_study_leaf_test.dart test/features/bookmarks`, then `flutter test`, then `flutter analyze --no-fatal-infos`. Expected: PASS, +17 → 1814.
+- [ ] **Step 4: Verify** `flutter test test/features/ayah_share test/features/surah/presentation/pages/mushaf/widgets/ayah_study_leaf_test.dart test/features/bookmarks`, then `flutter test`, then `flutter analyze --no-fatal-infos`. Expected: PASS, +18 → 1815.
 
 - [ ] **Step 5: Format and commit**
 
@@ -385,7 +395,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Modify: `lib/features/ayah_share/presentation/cubit/ayah_share_cubit.dart`, `lib/features/ayah_share/presentation/cubit/ayah_share_state.dart`, `lib/features/ayah_share/ayah_share_di.dart`
-- Test: `test/features/ayah_share/presentation/cubit/ayah_share_cubit_test.dart` (add `group('encode')`), `test/features/ayah_share/ayah_share_fakes.dart` (`FakeComposeAyahReel`)
+- Modify (tests): `test/features/ayah_share/presentation/cubit/ayah_share_cubit_test.dart` (add `group('encode')`), `test/features/ayah_share/ayah_share_fakes.dart` (`FakeComposeAyahReel`)
 
 **Interfaces:**
 - Consumes: `ComposeAyahReel` (Task 2), `ReelRequest` / `ReelClip`, `ReelSegment.audio`, `GetAyahTafsir`, `ScreenWake.hold(Object owner, {required bool on})`.
@@ -395,7 +405,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `requestShare()` branches on `format`; image is unchanged.
   - `void cancelEncode()`.
   - `close()` also calls `_composeReel.cancel()` and `_reelToken?.cancel()`.
-  - `FakeComposeAyahReel` holds `requests`, a `Completer<Either<Failure, String>>? completer` (default `Right('/reels/<fileName>')`), a `StreamController<double>.broadcast() progressCtrl` and `cancels`. `registerFakeAyahShare` gains `composeReel`.
+  - `FakeComposeAyahReel` holds `requests`, a `Completer<Either<Failure, String>>? completer` (default `Right('/reels/<fileName>')`), a `StreamController<double>.broadcast() progressCtrl` and `cancels`. Like the repository, `cancel()` completes a pending `completer` with `Left(ReelCancelledFailure())`. `registerFakeAyahShare` gains `composeReel`.
 
 `requestShare()` in reel format:
 1. Return unless `ready`, `!busy` and the segments are non-empty.
@@ -411,14 +421,14 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
    - `Right(path)` → `export: sharing, reelPath: path`
 6. In a `finally`, cancel the subscription, then `_wake.hold(this, on: false)`.
 
-`cancelEncode()`: return unless `encoding`. Then `_encodeGeneration++`, `_reelToken?.cancel()`, `_reelToken = null`, `_composeReel.cancel()`, and emit `export: idle, encodeProgress: 0` at once.
+`cancelEncode()`: return unless `encoding`. Then `_encodeGeneration++`, `_reelToken?.cancel()`, `_reelToken = null` and `_composeReel.cancel()`. It does **not** emit: `export` stays `encoding`, so «مشاركة» stays disabled until the running `requestShare` unwinds. That run sees `generation != _encodeGeneration` after its next await (or gets `Left(ReelCancelledFailure)`), emits `export: idle, encodeProgress: 0, reelIssue: none`, and its `finally` releases the wake. A second encode therefore never overlaps the first's `work/` cleanup or wake release.
 
 - [ ] **Step 1: Write the failing tests** (`group('encode')`, a reel of 2:255–2:256 with the tafsir off unless stated, `FakeScreenWake` from `mushaf_page_harness.dart`)
   - `'share paints every segment and sends one request'`: painter calls 1 (preview) + 2 (encode). `request.first` is 2:255. `clips.length` is 2. The clips' audio equals the segments' audio.
   - `'the basmala leads the first clip of a reel from ayah 1'`: a cubit on 2:1 → `clips.first.audio.first.path` is the basmala path.
   - `'encode progress is mirrored into the state'`: `progressCtrl.add(0.4)` → `encodeProgress` 0.4.
   - `'a finished encode hands the path to the share listener'`: `export` sharing, `reelPath` `/reels/ayah_2_255-256.mp4`, then `shareFinished(ok: true)` → done.
-  - `'cancel returns to idle at once and ignores the late result'`: `cancelEncode()` → `cancels` 1 and `export` idle. Completing with `Left(ReelCancelledFailure())` later → `reelIssue` none, no further emits.
+  - `'cancel waits for the render to stop, then frees share'`: with a held completer, `cancelEncode()` → `cancels` 1, and `export` is still encoding with `canAddAyah` false. After `pumpEventQueue()` (the fake completes it as cancelled): `export` idle, `reelIssue` none, `FakeScreenWake.calls == [true, false]`. A new `requestShare()` → a second request.
   - `'an encode failure raises encodeFailed and share retries'`: `Left(UnknownFailure('x'))` → `reelIssue` encodeFailed. `requestShare()` → second request.
   - `'the screen stays awake only while encoding'`: `FakeScreenWake.calls == [true, false]` after success, and again after failure.
   - `'with the tafsir on each later ayah loads its own and a failure draws it without'`: switch on and the start tafsir ready. Encoding requests the tafsir of 2:256. Completing it with `Left` → that painter call has `tafsir: null`, and the start ayah's call has `state.tafsir`.
@@ -429,7 +439,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 - [ ] **Step 3: Implement** with the shapes above. DI passes `composeReel: sl()`.
 
-- [ ] **Step 4: Verify** `flutter test test/features/ayah_share`, then `flutter test`, then `flutter analyze --no-fatal-infos`. Expected: PASS, +10 → 1824.
+- [ ] **Step 4: Verify** `flutter test test/features/ayah_share`, then `flutter test`, then `flutter analyze --no-fatal-infos`. Expected: PASS, +10 → 1825.
 
 - [ ] **Step 5: Format and commit**
 
@@ -447,7 +457,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Modify: `lib/features/ayah_share/presentation/widgets/ayah_share_sheet.dart`, `lib/features/ayah_share/presentation/utils/ayah_share_text.dart` (add `reelShareLabel`), `lib/l10n/intl_ar.arb`, `lib/l10n/intl_en.arb`, `lib/core/localization/pending_s.dart`, `.claude/rules/feature-widgets.md`
-- Test: `test/features/ayah_share/presentation/widgets/ayah_share_sheet_test.dart` (rewrite `open()` and `expectDisabled`, add reel tests), `test/features/ayah_share/presentation/utils/ayah_share_text_test.dart` (add one)
+- Modify (tests): `test/features/ayah_share/presentation/widgets/ayah_share_sheet_test.dart` (rewrite `open()` and `expectDisabled`, add reel tests), `test/features/ayah_share/presentation/utils/ayah_share_text_test.dart` (add one)
 
 **Interfaces:**
 - Consumes: the Task 4/5 cubit API, `PlaybackCubit.state.reciter`, `AppSegmentedSelector`/`SegmentOption`, `ShareCardPreview` (unchanged), `FakePlayback` (`mushaf_page_harness.dart`).
@@ -478,7 +488,7 @@ Sheet changes, keeping the S1 order and adding to it:
   - Captions use `TS.regular12` with `onSurfaceVariant`.
 - While `export == encoding`, a private `_EncodeRow` (key `reel-encoding`): the `ayahShare_encoding` text, `LinearProgressIndicator(value: encodeProgress)` and a `TextButton` `reel-cancel` (`places_cancel`) → `cubit.cancelEncode`.
 - When `reelIssue == encodeFailed` (and not encoding), an inline `ayahShare_encodeFailed` plus `TextButton.icon` `reel-retry` (`mushaf_retry`) → `cubit.requestShare`.
-- The swatches and the tafsir switch are also disabled while `busy`.
+- The swatches and the tafsir switch are also disabled while `reelWorking`. They stay enabled during an S1 recompose.
 - Listener:
   - `listenWhen` adds `a.reelIssue != b.reelIssue`. On `audioFailed`, show a SnackBar with `PendingS.current.ayahShare_audioFailed` in the sheet's messenger.
   - In `_onExport` sharing with `format == reel`, run `SharePlus.instance.share(ShareParams(files: [XFile(state.reelPath!, mimeType: 'video/mp4')], text: reelShareLabel(context, widget.ayah, state.reelCount), sharePositionOrigin: origin))`, then `shareFinished(ok:)`.
@@ -496,7 +506,7 @@ Sheet changes, keeping the S1 order and adding to it:
     - `'a start ayah over 60 s shows the trim caption and no «+»'`: durations 75 s → `ayahShare_longClip` text, and `reel-plus` `onPressed` null.
     - `'share encodes with progress, then shares the MP4 with the range label'`: two ayat, a held compose completer, tap «مشاركة» → `reel-encoding` is shown. `progressCtrl.add(0.5)` → `LinearProgressIndicator.value` 0.5. Complete with `Right(path)`, where `path` is an empty file `ayah_6_31-32.mp4` that the test creates in a temp dir, → `shared.single['paths']` single ends with `ayah_6_31-32.mp4`, `mimeTypes` is `['video/mp4']`, and the text is `'سورة ${quran.getSurahNameArabic(6)}، الآيات ٣١–٣٢'`.
     - `'in English a reel shares the English range label'`: `'Surah ${quran.getSurahName(6)}, Ayat 31–32'`.
-    - `'cancel stops the encode without a message'`: tap `reel-cancel` → `cancels` 1, no `SnackBar`, and «مشاركة» is enabled again.
+    - `'cancel stops the encode without a message'`: tap `reel-cancel`, then `pumpUntil` `reel-encoding` is gone → `cancels` 1, no `SnackBar`, and «مشاركة» is enabled again.
     - `'an encode failure shows the message with a retry'`: `reel-retry` → a second request.
     - `'an audio failure shows the SnackBar and keeps the image'`: the start ayah is failing → SnackBar `'تعذّر تحميل التلاوة'` is findable while the sheet is open, and the selector shows image.
     - `'fits at 2x text in 360 px in reel mode with the trim caption'`: `takeException()` null.
@@ -507,7 +517,7 @@ Sheet changes, keeping the S1 order and adding to it:
 - [ ] **Step 3: Implement** the strings (both ARBs and `PendingS`, next to the `ayahShare_*` block), `reelShareLabel`, the sheet changes and `feature-widgets.md`.
 
 - [ ] **Step 4: Verify**
-  - Run `flutter test test/features/ayah_share test/core/localization/pending_s_test.dart test/config/theme/typography_ratchet_test.dart test/features/surah/presentation/pages/mushaf/widgets/ayah_study_leaf_test.dart test/features/bookmarks`, then `flutter test`, then `flutter analyze --no-fatal-infos`. Expected: PASS, +11 → 1835 (the start + 64).
+  - Run `flutter test test/features/ayah_share test/core/localization/pending_s_test.dart test/config/theme/typography_ratchet_test.dart test/features/surah/presentation/pages/mushaf/widgets/ayah_study_leaf_test.dart test/features/bookmarks`, then `flutter test`, then `flutter analyze --no-fatal-infos`. Expected: PASS, +11 → 1836 (the start + 65).
   - `git diff --stat lib/generated` is empty.
 
 - [ ] **Step 5: Format and commit**
