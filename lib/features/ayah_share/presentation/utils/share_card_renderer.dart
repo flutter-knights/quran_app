@@ -126,7 +126,7 @@ class ShareCardRenderer {
 
     final inkAsset = AssetsDir.mushafPage(slot.page);
     final accentAsset = AssetsDir.mushafPageAccent(slot.page);
-    final wanted = <String, List<Rect>>{
+    final wanted = {
       inkAsset: [band],
       accentAsset: [band],
     };

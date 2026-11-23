@@ -12,6 +12,7 @@ import '../../../surah/presentation/utils/reader_rules.dart';
 const shareCardWidth = 1080.0;
 const shareCardMargin = 72.0;
 const shareCardMaxHeight = 4096.0;
+const shareCardPlaceholderHeight = 903.0;
 const shareCardTafsirGap = 0.55;
 const shareCardBasmalaOpacity = 0.42;
 
@@ -19,7 +20,7 @@ const _topPad = 72.0;
 const _bottomPad = 80.0;
 const _headerMargin = 56.0;
 const _headerGap = 0.55;
-const _basmalaScale = 0.78;
+const _basmalaWidth = 0.37;
 const _basmalaGap = 0.45;
 const _minHeight = 0.62 * shareCardWidth;
 const _tailMax = 100.0;
@@ -148,7 +149,8 @@ ShareCardLayout shareCardLayout({
       leftOpen: false,
       rightOpen: false,
     ));
-    final bs = _basmalaScale * scale;
+    final bs =
+        _basmalaWidth * (shareCardWidth - 2 * shareCardMargin) / src.width;
     slices.add(
       ShareCardSlice(
         layer: ShareCardLayer.basmala,

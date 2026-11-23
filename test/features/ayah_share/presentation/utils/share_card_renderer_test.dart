@@ -225,7 +225,7 @@ void main() {
         await renderer.compose(crops, colors: MushafPaper.cream.colors),
       );
       expect(image.width, 1080);
-      expect(image.height, 888);
+      expect(image.height, 903);
       expect(image.height, shareCardFrame(crops.layout.textBottom).height);
       image.dispose();
       crops.dispose();

@@ -15,20 +15,20 @@ Iterable<ShareCardSlice> _body(ShareCardLayout layout) =>
     layout.slices.skip(2).where((s) => s.layer != ShareCardLayer.basmala);
 
 void main() {
-  test('6:31 lays out three right-aligned rows at height 888', () {
+  test('6:31 lays out three right-aligned rows at height 903', () {
     final layout = layoutFor(6, 31);
     expect(layout.rows, hasLength(3));
     expect(layout.scale, closeTo(0.7682, 1e-3));
-    expect(_height(layout), closeTo(888, 1));
+    expect(_height(layout), closeTo(903, 1));
     for (final row in layout.rows) {
       expect(row.coreRight, closeTo(1008, 0.5));
     }
   });
 
-  test('2:282 stacks fifteen rows at height 2450', () {
+  test('2:282 stacks fifteen rows at height 2465', () {
     final layout = layoutFor(2, 282);
     expect(layout.rows, hasLength(15));
-    expect(_height(layout), closeTo(2450, 1));
+    expect(_height(layout), closeTo(2465, 1));
   });
 
   test('16:127 carries its rosette tail on the previous row and refits', () {
@@ -37,7 +37,7 @@ void main() {
     expect(layout.rows, hasLength(2));
     expect(layout.mergedTail, isTrue);
     expect(layout.scale, closeTo(0.737, 1e-3));
-    expect(_height(layout), closeTo(738, 1));
+    expect(_height(layout), closeTo(757, 1));
     final accents = _body(
       layout,
     ).where((s) => s.layer == ShareCardLayer.accent);
@@ -90,10 +90,7 @@ void main() {
       (s) => s.layer == ShareCardLayer.basmala,
     );
     expect(basmala.dst.left + basmala.dst.right, closeTo(1080, 1e-6));
-    expect(
-      basmala.dst.width,
-      closeTo(basmala.src.width * 0.78 * layout.scale, 1e-6),
-    );
+    expect(basmala.dst.width, closeTo(0.37 * (1080 - 2 * 72), 1e-6));
     expect(basmala.page, 128);
   });
 
