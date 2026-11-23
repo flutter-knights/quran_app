@@ -154,8 +154,12 @@ TextPainter layoutTafsirHeading(MushafPaperColors colors) => TextPainter(
   return (heading: heading, body: text);
 }
 
+const shareCardTafsirRuleGap = 36.0;
+const shareCardTafsirHeadingGap = 8.0;
+
 double tafsirBlockHeight(({TextPainter heading, TextPainter body}) block) =>
-    36 + 3 * (block.heading.height + 8 + block.body.height);
+    shareCardTafsirRuleGap +
+    3 * (block.heading.height + shareCardTafsirHeadingGap + block.body.height);
 
 void paintTafsirBlock(
   Canvas canvas,
@@ -185,10 +189,13 @@ void paintTafsirBlock(
       Paint()..color = colors.accent.withAlpha(200),
     )
     ..save()
-    ..translate(shareCardMargin, top + 36)
+    ..translate(shareCardMargin, top + shareCardTafsirRuleGap)
     ..scale(3);
   block.heading.paint(canvas, Offset.zero);
-  block.body.paint(canvas, Offset(0, block.heading.height + 8));
+  block.body.paint(
+    canvas,
+    Offset(0, block.heading.height + shareCardTafsirHeadingGap),
+  );
   canvas.restore();
 }
 

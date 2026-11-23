@@ -3,6 +3,7 @@ import 'package:quran/quran.dart' as quran;
 
 import '../../../../core/helper functions/locale_helpers.dart';
 import '../../../../core/helper functions/numeral_helpers.dart';
+import '../../../../core/localization/pending_s.dart';
 import '../../../../generated/l10n.dart';
 import '../../../quran_playback/domain/entities/ayah_identifier.dart';
 import '../../../quran_playback/domain/entities/reciter.dart';
@@ -26,5 +27,8 @@ String ayahShareText(BuildContext context, AyahIdentifier ayah) =>
 String reelFooter(Reciter reciter, AyahIdentifier first, int count) {
   final last = first.ayah + count - 1;
   final range = count == 1 ? '${first.ayah}' : '${first.ayah}–$last';
-  return '${reciter.arabicName} · سورة ${quran.getSurahNameArabic(first.surah)} ${range.toIndicNumerals('ar')}';
+  final surah = PendingS.forLanguage(
+    'ar',
+  ).mushaf_surahTitle(quran.getSurahNameArabic(first.surah));
+  return '${reciter.arabicName} · $surah ${range.toIndicNumerals('ar')}';
 }

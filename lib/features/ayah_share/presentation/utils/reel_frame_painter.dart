@@ -14,7 +14,11 @@ const reelFooterPad = 24.0;
 
 final reelTafsirStyle = TS.regular12.copyWith(height: 1.8);
 
-typedef ReelFrameGeometry = ({double scale, double tafsirMaxHeight});
+typedef ReelFrameGeometry = ({
+  double scale,
+  double tafsirTop,
+  double tafsirMaxHeight,
+});
 
 ReelFrameGeometry reelFrameGeometry(
   ShareCardLayout layout, {
@@ -23,12 +27,17 @@ ReelFrameGeometry reelFrameGeometry(
 }) {
   final available = reelHeight - footerHeight;
   final block = layout.textBottom + shareCardMargin;
-  if (block > available) return (scale: available / block, tafsirMaxHeight: 0);
   final tafsirTop = layout.textBottom + shareCardTafsirGap * layout.pitch;
+  if (block > available) {
+    return (scale: available / block, tafsirTop: tafsirTop, tafsirMaxHeight: 0);
+  }
   return (
     scale: 1,
+    tafsirTop: tafsirTop,
     tafsirMaxHeight:
-        (available - shareCardMargin - tafsirTop - 36) / 3 - headingHeight - 8,
+        (available - shareCardMargin - tafsirTop - shareCardTafsirRuleGap) / 3 -
+        headingHeight -
+        shareCardTafsirHeadingGap,
   );
 }
 
@@ -75,11 +84,11 @@ String? fitReelTafsir(String body, {required double maxHeight}) {
             (i + 1 == body.length || whitespace.hasMatch(body[i + 1])))
           i + 1,
     ];
-    final words = [
-      for (var i = 1; i < body.length; i++)
-        if (whitespace.hasMatch(body[i])) i,
-    ];
-    return longest(sentences) ?? longest(words);
+    return longest(sentences) ??
+        longest([
+          for (var i = 1; i < body.length; i++)
+            if (whitespace.hasMatch(body[i])) i,
+        ]);
   } finally {
     painter.dispose();
   }
@@ -123,7 +132,7 @@ class ReelFramePainter {
       if (fitted != null) {
         block = layoutTafsirBlock(fitted, colors, reelTafsirStyle);
       }
-      final tafsirTop = layout.textBottom + shareCardTafsirGap * layout.pitch;
+      final tafsirTop = geometry.tafsirTop;
       final available = reelHeight - footerHeight;
       final content = block == null
           ? (layout.textBottom + shareCardMargin) * geometry.scale

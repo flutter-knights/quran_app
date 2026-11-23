@@ -83,8 +83,14 @@ void main() {
     final maxHeight = 5 * _lineHeight();
     final cut = fitReelTafsir(_longBody, maxHeight: maxHeight)!;
     expect(cut, endsWith('. …'));
-    expect(_longBody, startsWith(cut.substring(0, cut.length - 2)));
+    final prefix = cut.substring(0, cut.length - 2);
+    expect(_longBody, startsWith(prefix));
     expect(_height(cut), lessThanOrEqualTo(maxHeight));
+    final next = _longBody.indexOf('.', prefix.length) + 1;
+    expect(
+      _height('${_longBody.substring(0, next)} …'),
+      greaterThan(maxHeight),
+    );
   });
 
   test('fewer than three lines of room drops the tafsir', () {
@@ -97,7 +103,11 @@ void main() {
     final cut = fitReelTafsir(body, maxHeight: maxHeight)!;
     expect(cut, endsWith(' …'));
     expect(cut, isNot(contains('.')));
+    final prefix = cut.substring(0, cut.length - 2);
+    expect(body, startsWith(prefix));
     expect(_height(cut), lessThanOrEqualTo(maxHeight));
+    final next = body.indexOf(' ', prefix.length + 1);
+    expect(_height('${body.substring(0, next)} …'), greaterThan(maxHeight));
   });
 
   testWidgets('a frame is a 1080×1920 PNG on the paper', (tester) async {
@@ -129,6 +139,50 @@ void main() {
         ),
         colors.background,
       );
+      image.dispose();
+    });
+  });
+
+  testWidgets('the footer sits in the bottom band and nothing above it', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final colors = MushafPaper.night.colors;
+      final png = await ReelFramePainter().paint(
+        ShareCardCrops(
+          layout: layoutFor(6, 31),
+          pieces: const [],
+          basmalaOpacity: 0.42,
+        ),
+        colors: colors,
+        footer: 'ـــــ',
+      );
+      final codec = await ui.instantiateImageCodec(png);
+      final image = (await codec.getNextFrame()).image;
+      codec.dispose();
+      final raw = (await image.toByteData())!;
+      bool inked(int y) {
+        for (var x = 0; x < image.width; x++) {
+          final at = (y * image.width + x) * 4;
+          final pixel = ui.Color.fromARGB(
+            raw.getUint8(at + 3),
+            raw.getUint8(at),
+            raw.getUint8(at + 1),
+            raw.getUint8(at + 2),
+          );
+          if (pixel != colors.background) return true;
+        }
+        return false;
+      }
+
+      const footerHeight = 3 * 18.75;
+      final top = (reelHeight - reelFooterPad - footerHeight).floor();
+      final bottom = (reelHeight - reelFooterPad).ceil();
+      expect([for (var y = top; y < bottom; y++) inked(y)], contains(true));
+      expect([for (var y = 0; y < top - 2; y++) inked(y)], everyElement(false));
+      expect([
+        for (var y = bottom + 1; y < 1920; y++) inked(y),
+      ], everyElement(false));
       image.dispose();
     });
   });
