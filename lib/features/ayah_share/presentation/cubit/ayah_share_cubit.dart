@@ -37,6 +37,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   var _composeDeferred = false;
 
   Future<void> load() async {
+    _renderGeneration++;
     _crops?.dispose();
     _crops = null;
     emit(state.copyWith(status: ShareCardStatus.loading));
@@ -59,6 +60,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       crops.dispose();
       return;
     }
+    _crops?.dispose();
     _crops = crops;
     await _compose();
   }

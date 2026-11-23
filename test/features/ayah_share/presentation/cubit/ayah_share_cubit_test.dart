@@ -83,6 +83,49 @@ void main() {
     expect(cubit.state.status, ShareCardStatus.ready);
   });
 
+  test('a reload drops a compose still in flight from the old crops', () async {
+    renderer.failCompose = true;
+    await loaded();
+    renderer.failCompose = false;
+    final held = Completer<Uint8List>();
+    renderer.composeCompleters.add(held);
+    cubit.setPaper(MushafPaper.night);
+    renderer.prepareCompleter = Completer();
+    final reloading = cubit.load();
+    await pumpEventQueue();
+
+    held.complete(Uint8List.fromList([7]));
+    await pumpEventQueue();
+
+    expect(cubit.state.status, ShareCardStatus.loading);
+    expect(cubit.state.cardBytes, isNull);
+    renderer.prepareCompleter!.complete();
+    await reloading;
+    await pumpEventQueue();
+    expect(cubit.state.status, ShareCardStatus.ready);
+    expect(cubit.state.cardBytes, onePixelPng);
+    expect(
+      states.where((s) => s.status == ShareCardStatus.ready),
+      hasLength(1),
+    );
+  });
+
+  test('overlapping loads dispose the crops they replace', () async {
+    renderer.prepareCompleter = Completer();
+    final first = cubit.load();
+    final second = cubit.load();
+    await pumpEventQueue();
+
+    renderer.prepareCompleter!.complete();
+    await Future.wait([first, second]);
+    await pumpEventQueue();
+
+    expect(renderer.crops, hasLength(2));
+    expect(renderer.crops.first.disposed, 1);
+    expect(renderer.crops.last.disposed, 0);
+    expect(cubit.state.status, ShareCardStatus.ready);
+  });
+
   test('a paper change recomposes without preparing again', () async {
     await loaded();
 
@@ -321,7 +364,7 @@ void main() {
       await pumpEventQueue();
 
       expect(renderer.composeCalls.last.tafsir, isNull);
-      expect(cubit.state.cardBytes, isNot([9]));
+      expect(cubit.state.cardBytes, onePixelPng);
       expect(cubit.state.renderId, 2);
     },
   );
