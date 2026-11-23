@@ -83,6 +83,24 @@ void main() {
     expect(cubit.state.status, ShareCardStatus.ready);
   });
 
+  test('a tafsir compose failure falls back to the plain card', () async {
+    await loaded();
+    renderer.failComposeWithTafsir = true;
+
+    cubit.setIncludeTafsir(true);
+    await pumpEventQueue();
+    getTafsir.completers.single.complete(const Right(intro));
+    await pumpEventQueue();
+
+    expect(cubit.state.status, ShareCardStatus.ready);
+    expect(cubit.state.includeTafsir, isFalse);
+    expect(renderer.composeCalls.map((c) => c.tafsir == null), [
+      true,
+      false,
+      true,
+    ]);
+  });
+
   test('a reload drops a compose still in flight from the old crops', () async {
     renderer.failCompose = true;
     await loaded();

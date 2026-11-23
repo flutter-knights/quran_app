@@ -12,5 +12,11 @@ String ayahVerseText(AyahIdentifier ayah) {
   return verse.split(RegExp(r'\s+')).skip(4).join(' ').trim();
 }
 
+String ayahLabel(BuildContext context, AyahIdentifier ayah, S s) =>
+    s.ayah_label(
+      surahDisplayName(context, ayah.surah),
+      ayah.ayah.toLocalized(context),
+    );
+
 String ayahShareText(BuildContext context, AyahIdentifier ayah) =>
-    '${ayahVerseText(ayah)} — ${S.of(context).ayah_label(surahDisplayName(context, ayah.surah), ayah.ayah.toLocalized(context))}';
+    '${ayahVerseText(ayah)} — ${ayahLabel(context, ayah, S.of(context))}';

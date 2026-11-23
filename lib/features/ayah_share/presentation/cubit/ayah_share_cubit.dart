@@ -177,6 +177,11 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       );
     } catch (_) {
       if (isClosed || generation != _renderGeneration) return;
+      if (withTafsir) {
+        emit(state.copyWith(includeTafsir: false, export: ShareExport.idle));
+        await _compose();
+        return;
+      }
       emit(
         state.copyWith(
           status: ShareCardStatus.failed,

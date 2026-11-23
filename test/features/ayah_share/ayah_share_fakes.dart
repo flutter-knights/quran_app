@@ -75,6 +75,7 @@ class FakeShareCardRenderer implements ShareCardRenderer {
   var prepareCount = 0;
   var failPrepare = false;
   var failCompose = false;
+  var failComposeWithTafsir = false;
   Completer<void>? prepareCompleter;
   final composeCompleters = <Completer<Uint8List>>[];
   final composeCalls = <ComposeCall>[];
@@ -99,7 +100,9 @@ class FakeShareCardRenderer implements ShareCardRenderer {
     if (composeCompleters.isNotEmpty) {
       return composeCompleters.removeAt(0).future;
     }
-    if (failCompose) return Future.error(StateError('compose'));
+    if (failCompose || (failComposeWithTafsir && tafsir != null)) {
+      return Future.error(StateError('compose'));
+    }
     return Future.value(Uint8List.fromList(onePixelPng));
   }
 }
@@ -132,15 +135,14 @@ FakeAyahShare registerFakeAyahShare({
   FakeGetShareCardContent? content,
   FakeShareCardRenderer? renderer,
   FakeGetAyahTafsir? tafsir,
-  MushafPaper paper = MushafPaper.cream,
 }) {
   final fakes = (
     content: content ?? FakeGetShareCardContent(),
     renderer: renderer ?? FakeShareCardRenderer(),
     tafsir: tafsir ?? FakeGetAyahTafsir(),
   );
-  sl.registerFactoryParam<AyahShareCubit, AyahIdentifier, void>(
-    (ayah, _) => AyahShareCubit(
+  sl.registerFactoryParam<AyahShareCubit, AyahIdentifier, MushafPaper>(
+    (ayah, paper) => AyahShareCubit(
       ayah: ayah,
       paper: paper,
       getContent: fakes.content,

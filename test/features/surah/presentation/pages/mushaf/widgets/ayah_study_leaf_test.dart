@@ -10,6 +10,7 @@ import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/widgets/design/directional_icons.dart';
 import 'package:quran_app/features/ayah_share/presentation/widgets/ayah_share_sheet.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_strip.dart';
 import 'package:quran_app/features/surah/presentation/pages/mushaf/widgets/ayah_study_leaf.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
@@ -18,6 +19,7 @@ import 'package:quran_app/generated/l10n.dart';
 
 import '../../../../../ayah_share/ayah_share_fakes.dart';
 import '../../../../../tafsir/tafsir_fakes.dart';
+import '../mushaf_page_harness.dart';
 
 const _ayah = AyahIdentifier(surah: 3, ayah: 7);
 
@@ -35,31 +37,36 @@ Widget _host(
   double scale = 1,
   bool previous = true,
   bool next = true,
-}) => MaterialApp(
-  localizationsDelegates: const [
-    S.delegate,
-    ...GlobalMaterialLocalizations.delegates,
-  ],
-  supportedLocales: S.delegate.supportedLocales,
-  locale: Locale(locale),
-  builder: (context, child) => MediaQuery(
-    data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
-    child: child!,
-  ),
-  home: Scaffold(
-    body: BlocProvider<TafsirCubit>.value(
-      value: cubit,
-      child: SizedBox(
-        width: 360,
-        height: 640,
-        child: AyahStudyLeaf(
-          ayah: _ayah,
-          page: 50,
-          lines: const [],
-          colors: colors ?? MushafPaper.cream.colors,
-          onBack: calls.tap('back'),
-          onPrevious: previous ? calls.tap('previous') : null,
-          onNext: next ? calls.tap('next') : null,
+}) => BlocProvider<SettingsCubit>.value(
+  value: FakeSettings(),
+  child: MaterialApp(
+    localizationsDelegates: const [
+      S.delegate,
+      ...GlobalMaterialLocalizations.delegates,
+    ],
+    supportedLocales: S.delegate.supportedLocales,
+    locale: Locale(locale),
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(
+        context,
+      ).copyWith(textScaler: TextScaler.linear(scale)),
+      child: child!,
+    ),
+    home: Scaffold(
+      body: BlocProvider<TafsirCubit>.value(
+        value: cubit,
+        child: SizedBox(
+          width: 360,
+          height: 640,
+          child: AyahStudyLeaf(
+            ayah: _ayah,
+            page: 50,
+            lines: const [],
+            colors: colors ?? MushafPaper.cream.colors,
+            onBack: calls.tap('back'),
+            onPrevious: previous ? calls.tap('previous') : null,
+            onNext: next ? calls.tap('next') : null,
+          ),
         ),
       ),
     ),

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,11 +14,13 @@ import 'package:quran_app/core/errors/failure.dart';
 import 'package:quran_app/core/widgets/design/action_buttons_row.dart';
 import 'package:quran_app/features/ayah_share/presentation/widgets/ayah_share_sheet.dart';
 import 'package:quran_app/features/quran_playback/domain/entities/ayah_identifier.dart';
+import 'package:quran_app/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';
 import 'package:quran_app/features/tafsir/domain/entities/tafsir.dart';
 import 'package:quran_app/generated/l10n.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../surah/presentation/pages/mushaf/mushaf_page_harness.dart';
 import '../../ayah_share_fakes.dart';
 
 const _shareChannel = MethodChannel('dev.fluttercommunity.plus/share');
@@ -29,6 +32,7 @@ void main() {
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   late FakeAyahShare fakes;
+  late FakeSettings settings;
   late List<Map<Object?, Object?>> shared;
   var shareThrows = false;
 
@@ -36,6 +40,7 @@ void main() {
     shareThrows = false;
     shared = [];
     fakes = registerFakeAyahShare();
+    settings = FakeSettings();
     messenger.setMockMethodCallHandler(_shareChannel, (call) async {
       if (shareThrows) throw PlatformException(code: 'unavailable');
       shared.add(call.arguments as Map<Object?, Object?>);
@@ -64,24 +69,27 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: const [
-          S.delegate,
-          ...GlobalMaterialLocalizations.delegates,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        locale: locale,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(textScale)),
-          child: child!,
-        ),
-        home: Builder(
-          builder: (context) => Scaffold(
-            body: TextButton(
-              onPressed: () => AyahShareSheet.show(context, ayah: ayah),
-              child: const Text('open'),
+      BlocProvider<SettingsCubit>.value(
+        value: settings,
+        child: MaterialApp(
+          localizationsDelegates: const [
+            S.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+          locale: locale,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(textScale)),
+            child: child!,
+          ),
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => AyahShareSheet.show(context, ayah: ayah),
+                child: const Text('open'),
+              ),
             ),
           ),
         ),
@@ -185,6 +193,31 @@ void main() {
     expect(
       fakes.renderer.composeCalls.last.colors.background,
       MushafPaper.night.colors.background,
+    );
+  });
+
+  testWidgets('opens on the reader paper from settings', (tester) async {
+    settings.emit(
+      SettingsState(
+        settings.state.settingsModel.copyWith(mushafPaper: MushafPaper.night),
+      ),
+    );
+    await open(tester);
+
+    expect(
+      fakes.renderer.composeCalls.first.colors.background,
+      MushafPaper.night.colors.background,
+    );
+  });
+
+  testWidgets('the list clears the bottom system inset', (tester) async {
+    tester.view.padding = const FakeViewPadding(bottom: 34);
+    addTearDown(tester.view.resetPadding);
+    await open(tester);
+
+    expect(
+      tester.widget<ListView>(find.byType(ListView)).padding,
+      const EdgeInsets.fromLTRB(16, 16, 16, 50),
     );
   });
 
