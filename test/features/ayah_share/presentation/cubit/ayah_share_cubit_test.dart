@@ -1005,6 +1005,27 @@ void main() {
       },
     );
 
+    test('each segment asks for the tafsir of its own page', () async {
+      final c = await reelCubit(const AyahIdentifier(surah: 2, ayah: 256));
+      await c.addAyah();
+      c.setIncludeTafsir(true);
+      await pumpEventQueue();
+
+      expect(getTafsir.requests.single, (surah: 2, ayah: 256, page: 42));
+      getTafsir.completers.single.complete(const Right(intro));
+      await pumpEventQueue();
+
+      expect(getTafsir.requests.last, (surah: 2, ayah: 257, page: 43));
+      getTafsir.completers.last.complete(const Right(textB));
+      await pumpEventQueue();
+      final adding = c.addAyah();
+      await pumpEventQueue();
+
+      expect(getTafsir.requests.last, (surah: 2, ayah: 258, page: 43));
+      getTafsir.completers.last.complete(const Right(textB));
+      await adding;
+    });
+
     test(
       'an ayah added while the tafsir is off is filled when it turns on',
       () async {

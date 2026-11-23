@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/core/constants/mushaf_paper.dart';
 import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/errors/failure.dart';
@@ -40,9 +41,9 @@ class FakeGetShareCardContent implements GetShareCardContent {
               Right(
                 ShareCardContent(
                   ayah: ayah,
-                  page: 1,
+                  page: quran.getPageNumber(ayah.surah, ayah.ayah),
                   pageBounds: const [],
-                  startPage: 1,
+                  startPage: quran.getPageNumber(ayah.surah, 1),
                   startPageBounds: const [],
                 ),
               ),
