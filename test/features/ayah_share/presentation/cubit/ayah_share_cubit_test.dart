@@ -507,6 +507,60 @@ void main() {
       expect(c.state.reelCount, 1);
     });
 
+    test('a content failure on «+» raises the audio issue', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      content.result = const Left(NotFoundFailure('1:2'));
+
+      await c.addAyah();
+
+      expect(c.state.reelIssue, ReelIssue.audioFailed);
+      expect(c.state.reelCount, 1);
+      expect(c.state.export, ShareExport.idle);
+    });
+
+    test('a crop failure on «+» raises the audio issue', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      renderer.failPrepare = true;
+
+      await c.addAyah();
+
+      expect(c.state.reelIssue, ReelIssue.audioFailed);
+      expect(c.state.reelCount, 1);
+      expect(c.state.export, ShareExport.idle);
+    });
+
+    test('closing mid-«+» disposes the crops it prepared', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      renderer.prepareCompleter = Completer();
+      final adding = c.addAyah();
+      await pumpEventQueue();
+
+      await c.close();
+      renderer.prepareCompleter!.complete();
+      await adding;
+
+      expect(renderer.crops, hasLength(2));
+      expect(renderer.crops.last.disposed, 1);
+    });
+
+    test('«+» reports progress while it prepares', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      expect(c.state.progress, isFalse);
+      audio.gate = Completer();
+
+      final adding = c.addAyah();
+
+      expect(c.state.export, ShareExport.preparing);
+      expect(c.state.progress, isTrue);
+      audio.gate!.complete();
+      await adding;
+      expect(c.state.progress, isFalse);
+    });
+
     test('«+» prepares only once on a double tap', () async {
       final c = await reelCubit(ayah);
       await c.selectReel(Reciter.alafasy);
@@ -655,6 +709,34 @@ void main() {
 
       expect(painter.calls, hasLength(1));
       expect(painter.calls.single.tafsir, intro.body);
+      expect(c.state.export, ShareExport.idle);
+    });
+
+    test('a tafsir landing mid-«+» keeps preparing and «+» closed', () async {
+      final c = await reelCubit(ayah);
+      await c.selectReel(Reciter.alafasy);
+      c.setIncludeTafsir(true);
+      await pumpEventQueue();
+      audio.gate = Completer();
+      final adding = c.addAyah();
+      await pumpEventQueue();
+      final requested = audio.requests.length;
+      final painted = painter.calls.length;
+
+      getTafsir.completers.single.complete(const Right(intro));
+      await pumpEventQueue();
+      await c.addAyah();
+
+      expect(c.state.export, ShareExport.preparing);
+      expect(c.state.canAddAyah, isFalse);
+      expect(audio.requests, hasLength(requested));
+      expect(painter.calls, hasLength(painted));
+
+      audio.gate!.complete();
+      await adding;
+
+      expect(c.state.reelCount, 2);
+      expect(painter.calls.last.tafsir, intro.body);
       expect(c.state.export, ShareExport.idle);
     });
 

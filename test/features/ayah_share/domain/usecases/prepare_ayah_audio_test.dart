@@ -108,7 +108,22 @@ void main() {
     );
   });
 
-  test('a duration failure is returned', () async {
+  test('a basmala failure is returned before the ayah is requested', () async {
+    playback.failing.add(const AyahIdentifier(surah: 1, ayah: 1));
+
+    final result = await prepare(
+      const AyahIdentifier(surah: 2, ayah: 1),
+      Reciter.alafasy,
+    );
+
+    expect(
+      result,
+      const Left<Failure, List<ReelAudio>>(NetworkFailure('offline')),
+    );
+    expect(playback.requests, const [AyahIdentifier(surah: 1, ayah: 1)]);
+  });
+
+  test('a duration failure is returned after the download', () async {
     reels.failDuration = true;
 
     final result = await prepare(
@@ -116,6 +131,10 @@ void main() {
       Reciter.alafasy,
     );
 
-    expect(result.isLeft(), isTrue);
+    expect(
+      result,
+      const Left<Failure, List<ReelAudio>>(UnknownFailure('probe')),
+    );
+    expect(playback.requests, const [AyahIdentifier(surah: 2, ayah: 255)]);
   });
 }
