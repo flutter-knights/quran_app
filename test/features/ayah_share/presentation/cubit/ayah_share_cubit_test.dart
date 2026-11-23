@@ -516,26 +516,26 @@ void main() {
       expect(c.state.reelCount, 1);
     });
 
-    test('a content failure on «+» raises the audio issue', () async {
+    test('a content failure on «+» raises the render issue', () async {
       final c = await reelCubit(ayah);
       await c.selectReel(Reciter.alafasy);
       content.result = const Left(NotFoundFailure('1:2'));
 
       await c.addAyah();
 
-      expect(c.state.reelIssue, ReelIssue.audioFailed);
+      expect(c.state.reelIssue, ReelIssue.renderFailed);
       expect(c.state.reelCount, 1);
       expect(c.state.export, ShareExport.idle);
     });
 
-    test('a crop failure on «+» raises the audio issue', () async {
+    test('a crop failure on «+» raises the render issue', () async {
       final c = await reelCubit(ayah);
       await c.selectReel(Reciter.alafasy);
       renderer.failPrepare = true;
 
       await c.addAyah();
 
-      expect(c.state.reelIssue, ReelIssue.audioFailed);
+      expect(c.state.reelIssue, ReelIssue.renderFailed);
       expect(c.state.reelCount, 1);
       expect(c.state.export, ShareExport.idle);
     });
@@ -742,9 +742,12 @@ void main() {
       expect(painter.calls, hasLength(painted));
 
       audio.gate!.complete();
+      await pumpEventQueue();
+      getTafsir.completers[1].complete(const Right(textB));
       await adding;
 
       expect(c.state.reelCount, 2);
+      expect(c.state.reelSegments.last.tafsir, 'B');
       expect(painter.calls.last.tafsir, intro.body);
       expect(c.state.export, ShareExport.idle);
     });
@@ -973,16 +976,12 @@ void main() {
     });
 
     test(
-      'with the tafsir on each later ayah loads its own and a failure draws it without',
+      'turning the tafsir on loads the added ayat before sharing and a failure draws it without',
       () async {
         final c = await twoAyat();
         c.setIncludeTafsir(true);
         await pumpEventQueue();
         getTafsir.completers.single.complete(const Right(intro));
-        await pumpEventQueue();
-        final painted = painter.calls.length;
-
-        final sharing = c.requestShare();
         await pumpEventQueue();
 
         expect(getTafsir.completers, hasLength(2));
@@ -991,12 +990,76 @@ void main() {
           ayah: 256,
           page: c.state.reelSegments[1].content.page,
         ));
+        expect(c.state.tafsirStatus, ShareTafsirStatus.loading);
         getTafsir.completers.last.complete(const Left(ServerFailure('x')));
-        await sharing;
+        await pumpEventQueue();
+        expect(c.state.tafsirStatus, ShareTafsirStatus.ready);
+        final painted = painter.calls.length;
 
+        await c.requestShare();
+
+        expect(getTafsir.completers, hasLength(2));
         final encoded = painter.calls.sublist(painted);
         expect(encoded.map((call) => call.tafsir), [intro.body, isNull]);
         expect(c.state.export, ShareExport.sharing);
+      },
+    );
+
+    test(
+      'an ayah added while the tafsir is off is filled when it turns on',
+      () async {
+        final c = await reelCubit(start);
+        c.setIncludeTafsir(true);
+        await pumpEventQueue();
+        getTafsir.completers.single.complete(const Right(intro));
+        await pumpEventQueue();
+        c.setIncludeTafsir(false);
+        await pumpEventQueue();
+        await c.addAyah();
+        expect(c.state.reelCount, 2);
+        expect(getTafsir.completers, hasLength(1));
+
+        c.setIncludeTafsir(true);
+        await pumpEventQueue();
+
+        expect(getTafsir.completers, hasLength(2));
+        expect(c.state.tafsirStatus, ShareTafsirStatus.loading);
+        getTafsir.completers.last.complete(const Right(textB));
+        await pumpEventQueue();
+        final painted = painter.calls.length;
+        await c.requestShare();
+
+        expect(c.state.tafsirStatus, ShareTafsirStatus.ready);
+        expect(painter.calls.sublist(painted).map((call) => call.tafsir), [
+          intro.body,
+          'B',
+        ]);
+      },
+    );
+
+    test(
+      '«+» with the tafsir on loads it onto the segment, not at share',
+      () async {
+        final c = await reelCubit(start);
+        c.setIncludeTafsir(true);
+        await pumpEventQueue();
+        getTafsir.completers.single.complete(const Right(intro));
+        await pumpEventQueue();
+
+        final adding = c.addAyah();
+        await pumpEventQueue();
+        expect(getTafsir.completers, hasLength(2));
+        getTafsir.completers.last.complete(const Right(textB));
+        await adding;
+        final painted = painter.calls.length;
+        await c.requestShare();
+
+        expect(c.state.reelSegments.last.tafsir, 'B');
+        expect(getTafsir.completers, hasLength(2));
+        expect(painter.calls.sublist(painted).map((call) => call.tafsir), [
+          intro.body,
+          'B',
+        ]);
       },
     );
 
@@ -1078,7 +1141,9 @@ void main() {
       final sharing = c.requestShare();
       await pumpEventQueue();
 
-      getTafsir.completers.single.complete(const Right(intro));
+      getTafsir.completers.first.complete(const Right(intro));
+      await pumpEventQueue();
+      getTafsir.completers.last.complete(const Right(textB));
       await pumpEventQueue();
 
       expect(c.state.export, ShareExport.encoding);

@@ -8,7 +8,7 @@ enum ShareExport { idle, rendering, preparing, encoding, sharing, done, failed }
 
 enum ShareFormat { image, reel }
 
-enum ReelIssue { none, audioFailed, encodeFailed }
+enum ReelIssue { none, audioFailed, renderFailed, encodeFailed }
 
 final class AyahShareState extends Equatable {
   const AyahShareState({

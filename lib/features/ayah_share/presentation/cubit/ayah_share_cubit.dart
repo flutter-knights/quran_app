@@ -57,7 +57,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   ShareCardContent? _content;
   ShareCardCrops? _crops;
   CancelToken? _token;
-  CancelToken? _reelToken;
+  final _segmentToken = CancelToken();
   var _encodeGeneration = 0;
   var _renderGeneration = 0;
   var _composeDeferred = false;
@@ -105,7 +105,8 @@ class AyahShareCubit extends Cubit<AyahShareState> {
     }
     if (on) {
       emit(state.copyWith(includeTafsir: true, reelIssue: ReelIssue.none));
-      if (state.tafsirStatus == ShareTafsirStatus.ready) {
+      if (state.tafsirStatus == ShareTafsirStatus.ready &&
+          _missingTafsir().isEmpty) {
         _compose();
       } else {
         _loadTafsir();
@@ -191,21 +192,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       state.reciter!,
     )).toOption().toNullable();
     if (isClosed) return;
-    final content = audio == null
-        ? null
-        : (await _getContent(next)).toOption().toNullable();
-    if (isClosed) return;
-    ShareCardCrops? crops;
-    if (content != null) {
-      try {
-        crops = await _renderer.prepare(content);
-      } catch (_) {}
-      if (isClosed) {
-        crops?.dispose();
-        return;
-      }
-    }
-    if (audio == null || content == null || crops == null) {
+    if (audio == null) {
       _settle(
         state.copyWith(
           export: ShareExport.idle,
@@ -214,11 +201,34 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       );
       return;
     }
-    final segment = ReelSegment(content: content, audio: audio);
+    final rendered = await _renderSegment(next);
+    if (isClosed) {
+      rendered?.$2.dispose();
+      return;
+    }
+    if (rendered == null) {
+      _settle(
+        state.copyWith(
+          export: ShareExport.idle,
+          reelIssue: ReelIssue.renderFailed,
+        ),
+      );
+      return;
+    }
+    final (content, crops) = rendered;
+    var segment = ReelSegment(content: content, audio: audio);
     if (state.reelDuration + segment.duration > reelMaxDuration) {
       crops.dispose();
       _settle(state.copyWith(reelCapped: true, export: ShareExport.idle));
       return;
+    }
+    if (state.includeTafsir) {
+      final tafsir = await _segmentTafsir(segment);
+      if (isClosed) {
+        crops.dispose();
+        return;
+      }
+      segment = segment.withTafsir(tafsir);
     }
     _segmentCrops[next] = crops;
     _composeDeferred = false;
@@ -229,6 +239,31 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       ),
     );
     await _compose();
+  }
+
+  Future<(ShareCardContent, ShareCardCrops)?> _renderSegment(
+    AyahIdentifier ayah,
+  ) async {
+    final content = (await _getContent(ayah)).toOption().toNullable();
+    if (content == null) return null;
+    try {
+      return (content, await _renderer.prepare(content));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<String?> _segmentTafsir(
+    ReelSegment segment, [
+    CancelToken? token,
+  ]) async {
+    final result = await _getTafsir(
+      surah: segment.ayah.surah,
+      ayah: segment.ayah.ayah,
+      page: segment.content.page,
+      cancelToken: token ?? _segmentToken,
+    );
+    return result.toOption().toNullable()?.body;
   }
 
   void removeAyah() {
@@ -261,8 +296,6 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   void cancelEncode() {
     if (state.export != ShareExport.encoding) return;
     _encodeGeneration++;
-    _reelToken?.cancel();
-    _reelToken = null;
     _composeReel.cancel();
   }
 
@@ -302,26 +335,11 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       final clips = <ReelClip>[];
       for (var i = 0; i < state.reelCount; i++) {
         final segment = state.reelSegments[i];
-        final String? tafsir;
-        if (!withTafsir) {
-          tafsir = null;
-        } else if (i == 0) {
-          tafsir = state.tafsir;
-        } else {
-          final result = await _getTafsir(
-            surah: segment.ayah.surah,
-            ayah: segment.ayah.ayah,
-            page: segment.content.page,
-            cancelToken: _reelToken ??= CancelToken(),
-          );
-          if (stale()) return;
-          tafsir = result.fold((_) => null, (t) => t.body);
-        }
         final frame = await _framePainter.paint(
           i == 0 ? _crops! : _segmentCrops[segment.ayah]!,
           colors: state.paper.colors,
           footer: reelFooter(state.reciter!, ayah, state.reelCount),
-          tafsir: tafsir,
+          tafsir: withTafsir ? (i == 0 ? state.tafsir : segment.tafsir) : null,
         );
         if (stale()) return;
         clips.add(ReelClip(frame: frame, audio: segment.audio));
@@ -367,31 +385,55 @@ class AyahShareCubit extends Cubit<AyahShareState> {
     }
   }
 
+  List<ReelSegment> _missingTafsir() => [
+    for (final segment in state.reelSegments)
+      if (segment.ayah != ayah && segment.tafsir == null) segment,
+  ];
+
   Future<void> _loadTafsir() async {
     _token?.cancel();
     final token = _token = CancelToken();
+    var body = state.tafsirStatus == ShareTafsirStatus.ready
+        ? state.tafsir
+        : null;
     emit(state.copyWith(tafsirStatus: ShareTafsirStatus.loading));
-    final result = await _getTafsir(
-      surah: ayah.surah,
-      ayah: ayah.ayah,
-      page: _content!.page,
-      cancelToken: token,
-    );
-    if (isClosed || token != _token) return;
-    final tafsir = result.toOption().toNullable();
-    if (tafsir == null) {
-      emit(
-        state.copyWith(
-          includeTafsir: false,
-          tafsirStatus: ShareTafsirStatus.failed,
-        ),
+    if (body == null) {
+      final result = await _getTafsir(
+        surah: ayah.surah,
+        ayah: ayah.ayah,
+        page: _content!.page,
+        cancelToken: token,
       );
-      return;
+      if (isClosed || token != _token) return;
+      body = result.toOption().toNullable()?.body;
+      if (body == null) {
+        emit(
+          state.copyWith(
+            includeTafsir: false,
+            tafsirStatus: ShareTafsirStatus.failed,
+          ),
+        );
+        return;
+      }
     }
+    final missing = _missingTafsir();
+    final bodies = await Future.wait([
+      for (final segment in missing) _segmentTafsir(segment, token),
+    ]);
+    if (isClosed || token != _token) return;
+    final fetched = {
+      for (var i = 0; i < missing.length; i++) missing[i].ayah: bodies[i],
+    };
     emit(
       state.copyWith(
-        tafsir: tafsir.body,
+        tafsir: body,
         tafsirStatus: ShareTafsirStatus.ready,
+        reelSegments: [
+          for (final segment in state.reelSegments)
+            fetched[segment.ayah] == null
+                ? segment
+                : segment.withTafsir(fetched[segment.ayah]),
+        ],
       ),
     );
     await _compose();
@@ -468,7 +510,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   @override
   Future<void> close() {
     _token?.cancel();
-    _reelToken?.cancel();
+    _segmentToken.cancel();
     _composeReel.cancel();
     _crops?.dispose();
     _disposeSegmentCrops();

@@ -726,6 +726,42 @@ void main() {
       );
     });
 
+    testWidgets('a «+» that would pass 60 s explains the disabled «+»', (
+      tester,
+    ) async {
+      fakes.prepareAudio.durations[start] = const Duration(seconds: 58);
+      await open(tester);
+      await chooseReel(tester);
+      expect(find.text('الآية التالية تتجاوز ٦٠ ثانية'), findsNothing);
+
+      await tapKey(tester, 'reel-plus');
+      await pumpUntil(
+        tester,
+        () => find.text('الآية التالية تتجاوز ٦٠ ثانية').evaluate().isNotEmpty,
+      );
+
+      expect(find.text('الآية التالية تتجاوز ٦٠ ثانية'), findsOneWidget);
+      expect(iconPressed(tester, 'reel-plus'), isNull);
+      expect(countText(tester), '١');
+    });
+
+    testWidgets('a card failure on «+» says the card, not the recitation', (
+      tester,
+    ) async {
+      await open(tester);
+      await chooseReel(tester);
+      fakes.renderer.failPrepare = true;
+
+      await tapKey(tester, 'reel-plus');
+      await pumpUntil(
+        tester,
+        () => find.byType(SnackBar).evaluate().isNotEmpty,
+      );
+
+      expect(find.text('تعذّر تجهيز الصورة'), findsOneWidget);
+      expect(find.text('تعذّر تحميل التلاوة'), findsNothing);
+    });
+
     testWidgets('an audio failure shows the SnackBar and keeps the image', (
       tester,
     ) async {

@@ -616,6 +616,8 @@
   "ayahShare_encoding": "جارٍ تجهيز المقطع",
   "ayahShare_encodeFailed": "تعذّر تجهيز المقطع",
   "ayahShare_audioFailed": "تعذّر تحميل التلاوة",
+  "ayahShare_cancel": "إلغاء",
+  "ayahShare_capReached": "الآية التالية تتجاوز ٦٠ ثانية",
   "ayah_range_label": "سورة {surah}، الآيات {from}–{to}",
   "@ayah_range_label": {
     "placeholders": { "surah": { "type": "String" }, "from": { "type": "String" }, "to": { "type": "String" } }

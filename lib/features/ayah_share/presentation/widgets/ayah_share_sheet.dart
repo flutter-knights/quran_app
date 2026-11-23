@@ -86,15 +86,19 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
     SnackBar(content: Text(S.current.share_failed, style: TS.regular14)),
   );
 
-  void _onAudioFailed(BuildContext context, AyahShareState state) =>
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            PendingS.current.ayahShare_audioFailed,
-            style: TS.regular14,
-          ),
+  void _onReelIssue(BuildContext context, AyahShareState state) {
+    final s = PendingS.current;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          state.reelIssue == ReelIssue.renderFailed
+              ? s.ayahShare_renderFailed
+              : s.ayahShare_audioFailed,
+          style: TS.regular14,
         ),
-      );
+      ),
+    );
+  }
 
   Future<void> _share(BuildContext context, AyahShareState state) async {
     final cubit = context.read<AyahShareCubit>();
@@ -160,8 +164,9 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
             BlocListener<AyahShareCubit, AyahShareState>(
               listenWhen: (a, b) =>
                   a.reelIssue != b.reelIssue &&
-                  b.reelIssue == ReelIssue.audioFailed,
-              listener: _onAudioFailed,
+                  (b.reelIssue == ReelIssue.audioFailed ||
+                      b.reelIssue == ReelIssue.renderFailed),
+              listener: _onReelIssue,
             ),
           ],
           child: ListView(
@@ -415,7 +420,7 @@ class _ReelControls extends StatelessWidget {
     return BlocSelector<
       AyahShareCubit,
       AyahShareState,
-      (ShareFormat, int, bool, bool, Reciter?, bool)
+      (ShareFormat, int, bool, bool, Reciter?, bool, bool)
     >(
       selector: (state) => (
         state.format,
@@ -424,51 +429,58 @@ class _ReelControls extends StatelessWidget {
         state.canRemoveAyah,
         state.reciter,
         state.reelOverLimit,
+        state.reelCapped,
       ),
       builder: (context, selected) {
-        final (format, count, canAdd, canRemove, reciter, overLimit) = selected;
+        final (format, count, canAdd, canRemove, reciter, overLimit, capped) =
+            selected;
         if (format != ShareFormat.reel || count == 0) {
           return const SizedBox.shrink();
         }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    s.ayahShare_ayahCount,
-                    style: TS.medium14.copyWith(
+        return Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      s.ayahShare_ayahCount,
+                      style: TS.medium14.copyWith(
+                        color: context.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    key: const ValueKey('reel-minus'),
+                    tooltip: s.ayahShare_removeAyah,
+                    icon: const HugeIcon(
+                      icon: HugeIcons.strokeRoundedMinusSign,
+                    ),
+                    onPressed: canRemove ? cubit.removeAyah : null,
+                  ),
+                  Text(
+                    count.toLocalized(context),
+                    key: const ValueKey('reel-count'),
+                    style: TS.bold16.copyWith(
                       color: context.colorScheme.onSurface,
                     ),
                   ),
-                ),
-                IconButton(
-                  key: const ValueKey('reel-minus'),
-                  tooltip: s.ayahShare_removeAyah,
-                  icon: const HugeIcon(icon: HugeIcons.strokeRoundedMinusSign),
-                  onPressed: canRemove ? cubit.removeAyah : null,
-                ),
-                Text(
-                  count.toLocalized(context),
-                  key: const ValueKey('reel-count'),
-                  style: TS.bold16.copyWith(
-                    color: context.colorScheme.onSurface,
+                  IconButton(
+                    key: const ValueKey('reel-plus'),
+                    tooltip: s.ayahShare_addAyah,
+                    icon: const HugeIcon(icon: HugeIcons.strokeRoundedPlusSign),
+                    onPressed: canAdd ? cubit.addAyah : null,
                   ),
-                ),
-                IconButton(
-                  key: const ValueKey('reel-plus'),
-                  tooltip: s.ayahShare_addAyah,
-                  icon: const HugeIcon(icon: HugeIcons.strokeRoundedPlusSign),
-                  onPressed: canAdd ? cubit.addAyah : null,
-                ),
-              ],
-            ),
-            if (reciter != null)
-              Text(s.ayahShare_recitedBy(reciter.arabicName), style: caption),
-            if (overLimit) Text(s.ayahShare_longClip, style: caption),
-          ],
+                ],
+              ),
+              if (reciter != null)
+                Text(s.ayahShare_recitedBy(reciter.arabicName), style: caption),
+              if (overLimit) Text(s.ayahShare_longClip, style: caption),
+              if (capped) Text(s.ayahShare_capReached, style: caption),
+            ],
+          ),
         );
       },
     );
@@ -513,7 +525,7 @@ class _ReelProgress extends StatelessWidget {
                         TextButton(
                           key: const ValueKey('reel-cancel'),
                           onPressed: cubit.cancelEncode,
-                          child: Text(s.places_cancel, style: TS.medium14),
+                          child: Text(s.ayahShare_cancel, style: TS.medium14),
                         ),
                       ],
                     ),

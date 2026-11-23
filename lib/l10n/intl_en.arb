@@ -632,6 +632,8 @@
   "ayahShare_encoding": "Preparing the clip",
   "ayahShare_encodeFailed": "Couldn't prepare the clip",
   "ayahShare_audioFailed": "Couldn't load the recitation",
+  "ayahShare_cancel": "Cancel",
+  "ayahShare_capReached": "The next ayah would pass 60 seconds",
   "ayah_range_label": "Surah {surah}, Ayat {from}–{to}",
   "@ayah_range_label": {
     "placeholders": { "surah": { "type": "String" }, "from": { "type": "String" }, "to": { "type": "String" } }

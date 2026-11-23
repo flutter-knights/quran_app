@@ -386,6 +386,10 @@ class PendingS {
       _ar ? 'تعذّر تجهيز المقطع' : 'Couldn\'t prepare the clip';
   String get ayahShare_audioFailed =>
       _ar ? 'تعذّر تحميل التلاوة' : 'Couldn\'t load the recitation';
+  String get ayahShare_cancel => _ar ? 'إلغاء' : 'Cancel';
+  String get ayahShare_capReached => _ar
+      ? 'الآية التالية تتجاوز ٦٠ ثانية'
+      : 'The next ayah would pass 60 seconds';
   String ayah_range_label(String surah, String from, String to) =>
       _ar ? 'سورة $surah، الآيات $from–$to' : 'Surah $surah, Ayat $from–$to';
 
