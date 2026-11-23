@@ -91,5 +91,12 @@ class ActionBtn extends StatelessWidget {
     child: icon,
   );
 
-  Widget _label(Color fg) => Text(label, style: TS.semi12.copyWith(color: fg));
+  Widget _label(Color fg) => Flexible(
+    child: Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TS.semi12.copyWith(color: fg),
+    ),
+  );
 }

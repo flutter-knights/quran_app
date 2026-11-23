@@ -4,7 +4,10 @@ import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/core/di/dependency_injection.dart';
 import 'package:quran_app/core/errors/failure.dart';
+import 'package:quran_app/features/ayah_share/presentation/cubit/ayah_share_cubit.dart';
 import 'package:quran_app/features/ayah_share/domain/entities/share_card_content.dart';
 import 'package:quran_app/features/ayah_share/domain/usecases/get_share_card_content.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/share_card_layout.dart';
@@ -26,7 +29,19 @@ class FakeGetShareCardContent implements GetShareCardContent {
   @override
   Future<Either<Failure, ShareCardContent>> call(AyahIdentifier ayah) {
     requests.add(ayah);
-    return completer?.future ?? Future.value(result!);
+    return completer?.future ??
+        Future.value(
+          result ??
+              Right(
+                ShareCardContent(
+                  ayah: ayah,
+                  page: 1,
+                  pageBounds: const [],
+                  startPage: 1,
+                  startPageBounds: const [],
+                ),
+              ),
+        );
   }
 }
 
@@ -105,4 +120,33 @@ class FakeGetAyahTafsir implements GetAyahTafsir {
     completers.add(completer);
     return completer.future;
   }
+}
+
+typedef FakeAyahShare = ({
+  FakeGetShareCardContent content,
+  FakeShareCardRenderer renderer,
+  FakeGetAyahTafsir tafsir,
+});
+
+FakeAyahShare registerFakeAyahShare({
+  FakeGetShareCardContent? content,
+  FakeShareCardRenderer? renderer,
+  FakeGetAyahTafsir? tafsir,
+  MushafPaper paper = MushafPaper.cream,
+}) {
+  final fakes = (
+    content: content ?? FakeGetShareCardContent(),
+    renderer: renderer ?? FakeShareCardRenderer(),
+    tafsir: tafsir ?? FakeGetAyahTafsir(),
+  );
+  sl.registerFactoryParam<AyahShareCubit, AyahIdentifier, void>(
+    (ayah, _) => AyahShareCubit(
+      ayah: ayah,
+      paper: paper,
+      getContent: fakes.content,
+      renderer: fakes.renderer,
+      getTafsir: fakes.tafsir,
+    ),
+  );
+  return fakes;
 }
