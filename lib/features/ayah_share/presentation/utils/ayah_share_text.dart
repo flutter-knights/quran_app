@@ -23,8 +23,8 @@ String ayahLabel(BuildContext context, AyahIdentifier ayah, S s) =>
 
 String reelShareLabel(BuildContext context, AyahIdentifier first, int count) =>
     count == 1
-    ? ayahLabel(context, first, S.current)
-    : PendingS.current.ayah_range_label(
+    ? ayahLabel(context, first, S.of(context))
+    : PendingS.of(context).ayah_range_label(
         surahDisplayName(context, first.surah),
         first.ayah.toLocalized(context),
         (first.ayah + count - 1).toLocalized(context),

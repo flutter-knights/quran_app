@@ -14,7 +14,7 @@ class ReelAudio extends Equatable {
   List<Object> get props => [path, duration];
 }
 
-class ReelClip {
+class ReelClip extends Equatable {
   const ReelClip({required this.frame, required this.audio});
 
   final Uint8List frame;
@@ -22,9 +22,12 @@ class ReelClip {
 
   Duration get duration =>
       audio.fold(Duration.zero, (sum, track) => sum + track.duration);
+
+  @override
+  List<Object> get props => [frame, audio];
 }
 
-class ReelRequest {
+class ReelRequest extends Equatable {
   const ReelRequest({required this.first, required this.clips});
 
   final AyahIdentifier first;
@@ -36,4 +39,7 @@ class ReelRequest {
         ? '$base.mp4'
         : '$base-${first.ayah + clips.length - 1}.mp4';
   }
+
+  @override
+  List<Object> get props => [first, clips];
 }

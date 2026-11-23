@@ -28,11 +28,9 @@ class PrepareAyahAudio {
       ayah,
     ]) {
       final track = await _measured(part, reciter);
-      final failure = track.fold((failure) => failure, (audio) {
-        tracks.add(audio);
-        return null;
-      });
-      if (failure != null) return Left(failure);
+      final audio = track.toOption().toNullable();
+      if (audio == null) return track.map((_) => tracks);
+      tracks.add(audio);
     }
     return Right(tracks);
   }
