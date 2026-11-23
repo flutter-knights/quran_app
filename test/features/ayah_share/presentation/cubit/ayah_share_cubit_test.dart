@@ -1005,6 +1005,59 @@ void main() {
       },
     );
 
+    test(
+      'a reel preview that fails with the tafsir retries without it',
+      () async {
+        final c = await twoAyat();
+        c.setIncludeTafsir(true);
+        await pumpEventQueue();
+        getTafsir.completers.single.complete(const Right(intro));
+        await pumpEventQueue();
+        getTafsir.completers.last.complete(const Right(textB));
+        await pumpEventQueue();
+        expect(painter.calls.last.tafsir, intro.body);
+        final painted = painter.calls.length;
+
+        painter.throwing = true;
+        c.setPaper(MushafPaper.night);
+        await pumpEventQueue();
+
+        expect(painter.calls.sublist(painted).map((call) => call.tafsir), [
+          intro.body,
+          isNull,
+        ]);
+        expect(c.state.includeTafsir, isFalse);
+        expect(c.state.status, ShareCardStatus.failed);
+        expect(c.state.export, ShareExport.idle);
+      },
+    );
+
+    test('a failed reel preview recovers on load and still encodes', () async {
+      final c = await twoAyat();
+      painter.throwing = true;
+      c.setPaper(MushafPaper.night);
+      await pumpEventQueue();
+
+      expect(painter.calls.last.tafsir, isNull);
+      expect(c.state.status, ShareCardStatus.failed);
+      expect(c.state.export, ShareExport.idle);
+
+      painter.throwing = false;
+      await c.load();
+      await pumpEventQueue();
+
+      expect(c.state.status, ShareCardStatus.ready);
+      expect(c.state.format, ShareFormat.reel);
+      expect(c.state.reelCount, 2);
+      final painted = painter.calls.length;
+
+      await c.requestShare();
+
+      expect(painter.calls, hasLength(painted + 2));
+      expect(compose.requests.single.clips, hasLength(2));
+      expect(c.state.export, ShareExport.sharing);
+    });
+
     test('each segment asks for the tafsir of its own page', () async {
       final c = await reelCubit(const AyahIdentifier(surah: 2, ayah: 256));
       await c.addAyah();
