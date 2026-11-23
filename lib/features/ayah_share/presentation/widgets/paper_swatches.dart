@@ -36,6 +36,7 @@ class PaperSwatches extends StatelessWidget {
                 dimension: 48,
                 child: Center(
                   child: DecoratedBox(
+                    key: ValueKey('share-paper-ring-${paper.name}'),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -45,13 +46,17 @@ class PaperSwatches extends StatelessWidget {
                         width: 2,
                       ),
                     ),
-                    child: SizedBox.square(
-                      dimension: 40,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: paper.colors.background,
-                          border: Border.all(color: paper.colors.ink),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: SizedBox.square(
+                        key: ValueKey('share-paper-dot-${paper.name}'),
+                        dimension: 36,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: paper.colors.background,
+                            border: Border.all(color: paper.colors.ink),
+                          ),
                         ),
                       ),
                     ),

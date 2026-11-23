@@ -38,6 +38,34 @@ void main() {
       expect(size.height, greaterThanOrEqualTo(48));
     }
     expect(MushafPaper.values, hasLength(6));
+    final scheme = Theme.of(
+      tester.element(find.byType(PaperSwatches)),
+    ).colorScheme;
+    for (final paper in MushafPaper.values) {
+      final dot = tester.getSize(
+        find.byKey(ValueKey('share-paper-dot-${paper.name}')),
+      );
+      final ring = tester.getSize(
+        find.byKey(ValueKey('share-paper-ring-${paper.name}')),
+      );
+      expect(dot, const Size(36, 36));
+      expect(ring.width, greaterThan(dot.width));
+      expect(ring.height, greaterThan(dot.height));
+      expect(ring.width, lessThanOrEqualTo(48));
+      final border =
+          (tester
+                      .widget<DecoratedBox>(
+                        find.byKey(ValueKey('share-paper-ring-${paper.name}')),
+                      )
+                      .decoration
+                  as BoxDecoration)
+              .border!
+              .top;
+      expect(
+        border.color,
+        paper == MushafPaper.sepia ? scheme.primary : Colors.transparent,
+      );
+    }
     SemanticsFlags flags(String name) => tester
         .getSemantics(find.byKey(ValueKey('share-paper-$name')))
         .getSemanticsData()

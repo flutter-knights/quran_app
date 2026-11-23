@@ -55,6 +55,7 @@ class AyahShareSheet extends StatefulWidget {
 class _AyahShareSheetState extends State<AyahShareSheet> {
   final _shareKey = GlobalKey();
   final _textKey = GlobalKey();
+  var _sharingText = false;
 
   Rect? _originOf(GlobalKey key) {
     final box = key.currentContext?.findRenderObject() as RenderBox?;
@@ -62,12 +63,17 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
     return box.localToGlobal(Offset.zero) & box.size;
   }
 
-  String _label(BuildContext context) => S
+  String _semanticLabel(BuildContext context) => S
       .of(context)
       .ayah_label(
         surahDisplayName(context, widget.ayah.surah),
         widget.ayah.ayah.toLocalized(context),
       );
+
+  String _shareLabel(BuildContext context) => S.current.ayah_label(
+    surahDisplayName(context, widget.ayah.surah),
+    widget.ayah.ayah.toLocalized(context),
+  );
 
   void _onExport(BuildContext context, AyahShareState state) {
     switch (state.export) {
@@ -86,7 +92,7 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
   Future<void> _shareImage(BuildContext context, AyahShareState state) async {
     final cubit = context.read<AyahShareCubit>();
     final bytes = state.cardBytes!;
-    final label = _label(context);
+    final label = _shareLabel(context);
     final origin = _originOf(_shareKey);
     var ok = true;
     try {
@@ -107,6 +113,8 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
   }
 
   Future<void> _shareText() async {
+    if (_sharingText) return;
+    _sharingText = true;
     final messenger = ScaffoldMessenger.of(_textKey.currentContext!);
     final text = ayahShareText(context, widget.ayah);
     final origin = _originOf(_textKey);
@@ -116,6 +124,8 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
       );
     } catch (_) {
       if (mounted) _showFailure(messenger);
+    } finally {
+      _sharingText = false;
     }
   }
 
@@ -183,7 +193,8 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
                     bytes: cubit.state.cardBytes,
                     paper: paper,
                     progress: progress,
-                    semanticLabel: _label(context),
+                    semanticLabel: _semanticLabel(context),
+                    loading: status == ShareCardStatus.loading,
                   );
                 },
               ),

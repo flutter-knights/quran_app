@@ -13,12 +13,14 @@ class ShareCardPreview extends StatelessWidget {
     required this.bytes,
     required this.paper,
     required this.progress,
+    required this.loading,
     required this.semanticLabel,
   });
 
   final Uint8List? bytes;
   final MushafPaper paper;
   final bool progress;
+  final bool loading;
   final String semanticLabel;
 
   static final _radius = BorderRadius.circular(12);
@@ -26,7 +28,7 @@ class ShareCardPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bytes = this.bytes;
-    if (bytes == null) {
+    if (loading || bytes == null) {
       return Skeletonizer(
         child: Skeleton.leaf(
           child: AspectRatio(
@@ -50,13 +52,19 @@ class ShareCardPreview extends StatelessWidget {
         borderRadius: _radius,
         child: Stack(
           children: [
-            Image.memory(
-              bytes,
-              key: const ValueKey('share-preview-image'),
-              gaplessPlayback: true,
-              width: double.infinity,
-              fit: BoxFit.fitWidth,
-              semanticLabel: semanticLabel,
+            LayoutBuilder(
+              builder: (context, constraints) => Image.memory(
+                bytes,
+                key: const ValueKey('share-preview-image'),
+                gaplessPlayback: true,
+                width: double.infinity,
+                fit: BoxFit.fitWidth,
+                cacheWidth:
+                    (constraints.maxWidth *
+                            MediaQuery.devicePixelRatioOf(context))
+                        .round(),
+                semanticLabel: semanticLabel,
+              ),
             ),
             if (progress)
               const Positioned(

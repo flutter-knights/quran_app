@@ -95,7 +95,7 @@ void main() {
 
   Future<void> pumpUntil(WidgetTester tester, bool Function() done) async {
     await tester.runAsync(() async {
-      for (var i = 0; i < 50 && !done(); i++) {
+      for (var i = 0; i < 250 && !done(); i++) {
         await tester.pump();
         await Future<void>.delayed(const Duration(milliseconds: 20));
       }
@@ -125,8 +125,11 @@ void main() {
     final image = tester.widget<Image>(
       find.byKey(const ValueKey('share-preview-image')),
     );
-    expect(image.image, isA<MemoryImage>());
-    expect((image.image as MemoryImage).bytes, onePixelPng);
+    expect(image.image, isA<ResizeImage>());
+    final resized = image.image as ResizeImage;
+    expect(resized.width, 328);
+    expect(resized.imageProvider, isA<MemoryImage>());
+    expect((resized.imageProvider as MemoryImage).bytes, onePixelPng);
     expect(skeletons, findsNothing);
   });
 
@@ -163,6 +166,10 @@ void main() {
     await tester.pump();
 
     expect(find.text('تعذّر تحميل التفسير'), findsOneWidget);
+    expect(
+      tester.widget<Switch>(find.byKey(const ValueKey('share-tafsir'))).value,
+      isFalse,
+    );
     await tester.tap(find.byKey(const ValueKey('share-tafsir-retry')));
     await tester.pump();
 
@@ -291,14 +298,115 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('share-retry')));
     await tester.pump();
     await tester.pump();
-
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.byKey(const ValueKey('share-preview-image')), findsOneWidget);
   });
 
+  testWidgets('a retry after a render failure shows the skeleton again', (
+    tester,
+  ) async {
+    await open(tester);
+    fakes.renderer.failCompose = true;
+    await tester.tap(find.byKey(const ValueKey('share-paper-night')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('تعذّر تجهيز الصورة'), findsOneWidget);
+
+    fakes.renderer.failCompose = false;
+    fakes.renderer.prepareCompleter = Completer<void>();
+    await tester.tap(find.byKey(const ValueKey('share-retry')));
+    await tester.pump();
+
+    expect(skeletons, findsOneWidget);
+    expect(find.byKey(const ValueKey('share-preview-image')), findsNothing);
+
+    fakes.renderer.prepareCompleter!.complete();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(skeletons, findsNothing);
+    expect(find.byKey(const ValueKey('share-preview-image')), findsOneWidget);
+  });
+
+  testWidgets('a second tap on نص فقط while sharing starts no second share', (
+    tester,
+  ) async {
+    final release = Completer<void>();
+    var calls = 0;
+    messenger.setMockMethodCallHandler(_shareChannel, (call) async {
+      calls++;
+      await release.future;
+      return 'dev.fluttercommunity.plus/share/success';
+    });
+    await open(tester);
+    await tester.tap(textButton());
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.tap(textButton());
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    expect(calls, 1);
+
+    release.complete();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump();
+    await tester.tap(textButton());
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    expect(calls, 2);
+  });
+
+  group('controls are disabled until the card is ready', () {
+    void expectDisabled(WidgetTester tester) {
+      for (final paper in MushafPaper.values) {
+        expect(
+          tester
+              .widget<InkResponse>(
+                find.byKey(ValueKey('share-paper-${paper.name}')),
+              )
+              .onTap,
+          isNull,
+        );
+      }
+      expect(
+        tester
+            .widget<Switch>(find.byKey(const ValueKey('share-tafsir')))
+            .onChanged,
+        isNull,
+      );
+      expect(onPressed(tester, shareButton()), isNull);
+    }
+
+    testWidgets('while loading', (tester) async {
+      fakes.renderer.prepareCompleter = Completer<void>();
+      await open(tester);
+      expectDisabled(tester);
+    });
+
+    testWidgets('after a render failure', (tester) async {
+      fakes.renderer.failCompose = true;
+      await open(tester);
+      expectDisabled(tester);
+    });
+  });
+
   testWidgets('fits at 2x text in 360 px', (tester) async {
     await open(tester, textScale: 2);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('fits at 2x text in 360 px with the tafsir failed', (
+    tester,
+  ) async {
+    await open(tester, textScale: 2);
+    await tester.ensureVisible(find.byKey(const ValueKey('share-tafsir')));
+    await tester.tap(find.byKey(const ValueKey('share-tafsir')));
+    await tester.pump();
+    fakes.tafsir.completers.single.complete(
+      const Left(NotFoundFailure('6:31')),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('share-tafsir-retry')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
