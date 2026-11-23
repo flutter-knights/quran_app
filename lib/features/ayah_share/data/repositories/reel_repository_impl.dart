@@ -9,6 +9,7 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../domain/entities/reel_request.dart';
+import '../../domain/entities/reel_segment.dart';
 import '../../domain/repositories/reel_repository.dart';
 
 typedef ReelFrame = ({int clip, Duration duration});
@@ -44,10 +45,9 @@ ReelPlan reelPlan(
   for (var i = 0; i <= clips.length; i++) {
     final raw = i < clips.length
         ? snap(offsets[i])
-        : ios && iosStep == 1
-        ? (offsets.last.inMicroseconds / _microsPerSecond).ceil() *
-              _microsPerSecond
-        : snap(offsets.last);
+        : (offsets.last.inMicroseconds + stepMicros - 1) ~/
+              stepMicros *
+              stepMicros;
     bounds.add(i == 0 ? raw : max(raw, bounds.last + stepMicros));
   }
 
@@ -127,6 +127,7 @@ class ReelRepositoryImpl implements ReelRepository {
       slot = Directory('${reels.path}/$n');
       final output = File('${slot.path}/${request.fileName}');
       await _delete(reels);
+      await _delete(Directory('${root.path}/work'));
       await work.create(recursive: true);
       await slot.create(recursive: true);
 
@@ -151,7 +152,7 @@ class ReelRepositoryImpl implements ReelRepository {
             ),
         ],
         frameRate: reelFrameRate,
-        resolution: const Size(1080, 1920),
+        resolution: const Size(reelWidth, reelHeight),
         fit: StopMotionFit.cover,
       );
       await _pass(

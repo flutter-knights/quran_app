@@ -4,6 +4,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:quran_app/core/constants/mushaf_paper.dart';
+import 'package:quran_app/features/ayah_share/domain/entities/reel_segment.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/reel_frame_painter.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/share_card_renderer.dart';
 import 'package:quran_app/features/surah/presentation/utils/mushaf_paper_colors.dart';

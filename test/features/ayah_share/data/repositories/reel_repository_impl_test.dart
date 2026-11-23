@@ -162,7 +162,7 @@ void main() {
         second.take(39).map((f) => f.duration),
         everyElement(const Duration(seconds: 1)),
       );
-      expect(second.last.duration.inMicroseconds, closeTo(466667, 1));
+      expect(second.last.duration.inMicroseconds, closeTo(499545, 1));
       expect(
         plan.frames.map((f) => f.duration),
         everyElement(lessThanOrEqualTo(const Duration(seconds: 1))),
@@ -205,6 +205,31 @@ void main() {
             everyElement(const Duration(seconds: 1)),
           );
         }
+      }
+    });
+
+    test('the video never ends before the audio on either platform', () {
+      for (final (ios, seconds) in [
+        (false, (5.0, 7.29)),
+        (false, (6.031, 6.259)),
+        (true, (5.0, 7.29)),
+        (true, (6.031, 3.0)),
+      ]) {
+        final request = _request(seconds.$1, seconds.$2);
+        final plan = reelPlan(request, ios: ios);
+
+        final video = _sum(plan.frames.map((f) => f.duration));
+        final audio = _sum(request.clips.map((c) => c.duration));
+        expect(video, greaterThanOrEqualTo(audio));
+        expect(
+          video - audio,
+          lessThan(
+            Duration(
+              microseconds: ((ios ? reelIosStep : reelAndroidStep) * 1e6)
+                  .round(),
+            ),
+          ),
+        );
       }
     });
 
@@ -409,6 +434,16 @@ void main() {
 
       expect(second.isRight(), isTrue);
       expect(File(second.getOrElse(() => '')).existsSync(), isTrue);
+    });
+
+    test('a compose clears work left by an interrupted export', () async {
+      final stale = File('${root('work').path}/3/frame_0.png')
+        ..createSync(recursive: true);
+
+      await repo.compose(request());
+
+      expect(stale.existsSync(), isFalse);
+      expect(root('work/3').existsSync(), isFalse);
     });
 
     test('a new compose deletes the previous reel', () async {

@@ -5,11 +5,10 @@ import 'package:flutter/painting.dart';
 
 import '../../../../config/theme/typography_styles.dart';
 import '../../../surah/presentation/utils/mushaf_paper_colors.dart';
+import '../../domain/entities/reel_segment.dart';
 import 'share_card_layout.dart';
 import 'share_card_renderer.dart';
 
-const reelWidth = 1080.0;
-const reelHeight = 1920.0;
 const reelFooterPad = 24.0;
 
 final reelTafsirStyle = TS.regular12.copyWith(height: 1.8);
@@ -110,7 +109,7 @@ class ReelFramePainter {
       textAlign: TextAlign.center,
       textDirection: TextDirection.rtl,
     )..layout(minWidth: shareCardTextWidth, maxWidth: shareCardTextWidth);
-    ({TextPainter heading, TextPainter body})? block;
+    TafsirBlock? block;
     ui.Picture? picture;
     ui.Image? rendered;
     try {

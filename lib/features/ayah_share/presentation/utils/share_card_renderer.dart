@@ -137,7 +137,9 @@ TextPainter layoutTafsirHeading(MushafPaperColors colors) => TextPainter(
   textDirection: TextDirection.rtl,
 )..layout(minWidth: shareCardTextWidth, maxWidth: shareCardTextWidth);
 
-({TextPainter heading, TextPainter body}) layoutTafsirBlock(
+typedef TafsirBlock = ({TextPainter heading, TextPainter body});
+
+TafsirBlock layoutTafsirBlock(
   String body,
   MushafPaperColors colors,
   TextStyle style,
@@ -157,14 +159,14 @@ TextPainter layoutTafsirHeading(MushafPaperColors colors) => TextPainter(
 const shareCardTafsirRuleGap = 36.0;
 const shareCardTafsirHeadingGap = 8.0;
 
-double tafsirBlockHeight(({TextPainter heading, TextPainter body}) block) =>
+double tafsirBlockHeight(TafsirBlock block) =>
     shareCardTafsirRuleGap +
     3 * (block.heading.height + shareCardTafsirHeadingGap + block.body.height);
 
 void paintTafsirBlock(
   Canvas canvas,
   double top,
-  ({TextPainter heading, TextPainter body}) block,
+  TafsirBlock block,
   MushafPaperColors colors,
 ) {
   final line = Paint()
@@ -321,7 +323,7 @@ class ShareCardRenderer {
   }) async {
     final layout = crops.layout;
     final tafsirTop = layout.textBottom + shareCardTafsirGap * layout.pitch;
-    ({TextPainter heading, TextPainter body})? block;
+    TafsirBlock? block;
     ui.Picture? picture;
     ui.Image? rendered;
     try {
