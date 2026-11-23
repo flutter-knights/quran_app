@@ -121,6 +121,7 @@ void main() {
       }
     });
     await tester.pump();
+    expect(done(), isTrue, reason: 'pumpUntil timed out');
   }
 
   final skeletons = find.byWidgetPredicate((w) => w is Skeletonizer);
