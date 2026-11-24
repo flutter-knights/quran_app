@@ -19,6 +19,7 @@ import '../../domain/entities/share_card_content.dart';
 import '../../domain/usecases/compose_ayah_reel.dart';
 import '../../domain/usecases/get_share_card_content.dart';
 import '../../domain/usecases/prepare_ayah_audio.dart';
+import '../../domain/usecases/save_share_card.dart';
 import '../utils/ayah_share_text.dart';
 import '../utils/reel_frame_painter.dart';
 import '../utils/share_card_renderer.dart';
@@ -35,6 +36,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
     required PrepareAyahAudio prepareAudio,
     required ReelFramePainter framePainter,
     required ComposeAyahReel composeReel,
+    required SaveShareCard saveCard,
     ScreenWake screenWake = const ScreenWake(),
   }) : _getContent = getContent,
        _renderer = renderer,
@@ -42,6 +44,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
        _prepareAudio = prepareAudio,
        _framePainter = framePainter,
        _composeReel = composeReel,
+       _saveCard = saveCard,
        _wake = screenWake,
        super(AyahShareState(paper: paper));
 
@@ -52,6 +55,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   final PrepareAyahAudio _prepareAudio;
   final ReelFramePainter _framePainter;
   final ComposeAyahReel _composeReel;
+  final SaveShareCard _saveCard;
   final ScreenWake _wake;
   final _segmentCrops = <AyahIdentifier, ShareCardCrops>{};
   ShareCardContent? _content;
@@ -59,6 +63,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
   CancelToken? _token;
   final _segmentToken = CancelToken();
   var _encodeGeneration = 0;
+  var _shareGeneration = 0;
   var _renderGeneration = 0;
   var _composeDeferred = false;
 
@@ -287,10 +292,28 @@ class AyahShareCubit extends Cubit<AyahShareState> {
       return;
     }
     if (state.format == ShareFormat.image) {
-      emit(state.copyWith(export: ShareExport.sharing));
+      await _shareCard(state.cardBytes!);
       return;
     }
     await _encode();
+  }
+
+  Future<void> _shareCard(Uint8List png) async {
+    final generation = ++_shareGeneration;
+    emit(state.copyWith(export: ShareExport.sharing, clearSharePath: true));
+    final saved = await _saveCard(png, 'ayah_${ayah.surah}_${ayah.ayah}.png');
+    final path = saved.toOption().toNullable();
+    if (isClosed ||
+        generation != _shareGeneration ||
+        state.export != ShareExport.sharing) {
+      if (path != null) _composeReel.discard(path);
+      return;
+    }
+    if (path == null) {
+      _settle(state.copyWith(export: ShareExport.failed));
+      return;
+    }
+    emit(state.copyWith(sharePath: path));
   }
 
   void cancelEncode() {
@@ -306,7 +329,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
         export: ShareExport.encoding,
         encodeProgress: 0,
         reelIssue: ReelIssue.none,
-        clearReelPath: true,
+        clearSharePath: true,
       ),
     );
     final withTafsir =
@@ -362,7 +385,7 @@ class AyahShareCubit extends Cubit<AyahShareState> {
           ),
         ),
         (path) =>
-            emit(state.copyWith(export: ShareExport.sharing, reelPath: path)),
+            emit(state.copyWith(export: ShareExport.sharing, sharePath: path)),
       );
     } catch (_) {
       if (isClosed) return;
@@ -383,12 +406,12 @@ class AyahShareCubit extends Cubit<AyahShareState> {
 
   void shareFinished({required bool ok}) {
     if (state.export != ShareExport.sharing) return;
-    if (state.reelPath case final path?) _composeReel.discard(path);
+    if (state.sharePath case final path?) _composeReel.discard(path);
     if (isClosed) return;
     emit(
       state.copyWith(
         export: ok ? ShareExport.done : ShareExport.failed,
-        clearReelPath: true,
+        clearSharePath: true,
       ),
     );
     if (_composeDeferred) {

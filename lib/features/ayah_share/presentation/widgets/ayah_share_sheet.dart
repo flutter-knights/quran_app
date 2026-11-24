@@ -73,12 +73,8 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
   }
 
   void _onExport(BuildContext context, AyahShareState state) {
-    switch (state.export) {
-      case ShareExport.sharing:
-        _share(context, state);
-      case ShareExport.failed:
-        _showFailure(ScaffoldMessenger.of(context));
-      case _:
+    if (state.export == ShareExport.failed) {
+      _showFailure(ScaffoldMessenger.of(context));
     }
   }
 
@@ -114,13 +110,8 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
       await SharePlus.instance.share(
         ShareParams(
           files: [
-            reel
-                ? XFile(state.reelPath!, mimeType: 'video/mp4')
-                : XFile.fromData(state.cardBytes!, mimeType: 'image/png'),
+            XFile(state.sharePath!, mimeType: reel ? 'video/mp4' : 'image/png'),
           ],
-          fileNameOverrides: reel
-              ? null
-              : ['ayah_${widget.ayah.surah}_${widget.ayah.ayah}.png'],
           text: label,
           sharePositionOrigin: origin,
         ),
@@ -160,6 +151,11 @@ class _AyahShareSheetState extends State<AyahShareSheet> {
             BlocListener<AyahShareCubit, AyahShareState>(
               listenWhen: (a, b) => a.export != b.export,
               listener: _onExport,
+            ),
+            BlocListener<AyahShareCubit, AyahShareState>(
+              listenWhen: (a, b) =>
+                  b.sharePath != null && a.sharePath != b.sharePath,
+              listener: _share,
             ),
             BlocListener<AyahShareCubit, AyahShareState>(
               listenWhen: (a, b) =>

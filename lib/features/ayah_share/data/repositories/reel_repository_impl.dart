@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:dartz/dartz.dart';
@@ -186,6 +187,26 @@ class ReelRepositoryImpl implements ReelRepository {
       return Left(Failure.fromException(e));
     } finally {
       await _delete(work);
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> saveCard(
+    Uint8List png,
+    String fileName,
+  ) async {
+    Directory? slot;
+    try {
+      final reels = Directory('${(await _directory()).path}/ayah_share/reels');
+      slot = Directory('${reels.path}/${++_count}');
+      await _delete(reels);
+      await slot.create(recursive: true);
+      final file = File('${slot.path}/$fileName');
+      await file.writeAsBytes(png);
+      return Right(file.path);
+    } catch (e) {
+      await _delete(slot);
+      return Left(Failure.fromException(e));
     }
   }
 

@@ -14,6 +14,7 @@ import 'package:quran_app/features/ayah_share/domain/entities/share_card_content
 import 'package:quran_app/features/ayah_share/domain/usecases/compose_ayah_reel.dart';
 import 'package:quran_app/features/ayah_share/domain/usecases/get_share_card_content.dart';
 import 'package:quran_app/features/ayah_share/domain/usecases/prepare_ayah_audio.dart';
+import 'package:quran_app/features/ayah_share/domain/usecases/save_share_card.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/reel_frame_painter.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/share_card_layout.dart';
 import 'package:quran_app/features/ayah_share/presentation/utils/share_card_renderer.dart';
@@ -220,6 +221,17 @@ class FakeComposeAyahReel implements ComposeAyahReel {
   Future<void> discard(String path) async => discarded.add(path);
 }
 
+class FakeSaveShareCard implements SaveShareCard {
+  final saved = <(Uint8List, String)>[];
+  Completer<Either<Failure, String>>? completer;
+
+  @override
+  Future<Either<Failure, String>> call(Uint8List png, String fileName) {
+    saved.add((png, fileName));
+    return completer?.future ?? Future.value(Right('/cards/$fileName'));
+  }
+}
+
 typedef FakeAyahShare = ({
   FakeGetShareCardContent content,
   FakeShareCardRenderer renderer,
@@ -227,6 +239,7 @@ typedef FakeAyahShare = ({
   FakePrepareAyahAudio prepareAudio,
   FakeReelFramePainter framePainter,
   FakeComposeAyahReel composeReel,
+  FakeSaveShareCard saveCard,
 });
 
 FakeAyahShare registerFakeAyahShare({
@@ -236,6 +249,7 @@ FakeAyahShare registerFakeAyahShare({
   FakePrepareAyahAudio? prepareAudio,
   FakeReelFramePainter? framePainter,
   FakeComposeAyahReel? composeReel,
+  FakeSaveShareCard? saveCard,
 }) {
   final fakes = (
     content: content ?? FakeGetShareCardContent(),
@@ -244,6 +258,7 @@ FakeAyahShare registerFakeAyahShare({
     prepareAudio: prepareAudio ?? FakePrepareAyahAudio(),
     framePainter: framePainter ?? FakeReelFramePainter(),
     composeReel: composeReel ?? FakeComposeAyahReel(),
+    saveCard: saveCard ?? FakeSaveShareCard(),
   );
   sl.registerFactoryParam<AyahShareCubit, AyahIdentifier, MushafPaper>(
     (ayah, paper) => AyahShareCubit(
@@ -255,6 +270,7 @@ FakeAyahShare registerFakeAyahShare({
       prepareAudio: fakes.prepareAudio,
       framePainter: fakes.framePainter,
       composeReel: fakes.composeReel,
+      saveCard: fakes.saveCard,
     ),
   );
   return fakes;

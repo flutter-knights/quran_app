@@ -270,10 +270,14 @@ void main() {
     await pumpUntil(tester, () => shared.isNotEmpty);
 
     final args = shared.single;
-    expect((args['paths'] as List).single, endsWith('ayah_6_31.png'));
+    expect((args['paths'] as List).single, '/cards/ayah_6_31.png');
     expect(args['mimeTypes'], ['image/png']);
     expect(args['text'], 'سورة الأنعام، الآية ٣١');
     expect(args['originWidth'] as double, greaterThan(0));
+    await pumpUntil(
+      tester,
+      () => fakes.composeReel.discarded.contains('/cards/ayah_6_31.png'),
+    );
   });
 
   testWidgets('in English the share text is the English label', (tester) async {

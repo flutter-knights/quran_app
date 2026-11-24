@@ -485,6 +485,26 @@ void main() {
       expect(other.existsSync(), isTrue);
     });
 
+    test('saveCard writes the card into its own slot', () async {
+      final result = await repo.saveCard(Uint8List.fromList([1, 2]), 'a.png');
+
+      final path = result.getOrElse(() => '');
+      expect(path, endsWith('reels/1/a.png'));
+      expect(File(path).readAsBytesSync(), [1, 2]);
+    });
+
+    test('saveCard clears earlier shares and discard removes it', () async {
+      final reel = (await repo.compose(request())).getOrElse(() => '');
+      final card = (await repo.saveCard(
+        Uint8List(1),
+        'a.png',
+      )).getOrElse(() => '');
+
+      expect(File(reel).existsSync(), isFalse);
+      await repo.discard(card);
+      expect(root('reels').listSync(), isEmpty);
+    });
+
     test('audioDuration prefers the audio track', () async {
       editor.duration = const Duration(seconds: 7);
       editor.audioDuration = const Duration(seconds: 5);

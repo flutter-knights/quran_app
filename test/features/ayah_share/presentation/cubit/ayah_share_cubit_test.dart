@@ -32,6 +32,7 @@ void main() {
   late FakePrepareAyahAudio audio;
   late FakeReelFramePainter painter;
   late FakeComposeAyahReel compose;
+  late FakeSaveShareCard saveCard;
   late FakeScreenWake wake;
   late AyahShareCubit cubit;
   late List<AyahShareState> states;
@@ -43,6 +44,7 @@ void main() {
     audio = FakePrepareAyahAudio();
     painter = FakeReelFramePainter();
     compose = FakeComposeAyahReel();
+    saveCard = FakeSaveShareCard();
     wake = FakeScreenWake();
     cubit = AyahShareCubit(
       ayah: ayah,
@@ -53,6 +55,7 @@ void main() {
       prepareAudio: audio,
       framePainter: painter,
       composeReel: compose,
+      saveCard: saveCard,
       screenWake: wake,
     );
     states = [];
@@ -314,8 +317,64 @@ void main() {
     cubit.requestShare();
     await pumpEventQueue();
 
-    expect(states.where((s) => s.export == ShareExport.sharing), hasLength(1));
+    expect(saveCard.saved, hasLength(1));
+    expect(states.where((s) => s.sharePath != null), hasLength(1));
   });
+
+  test('an image share saves the card and shares that file', () async {
+    await loaded();
+    final bytes = cubit.state.cardBytes;
+
+    await cubit.requestShare();
+
+    expect(saveCard.saved.single.$1, bytes);
+    expect(saveCard.saved.single.$2, 'ayah_1_1.png');
+    expect(cubit.state.export, ShareExport.sharing);
+    expect(cubit.state.sharePath, '/cards/ayah_1_1.png');
+  });
+
+  test('a shared card is discarded once the share sheet returns', () async {
+    await loaded();
+    await cubit.requestShare();
+
+    cubit.shareFinished(ok: true);
+
+    expect(compose.discarded, ['/cards/ayah_1_1.png']);
+    expect(cubit.state.sharePath, isNull);
+  });
+
+  test('a card that fails to save reports a failed share', () async {
+    await loaded();
+    saveCard.completer = Completer()..complete(const Left(CacheFailure('x')));
+
+    await cubit.requestShare();
+
+    expect(cubit.state.export, ShareExport.failed);
+    expect(cubit.state.sharePath, isNull);
+  });
+
+  test(
+    'a card saved after the share ended or the sheet closed is discarded',
+    () async {
+      await loaded();
+      saveCard.completer = Completer();
+      final sharing = cubit.requestShare();
+      cubit.shareFinished(ok: false);
+      saveCard.completer!.complete(const Right('/cards/late.png'));
+      await sharing;
+
+      expect(compose.discarded, ['/cards/late.png']);
+      expect(cubit.state.sharePath, isNull);
+
+      saveCard.completer = Completer();
+      final closing = cubit.requestShare();
+      await cubit.close();
+      saveCard.completer!.complete(const Right('/cards/closed.png'));
+      await closing;
+
+      expect(compose.discarded, ['/cards/late.png', '/cards/closed.png']);
+    },
+  );
 
   test('shareFinished reports done or failed', () async {
     await loaded();
@@ -438,6 +497,7 @@ void main() {
         prepareAudio: audio,
         framePainter: painter,
         composeReel: compose,
+        saveCard: saveCard,
         screenWake: wake,
       );
       states = [];
@@ -809,6 +869,7 @@ void main() {
         prepareAudio: audio,
         framePainter: painter,
         composeReel: compose,
+        saveCard: saveCard,
         screenWake: wake,
       );
       states = [];
@@ -861,14 +922,14 @@ void main() {
     test('a new encode clears the previous reel path', () async {
       final c = await twoAyat();
       await c.requestShare();
-      expect(c.state.reelPath, isNotNull);
+      expect(c.state.sharePath, isNotNull);
       c.shareFinished(ok: true);
       compose.completer = Completer();
 
       final sharing = c.requestShare();
       await pumpEventQueue();
 
-      expect(c.state.reelPath, isNull);
+      expect(c.state.sharePath, isNull);
       compose.completer!.complete(const Right('/reels/x.mp4'));
       await sharing;
     });
@@ -893,7 +954,7 @@ void main() {
       await c.requestShare();
 
       expect(c.state.export, ShareExport.sharing);
-      expect(c.state.reelPath, '/reels/ayah_2_255-256.mp4');
+      expect(c.state.sharePath, '/reels/ayah_2_255-256.mp4');
 
       c.shareFinished(ok: true);
 
@@ -1171,7 +1232,7 @@ void main() {
       await sharing;
 
       expect(c.state.export, ShareExport.idle);
-      expect(c.state.reelPath, isNull);
+      expect(c.state.sharePath, isNull);
       expect(compose.discarded, ['/reels/late.mp4']);
     });
 
@@ -1193,20 +1254,20 @@ void main() {
         compose.discarded.clear();
         final c = await twoAyat();
         await c.requestShare();
-        final path = c.state.reelPath!;
+        final path = c.state.sharePath!;
 
         expect(compose.discarded, isEmpty);
         c.shareFinished(ok: ok);
 
         expect(compose.discarded, [path]);
-        expect(c.state.reelPath, isNull);
+        expect(c.state.sharePath, isNull);
       }
     });
 
     test('a share that returns after close still discards the reel', () async {
       final c = await twoAyat();
       await c.requestShare();
-      final path = c.state.reelPath!;
+      final path = c.state.sharePath!;
 
       await c.close();
       c.shareFinished(ok: true);
