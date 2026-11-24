@@ -370,6 +370,28 @@ class PendingS {
   String get ayahShare_textOnly => _ar ? 'نص فقط' : 'Text only';
   String get ayahShare_renderFailed =>
       _ar ? 'تعذّر تجهيز الصورة' : 'Couldn\'t prepare the image';
+  String get ayahShare_image => _ar ? 'صورة' : 'Image';
+  String get ayahShare_reel => _ar ? 'مقطع بالتلاوة' : 'Recitation clip';
+  String get ayahShare_ayahCount => _ar ? 'عدد الآيات' : 'Number of ayat';
+  String get ayahShare_addAyah => _ar ? 'إضافة آية' : 'Add an ayah';
+  String get ayahShare_removeAyah => _ar ? 'حذف آية' : 'Remove an ayah';
+  String ayahShare_recitedBy(String reciter) =>
+      _ar ? 'بصوت $reciter' : 'Recited by $reciter';
+  String get ayahShare_longClip => _ar
+      ? 'قد تقصّ بعض التطبيقات المقاطع الأطول من ٦٠ ثانية'
+      : 'Some apps may trim clips longer than 60 seconds';
+  String get ayahShare_encoding =>
+      _ar ? 'جارٍ تجهيز المقطع' : 'Preparing the clip';
+  String get ayahShare_encodeFailed =>
+      _ar ? 'تعذّر تجهيز المقطع' : 'Couldn\'t prepare the clip';
+  String get ayahShare_audioFailed =>
+      _ar ? 'تعذّر تحميل التلاوة' : 'Couldn\'t load the recitation';
+  String get ayahShare_cancel => _ar ? 'إلغاء' : 'Cancel';
+  String get ayahShare_capReached => _ar
+      ? 'الآية التالية تتجاوز ٦٠ ثانية'
+      : 'The next ayah would pass 60 seconds';
+  String ayah_range_label(String surah, String from, String to) =>
+      _ar ? 'سورة $surah، الآيات $from–$to' : 'Surah $surah, Ayat $from–$to';
 
   String alerts_minutes(num count) {
     final n = count.toInt();

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -119,6 +120,69 @@ void main() {
     final src = rowSource(rect, rowEdges(rect, pageRectsOf(48)));
     expect(src.top, 172);
     expect(src.bottom, 341);
+  });
+
+  test('lineInkSource spans the row edges and the band with a margin', () {
+    final rect = linesOf(6, 31)[1];
+    final edges = rowEdges(rect, pageRectsOf(131));
+    expect(gridBand(gridLineOf(rect)), (top: 1009, bottom: 1178));
+    expect(
+      lineInkSource(rect, edges),
+      const Rect.fromLTRB(112, 949, 1425, 1238),
+    );
+  });
+
+  group('keepLineInk', () {
+    const width = 60;
+    const line = 1;
+    final band = gridBand(line);
+    final top = band.top - mushafInkMargin;
+    final height = band.bottom + mushafInkMargin - top;
+    final edgeTop = band.top - top;
+    final edgeBottom = band.bottom - top;
+
+    ByteData page(List<(int, int, int, int)> blobs) {
+      final data = ByteData(width * height * 4);
+      for (final (x0, y0, x1, y1) in blobs) {
+        for (var y = y0; y < y1; y++) {
+          for (var x = x0; x < x1; x++) {
+            data.setUint8((y * width + x) * 4 + 3, 255);
+          }
+        }
+      }
+      return data;
+    }
+
+    int alphaAt(ByteData data, int x, int y) =>
+        data.getUint8((y * width + x) * 4 + 3);
+
+    test('keeps the line and clears the lines above and below', () {
+      final data = page([
+        (2, edgeTop + 40, 5, edgeTop + 120),
+        (8, edgeTop - 5, 11, edgeTop + 16),
+        (16, 0, 19, edgeTop - 2),
+        (16, edgeTop + 1, 19, edgeTop + 4),
+        (28, edgeTop - 10, 31, edgeTop - 4),
+        (28, edgeTop + 1, 31, edgeTop + 90),
+        (40, edgeBottom - 14, 43, edgeBottom + 12),
+        (50, edgeTop + 90, 53, edgeBottom + 3),
+      ]);
+      keepLineInk(data, width, line: line, top: top);
+      expect(alphaAt(data, 3, edgeTop + 60), 255, reason: 'letter');
+      expect(alphaAt(data, 9, edgeTop - 4), 255, reason: 'rising mark');
+      expect(alphaAt(data, 17, 10), 0, reason: 'letter above');
+      expect(alphaAt(data, 17, edgeTop + 2), 0, reason: 'kasra above');
+      expect(alphaAt(data, 29, edgeTop - 8), 255, reason: 'floating mark');
+      expect(alphaAt(data, 41, edgeBottom - 10), 0, reason: 'mark below');
+      expect(alphaAt(data, 51, edgeBottom + 2), 255, reason: 'descender');
+    });
+
+    test('clears every channel of a foreign pixel', () {
+      final data = page([(10, 0, 13, edgeTop - 2)]);
+      data.setUint8((5 * width + 11) * 4, 9);
+      keepLineInk(data, width, line: line, top: top);
+      expect(data.getUint32((5 * width + 11) * 4), 0);
+    });
   });
 
   test('accentSource keeps the rosette bleed and drops the foreign sliver', () {

@@ -34,15 +34,17 @@ class ShareCardSlice extends Equatable {
     required this.page,
     required this.src,
     required this.dst,
+    this.line,
   });
 
   final ShareCardLayer layer;
   final int page;
   final Rect src;
   final Rect dst;
+  final int? line;
 
   @override
-  List<Object> get props => [layer, page, src, dst];
+  List<Object?> get props => [layer, page, src, dst, line];
 }
 
 typedef ShareCardRow = ({double coreLeft, double coreRight, double top});
@@ -67,7 +69,13 @@ class ShareCardLayout {
   double get pitch => mushafLineHeight * scale;
 }
 
-typedef _Piece = ({NormalizedRect rect, RowEdges edges, Rect src, double core});
+typedef _Piece = ({
+  NormalizedRect rect,
+  RowEdges edges,
+  Rect src,
+  Rect ink,
+  double core,
+});
 
 _Piece _piece(NormalizedRect rect, List<NormalizedRect> pageRects) {
   final edges = rowEdges(rect, pageRects);
@@ -75,16 +83,36 @@ _Piece _piece(NormalizedRect rect, List<NormalizedRect> pageRects) {
   final pad =
       (edges.leftOpen ? mushafOuterPad : 0) +
       (edges.rightOpen ? mushafOuterPad : 0);
-  return (rect: rect, edges: edges, src: src, core: src.width - pad);
+  return (
+    rect: rect,
+    edges: edges,
+    src: src,
+    ink: lineInkSource(rect, edges),
+    core: src.width - pad,
+  );
 }
 
-Rect _place(Rect src, bool leftOpen, double leftCard, double top, double s) {
-  final origin = src.left + (leftOpen ? mushafOuterPad : 0);
-  return Rect.fromLTRB(
-    leftCard + (src.left - origin) * s,
-    top,
-    leftCard + (src.right - origin) * s,
-    top + src.height * s,
+ShareCardSlice _inkSlice(
+  _Piece piece,
+  int page,
+  double left,
+  double top,
+  double s,
+) {
+  final ink = piece.ink;
+  final origin = ink.left + (piece.edges.leftOpen ? mushafOuterPad : 0);
+  final dstTop = top + (ink.top - piece.src.top) * s;
+  return ShareCardSlice(
+    layer: ShareCardLayer.ink,
+    page: page,
+    src: ink,
+    dst: Rect.fromLTRB(
+      left + (ink.left - origin) * s,
+      dstTop,
+      left + (ink.right - origin) * s,
+      dstTop + ink.height * s,
+    ),
+    line: gridLineOf(piece.rect),
   );
 }
 
@@ -146,12 +174,14 @@ ShareCardLayout shareCardLayout({
         .firstWhere((b) => b.ayah.surah == ayah.surah && b.ayah.ayah == 0)
         .lines
         .first;
-    final src = rowSource(rect, (
+    final edges = (
       left: rect.x * mushafPageSize.width,
       right: (rect.x + rect.w) * mushafPageSize.width,
       leftOpen: false,
       rightOpen: false,
-    ));
+    );
+    final cell = rowSource(rect, edges);
+    final src = lineInkSource(rect, edges);
     final bs =
         _basmalaWidth * (shareCardWidth - 2 * shareCardMargin) / src.width;
     slices.add(
@@ -161,10 +191,11 @@ ShareCardLayout shareCardLayout({
         src: src,
         dst: Rect.fromLTWH(
           (shareCardWidth - src.width * bs) / 2,
-          y,
+          y + (src.top - cell.top) * bs,
           src.width * bs,
           src.height * bs,
         ),
+        line: gridLineOf(rect),
       ),
     );
     y += mushafLineHeight * bs + _basmalaGap * pitch;
@@ -181,26 +212,12 @@ ShareCardLayout shareCardLayout({
         : shareCardWidth - shareCardMargin;
     final pieceLeft = right - piece.core * scale;
     rows.add((coreLeft: right - width, coreRight: right, top: top));
-    slices.add(
-      ShareCardSlice(
-        layer: ShareCardLayer.ink,
-        page: page,
-        src: piece.src,
-        dst: _place(piece.src, piece.edges.leftOpen, pieceLeft, top, scale),
-      ),
-    );
+    slices.add(_inkSlice(piece, page, pieceLeft, top, scale));
     var accentPiece = piece;
     var accentLeft = pieceLeft;
     if (carriesTail) {
       final tailLeft = pieceLeft - tail.core * scale;
-      slices.add(
-        ShareCardSlice(
-          layer: ShareCardLayer.ink,
-          page: page,
-          src: tail.src,
-          dst: _place(tail.src, tail.edges.leftOpen, tailLeft, top, scale),
-        ),
-      );
+      slices.add(_inkSlice(tail, page, tailLeft, top, scale));
       accentPiece = tail;
       accentLeft = tailLeft;
     }
