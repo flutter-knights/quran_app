@@ -12,6 +12,7 @@ class AppSettingsTile extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.enabled = true,
+    this.toggled,
   });
 
   final String title;
@@ -20,6 +21,7 @@ class AppSettingsTile extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
   final bool enabled;
+  final bool? toggled;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +63,8 @@ class AppSettingsTile extends StatelessWidget {
     );
     final tap = enabled ? onTap : null;
     return Semantics(
-      button: onTap != null,
+      button: onTap != null && toggled == null,
+      toggled: toggled,
       enabled: enabled,
       child: Opacity(
         opacity: enabled ? 1 : 0.38,

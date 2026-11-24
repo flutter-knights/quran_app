@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   flutter_timezone
+  pro_video_editor
   url_launcher_linux
 )
 

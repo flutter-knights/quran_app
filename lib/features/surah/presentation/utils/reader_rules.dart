@@ -10,6 +10,8 @@ import '../../domain/entities/normalized_rect.dart';
 
 const _pageWidth = 1536.0;
 const _pageHeight = 2795.0;
+const mushafPageWidth = _pageWidth;
+const mushafRenderAspect = 1.82;
 const mushafPageSize = Size(_pageWidth, _pageHeight);
 const mushafPageAspect = _pageWidth / _pageHeight;
 

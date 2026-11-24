@@ -59,6 +59,7 @@ dependencies:
   intl: ^0.20.3
   just_audio: ^0.10.6
   path_provider: ^2.1.6
+  pro_video_editor: 2.54.0
   quran:
     path: ./quran-1.4.1
   share_plus: ^13.3.1

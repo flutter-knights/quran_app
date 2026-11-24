@@ -6,8 +6,12 @@ import 'package:quran_app/generated/l10n.dart';
 
 void main() {
   var removed = 0;
+  var shared = 0;
 
-  setUp(() => removed = 0);
+  setUp(() {
+    removed = 0;
+    shared = 0;
+  });
 
   Future<void> pumpMenu(WidgetTester tester) => tester.pumpWidget(
     MaterialApp(
@@ -20,7 +24,12 @@ void main() {
       ],
       supportedLocales: S.delegate.supportedLocales,
       home: Scaffold(
-        body: Center(child: PlaceRowMenu(onRemove: () => removed++)),
+        body: Center(
+          child: PlaceRowMenu(
+            onShare: () => shared++,
+            onRemove: () => removed++,
+          ),
+        ),
       ),
     ),
   );
@@ -38,6 +47,19 @@ void main() {
 
     expect(removed, 1);
     expect(find.text('إزالة'), findsNothing);
+  });
+
+  testWidgets('مشاركة calls onShare', (tester) async {
+    await pumpMenu(tester);
+
+    await tester.tap(find.byType(IconButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('place-share')));
+    await tester.pumpAndSettle();
+
+    expect(shared, 1);
+    expect(removed, 0);
+    expect(find.text('مشاركة'), findsNothing);
   });
 
   testWidgets('the button is at least 48 by 48', (tester) async {
